@@ -1,0 +1,24 @@
+{
+  "status": "RESEARCH_ONLY_NOT_QUALIFIED",
+  "full_fill_improvement": false,
+  "declared_four_model_arithmetic_robustness_pass": "V3_COST_ROUTE",
+  "forward_shadow_strategy_installed": false,
+  "production_change": false,
+  "no_universal_profit_improvement": true,
+  "reasons": [
+    "daily final-candle candidate list is unavailable at 15:20 regular-entry decision",
+    "15:20-to-close drift and final-volume timing unobserved",
+    "post-close queue and opening-auction own fills unknown",
+    "single-seed robustness verdict is not stable positive profit under correlated nonfills or severe combined costs",
+    "current surviving universe and future split exclusions are not a point-in-time market universe"
+  ],
+  "useful_improvements": [
+    "cost-aware split route improves poor-fill conditional models",
+    "disabled timestamped evidence collector and actual entry shortlist archive support a valid forward comparison"
+  ],
+  "next_qualification": [
+    "freeze route with actual 15:20 observed picks/quotes and cash ledger before any forward scoring",
+    "establish stock/broker session eligibility and real order acceptance/fills only with separate owner authorization",
+    "forward held-out paper comparison under explicit missing/partial fills; no silent official-close fills"
+  ]
+}

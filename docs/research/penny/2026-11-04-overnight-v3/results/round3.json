@@ -1,0 +1,1512 @@
+{
+ "1518|V2": {
+  "M1": {
+   "net": 127734,
+   "net_seed0": 127734,
+   "net_min_seed": 127734,
+   "dd": 5276,
+   "closes": 1515,
+   "pf": 2.18,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 30213,
+   "2016": 27097,
+   "2017": 39600,
+   "2018": 30824
+  },
+  "outcomes": {
+   "FILLED": 1515,
+   "LIQUIDITY_OR_DUST": 122
+  },
+  "M2": {
+   "net": 68868,
+   "net_seed0": 72071,
+   "net_min_seed": 62212,
+   "dd": 5584,
+   "closes": 1299,
+   "pf": 1.666,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 10721,
+   "net_seed0": 20054,
+   "net_min_seed": -1049,
+   "dd": 10277,
+   "closes": 1086,
+   "pf": 1.185,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 8515,
+   "net_seed0": -11138,
+   "net_min_seed": -11138,
+   "dd": 13370,
+   "closes": 1022,
+   "pf": 0.859,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 76476,
+   "net_seed0": 76476,
+   "net_min_seed": 76476,
+   "dd": 4513,
+   "closes": 1515,
+   "pf": 2.053,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 3344,
+   "net_seed0": 7040,
+   "net_min_seed": -2919,
+   "dd": 8676,
+   "closes": 1087,
+   "pf": 1.098,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 100310,
+   "net_seed0": 100310,
+   "net_min_seed": 100310,
+   "dd": 5467,
+   "closes": 1515,
+   "pf": 1.843,
+   "open_at_end": 0
+  },
+  "robust": 3344
+ },
+ "1518|V2_HI": {
+  "M1": {
+   "net": 130578,
+   "net_seed0": 130578,
+   "net_min_seed": 130578,
+   "dd": 5276,
+   "closes": 1515,
+   "pf": 2.201,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 30725,
+   "2016": 28276,
+   "2017": 38223,
+   "2018": 33355
+  },
+  "outcomes": {
+   "FILLED": 1515,
+   "LIQUIDITY_OR_DUST": 124
+  },
+  "M2": {
+   "net": 70964,
+   "net_seed0": 73792,
+   "net_min_seed": 64003,
+   "dd": 5584,
+   "closes": 1296,
+   "pf": 1.679,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 12397,
+   "net_seed0": 20749,
+   "net_min_seed": 3012,
+   "dd": 9256,
+   "closes": 1079,
+   "pf": 1.191,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 10003,
+   "net_seed0": -10009,
+   "net_min_seed": -10009,
+   "dd": 13558,
+   "closes": 1019,
+   "pf": 0.873,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 81567,
+   "net_seed0": 81567,
+   "net_min_seed": 81567,
+   "dd": 4513,
+   "closes": 1515,
+   "pf": 2.114,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 5912,
+   "net_seed0": 10331,
+   "net_min_seed": 180,
+   "dd": 7657,
+   "closes": 1079,
+   "pf": 1.142,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 103156,
+   "net_seed0": 103156,
+   "net_min_seed": 103156,
+   "dd": 5467,
+   "closes": 1515,
+   "pf": 1.864,
+   "open_at_end": 0
+  },
+  "robust": 5912
+ },
+ "1518|V2_Q4": {
+  "M1": {
+   "net": 107814,
+   "net_seed0": 107814,
+   "net_min_seed": 107814,
+   "dd": 4335,
+   "closes": 1098,
+   "pf": 2.367,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 25941,
+   "2016": 29516,
+   "2017": 32952,
+   "2018": 19405
+  },
+  "outcomes": {
+   "FILLED": 1098,
+   "LIQUIDITY_OR_DUST": 82
+  },
+  "M2": {
+   "net": 61175,
+   "net_seed0": 56935,
+   "net_min_seed": 56776,
+   "dd": 4536,
+   "closes": 925,
+   "pf": 1.722,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 15561,
+   "net_seed0": 15938,
+   "net_min_seed": 9889,
+   "dd": 7545,
+   "closes": 768,
+   "pf": 1.202,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 15137,
+   "net_seed0": 1028,
+   "net_min_seed": 1028,
+   "dd": 7979,
+   "closes": 724,
+   "pf": 1.013,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 62740,
+   "net_seed0": 62740,
+   "net_min_seed": 62740,
+   "dd": 3575,
+   "closes": 1098,
+   "pf": 2.155,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 5448,
+   "net_seed0": 4593,
+   "net_min_seed": -2002,
+   "dd": 6996,
+   "closes": 768,
+   "pf": 1.085,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 87854,
+   "net_seed0": 87854,
+   "net_min_seed": 87854,
+   "dd": 4485,
+   "closes": 1098,
+   "pf": 2.019,
+   "open_at_end": 0
+  },
+  "robust": 5448
+ },
+ "1518|ALL_HI": {
+  "M1": {
+   "net": 133471,
+   "net_seed0": 133471,
+   "net_min_seed": 133471,
+   "dd": 5276,
+   "closes": 1533,
+   "pf": 2.23,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 32516,
+   "2016": 29217,
+   "2017": 38600,
+   "2018": 33137
+  },
+  "outcomes": {
+   "FILLED": 1533,
+   "LIQUIDITY_OR_DUST": 129
+  },
+  "M2": {
+   "net": 73233,
+   "net_seed0": 76490,
+   "net_min_seed": 66066,
+   "dd": 5584,
+   "closes": 1310,
+   "pf": 1.705,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 14525,
+   "net_seed0": 21877,
+   "net_min_seed": 6853,
+   "dd": 8121,
+   "closes": 1089,
+   "pf": 1.202,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 11890,
+   "net_seed0": -8596,
+   "net_min_seed": -8596,
+   "dd": 13411,
+   "closes": 1029,
+   "pf": 0.895,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 83145,
+   "net_seed0": 83145,
+   "net_min_seed": 83145,
+   "dd": 4513,
+   "closes": 1533,
+   "pf": 2.138,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 6995,
+   "net_seed0": 11008,
+   "net_min_seed": 1901,
+   "dd": 7675,
+   "closes": 1089,
+   "pf": 1.151,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 105716,
+   "net_seed0": 105716,
+   "net_min_seed": 105716,
+   "dd": 5467,
+   "closes": 1533,
+   "pf": 1.887,
+   "open_at_end": 0
+  },
+  "robust": 6995
+ },
+ "1518|CAPRANK": {
+  "M1": {
+   "net": 118824,
+   "net_seed0": 118824,
+   "net_min_seed": 118824,
+   "dd": 5283,
+   "closes": 1533,
+   "pf": 2.108,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 30622,
+   "2016": 21402,
+   "2017": 41254,
+   "2018": 25546
+  },
+  "outcomes": {
+   "FILLED": 1533,
+   "LIQUIDITY_OR_DUST": 73
+  },
+  "M2": {
+   "net": 64223,
+   "net_seed0": 64713,
+   "net_min_seed": 57786,
+   "dd": 6203,
+   "closes": 1309,
+   "pf": 1.603,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 9313,
+   "net_seed0": 14303,
+   "net_min_seed": 2996,
+   "dd": 11619,
+   "closes": 1090,
+   "pf": 1.134,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 4836,
+   "net_seed0": -13307,
+   "net_min_seed": -13307,
+   "dd": 14252,
+   "closes": 1024,
+   "pf": 0.827,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 86984,
+   "net_seed0": 86984,
+   "net_min_seed": 86984,
+   "dd": 5319,
+   "closes": 1533,
+   "pf": 2.034,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 4435,
+   "net_seed0": 6225,
+   "net_min_seed": -718,
+   "dd": 9974,
+   "closes": 1091,
+   "pf": 1.074,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 90560,
+   "net_seed0": 90560,
+   "net_min_seed": 90560,
+   "dd": 5488,
+   "closes": 1533,
+   "pf": 1.766,
+   "open_at_end": 0
+  },
+  "robust": 4435
+ },
+ "1922|V2": {
+  "M1": {
+   "net": 184222,
+   "net_seed0": 184222,
+   "net_min_seed": 184222,
+   "dd": 8732,
+   "closes": 1470,
+   "pf": 2.659,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 26030,
+   "2020": 50253,
+   "2021": 70604,
+   "2022": 37335
+  },
+  "outcomes": {
+   "FILLED": 1470,
+   "LIQUIDITY_OR_DUST": 83
+  },
+  "M2": {
+   "net": 112130,
+   "net_seed0": 103903,
+   "net_min_seed": 103903,
+   "dd": 10342,
+   "closes": 1208,
+   "pf": 1.937,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 38229,
+   "net_seed0": 32517,
+   "net_min_seed": 32517,
+   "dd": 12173,
+   "closes": 983,
+   "pf": 1.296,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 33408,
+   "net_seed0": 40285,
+   "net_min_seed": 11887,
+   "dd": 15425,
+   "closes": 986,
+   "pf": 1.37,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 122564,
+   "net_seed0": 122564,
+   "net_min_seed": 122564,
+   "dd": 4741,
+   "closes": 1470,
+   "pf": 2.484,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 20255,
+   "net_seed0": 20467,
+   "net_min_seed": 13350,
+   "dd": 10467,
+   "closes": 985,
+   "pf": 1.253,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 157411,
+   "net_seed0": 157411,
+   "net_min_seed": 157411,
+   "dd": 9098,
+   "closes": 1470,
+   "pf": 2.313,
+   "open_at_end": 0
+  },
+  "robust": 20255
+ },
+ "1922|V2_HI": {
+  "M1": {
+   "net": 185253,
+   "net_seed0": 185253,
+   "net_min_seed": 185253,
+   "dd": 8732,
+   "closes": 1470,
+   "pf": 2.651,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 25444,
+   "2020": 52012,
+   "2021": 70833,
+   "2022": 36965
+  },
+  "outcomes": {
+   "FILLED": 1470,
+   "LIQUIDITY_OR_DUST": 84
+  },
+  "M2": {
+   "net": 113230,
+   "net_seed0": 104127,
+   "net_min_seed": 104127,
+   "dd": 10342,
+   "closes": 1212,
+   "pf": 1.929,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 38861,
+   "net_seed0": 32900,
+   "net_min_seed": 32324,
+   "dd": 12674,
+   "closes": 988,
+   "pf": 1.296,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 34163,
+   "net_seed0": 40558,
+   "net_min_seed": 15965,
+   "dd": 15150,
+   "closes": 990,
+   "pf": 1.369,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 121183,
+   "net_seed0": 121183,
+   "net_min_seed": 121183,
+   "dd": 4741,
+   "closes": 1470,
+   "pf": 2.463,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 20436,
+   "net_seed0": 21038,
+   "net_min_seed": 12979,
+   "dd": 11661,
+   "closes": 990,
+   "pf": 1.259,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 158515,
+   "net_seed0": 158515,
+   "net_min_seed": 158515,
+   "dd": 9098,
+   "closes": 1470,
+   "pf": 2.307,
+   "open_at_end": 0
+  },
+  "robust": 20436
+ },
+ "1922|V2_Q4": {
+  "M1": {
+   "net": 175925,
+   "net_seed0": 175925,
+   "net_min_seed": 175925,
+   "dd": 4017,
+   "closes": 1228,
+   "pf": 3.19,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 18149,
+   "2020": 52166,
+   "2021": 71735,
+   "2022": 33874
+  },
+  "outcomes": {
+   "FILLED": 1228,
+   "LIQUIDITY_OR_DUST": 75
+  },
+  "M2": {
+   "net": 112869,
+   "net_seed0": 107413,
+   "net_min_seed": 107413,
+   "dd": 7223,
+   "closes": 1003,
+   "pf": 2.338,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 47607,
+   "net_seed0": 42718,
+   "net_min_seed": 42718,
+   "dd": 9787,
+   "closes": 799,
+   "pf": 1.532,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 46956,
+   "net_seed0": 46459,
+   "net_min_seed": 32290,
+   "dd": 13038,
+   "closes": 815,
+   "pf": 1.581,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 114278,
+   "net_seed0": 114278,
+   "net_min_seed": 114278,
+   "dd": 3866,
+   "closes": 1229,
+   "pf": 2.813,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 25598,
+   "net_seed0": 25752,
+   "net_min_seed": 20903,
+   "dd": 11091,
+   "closes": 800,
+   "pf": 1.411,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 153543,
+   "net_seed0": 153543,
+   "net_min_seed": 153543,
+   "dd": 4613,
+   "closes": 1228,
+   "pf": 2.756,
+   "open_at_end": 0
+  },
+  "robust": 25598
+ },
+ "1922|ALL_HI": {
+  "M1": {
+   "net": 187441,
+   "net_seed0": 187441,
+   "net_min_seed": 187441,
+   "dd": 8782,
+   "closes": 1500,
+   "pf": 2.639,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 29825,
+   "2020": 52353,
+   "2021": 72239,
+   "2022": 33024
+  },
+  "outcomes": {
+   "FILLED": 1500,
+   "LIQUIDITY_OR_DUST": 91
+  },
+  "M2": {
+   "net": 112381,
+   "net_seed0": 104753,
+   "net_min_seed": 103245,
+   "dd": 10392,
+   "closes": 1236,
+   "pf": 1.916,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 38147,
+   "net_seed0": 32892,
+   "net_min_seed": 32180,
+   "dd": 12739,
+   "closes": 1011,
+   "pf": 1.289,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 34796,
+   "net_seed0": 43014,
+   "net_min_seed": 21119,
+   "dd": 14096,
+   "closes": 1012,
+   "pf": 1.385,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 119068,
+   "net_seed0": 119068,
+   "net_min_seed": 119068,
+   "dd": 4771,
+   "closes": 1500,
+   "pf": 2.411,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 18698,
+   "net_seed0": 21029,
+   "net_min_seed": 13261,
+   "dd": 12908,
+   "closes": 1011,
+   "pf": 1.252,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 160260,
+   "net_seed0": 160260,
+   "net_min_seed": 160260,
+   "dd": 9167,
+   "closes": 1500,
+   "pf": 2.295,
+   "open_at_end": 0
+  },
+  "robust": 18698
+ },
+ "1922|CAPRANK": {
+  "M1": {
+   "net": 193030,
+   "net_seed0": 193030,
+   "net_min_seed": 193030,
+   "dd": 7548,
+   "closes": 1500,
+   "pf": 2.919,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 28158,
+   "2020": 52619,
+   "2021": 63356,
+   "2022": 48897
+  },
+  "outcomes": {
+   "FILLED": 1500,
+   "LIQUIDITY_OR_DUST": 55
+  },
+  "M2": {
+   "net": 119829,
+   "net_seed0": 116870,
+   "net_min_seed": 113578,
+   "dd": 9943,
+   "closes": 1240,
+   "pf": 2.162,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 48965,
+   "net_seed0": 51732,
+   "net_min_seed": 38454,
+   "dd": 11853,
+   "closes": 1010,
+   "pf": 1.514,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 40817,
+   "net_seed0": 44819,
+   "net_min_seed": 24177,
+   "dd": 12729,
+   "closes": 997,
+   "pf": 1.447,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 153539,
+   "net_seed0": 153539,
+   "net_min_seed": 153539,
+   "dd": 6283,
+   "closes": 1500,
+   "pf": 2.826,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 36852,
+   "net_seed0": 37654,
+   "net_min_seed": 27620,
+   "dd": 10527,
+   "closes": 1010,
+   "pf": 1.45,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 165216,
+   "net_seed0": 165216,
+   "net_min_seed": 165216,
+   "dd": 8013,
+   "closes": 1500,
+   "pf": 2.502,
+   "open_at_end": 0
+  },
+  "robust": 36852
+ },
+ "2326|V2": {
+  "M1": {
+   "net": 227943,
+   "net_seed0": 227943,
+   "net_min_seed": 227943,
+   "dd": 2459,
+   "closes": 1606,
+   "pf": 3.744,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 73210,
+   "2024": 64611,
+   "2025": 40134,
+   "2026": 49989
+  },
+  "outcomes": {
+   "FILLED": 1606,
+   "LIQUIDITY_OR_DUST": 35
+  },
+  "M2": {
+   "net": 152470,
+   "net_seed0": 161775,
+   "net_min_seed": 142148,
+   "dd": 3634,
+   "closes": 1359,
+   "pf": 2.947,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 73831,
+   "net_seed0": 81311,
+   "net_min_seed": 62709,
+   "dd": 6255,
+   "closes": 1097,
+   "pf": 1.98,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 73670,
+   "net_seed0": 74495,
+   "net_min_seed": 58200,
+   "dd": 4127,
+   "closes": 1072,
+   "pf": 1.898,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 179319,
+   "net_seed0": 179319,
+   "net_min_seed": 179319,
+   "dd": 2062,
+   "closes": 1607,
+   "pf": 3.529,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 56260,
+   "net_seed0": 60987,
+   "net_min_seed": 48838,
+   "dd": 5253,
+   "closes": 1098,
+   "pf": 1.862,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 197932,
+   "net_seed0": 197932,
+   "net_min_seed": 197932,
+   "dd": 2848,
+   "closes": 1606,
+   "pf": 3.109,
+   "open_at_end": 0
+  },
+  "robust": 56260
+ },
+ "2326|V2_HI": {
+  "M1": {
+   "net": 229860,
+   "net_seed0": 229860,
+   "net_min_seed": 229860,
+   "dd": 2220,
+   "closes": 1606,
+   "pf": 3.85,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 68636,
+   "2024": 69436,
+   "2025": 42627,
+   "2026": 49161
+  },
+  "outcomes": {
+   "FILLED": 1606,
+   "LIQUIDITY_OR_DUST": 34
+  },
+  "M2": {
+   "net": 153521,
+   "net_seed0": 161256,
+   "net_min_seed": 144532,
+   "dd": 3390,
+   "closes": 1358,
+   "pf": 3.0,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 74959,
+   "net_seed0": 82221,
+   "net_min_seed": 65902,
+   "dd": 6537,
+   "closes": 1094,
+   "pf": 2.02,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 74832,
+   "net_seed0": 77234,
+   "net_min_seed": 57718,
+   "dd": 4245,
+   "closes": 1070,
+   "pf": 1.959,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 181367,
+   "net_seed0": 181367,
+   "net_min_seed": 181367,
+   "dd": 1555,
+   "closes": 1607,
+   "pf": 3.652,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 57388,
+   "net_seed0": 62279,
+   "net_min_seed": 51291,
+   "dd": 7575,
+   "closes": 1095,
+   "pf": 1.913,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 199851,
+   "net_seed0": 199851,
+   "net_min_seed": 199851,
+   "dd": 2610,
+   "closes": 1606,
+   "pf": 3.186,
+   "open_at_end": 0
+  },
+  "robust": 57388
+ },
+ "2326|V2_Q4": {
+  "M1": {
+   "net": 214200,
+   "net_seed0": 214200,
+   "net_min_seed": 214200,
+   "dd": 2225,
+   "closes": 1376,
+   "pf": 4.208,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 71235,
+   "2024": 65417,
+   "2025": 36395,
+   "2026": 41153
+  },
+  "outcomes": {
+   "FILLED": 1376,
+   "LIQUIDITY_OR_DUST": 38
+  },
+  "M2": {
+   "net": 145908,
+   "net_seed0": 155597,
+   "net_min_seed": 131929,
+   "dd": 3276,
+   "closes": 1150,
+   "pf": 3.331,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 75030,
+   "net_seed0": 85534,
+   "net_min_seed": 62625,
+   "dd": 5668,
+   "closes": 934,
+   "pf": 2.282,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 75138,
+   "net_seed0": 73824,
+   "net_min_seed": 61984,
+   "dd": 5721,
+   "closes": 907,
+   "pf": 2.107,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 161013,
+   "net_seed0": 161013,
+   "net_min_seed": 161013,
+   "dd": 1965,
+   "closes": 1377,
+   "pf": 4.021,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 55542,
+   "net_seed0": 61721,
+   "net_min_seed": 47367,
+   "dd": 7357,
+   "closes": 935,
+   "pf": 2.161,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 188571,
+   "net_seed0": 188571,
+   "net_min_seed": 188571,
+   "dd": 2634,
+   "closes": 1376,
+   "pf": 3.498,
+   "open_at_end": 0
+  },
+  "robust": 55542
+ },
+ "2326|ALL_HI": {
+  "M1": {
+   "net": 230976,
+   "net_seed0": 230976,
+   "net_min_seed": 230976,
+   "dd": 2220,
+   "closes": 1628,
+   "pf": 3.898,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 67795,
+   "2024": 68214,
+   "2025": 46836,
+   "2026": 48131
+  },
+  "outcomes": {
+   "FILLED": 1628,
+   "LIQUIDITY_OR_DUST": 34
+  },
+  "M2": {
+   "net": 154483,
+   "net_seed0": 160591,
+   "net_min_seed": 144693,
+   "dd": 3388,
+   "closes": 1369,
+   "pf": 3.015,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 76042,
+   "net_seed0": 80732,
+   "net_min_seed": 64714,
+   "dd": 5920,
+   "closes": 1101,
+   "pf": 2.014,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 76236,
+   "net_seed0": 78926,
+   "net_min_seed": 59424,
+   "dd": 4664,
+   "closes": 1082,
+   "pf": 1.992,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 181470,
+   "net_seed0": 181470,
+   "net_min_seed": 181470,
+   "dd": 1555,
+   "closes": 1629,
+   "pf": 3.697,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 57744,
+   "net_seed0": 61079,
+   "net_min_seed": 50168,
+   "dd": 6251,
+   "closes": 1102,
+   "pf": 1.911,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 200564,
+   "net_seed0": 200564,
+   "net_min_seed": 200564,
+   "dd": 2610,
+   "closes": 1628,
+   "pf": 3.213,
+   "open_at_end": 0
+  },
+  "robust": 57744
+ },
+ "2326|CAPRANK": {
+  "M1": {
+   "net": 201355,
+   "net_seed0": 201355,
+   "net_min_seed": 201355,
+   "dd": 2048,
+   "closes": 1628,
+   "pf": 3.38,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 61143,
+   "2024": 66916,
+   "2025": 34742,
+   "2026": 38554
+  },
+  "outcomes": {
+   "FILLED": 1628,
+   "LIQUIDITY_OR_DUST": 15
+  },
+  "M2": {
+   "net": 129985,
+   "net_seed0": 142467,
+   "net_min_seed": 124139,
+   "dd": 3065,
+   "closes": 1375,
+   "pf": 2.684,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 58751,
+   "net_seed0": 66936,
+   "net_min_seed": 50382,
+   "dd": 8238,
+   "closes": 1128,
+   "pf": 1.792,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 58362,
+   "net_seed0": 57679,
+   "net_min_seed": 41726,
+   "dd": 6827,
+   "closes": 1080,
+   "pf": 1.685,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 172035,
+   "net_seed0": 172035,
+   "net_min_seed": 172035,
+   "dd": 2048,
+   "closes": 1629,
+   "pf": 3.175,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 47502,
+   "net_seed0": 54234,
+   "net_min_seed": 39918,
+   "dd": 9511,
+   "closes": 1129,
+   "pf": 1.689,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 170767,
+   "net_seed0": 170767,
+   "net_min_seed": 170767,
+   "dd": 2344,
+   "closes": 1628,
+   "pf": 2.785,
+   "open_at_end": 0
+  },
+  "robust": 47502
+ },
+ "kite|V2": {
+  "M1": {
+   "net": 51836,
+   "net_seed0": 51836,
+   "net_min_seed": 51836,
+   "dd": 1532,
+   "closes": 533,
+   "pf": 2.741,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 17773,
+   "2026": 34062
+  },
+  "outcomes": {
+   "FILLED": 533,
+   "LIQUIDITY_OR_DUST": 24
+  },
+  "M2": {
+   "net": 31978,
+   "net_seed0": 32904,
+   "net_min_seed": 27422,
+   "dd": 2214,
+   "closes": 447,
+   "pf": 2.105,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 11014,
+   "net_seed0": 11301,
+   "net_min_seed": 4957,
+   "dd": 3232,
+   "closes": 368,
+   "pf": 1.38,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 10612,
+   "net_seed0": 14814,
+   "net_min_seed": 5140,
+   "dd": 3807,
+   "closes": 371,
+   "pf": 1.498,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 36093,
+   "net_seed0": 36093,
+   "net_min_seed": 36093,
+   "dd": 1555,
+   "closes": 533,
+   "pf": 2.367,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": 4550,
+   "net_seed0": 3202,
+   "net_min_seed": 998,
+   "dd": 5014,
+   "closes": 368,
+   "pf": 1.123,
+   "open_at_end": 1
+  },
+  "M7": {
+   "net": 42954,
+   "net_seed0": 42954,
+   "net_min_seed": 42954,
+   "dd": 1605,
+   "closes": 533,
+   "pf": 2.285,
+   "open_at_end": 1
+  },
+  "robust": 4550
+ },
+ "kite|V2_HI": {
+  "M1": {
+   "net": 52870,
+   "net_seed0": 52870,
+   "net_min_seed": 52870,
+   "dd": 1532,
+   "closes": 533,
+   "pf": 2.824,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 19061,
+   "2026": 33809
+  },
+  "outcomes": {
+   "FILLED": 533,
+   "LIQUIDITY_OR_DUST": 22
+  },
+  "M2": {
+   "net": 32937,
+   "net_seed0": 32924,
+   "net_min_seed": 27368,
+   "dd": 2214,
+   "closes": 446,
+   "pf": 2.136,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 11769,
+   "net_seed0": 13202,
+   "net_min_seed": 3224,
+   "dd": 4974,
+   "closes": 365,
+   "pf": 1.456,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 11698,
+   "net_seed0": 15042,
+   "net_min_seed": 7108,
+   "dd": 3659,
+   "closes": 372,
+   "pf": 1.519,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 37529,
+   "net_seed0": 37529,
+   "net_min_seed": 37529,
+   "dd": 1555,
+   "closes": 533,
+   "pf": 2.472,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": 5689,
+   "net_seed0": 5561,
+   "net_min_seed": -693,
+   "dd": 5979,
+   "closes": 365,
+   "pf": 1.219,
+   "open_at_end": 1
+  },
+  "M7": {
+   "net": 43990,
+   "net_seed0": 43990,
+   "net_min_seed": 43990,
+   "dd": 1605,
+   "closes": 533,
+   "pf": 2.348,
+   "open_at_end": 1
+  },
+  "robust": 5689
+ },
+ "kite|V2_Q4": {
+  "M1": {
+   "net": 45336,
+   "net_seed0": 45336,
+   "net_min_seed": 45336,
+   "dd": 2137,
+   "closes": 385,
+   "pf": 3.138,
+   "open_at_end": 0
+  },
+  "years": {
+   "2025": 14600,
+   "2026": 30737
+  },
+  "outcomes": {
+   "FILLED": 385,
+   "LIQUIDITY_OR_DUST": 24
+  },
+  "M2": {
+   "net": 28773,
+   "net_seed0": 30358,
+   "net_min_seed": 23032,
+   "dd": 2858,
+   "closes": 323,
+   "pf": 2.431,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 12045,
+   "net_seed0": 13907,
+   "net_min_seed": 5668,
+   "dd": 4278,
+   "closes": 270,
+   "pf": 1.656,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 12495,
+   "net_seed0": 12364,
+   "net_min_seed": 10550,
+   "dd": 3818,
+   "closes": 264,
+   "pf": 1.583,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 29539,
+   "net_seed0": 29539,
+   "net_min_seed": 29539,
+   "dd": 2261,
+   "closes": 385,
+   "pf": 2.65,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 5785,
+   "net_seed0": 5828,
+   "net_min_seed": 1729,
+   "dd": 4773,
+   "closes": 270,
+   "pf": 1.326,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 38263,
+   "net_seed0": 38263,
+   "net_min_seed": 38263,
+   "dd": 2381,
+   "closes": 385,
+   "pf": 2.595,
+   "open_at_end": 0
+  },
+  "robust": 5785
+ },
+ "kite|ALL_HI": {
+  "M1": {
+   "net": 49574,
+   "net_seed0": 49574,
+   "net_min_seed": 49574,
+   "dd": 1624,
+   "closes": 564,
+   "pf": 2.58,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 21197,
+   "2026": 28377
+  },
+  "outcomes": {
+   "FILLED": 564,
+   "LIQUIDITY_OR_DUST": 29
+  },
+  "M2": {
+   "net": 30663,
+   "net_seed0": 29476,
+   "net_min_seed": 26163,
+   "dd": 2698,
+   "closes": 474,
+   "pf": 1.94,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 8950,
+   "net_seed0": 7691,
+   "net_min_seed": 200,
+   "dd": 6963,
+   "closes": 387,
+   "pf": 1.245,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 9276,
+   "net_seed0": 13686,
+   "net_min_seed": 2979,
+   "dd": 5232,
+   "closes": 397,
+   "pf": 1.437,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 36220,
+   "net_seed0": 36220,
+   "net_min_seed": 36220,
+   "dd": 1555,
+   "closes": 564,
+   "pf": 2.36,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": 4565,
+   "net_seed0": 3612,
+   "net_min_seed": -1725,
+   "dd": 7199,
+   "closes": 387,
+   "pf": 1.137,
+   "open_at_end": 1
+  },
+  "M7": {
+   "net": 40181,
+   "net_seed0": 40181,
+   "net_min_seed": 40181,
+   "dd": 1695,
+   "closes": 564,
+   "pf": 2.137,
+   "open_at_end": 1
+  },
+  "robust": 4565
+ },
+ "kite|CAPRANK": {
+  "M1": {
+   "net": 40591,
+   "net_seed0": 40591,
+   "net_min_seed": 40591,
+   "dd": 2003,
+   "closes": 564,
+   "pf": 2.162,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 14773,
+   "2026": 25817
+  },
+  "outcomes": {
+   "FILLED": 564,
+   "LIQUIDITY_OR_DUST": 15
+  },
+  "M2": {
+   "net": 22291,
+   "net_seed0": 19946,
+   "net_min_seed": 18949,
+   "dd": 3915,
+   "closes": 474,
+   "pf": 1.571,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 1597,
+   "net_seed0": -21,
+   "net_min_seed": -5508,
+   "dd": 9314,
+   "closes": 388,
+   "pf": 0.999,
+   "open_at_end": 2
+  },
+  "M4": {
+   "net": 1997,
+   "net_seed0": 2979,
+   "net_min_seed": -3060,
+   "dd": 7285,
+   "closes": 388,
+   "pf": 1.085,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 32835,
+   "net_seed0": 32835,
+   "net_min_seed": 32835,
+   "dd": 1805,
+   "closes": 564,
+   "pf": 1.994,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": -1436,
+   "net_seed0": -3597,
+   "net_min_seed": -7444,
+   "dd": 9521,
+   "closes": 389,
+   "pf": 0.883,
+   "open_at_end": 2
+  },
+  "M7": {
+   "net": 31095,
+   "net_seed0": 31095,
+   "net_min_seed": 31095,
+   "dd": 2336,
+   "closes": 564,
+   "pf": 1.799,
+   "open_at_end": 1
+  },
+  "robust": -1436
+ }
+}

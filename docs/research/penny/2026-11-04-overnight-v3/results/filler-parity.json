@@ -1,0 +1,12 @@
+{
+ "dates": 9,
+ "ticker_checks": 5912,
+ "rule_mismatches": 0,
+ "max_abs_difference": {
+  "ret": 0.0,
+  "clv": 0.0,
+  "rvol": 0.0,
+  "night_mean": 0.0101,
+  "near_hi20": 0.0
+ }
+}

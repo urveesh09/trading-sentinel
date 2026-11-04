@@ -1,0 +1,190 @@
+{
+  "baseline_v1": {
+    "closed": 56,
+    "net": -117.0005,
+    "ex_best": -124.3512,
+    "fees": 25.5042,
+    "drawdown": 128.6664,
+    "wins": 7,
+    "profit_factor": 0.1233,
+    "final_equity": 1882.9995,
+    "unresolved": 0,
+    "exit_reasons": {
+      "SMART_PAPER_STOP": 8,
+      "SMART_THESIS_FAILED": 37,
+      "SMART_EOD_LOSS_CUT": 2,
+      "SMART_THESIS_STALLED": 7,
+      "SMART_SESSION_DEADLINE": 2
+    }
+  },
+  "baseline_v2": {
+    "closed": 55,
+    "net": -85.3115,
+    "ex_best": -87.43,
+    "fees": 15.7115,
+    "drawdown": 92.2246,
+    "wins": 4,
+    "profit_factor": 0.0513,
+    "final_equity": 1914.6885,
+    "unresolved": 0,
+    "exit_reasons": {
+      "SMART_PAPER_STOP": 3,
+      "SMART_THESIS_FAILED": 36,
+      "SMART_THESIS_STALLED": 13,
+      "SMART_EOD_LOSS_CUT": 1,
+      "SMART_SESSION_DEADLINE": 2
+    }
+  },
+  "candidates": [
+    {
+      "name": "S2_RETEST",
+      "primary": {
+        "closed": 27,
+        "net": -55.3861,
+        "ex_best": -55.9814,
+        "fees": 8.3576,
+        "drawdown": 62.2992,
+        "wins": 2,
+        "profit_factor": 0.0124,
+        "final_equity": 1944.6139,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_THESIS_FAILED": 19,
+          "SMART_EOD_LOSS_CUT": 1,
+          "SMART_THESIS_STALLED": 4,
+          "SMART_PAPER_STOP": 1,
+          "SMART_SESSION_DEADLINE": 2
+        }
+      },
+      "passes": false,
+      "stress": {
+        "10": {
+          "closed": 27,
+          "net": -55.3861,
+          "ex_best": -55.9814,
+          "fees": 8.3576,
+          "drawdown": 62.2992,
+          "wins": 2,
+          "profit_factor": 0.0124,
+          "final_equity": 1944.6139,
+          "unresolved": 0,
+          "exit_reasons": {
+            "SMART_THESIS_FAILED": 19,
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_THESIS_STALLED": 4,
+            "SMART_PAPER_STOP": 1,
+            "SMART_SESSION_DEADLINE": 2
+          }
+        },
+        "30": {
+          "closed": 17,
+          "net": -50.9003,
+          "ex_best": -50.9003,
+          "fees": 4.9275,
+          "drawdown": 55.7831,
+          "wins": 0,
+          "profit_factor": 0.0,
+          "final_equity": 1949.0997,
+          "unresolved": 0,
+          "exit_reasons": {
+            "SMART_THESIS_FAILED": 13,
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_THESIS_STALLED": 1,
+            "SMART_PAPER_STOP": 1,
+            "SMART_SESSION_DEADLINE": 1
+          }
+        },
+        "60": {
+          "closed": 4,
+          "net": -12.7212,
+          "ex_best": -12.7212,
+          "fees": 1.1111,
+          "drawdown": 16.849,
+          "wins": 0,
+          "profit_factor": 0.0,
+          "final_equity": 1987.2788,
+          "unresolved": 0,
+          "exit_reasons": {
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_THESIS_FAILED": 2,
+            "SMART_THESIS_STALLED": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "S3_CLEAN_RETEST",
+      "primary": {
+        "closed": 33,
+        "net": -52.173,
+        "ex_best": -52.636,
+        "fees": 8.2428,
+        "drawdown": 57.7898,
+        "wins": 2,
+        "profit_factor": 0.0102,
+        "final_equity": 1947.827,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_THESIS_FAILED": 21,
+          "SMART_EOD_LOSS_CUT": 1,
+          "SMART_THESIS_STALLED": 9,
+          "SMART_SESSION_DEADLINE": 2
+        }
+      },
+      "passes": false,
+      "stress": {
+        "10": {
+          "closed": 33,
+          "net": -52.173,
+          "ex_best": -52.636,
+          "fees": 8.2428,
+          "drawdown": 57.7898,
+          "wins": 2,
+          "profit_factor": 0.0102,
+          "final_equity": 1947.827,
+          "unresolved": 0,
+          "exit_reasons": {
+            "SMART_THESIS_FAILED": 21,
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_THESIS_STALLED": 9,
+            "SMART_SESSION_DEADLINE": 2
+          }
+        },
+        "30": {
+          "closed": 21,
+          "net": -48.1671,
+          "ex_best": -48.1671,
+          "fees": 5.2042,
+          "drawdown": 52.4395,
+          "wins": 0,
+          "profit_factor": 0.0,
+          "final_equity": 1951.8329,
+          "unresolved": 0,
+          "exit_reasons": {
+            "SMART_THESIS_FAILED": 17,
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_THESIS_STALLED": 2,
+            "SMART_SESSION_DEADLINE": 1
+          }
+        },
+        "60": {
+          "closed": 5,
+          "net": -13.0892,
+          "ex_best": -13.0892,
+          "fees": 1.186,
+          "drawdown": 16.7968,
+          "wins": 0,
+          "profit_factor": 0.0,
+          "final_equity": 1986.9108,
+          "unresolved": 0,
+          "exit_reasons": {
+            "SMART_EOD_LOSS_CUT": 1,
+            "SMART_THESIS_FAILED": 3,
+            "SMART_THESIS_STALLED": 1
+          }
+        }
+      }
+    }
+  ],
+  "qualification": false
+}

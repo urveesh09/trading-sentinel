@@ -25,6 +25,18 @@
       "trigger": "cron[day_of_week='mon-fri', hour='9', minute='17']"
     },
     {
+      "func": "_run_edge_overnight_probe_close_safe",
+      "id": "edge_overnight_probe_close",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='32']"
+    },
+    {
+      "func": "_run_edge_overnight_probe_post_safe",
+      "id": "edge_overnight_probe_post",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='16', minute='3']"
+    },
+    {
       "func": "_run_expiry_paper_flush_safe",
       "id": "expiry_paper_flush",
       "kwargs": [],
@@ -77,6 +89,24 @@
       "id": "fno_tick",
       "kwargs": [],
       "trigger": "interval[0:01:30]"
+    },
+    {
+      "func": "_run_overnight_evidence_decision_safe",
+      "id": "overnight_evidence_decision",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='51']"
+    },
+    {
+      "func": "_run_overnight_evidence_end_safe",
+      "id": "overnight_evidence_end",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='16', minute='3']"
+    },
+    {
+      "func": "_run_overnight_evidence_pre_safe",
+      "id": "overnight_evidence_pre",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='49']"
     },
     {
       "func": "_run_partner_analytics_tick_safe",
@@ -245,6 +275,36 @@
       "id": "research_quote_collection",
       "kwargs": [],
       "trigger": "cron[minute='*/1', second='25']"
+    },
+    {
+      "func": "_run_smart_bid0930_evidence_safe",
+      "id": "smart_bid0930_evidence",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='30']"
+    },
+    {
+      "func": "_run_smart_matching_evidence_safe",
+      "id": "smart_matching_evidence",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='12']"
+    },
+    {
+      "func": "_run_smart_v3_bid_safe",
+      "id": "penny_smart_v3_bid",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='15']"
+    },
+    {
+      "func": "_run_smart_v3_open_safe",
+      "id": "penny_smart_v3_open",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='16']"
+    },
+    {
+      "func": "_run_smart_v3_preopen_safe",
+      "id": "penny_smart_v3_preopen",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='7']"
     },
     {
       "func": "bootstrap_0800_job",
@@ -544,6 +604,14 @@
         "GET"
       ],
       "path": "/experiments/penny-smart",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_penny_smart_v3_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/penny-smart-v3",
       "response_model": null
     },
     {

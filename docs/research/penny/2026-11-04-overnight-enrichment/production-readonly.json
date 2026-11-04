@@ -1,0 +1,456 @@
+{
+  "exists": true,
+  "settings": {
+    "EDGE_OVERNIGHT_PAPER_BANKROLL": 25000.0,
+    "EDGE_OVERNIGHT_SHADOWS_ENABLED": true,
+    "PENNY_EDGE_DISABLE_LIVE": true
+  },
+  "comparison": {
+    "declared": "2026-10-21",
+    "enabled": true,
+    "since": "2026-10-22",
+    "book": {
+      "closed": 21,
+      "open": 0,
+      "net_pnl": -878.58,
+      "wins": 12,
+      "losses": 9,
+      "profit_factor": 0.604,
+      "avg_net_per_trade": -41.84,
+      "charges": 659.05,
+      "avg_entry_cost_pct": 0.439,
+      "avg_position_value": 7215.94,
+      "realism": {
+        "entry_spread_pct": 1.413,
+        "exit_at_bid": {
+          "closes": 20,
+          "net": -2005.96,
+          "model_minus_bid": 1622.31
+        },
+        "entry_at_close": {
+          "closes": 21,
+          "net": 1165.47,
+          "versus_actual": 2044.05
+        }
+      }
+    },
+    "shadows": [
+      {
+        "variant": "ON_TWO_LARGER",
+        "rationale": "two equal positions of half the book each: the fixed DP charge and the per-order minimums weigh less per rupee",
+        "config": {
+          "slots": 2,
+          "fill_cash_share": true,
+          "max_entry_cost_pct": null
+        },
+        "closed": 15,
+        "open": 0,
+        "net_pnl": -1790.92,
+        "wins": 8,
+        "losses": 7,
+        "profit_factor": 0.337,
+        "avg_net_per_trade": -119.39,
+        "charges": 592.12,
+        "avg_entry_cost_pct": 0.354,
+        "avg_position_value": 10885.21,
+        "realism": {
+          "entry_spread_pct": 1.256,
+          "exit_at_bid": {
+            "closes": 14,
+            "net": -1872.28,
+            "model_minus_bid": 841.57
+          },
+          "entry_at_close": {
+            "closes": 15,
+            "net": 328.97,
+            "versus_actual": 2119.89
+          }
+        }
+      },
+      {
+        "variant": "ON_TIGHT_SPREAD",
+        "rationale": "only picks filled within 0.35% of LTP (edge 0.77% less charges 0.42%), so the spread cannot take the edge",
+        "config": {
+          "slots": null,
+          "fill_cash_share": false,
+          "max_entry_cost_pct": 0.0035
+        },
+        "closed": 18,
+        "open": 0,
+        "net_pnl": -2541.47,
+        "wins": 6,
+        "losses": 12,
+        "profit_factor": 0.113,
+        "avg_net_per_trade": -141.19,
+        "charges": 563.47,
+        "avg_entry_cost_pct": 0.25,
+        "avg_position_value": 7226.71,
+        "realism": {
+          "entry_spread_pct": 1.265,
+          "exit_at_bid": {
+            "closes": 17,
+            "net": -2495.78,
+            "model_minus_bid": 449.24
+          },
+          "entry_at_close": {
+            "closes": 18,
+            "net": -868.93,
+            "versus_actual": 1672.54
+          }
+        }
+      }
+    ],
+    "research_only": true,
+    "notes": [
+      "Same picks, quotes and decision time at entry and the same exit quotes as the book; each shadow has its own cash.",
+      "Declared before scoring; compare only on the nights since the first shadow entry.",
+      "[S23-S1] ON_TIGHT_SPREAD limits the fill premium over LTP, not the displayed bid-ask spread; realism.entry_spread_pct is the displayed spread. realism.exit_at_bid and entry_at_close are counterfactuals on the same trades, for measurement only."
+    ]
+  },
+  "tables": [
+    [
+      "edge_overnight_paper_trades"
+    ],
+    [
+      "edge_overnight_paper_runs"
+    ],
+    [
+      "edge_overnight_paper_notices"
+    ],
+    [
+      "edge_overnight_shadow_trades"
+    ]
+  ],
+  "trade_columns": [
+    [
+      0,
+      "trade_date",
+      "TEXT",
+      1,
+      null,
+      1
+    ],
+    [
+      1,
+      "ticker",
+      "TEXT",
+      1,
+      null,
+      2
+    ],
+    [
+      2,
+      "kind",
+      "TEXT",
+      1,
+      null,
+      0
+    ],
+    [
+      3,
+      "strength",
+      "REAL",
+      1,
+      null,
+      0
+    ],
+    [
+      4,
+      "entry_ltp",
+      "REAL",
+      1,
+      null,
+      0
+    ],
+    [
+      5,
+      "entry_price",
+      "REAL",
+      1,
+      null,
+      0
+    ],
+    [
+      6,
+      "shares",
+      "INTEGER",
+      1,
+      null,
+      0
+    ],
+    [
+      7,
+      "entry_ts",
+      "TEXT",
+      1,
+      null,
+      0
+    ],
+    [
+      8,
+      "status",
+      "TEXT",
+      1,
+      null,
+      0
+    ],
+    [
+      9,
+      "exit_date",
+      "TEXT",
+      0,
+      null,
+      0
+    ],
+    [
+      10,
+      "exit_open",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      11,
+      "exit_price",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      12,
+      "costs",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      13,
+      "net_pnl",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      14,
+      "exit_reason",
+      "TEXT",
+      0,
+      null,
+      0
+    ],
+    [
+      15,
+      "exit_attempts",
+      "INTEGER",
+      1,
+      "0",
+      0
+    ],
+    [
+      16,
+      "entry_day_close",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      17,
+      "entry_bid",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      18,
+      "entry_ask",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      19,
+      "exit_bid",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      20,
+      "exit_bid_net",
+      "REAL",
+      0,
+      null,
+      0
+    ]
+  ],
+  "shadow_columns": [
+    [
+      0,
+      "variant",
+      "TEXT",
+      1,
+      null,
+      1
+    ],
+    [
+      1,
+      "trade_date",
+      "TEXT",
+      1,
+      null,
+      2
+    ],
+    [
+      2,
+      "ticker",
+      "TEXT",
+      1,
+      null,
+      3
+    ],
+    [
+      3,
+      "kind",
+      "TEXT",
+      1,
+      null,
+      0
+    ],
+    [
+      4,
+      "entry_ltp",
+      "REAL",
+      1,
+      null,
+      0
+    ],
+    [
+      5,
+      "entry_price",
+      "REAL",
+      1,
+      null,
+      0
+    ],
+    [
+      6,
+      "shares",
+      "INTEGER",
+      1,
+      null,
+      0
+    ],
+    [
+      7,
+      "entry_ts",
+      "TEXT",
+      1,
+      null,
+      0
+    ],
+    [
+      8,
+      "status",
+      "TEXT",
+      1,
+      null,
+      0
+    ],
+    [
+      9,
+      "exit_date",
+      "TEXT",
+      0,
+      null,
+      0
+    ],
+    [
+      10,
+      "exit_open",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      11,
+      "exit_price",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      12,
+      "costs",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      13,
+      "net_pnl",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      14,
+      "exit_reason",
+      "TEXT",
+      0,
+      null,
+      0
+    ],
+    [
+      15,
+      "entry_day_close",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      16,
+      "entry_bid",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      17,
+      "entry_ask",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      18,
+      "exit_bid",
+      "REAL",
+      0,
+      null,
+      0
+    ],
+    [
+      19,
+      "exit_bid_net",
+      "REAL",
+      0,
+      null,
+      0
+    ]
+  ]
+}

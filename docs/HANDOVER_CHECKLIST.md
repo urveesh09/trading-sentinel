@@ -1,4 +1,370 @@
-## November 3 — expiry-v5: E03.2 main on NIFTY and SENSEX (commit `71857c0`, Dev, pushed, release PR #130 open and clean; NOT deployed: the merge was blocked by the permission system, awaiting the owner)
+## November 4 - N06b: partner size advice with freedom; the full Dev branch goes to Production (owner's order)
+
+Owner: "add what you think is best honestly don't do extreme conservative we need them to have freedom ... commit
+push all and deploy ... go deploy it all".
+
+- `partner_sentinel.size_line` leads with the partner's own usual size (`usual_lots`: their usual share of cash
+  at this price) and its loss at the plan stop. The Sentinel's 2% rule follows as a reference ("would take N lots"
+  or "less than one lot here"); never "none" or "one lot at most".
+- `follow_line` (the Sentinel's own trades) gives each lot's loss at its stop and the lots its rule would take.
+- Not added: a "big move is N times more likely" line. In `docs/research/partner/2026-11-04-predictability/` its
+  out-of-sample AUC is 0.60-0.82, but for an option buyer it cuts both ways. It is unscored forward, so it waits
+  for a frozen forward check.
+- Tests: `tests/test_partner_sentinel.py` and the partner tests, 208 passed.
+- Rollout: the owner ordered the whole Dev branch deployed, including the other agent's committed penny and EDGE
+  work. Their uncommitted files are not shipped.
+
+## November 4 - Smart/Classic enrichment: smart-only-identity-and-readonly-morning-evidence (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
+## November 4 - N06 partner advice (pushed, not deployed)
+
+Commit identity: Dev `01671c3`; release branch `codex/n06-partner-advice` `52ef015` (Production `5e30ce0` plus N06 only). Both pushed. Whole suite on the release branch: 3,249 + 2,891 passed, 4 skipped, `pytest_exit=0` each. The PR was not opened (the agent's permission check refused it); not merged, not deployed.
+
+- [ ] On the owner's merge and deploy: Production engine image carries `partner_sentinel.py`; `PARTNER_SENTINEL_ADVICE_ENABLED` true by default.
+- [ ] First live day, read-only: the watch-on message carries the partner's two records and the expiry line on an expiry day; PLAN messages carry "📏 The Sentinel's size"; any SENTINEL / SENTINEL_EXIT rows in `partner_watch_messages` were sent, with no `partner_sentinel_*_failed` in the engine log.
+- [ ] After a week: score buys at or under the Sentinel's size against bigger ones with `partner_watch_score` (no tuning on seen days).
+
+## November 4 - Smart/Classic enrichment: freeze-nse-identity-correction-and-final-cross-name-check (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
+## November 4 - Smart/Classic enrichment: freeze-smart-morning-exits-and-isolate-atlas-slice (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
+## November 4 - Smart/Classic enrichment: freeze-second-round-after-loss-and-carry-audit (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
+## November 4 - Smart/Classic enrichment: freeze-corrected-carry-slots-before-first-score (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
+## November 4 - Smart/Classic enrichment: freeze-smart-classic-first-round-and-mechanics (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
+## November 4 - Smart/Classic enrichment: freeze-smart-classic-plan-and-new-minute-names (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
+## November 4 - Smart V3: commit identity bac0add (Dev only)
+
+Smart V3 implementation commit `bac0add` (research commits 1bfd7ee, 254cb1b, fca4623 [exam frozen],
+2924b1a [exam opened once, PASS]). Full suite on that source: 6,192 passed, 4 skipped, 0 failed (661 s,
+exit 0); an earlier run caught the three new cron handlers without their own trading-day gate (fixed
+before commit). Atlas regenerated and consistent with HEAD (299 modules). Dev only: branch
+codex/production-correction-hedge-p0 not pushed, not deployed; Production unchanged. New settings
+PENNY_SMART_V3_ENABLED (default true, paper only) and PENNY_SMART_V3_BANKROLL (2000); new sibling
+store, no migration of existing stores. Owner calls: push/PR to evolve/smart-strategies, deploy,
+retiring Classic MIS/CNC, any real auction order.
+
+## November 4 - Penny intraday: Smart V3 (opening-auction reversal) paper book; Classic MIS/CNC diagnostics (Dev only)
+
+Study: `docs/research/penny/2026-11-04-intraday/` (PLAN.md, REPORT.md). Owner asked for Smart, then
+the other two Penny modules (Classic MIS, Classic CNC). Findings: penny stocks drift down by day
+(-0.5% open to close, every year 2010-2026); names up 2% by 10:30 lose 0.49% more by 15:00, which is
+what Smart V1/V2 and the Classic breakout buy. The opening auction overshoots: a name opening >= 2%
+below the previous close recovers +1.1% to +2.9% to the close (every year; Kite official prices
+agree), mostly between the auction print and the first minutes. Smart V3 = buy that name in the
+pre-open auction, sell at the official close, one ticket on Rs 2,000, deepest gap first, thin
+auctions skipped. Sealed Jan-Jul 2026 Kite-minute check (89 names, opened once) PASSED all six
+frozen checks: capped +2,936 (104 closes, 6 of 7 months), 15:15 exit +2,603, vs Smart V1 -1,117
+and V2 -802 on the same names and days; without 7 commodity ETFs +2,328. Classic MIS breakout:
+-0.13% / +0.09% a trade before costs (no edge); Classic CNC RSI(2): 60 signals in 16 years,
+-0.25% over three days (no edge). Jan-Jul 2026 Kite minutes are now seen.
+Runtime (paper only): new `penny_smart_v3.py` (PEN_SMART_V3), store `<DB_PATH>.penny-smart-v3.db`,
+variants SV3_PREOPEN (09:07 pre-open quote decision, limit 1% above the indicative price) and SV3_REF
+(decided on the official open at 09:16, reference), each on its own Rs 2,000 book. Jobs
+`penny_smart_v3_preopen` 09:07, `penny_smart_v3_open` 09:16 (settle at the previous session's
+official close, or a lower-circuit lock at today's open with delivery charges; record first-minute
+volumes; fill at the official open, at most 10% of the volume by ~09:16), `penny_smart_v3_bid` 15:15
+(best bid, day low, lower circuit). Same Penny universe as V1/V2, EQ series only.
+`GET /experiments/penny-smart-v3`. Settings PENNY_SMART_V3_ENABLED (default true; rollback false)
+and PENNY_SMART_V3_BANKROLL (2000). Classic shadow `penny_shadow.PEN_AFTERNOON` (breakouts from
+13:00; paper, forward evidence only). V1, V2, Classic rules, EDGE, ledger unchanged; no orders,
+Breeze or Production access; no schema change outside the new sibling store.
+Parity: runtime selection = research picks on 198 sessions, 0 mismatches (`results/parity.json`).
+Next: after 20+ SV3_PREOPEN closes compare with V1/V2 on the same sessions; check
+`preopen.indicative_moved` (if 0, the 09:07 quote cannot see the auction), `at_1515_bid`, refusals.
+Classic MIS/CNC retirement and any real auction order are the owner's calls.
+
+## November 4 - Overnight v3: commit identity ca2d9b3 (Dev only)
+
+ON_V3 implementation commit `ca2d9b3` (research commits d05a2ca, b57a603, 4455793, 601c140,
+f28993f). Full suite on that source: 6,182 passed, 4 skipped, exit 0. Atlas regenerated and
+consistent with HEAD (298 modules). Dev only: branch codex/production-correction-hedge-p0 not
+pushed (25 local commits, including the other agents' e0ad826 and enrichment chains), not deployed;
+Production unchanged. New flag EDGE_OVERNIGHT_V3_SHADOW_ENABLED defaults true (paper shadow only);
+no migration. Owner calls: push/PR to evolve/smart-strategies, deploy, any real post-close order test.
+
+## November 4 - Overnight v3: ON_V3 paper shadow and sealed 2011-14 check (Dev only)
+
+Study: `docs/research/penny/2026-11-04-overnight-v3/` (PLAN.md, REPORT.md; simulator `v3sim.py`
+reproduces the enrichment V2 within Rs 3). Fixed Rs 25k, post-close entry, auction exit.
+Findings: the enrichment cost route needs a +36 bp regular sleeve; Production's forward record has
+15:20 fills ~1.35% above the official close, at which it returns to V2. Selling at the 09:17 bid
+instead of the pre-open auction loses. Ranking inside the pool moves results a few percent.
+V2_HI_F3N (V2 + 20-day-high picks first + F3 fillers for empty slots) made +10-18% at full fills
+in all five periods, but the sealed 2011-14 check (built after the freeze, opened once) FAILED:
+worse at 50% winner denial (16.4k vs 21.2k), drawdown 1.59x V2. 2010-14 Yahoo is now seen.
+Runtime (paper only): new shadow ON_V3 in `edge_overnight_paper.py` = ON_V2 rules + hi_first +
+filler="F3" (`overnight_features`, `filler_rule`, `filler_picks`, `FillerPick`; one re-quote of
+at most 10 fillers, one per company, before the decision clock, which moves the book's decision
+about a second later; ENTRY receipt `v3_inputs`). OvernightShadow gains
+`hi_first`/`filler` (configs in GET /experiments/edge-overnight show them). ON_V2's night screen
+uses a shared helper with identical output. Filler parity vs research: 0 rule mismatches in 5,912
+stock-days (`results/filler-parity.json`). Flag EDGE_OVERNIGHT_V3_SHADOW_ENABLED (default true;
+rollback false, open legs still close). Book, ON_V2, Oct 21 shadows, probe, evidence path
+unchanged. No orders, Breeze or Production access; no schema change.
+Verification: focused 102 passed; full suite 6,182 passed, 4 skipped, exit 0 (688 s) on this
+commit's source. Dev only: not pushed, not deployed; Production unchanged.
+Next: after 20+ ON_V3 closes compare ON_V3 vs ON_V2 on the same nights with
+postclose_probe.covers_ticket_share; a real post-close order test is the owner's call.
+
+## November 4 - Overnight enrichment: finalize-enrichment-verdict-and-verification (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.
+Current plan: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Fixed Rs25k; immutable round/exam freezes, full failures and coverage.
+Preserve V2/book/old shadows, owner changes and reserved history.
+Research route is conditional, not qualified or added to any P&L book.
+New overnight_execution_evidence.py archives actual entry inputs and
+collects 15:49/15:51/16:03 capacity snapshots; GET comparison adds
+execution_evidence. Actual fills remain UNKNOWN. Separate sibling store.
+EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED defaults false; rollback false.
+Book/ON_V2/old probe preserved; zero Breeze/order calls;
+Production read-only; no push/deployment or capital change.
+
+## November 4 - Overnight enrichment: expose-calendar-gates-for-three-new-evidence-jobs (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.
+Current plan: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Fixed Rs25k; immutable round/exam freezes, full failures and coverage.
+Preserve V2/book/old shadows, owner changes and reserved history.
+Research route is conditional, not qualified or added to any P&L book.
+New overnight_execution_evidence.py archives actual entry inputs and
+collects 15:49/15:51/16:03 capacity snapshots; GET comparison adds
+execution_evidence. Actual fills remain UNKNOWN. Separate sibling store.
+EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED defaults false; rollback false.
+Book/ON_V2/old probe preserved; zero Breeze/order calls;
+Production read-only; no push/deployment or capital change.
+
+## November 4 - Overnight enrichment: record-results-and-disabled-execution-evidence (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.
+Current plan: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Fixed Rs25k; immutable round/exam freezes, full failures and coverage.
+Preserve V2/book/old shadows, owner changes and reserved history.
+Research route is conditional, not qualified or added to any P&L book.
+New overnight_execution_evidence.py archives actual entry inputs and
+collects 15:49/15:51/16:03 capacity snapshots; GET comparison adds
+execution_evidence. Actual fills remain UNKNOWN. Separate sibling store.
+EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED defaults false; rollback false.
+Book/ON_V2/old probe preserved; zero Breeze/order calls;
+Production read-only; no push/deployment or capital change.
+
+## November 4 - Overnight enrichment: freeze-older-check-and-finalists (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.
+Current plan: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Fixed Rs25k; immutable round/exam freezes, full failures and coverage.
+Preserve V2/book/old shadows, owner changes and reserved history.
+Daily fill assumptions are not executed orders. Zero Breeze/order calls;
+Production read-only; no push/deployment or capital change.
+
+## November 4 — Overnight v2 enrichment: freeze-refined-second-round (Dev only)
+
+Owner authorizes creative portfolio/execution improvements beyond ON_V2.
+Study: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Preserve V2, older shadows, historical exams and owner bytes. Fixed Rs25k
+capital; new downside-diversification and split-entry hypotheses, paired
+fill/cost stresses, fresh 2015-2018 historical check frozen before outcomes.
+Public acquisition only; zero Breeze/broker calls. Production read-only
+comparison exported: old shadows remain unprofitable, ON_V2 not deployed.
+Current broker phase windows and unknown fills are explicit. No real order,
+native capital change, push/deployment or Production edit. All verification
+results, failures and remaining work are recorded in the study status.
+
+## November 4 — Overnight v2 enrichment: freeze-portfolio-and-execution-round1 (Dev only)
+
+Owner authorizes creative portfolio/execution improvements beyond ON_V2.
+Study: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Preserve V2, older shadows, historical exams and owner bytes. Fixed Rs25k
+capital; new downside-diversification and split-entry hypotheses, paired
+fill/cost stresses, fresh 2015-2018 historical check frozen before outcomes.
+Public acquisition only; zero Breeze/broker calls. Production read-only
+comparison exported: old shadows remain unprofitable, ON_V2 not deployed.
+Current broker phase windows and unknown fills are explicit. No real order,
+native capital change, push/deployment or Production edit. All verification
+results, failures and remaining work are recorded in the study status.
+
+## November 4 — Penny overnight v2: ON_V2 shadow and post-close probe (Dev only)
+
+- [x] Plan frozen before scoring (`6532f15`); exam finalists frozen (`f11a16a`); exam opened once.
+- [x] Lab parity with the shipped overnight replay: 175 closes, 0 mismatches.
+- [x] Runtime `night_means` parity with the research feature: 400 cases, 0 mismatches.
+- [x] Focused tests: `tests/test_overnight_v2.py`, overnight paper, oct21 shadows, scheduler goldens.
+- [x] Full suite 6,147 passed, 4 skipped, 0 failed (683 s, exit 0); implementation commit `3c3b05c`
+      (on top of the other agent's unpushed `e0ad826` and this study's `6532f15`, `f11a16a`).
+- [ ] Push branch; owner opens the PR and deploys (paper only).
+- [ ] Forward: 20+ ON_V2 closes; read `GET /experiments/edge-overnight` (`book_same_nights`,
+      `postclose_probe.covers_ticket_share`, `entry_basis_counts`).
+- Limits: daily-bar replays, not fills; post-close fill availability unknown; the exam FAILED its frozen rule;
+  2019–2026 daily data is now seen for these rules; Production paper records not read (permission refused).
+
+## November 4 — Penny iterative research complete (evidence-complete, Dev only)
+
+Report: `docs/research/penny/2026-11-04-strategy-search/REPORT.md`. Three
+rounds, 20 candidate configurations including a 12-genome population;
+87 score artifacts, 119 focused tests passed, exact real-data baseline
+parity, 20 causal prefixes and 891 sealed evidence artifacts. No robust
+replacement promoted. G05 at native Rs25k: net 18,096.96 vs 14,465.31,
+drawdown 2,583.14 vs 2,135.90; concentration drives much of the gain,
+2025 trails incumbent and moderate execution stress removes profit.
+Smart best -52.17 vs V2 -85.31, still losing; fewer trades rather than
+better per-trade expectancy. Conditional bar proxies, not untouched
+qualification. Active plan/evidence retain every failure and correction.
+No native strategy/config/schema/capital/Production/Breeze change;
+committed locally, not pushed or deployed. Any fresh execution exam is
+defined in FORWARD_EXAM.md, with no job or collector enabled.
+
+## November 4 — Penny research cnc-reference-diagnostics-frozen (Dev only, not deployed)
+
+Study: `docs/research/penny/2026-11-04-strategy-search/PLAN.md`. Three
+rounds, all failed alternatives retained; 108-stock no-split daily
+cohort and partial native-minute Smart experiments. G05 daily validation
+at Rs 25k: +18,096.96 vs overnight incumbent +14,465.31; drawdown
+2,583.14 vs 2,135.90. Primary Rs 100k gain only 14%, severe friction
+and Rs 2k fail. Conditional historical proxy; not qualification.
+Smart training rescore after cash-rollover correction is complete;
+its final validation/diagnostics are recorded in the study status.
+27 focused checks passed; real-data shipped baseline/cache parity exact.
+No runtime flag/schema/capital/deployment/Production/Breeze change.
+
+## November 4 — Penny research final-smart-and-diagnostics-frozen (Dev only, not deployed)
+
+Study: `docs/research/penny/2026-11-04-strategy-search/PLAN.md`. Three
+rounds, all failed alternatives retained; 108-stock no-split daily
+cohort and partial native-minute Smart experiments. G05 daily validation
+at Rs 25k: +18,096.96 vs overnight incumbent +14,465.31; drawdown
+2,583.14 vs 2,135.90. Primary Rs 100k gain only 14%, severe friction
+and Rs 2k fail. Conditional historical proxy; not qualification.
+Smart training rescore after cash-rollover correction is complete;
+its final validation/diagnostics are recorded in the study status.
+27 focused checks passed; real-data shipped baseline/cache parity exact.
+No runtime flag/schema/capital/deployment/Production/Breeze change.
+
+## November 4 — Penny research corrected-cash-and-finalists-frozen (Dev only, not deployed)
+
+Initial source/data freeze `ca3b748`; original baseline evidence preserved.
+Both three-day daily candidates lose before fees; the current multi-day
+EDGE proxy loses while the existing overnight proxy is positive. Next
+frozen round tests causal stock-specific overnight persistence against
+that stronger incumbent, using the existing own-cash book and costs.
+Plan and all failures: `docs/research/penny/2026-11-04-strategy-search/`.
+23 focused mechanics/Smart/profit-lock checks pass; additional night
+prefix/cash checks are recorded with the round. Validation stays sealed.
+No runtime/source-binding/flag/schema/capital/Production change; no
+Breeze/broker calls. Owner working bytes remain outside these commits.
+
+## November 4 — Penny research round-3-frozen (Dev only, not deployed)
+
+Initial source/data freeze `ca3b748`; original baseline evidence preserved.
+Both three-day daily candidates lose before fees; the current multi-day
+EDGE proxy loses while the existing overnight proxy is positive. Next
+frozen round tests causal stock-specific overnight persistence against
+that stronger incumbent, using the existing own-cash book and costs.
+Plan and all failures: `docs/research/penny/2026-11-04-strategy-search/`.
+23 focused mechanics/Smart/profit-lock checks pass; additional night
+prefix/cash checks are recorded with the round. Validation stays sealed.
+No runtime/source-binding/flag/schema/capital/Production change; no
+Breeze/broker calls. Owner working bytes remain outside these commits.
+
+## November 4 — Penny research basis-and-smart-round2-frozen (Dev only, not deployed)
+
+Initial source/data freeze `ca3b748`; original baseline evidence preserved.
+Both three-day daily candidates lose before fees; the current multi-day
+EDGE proxy loses while the existing overnight proxy is positive. Next
+frozen round tests causal stock-specific overnight persistence against
+that stronger incumbent, using the existing own-cash book and costs.
+Plan and all failures: `docs/research/penny/2026-11-04-strategy-search/`.
+23 focused mechanics/Smart/profit-lock checks pass; additional night
+prefix/cash checks are recorded with the round. Validation stays sealed.
+No runtime/source-binding/flag/schema/capital/Production change; no
+Breeze/broker calls. Owner working bytes remain outside these commits.
+
+## November 4 — Penny research round-2-frozen (Dev only, not deployed)
+
+Initial source/data freeze `ca3b748`; original baseline evidence preserved.
+Both three-day daily candidates lose before fees; the current multi-day
+EDGE proxy loses while the existing overnight proxy is positive. Next
+frozen round tests causal stock-specific overnight persistence against
+that stronger incumbent, using the existing own-cash book and costs.
+Plan and all failures: `docs/research/penny/2026-11-04-strategy-search/`.
+23 focused mechanics/Smart/profit-lock checks pass; additional night
+prefix/cash checks are recorded with the round. Validation stays sealed.
+No runtime/source-binding/flag/schema/capital/Production change; no
+Breeze/broker calls. Owner working bytes remain outside these commits.
+
+## November 4 — Penny strategy research (round-1-frozen, Dev only)
+
+Owner-authorized iterative Penny/Smart/EDGE study. New research-only continuous
+Smart and current classic profit-lock reference, daily thesis candidates and
+bounded runner; no runtime strategy, source binding, flag, schema or deployment
+change. Plan/evidence: `docs/research/penny/2026-11-04-strategy-search/PLAN.md`.
+Public acquisition: 766 requests, zero Breeze/broker requests; immutable cash
+snapshot, coverage and pre-score source/data freezes retained. Six initial
+mechanical/causal/cash checks pass. The reserved Jan–Jul exam stays unscored.
+Validation is conditional historical evidence, not untouched qualification.
+Next: baseline and round-1 scores, diagnose failures, freeze later rounds.
+Commit identity and post-commit consistency are recorded in the study receipts.
+
+## November 3 — expiry-v5: E03.2 main on NIFTY and SENSEX (commit `71857c0`, DEPLOYED as Production 5e30ce0 (PR #130 merged on the owner's word), Nov 3 23:29 IST: rollback images tagged rollback-06bed07, three services built with one stamp and recreated, nginx restarted, verify_deployment.py exit 0 (receipt in sentinel-operations/release-receipts); in the engine: EXPIRY_MAIN_STRATEGY=E032, EXPIRY_E032_SHADOW_ENABLED=True, E02/E03/E03.1 off, NIFTY,SENSEX; no startup errors. No full data backup (as before: no migration). The restart may have dropped the partner's Kite login; the morning prompt asks again)
 
 - [x] E03.2 main: notices, summary, owner rule; A/B/C shadows without Telegram trades; SENSEX lot 20 / BFO.
 - [x] Tests: 5 new + E032 default; full suite 6,415 passed, 4 skipped, 1 failed (13 min 31 s): tests/test_kite_client.py::TestRateLimiter::test_management_priority_is_bounded_and_normal_work_is_fair, a timing test of an untouched module, passes alone 3 of 3 and passed in the round-8 full run; atlas regenerated.

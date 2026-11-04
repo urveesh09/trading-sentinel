@@ -1,0 +1,34 @@
+[
+  {
+    "name": "SV4_SINGLE_FREQ",
+    "family": "basket",
+    "rank": "gapfreq",
+    "slots": 1,
+    "exit_minute": 970
+  },
+  {
+    "name": "SV4_POSTOPEN_FAST",
+    "family": "confirm",
+    "exit_minute": 585
+  },
+  {
+    "name": "MIS_AFTERNOON",
+    "family": "breakout",
+    "afternoon": true
+  },
+  {
+    "name": "MIS_AFTERNOON_RETEST",
+    "family": "pullback",
+    "afternoon": true
+  },
+  {
+    "name": "CNC_WILDER_NOSTOP",
+    "family": "cnc_wilder",
+    "stop_pct": 1.0
+  },
+  {
+    "name": "CNC_NIGHT_HURDLE",
+    "family": "cnc_night",
+    "night_cost_gate": true
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "raw_rows": 289937,
+  "pre_last_split": 1044,
+  "no_daily_warmup_stockdays": 306,
+  "stockdays": 5792,
+  "retained_names": 158,
+  "calendar_sessions": 39,
+  "observed_trading_rows": 241867
+}

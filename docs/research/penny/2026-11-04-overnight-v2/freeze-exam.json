@@ -1,0 +1,120 @@
+{
+ "frozen_at": "2026-11-04T03:51:00.856531+00:00",
+ "window": [
+  "2019-04-01",
+  "2022-12-30"
+ ],
+ "finalists": {
+  "BASE": {
+   "name": "BASE",
+   "slots": 3,
+   "entry_bps": 25.0,
+   "exit_bps": 5.0,
+   "sizing": "risk",
+   "kinds_skip": [
+    "MR_mid"
+   ],
+   "select": null,
+   "min_ticket": 0.0,
+   "participation": 0.01,
+   "placeholder": "open",
+   "dp": null,
+   "bankroll": 25000.0,
+   "depth": 10,
+   "params": [],
+   "compound": true
+  },
+  "TWO": {
+   "name": "TWO",
+   "slots": 2,
+   "entry_bps": 25.0,
+   "exit_bps": 5.0,
+   "sizing": "equal",
+   "kinds_skip": [
+    "MR_mid"
+   ],
+   "select": null,
+   "min_ticket": 0.0,
+   "participation": 0.01,
+   "placeholder": "open",
+   "dp": null,
+   "bankroll": 25000.0,
+   "depth": 10,
+   "params": [],
+   "compound": true
+  },
+  "TWO_NIGHT": {
+   "name": "TWO_NIGHT",
+   "slots": 2,
+   "entry_bps": 25.0,
+   "exit_bps": 5.0,
+   "sizing": "equal",
+   "kinds_skip": [
+    "MR_mid"
+   ],
+   "select": "night_screen",
+   "min_ticket": 0.0,
+   "participation": 0.01,
+   "placeholder": "open",
+   "dp": null,
+   "bankroll": 25000.0,
+   "depth": 10,
+   "params": [
+    [
+     "min",
+     0.001
+    ]
+   ],
+   "compound": true
+  },
+  "ONE": {
+   "name": "ONE",
+   "slots": 1,
+   "entry_bps": 25.0,
+   "exit_bps": 5.0,
+   "sizing": "equal",
+   "kinds_skip": [
+    "MR_mid"
+   ],
+   "select": null,
+   "min_ticket": 0.0,
+   "participation": 0.01,
+   "placeholder": "open",
+   "dp": null,
+   "bankroll": 25000.0,
+   "depth": 10,
+   "params": [],
+   "compound": true
+  }
+ },
+ "primary_models": [
+  "E36",
+  "PC"
+ ],
+ "stress_models": [
+  "E25",
+  "E60"
+ ],
+ "bankroll": 25000.0,
+ "compounding": "primary (as PLAN); fixed reported",
+ "rule": [
+  "closes >= 100, net > 0, ex_best > 0",
+  "net > BASE net (same model)",
+  "peak-relative drawdown <= max(1.5 x BASE, 15%)",
+  "net > 0 in >= 3 of 4 exam years",
+  "net > 90th percentile of 200 random-order books from the same candidate pool, same slots and sizing"
+ ],
+ "why_these": "R1: fewer equal positions win in every model/panel; R2/R3: EV model rejected (thin-name bounce), night screen small but consistent; R4: genome search fails walk-forward, so no searched genome is a finalist.",
+ "source": {
+  "docs/research/penny/2026-11-04-overnight-v2/lab.py": "7e4b53a9b284b80787b98549a1782dbf501155f06863149ae05d0b7ac7ffc191",
+  "docs/research/penny/2026-11-04-overnight-v2/arms.py": "9467efff1acedb9336e54f7342f129ae75e9f05406ea0881a73b8c1517dd20f8",
+  "docs/research/penny/2026-11-04-overnight-v2/exam.py": "9edcd49dc299fbfa0f4e5d79cba3181b297d4d755f736141da55ef85b02a55ce",
+  "docs/research/penny/2026-11-04-overnight-v2/round2.py": "3b2e3f51844ec190e9d59d7d71779e6efbffaa2cd8411a1622bd9a3aa669baa5",
+  "docs/research/penny/2026-11-04-overnight-v2/ev.py": "d66fb9e8d75ea04c49d039b54c637003896a15ca6f503049818cfaa9caa89b7d",
+  "python-engine/penny_edge_engine.py": "afd6bd3e46611898d0673d539ec44d2a514f30206c8d5447cd1b2c52f1a60f54",
+  "python-engine/penny_edge_backtest.py": "6832b9facdbeec2485fbec172f6d7349f2784358b139443c2644a8849c2f4007",
+  "python-engine/penny_risk.py": "91ca4f1ae55a6e1d75a564802f294dbf316db74ef7b97a795f2ec8ff32e7d1cf",
+  "python-engine/config.py": "22e3ed3a947155d6bd1d000f86e7974d530499f182527ea1f4f9c6676a1f1a07"
+ },
+ "days_yahoo_sha256": "7cbc8175f69fd50525112587744bcb32b37a5b980c79b8973b8253b50def716d"
+}

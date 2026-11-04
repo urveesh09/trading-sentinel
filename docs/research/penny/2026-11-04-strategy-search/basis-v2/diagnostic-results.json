@@ -1,0 +1,114 @@
+{
+  "controls": [
+    {
+      "name": "SLOTS_ONLY_CONTROL",
+      "metrics": {
+        "closed": 299,
+        "net": 20202.395,
+        "ex_best": 18635.2569,
+        "fees": 15296.1309,
+        "drawdown": 3151.9042,
+        "wins": 168,
+        "profit_factor": 1.752,
+        "final_equity": 45202.3946,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 298,
+          "OPEN_DELAYED": 1
+        }
+      }
+    },
+    {
+      "name": "EDGE60_ONLY_CONTROL",
+      "metrics": {
+        "closed": 287,
+        "net": 12586.2115,
+        "ex_best": 11329.7124,
+        "fees": 11334.7592,
+        "drawdown": 1566.9996,
+        "wins": 164,
+        "profit_factor": 1.7998,
+        "final_equity": 37586.2107,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 286,
+          "OPEN_DELAYED": 1
+        }
+      }
+    },
+    {
+      "name": "stress_50_30",
+      "metrics": {
+        "closed": 258,
+        "net": -35.034,
+        "ex_best": -1419.7566,
+        "fees": 11031.9963,
+        "drawdown": 5566.4386,
+        "wins": 115,
+        "profit_factor": 0.9985,
+        "final_equity": 24964.9664,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 257,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "baseline": {
+        "closed": 337,
+        "net": -1848.6564,
+        "ex_best": -2777.1606,
+        "fees": 11451.2085,
+        "drawdown": 4728.0237,
+        "wins": 145,
+        "profit_factor": 0.918,
+        "final_equity": 23151.3441,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 336,
+          "OPEN_DELAYED": 1
+        }
+      }
+    },
+    {
+      "name": "stress_100_60",
+      "metrics": {
+        "closed": 258,
+        "net": -15954.5683,
+        "ex_best": -16978.9537,
+        "fees": 8507.4115,
+        "drawdown": 16116.9326,
+        "wins": 64,
+        "profit_factor": 0.3734,
+        "final_equity": 9045.4321,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 257,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "baseline": {
+        "closed": 339,
+        "net": -16697.2951,
+        "ex_best": -17355.8512,
+        "fees": 9305.4541,
+        "drawdown": 16697.2949,
+        "wins": 83,
+        "profit_factor": 0.3367,
+        "final_equity": 8302.7051,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 338,
+          "OPEN_DELAYED": 1
+        }
+      }
+    }
+  ],
+  "causal_prefix_checks": 20,
+  "native_net_delta": 3631.652,
+  "descriptive_block_interval_95": [
+    -2350.4968000000003,
+    8916.550099999999
+  ],
+  "qualification": false,
+  "control_results_do_not_select_a_new_strategy": true
+}

@@ -1,0 +1,164 @@
+{
+ "kite_prod_export/S1_close": {
+  "summary": {
+   "n": 53,
+   "net": 1107.2,
+   "ex_best": 882.89,
+   "dd": 152.91,
+   "pf": 2.596,
+   "win": 0.509,
+   "mean": 20.891,
+   "days": 53
+  },
+  "outcomes": {
+   "FILLED": 52,
+   "LOCKED": 1
+  }
+ },
+ "kite_prod_export/S1_1515": {
+  "summary": {
+   "n": 53,
+   "net": 588.03,
+   "ex_best": 440.99,
+   "dd": 177.76,
+   "pf": 1.775,
+   "win": 0.528,
+   "mean": 11.095,
+   "days": 53
+  },
+  "outcomes": {
+   "FILLED": 52,
+   "LOCKED": 1
+  }
+ },
+ "kite_prod_export/S1_close_c915": {
+  "summary": {
+   "n": 33,
+   "net": 229.28,
+   "ex_best": 62.53,
+   "dd": 256.51,
+   "pf": 1.472,
+   "win": 0.364,
+   "mean": 6.948,
+   "days": 33
+  },
+  "outcomes": {
+   "FILLED": 32,
+   "CAPACITY_OR_DUST": 20,
+   "LOCKED": 1
+  }
+ },
+ "kite_prod_export/S1_1515_c915": {
+  "summary": {
+   "n": 33,
+   "net": 16.64,
+   "ex_best": -117.04,
+   "dd": 299.24,
+   "pf": 1.031,
+   "win": 0.455,
+   "mean": 0.504,
+   "days": 33
+  },
+  "outcomes": {
+   "FILLED": 32,
+   "CAPACITY_OR_DUST": 20,
+   "LOCKED": 1
+  }
+ },
+ "kite_prod_export/S2_close": {
+  "summary": {
+   "n": 85,
+   "net": 943.6,
+   "ex_best": 833.34,
+   "dd": 109.61,
+   "pf": 3.001,
+   "win": 0.612,
+   "mean": 11.101,
+   "days": 53
+  },
+  "outcomes": {
+   "FILLED": 82,
+   "LOCKED": 3
+  }
+ },
+ "yahoo_dev/S1_close": {
+  "summary": {
+   "n": 37,
+   "net": 921.74,
+   "ex_best": 710.1,
+   "dd": 117.35,
+   "pf": 4.195,
+   "win": 0.351,
+   "mean": 24.912,
+   "days": 37
+  },
+  "outcomes": {
+   "FILLED": 36,
+   "LOCKED": 1
+  }
+ },
+ "yahoo_dev/S1_1515": {
+  "summary": {
+   "n": 37,
+   "net": 745.12,
+   "ex_best": 527.78,
+   "dd": 161.51,
+   "pf": 2.72,
+   "win": 0.351,
+   "mean": 20.138,
+   "days": 37
+  },
+  "outcomes": {
+   "FILLED": 36,
+   "LOCKED": 1
+  }
+ },
+ "yahoo_dev/S1_close_c915": {
+  "summary": {
+   "n": 4,
+   "net": 226.69,
+   "ex_best": 32.29,
+   "dd": 4.23,
+   "pf": 54.598,
+   "win": 0.5,
+   "mean": 56.672,
+   "days": 4
+  },
+  "outcomes": {
+   "CAPACITY_OR_DUST": 33,
+   "FILLED": 4
+  }
+ },
+ "yahoo_dev/S1_1515_c915": {
+  "summary": {
+   "n": 4,
+   "net": 243.63,
+   "ex_best": 26.29,
+   "dd": 14.17,
+   "pf": 18.191,
+   "win": 0.5,
+   "mean": 60.906,
+   "days": 4
+  },
+  "outcomes": {
+   "CAPACITY_OR_DUST": 33,
+   "FILLED": 4
+  }
+ },
+ "yahoo_dev/S2_close": {
+  "summary": {
+   "n": 69,
+   "net": 893.21,
+   "ex_best": 757.55,
+   "dd": 89.07,
+   "pf": 3.353,
+   "win": 0.493,
+   "mean": 12.945,
+   "days": 37
+  },
+  "outcomes": {
+   "FILLED": 65,
+   "LOCKED": 4
+  }
+ }
+}

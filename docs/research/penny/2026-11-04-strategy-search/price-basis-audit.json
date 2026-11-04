@@ -1,0 +1,15 @@
+[
+  {
+    "day": "2019-06-03",
+    "error": "<HTTPError 404: 'Not Found'>"
+  },
+  {
+    "day": "2024-01-02",
+    "url": "https://nsearchives.nseindia.com/products/content/sec_bhavdata_full_02012024.csv",
+    "sha256": "d2f36a41f6730b79c52b15d0e96ab74a0facfc89d1d576c39cc1404508ae65ae",
+    "nse_close": "55.05",
+    "nse_volume": "33298237",
+    "yahoo_close": 5.505000114440918,
+    "yahoo_volume": 332982370
+  }
+]

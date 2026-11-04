@@ -1,0 +1,215 @@
+[
+  {
+    "panel": "h1",
+    "status": "PARTIAL",
+    "summary": {
+      "paper_entries": 23,
+      "closed_trades": 23,
+      "unresolved_trades": 0,
+      "gross_pnl": -70.08,
+      "costs": 9.047,
+      "net_pnl": -79.127,
+      "win_rate_pct": 26.087,
+      "profit_factor": 0.435936,
+      "expectancy": -3.4403,
+      "avg_r": -0.876909,
+      "max_drawdown": 90.4658,
+      "net_excluding_best_winner": -99.027,
+      "adverse_fill_bound_net": -121.9179,
+      "exit_reasons": {
+        "MIS_TIME_STOP_1500": 5,
+        "PAPER_STOP_LTP": 12,
+        "SMART_EOD:time_stop_30min_in_loss": 2,
+        "SMART_EOD:within_0_5R_of_target": 4
+      },
+      "per_day": [
+        {
+          "trading_date": "2026-01-01",
+          "closed": 1,
+          "net_pnl": -8.5612,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-01-09",
+          "closed": 1,
+          "net_pnl": 19.9,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-01-14",
+          "closed": 1,
+          "net_pnl": -6.7258,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-03-09",
+          "closed": 1,
+          "net_pnl": -12.364,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-03-18",
+          "closed": 1,
+          "net_pnl": -2.3579,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-04-01",
+          "closed": 1,
+          "net_pnl": 3.6256,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-04-02",
+          "closed": 2,
+          "net_pnl": 1.4181,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-04-13",
+          "closed": 1,
+          "net_pnl": -4.3871,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-04-16",
+          "closed": 2,
+          "net_pnl": -16.9123,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-04-27",
+          "closed": 1,
+          "net_pnl": -10.8714,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-05-11",
+          "closed": 1,
+          "net_pnl": 4.3393,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-05-14",
+          "closed": 2,
+          "net_pnl": -17.7028,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-05-27",
+          "closed": 1,
+          "net_pnl": -6.96,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-06-04",
+          "closed": 1,
+          "net_pnl": -7.4765,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-06-11",
+          "closed": 2,
+          "net_pnl": -6.7013,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-06-18",
+          "closed": 1,
+          "net_pnl": -2.3672,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-07-02",
+          "closed": 1,
+          "net_pnl": 11.5563,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-07-06",
+          "closed": 1,
+          "net_pnl": -15.551,
+          "wins": 0
+        },
+        {
+          "trading_date": "2026-07-31",
+          "closed": 1,
+          "net_pnl": -1.0278,
+          "wins": 0
+        }
+      ],
+      "kill_switch_threshold_breached_days": []
+    },
+    "funnel": {
+      "evaluations": 859125,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 154065,
+        "CIRCUIT_BLOCKED": 15070,
+        "NO_MEDIAN_VOLUME_BASELINE": 2758,
+        "NO_PRIOR_BARS": 2280,
+        "RSI_OVERBOUGHT": 348,
+        "TIME_WINDOW": 300580,
+        "VOLUME_BELOW_PACE": 383991
+      },
+      "accepted_signals": 33,
+      "admission_outcomes": {
+        "FILLED": 23,
+        "OCCUPIED_SAME_TICKER": 10
+      }
+    },
+    "scope": "exact native MIS/2000 own cash/constant PR1/data completeness gates; not historic operational regime"
+  },
+  {
+    "panel": "recent",
+    "status": "PARTIAL",
+    "summary": {
+      "paper_entries": 2,
+      "closed_trades": 2,
+      "unresolved_trades": 0,
+      "gross_pnl": 33.1,
+      "costs": 0.645,
+      "net_pnl": 32.455,
+      "win_rate_pct": 100.0,
+      "profit_factor": null,
+      "expectancy": 16.2275,
+      "avg_r": 4.723235,
+      "max_drawdown": 0.0,
+      "net_excluding_best_winner": 14.6597,
+      "adverse_fill_bound_net": 29.5193,
+      "exit_reasons": {
+        "SMART_EOD:within_0_5R_of_target": 2
+      },
+      "per_day": [
+        {
+          "trading_date": "2026-08-18",
+          "closed": 1,
+          "net_pnl": 17.7953,
+          "wins": 1
+        },
+        {
+          "trading_date": "2026-08-20",
+          "closed": 1,
+          "net_pnl": 14.6597,
+          "wins": 1
+        }
+      ],
+      "kill_switch_threshold_breached_days": []
+    },
+    "funnel": {
+      "evaluations": 73500,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 18061,
+        "CIRCUIT_BLOCKED": 526,
+        "NO_PRIOR_BARS": 196,
+        "RSI_OVERBOUGHT": 54,
+        "TIME_WINDOW": 26117,
+        "VOLUME_BELOW_PACE": 28544
+      },
+      "accepted_signals": 2,
+      "admission_outcomes": {
+        "FILLED": 2
+      }
+    },
+    "scope": "exact native MIS/2000 own cash/constant PR1/data completeness gates; not historic operational regime"
+  }
+]

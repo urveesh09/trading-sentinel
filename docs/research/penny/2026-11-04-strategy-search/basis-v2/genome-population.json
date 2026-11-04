@@ -1,0 +1,134 @@
+[
+  {
+    "name": "N2_PERSISTENT",
+    "lookback": 20,
+    "day_fade_weight": 0.0,
+    "momentum_weight": 0.0,
+    "slots": 3,
+    "min_edge": 0.0,
+    "risk_tilt": 0.0,
+    "use_shipped_candidates": false,
+    "strength_weight": 0.8
+  },
+  {
+    "name": "N2_PRESSURE",
+    "lookback": 20,
+    "day_fade_weight": 0.5,
+    "momentum_weight": 0.0,
+    "slots": 3,
+    "min_edge": 0.0,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": false,
+    "strength_weight": 0.8
+  },
+  {
+    "name": "N3_G02",
+    "lookback": 60,
+    "day_fade_weight": 1.0,
+    "momentum_weight": 0.0,
+    "slots": 3,
+    "min_edge": 0.0,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": true,
+    "strength_weight": 0.5
+  },
+  {
+    "name": "N3_G03",
+    "lookback": 20,
+    "day_fade_weight": 0.0,
+    "momentum_weight": 0.1,
+    "slots": 2,
+    "min_edge": 0.0,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": true,
+    "strength_weight": 0.8
+  },
+  {
+    "name": "N3_G04",
+    "lookback": 60,
+    "day_fade_weight": 0.0,
+    "momentum_weight": 0.1,
+    "slots": 3,
+    "min_edge": 0.001,
+    "risk_tilt": 0.0,
+    "use_shipped_candidates": true,
+    "strength_weight": 0.8
+  },
+  {
+    "name": "N3_G05",
+    "lookback": 60,
+    "day_fade_weight": 0.5,
+    "momentum_weight": 0.0,
+    "slots": 2,
+    "min_edge": 0.001,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": true,
+    "strength_weight": 1.0
+  },
+  {
+    "name": "N3_G06",
+    "lookback": 20,
+    "day_fade_weight": 0.5,
+    "momentum_weight": 0.1,
+    "slots": 3,
+    "min_edge": 0.0,
+    "risk_tilt": 0.0,
+    "use_shipped_candidates": true,
+    "strength_weight": 1.0
+  },
+  {
+    "name": "N3_G07",
+    "lookback": 10,
+    "day_fade_weight": 0.0,
+    "momentum_weight": 0.1,
+    "slots": 2,
+    "min_edge": 0.001,
+    "risk_tilt": 0.0,
+    "use_shipped_candidates": true,
+    "strength_weight": 1.0
+  },
+  {
+    "name": "N3_G08",
+    "lookback": 20,
+    "day_fade_weight": 1.0,
+    "momentum_weight": 0.0,
+    "slots": 3,
+    "min_edge": 0.0,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": true,
+    "strength_weight": 0.5
+  },
+  {
+    "name": "N3_G09",
+    "lookback": 10,
+    "day_fade_weight": 1.0,
+    "momentum_weight": 0.1,
+    "slots": 2,
+    "min_edge": 0.001,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": true,
+    "strength_weight": 1.0
+  },
+  {
+    "name": "N3_G10",
+    "lookback": 20,
+    "day_fade_weight": 1.0,
+    "momentum_weight": 0.05,
+    "slots": 2,
+    "min_edge": -1.0,
+    "risk_tilt": 0.0,
+    "use_shipped_candidates": true,
+    "strength_weight": 0.8
+  },
+  {
+    "name": "N3_G11",
+    "lookback": 10,
+    "day_fade_weight": 1.0,
+    "momentum_weight": 0.1,
+    "slots": 2,
+    "min_edge": 0.0,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": true,
+    "strength_weight": 0.5
+  }
+]

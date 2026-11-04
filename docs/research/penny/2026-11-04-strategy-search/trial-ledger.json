@@ -1,0 +1,935 @@
+{
+  "trials": [
+    {
+      "name": "D1_PULLBACK",
+      "parameters": {
+        "name": "D1_PULLBACK",
+        "family": "PULLBACK",
+        "hold": 3,
+        "stop_atr": 1.5,
+        "trail_atr": 2.0,
+        "target_r": 2.5,
+        "slots": 3,
+        "risk_pct": 0.01,
+        "volume_floor": 0.6,
+        "score_floor": 0.45,
+        "thesis_exit": false
+      },
+      "training": {
+        "closed": 472,
+        "net": -39350.6235,
+        "ex_best": -41468.7331,
+        "fees": 15906.537,
+        "drawdown": 41821.865,
+        "wins": 167,
+        "profit_factor": 0.7183,
+        "final_equity": 60649.376,
+        "unresolved": 0,
+        "exit_reasons": {
+          "TIME": 363,
+          "STOP": 71,
+          "TARGET": 23,
+          "STOP_GAP": 15
+        }
+      },
+      "status": "REJECTED_ON_TRAINING_VS_INCUMBENT",
+      "lesson": "short daytime hold and standalone night forecasts do not beat the shipped overnight book"
+    },
+    {
+      "name": "D1_FLUSH",
+      "parameters": {
+        "name": "D1_FLUSH",
+        "family": "FLUSH",
+        "hold": 3,
+        "stop_atr": 1.5,
+        "trail_atr": 2.0,
+        "target_r": 2.5,
+        "slots": 3,
+        "risk_pct": 0.01,
+        "volume_floor": 0.6,
+        "score_floor": 0.45,
+        "thesis_exit": false
+      },
+      "training": {
+        "closed": 663,
+        "net": -63225.4778,
+        "ex_best": -65182.3427,
+        "fees": 19210.0093,
+        "drawdown": 65802.2057,
+        "wins": 235,
+        "profit_factor": 0.5866,
+        "final_equity": 36774.5224,
+        "unresolved": 0,
+        "exit_reasons": {
+          "TIME": 519,
+          "STOP": 115,
+          "TARGET": 16,
+          "STOP_GAP": 13
+        }
+      },
+      "status": "REJECTED_ON_TRAINING_VS_INCUMBENT",
+      "lesson": "short daytime hold and standalone night forecasts do not beat the shipped overnight book"
+    },
+    {
+      "name": "N2_PERSISTENT",
+      "parameters": {
+        "name": "N2_PERSISTENT",
+        "lookback": 20,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.0
+      },
+      "training": {
+        "closed": 2786,
+        "net": -33643.3083,
+        "ex_best": -37198.8272,
+        "fees": 175385.3731,
+        "drawdown": 57862.3605,
+        "wins": 1378,
+        "profit_factor": 0.9395,
+        "final_equity": 66356.6894,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 2785,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "status": "REJECTED_ON_TRAINING_VS_INCUMBENT",
+      "lesson": "short daytime hold and standalone night forecasts do not beat the shipped overnight book"
+    },
+    {
+      "name": "N2_PRESSURE",
+      "parameters": {
+        "name": "N2_PRESSURE",
+        "lookback": 20,
+        "day_fade_weight": 0.5,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5
+      },
+      "training": {
+        "closed": 2788,
+        "net": 29674.6295,
+        "ex_best": 23723.8431,
+        "fees": 191527.0561,
+        "drawdown": 36334.3876,
+        "wins": 1404,
+        "profit_factor": 1.065,
+        "final_equity": 129674.6255,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 2788
+        }
+      },
+      "status": "REJECTED_ON_TRAINING_VS_INCUMBENT",
+      "lesson": "short daytime hold and standalone night forecasts do not beat the shipped overnight book"
+    },
+    {
+      "name": "N3_G07",
+      "parameters": {
+        "name": "N3_G07",
+        "lookback": 10,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.001,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "training": {
+        "closed": 445,
+        "net": 350793.3586,
+        "ex_best": 337488.3922,
+        "fees": 104264.631,
+        "drawdown": 18660.6034,
+        "wins": 306,
+        "profit_factor": 2.6045,
+        "final_equity": 450793.3586,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 445
+        }
+      },
+      "calibration": {
+        "closed": 139,
+        "net": 40650.5522,
+        "ex_best": 36226.7344,
+        "fees": 17916.0817,
+        "drawdown": 2953.4304,
+        "wins": 88,
+        "profit_factor": 2.8756,
+        "final_equity": 140650.5518,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 139
+        }
+      },
+      "fitness": 2.17841574190468,
+      "status": "VALIDATION_REJECTED"
+    },
+    {
+      "name": "N3_G09",
+      "parameters": {
+        "name": "N3_G09",
+        "lookback": 10,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.001,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "training": {
+        "closed": 445,
+        "net": 350793.3586,
+        "ex_best": 337488.3922,
+        "fees": 104264.631,
+        "drawdown": 18660.6034,
+        "wins": 306,
+        "profit_factor": 2.6045,
+        "final_equity": 450793.3586,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 445
+        }
+      },
+      "calibration": {
+        "closed": 139,
+        "net": 40650.5522,
+        "ex_best": 36226.7344,
+        "fees": 17916.0817,
+        "drawdown": 2953.4304,
+        "wins": 88,
+        "profit_factor": 2.8756,
+        "final_equity": 140650.5518,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 139
+        }
+      },
+      "fitness": 2.17841574190468,
+      "status": "ECONOMIC_DUPLICATE"
+    },
+    {
+      "name": "N3_G05",
+      "parameters": {
+        "name": "N3_G05",
+        "lookback": 60,
+        "day_fade_weight": 0.5,
+        "momentum_weight": 0.0,
+        "slots": 2,
+        "min_edge": 0.001,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "training": {
+        "closed": 524,
+        "net": 390689.6032,
+        "ex_best": 375921.6391,
+        "fees": 130070.5809,
+        "drawdown": 25484.578,
+        "wins": 347,
+        "profit_factor": 2.3478,
+        "final_equity": 490689.6036,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 524
+        }
+      },
+      "calibration": {
+        "closed": 163,
+        "net": 51897.9326,
+        "ex_best": 47119.8447,
+        "fees": 21217.9932,
+        "drawdown": 4443.7944,
+        "wins": 99,
+        "profit_factor": 3.0889,
+        "final_equity": 151897.9329,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 163
+        }
+      },
+      "fitness": 2.0364446529191103,
+      "status": "LIMITED_VALIDATION_PASS_NOT_PROMOTED"
+    },
+    {
+      "name": "N3_G04",
+      "parameters": {
+        "name": "N3_G04",
+        "lookback": 60,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.1,
+        "slots": 3,
+        "min_edge": 0.001,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.8
+      },
+      "training": {
+        "closed": 568,
+        "net": 273892.8205,
+        "ex_best": 265539.5224,
+        "fees": 93059.2314,
+        "drawdown": 16776.4754,
+        "wins": 374,
+        "profit_factor": 2.3693,
+        "final_equity": 373892.8207,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 568
+        }
+      },
+      "calibration": {
+        "closed": 177,
+        "net": 33723.3606,
+        "ex_best": 30849.9147,
+        "fees": 16753.0177,
+        "drawdown": 3816.6162,
+        "wins": 106,
+        "profit_factor": 2.6053,
+        "final_equity": 133723.3607,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 177
+        }
+      },
+      "fitness": 2.0101576639870373,
+      "status": "NOT_FINALIST"
+    },
+    {
+      "name": "N3_G10",
+      "parameters": {
+        "name": "N3_G10",
+        "lookback": 20,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.05,
+        "slots": 2,
+        "min_edge": -1.0,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.8
+      },
+      "training": {
+        "closed": 621,
+        "net": 498757.9482,
+        "ex_best": 481474.4586,
+        "fees": 166478.1881,
+        "drawdown": 29344.9071,
+        "wins": 405,
+        "profit_factor": 2.2951,
+        "final_equity": 598757.9474,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 621
+        }
+      },
+      "calibration": {
+        "closed": 185,
+        "net": 48054.0958,
+        "ex_best": 43396.1516,
+        "fees": 22277.5555,
+        "drawdown": 9662.7783,
+        "wins": 110,
+        "profit_factor": 2.4654,
+        "final_equity": 148054.0954,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 184,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.6375616946492226,
+      "status": "NOT_FINALIST"
+    },
+    {
+      "name": "N3_G03",
+      "parameters": {
+        "name": "N3_G03",
+        "lookback": 20,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.8
+      },
+      "training": {
+        "closed": 600,
+        "net": 379908.893,
+        "ex_best": 365287.8675,
+        "fees": 138649.0075,
+        "drawdown": 28110.8184,
+        "wins": 396,
+        "profit_factor": 2.1809,
+        "final_equity": 479908.8925,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 600
+        }
+      },
+      "calibration": {
+        "closed": 181,
+        "net": 43508.7486,
+        "ex_best": 38995.5931,
+        "fees": 21742.67,
+        "drawdown": 8846.6005,
+        "wins": 106,
+        "profit_factor": 2.2649,
+        "final_equity": 143508.7484,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 180,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.547758161320554,
+      "status": "NOT_FINALIST"
+    },
+    {
+      "name": "N3_G08",
+      "parameters": {
+        "name": "N3_G08",
+        "lookback": 20,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.5
+      },
+      "training": {
+        "closed": 671,
+        "net": 311699.3174,
+        "ex_best": 302434.2335,
+        "fees": 109736.2999,
+        "drawdown": 18594.4831,
+        "wins": 440,
+        "profit_factor": 2.2769,
+        "final_equity": 411699.3166,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 671
+        }
+      },
+      "calibration": {
+        "closed": 198,
+        "net": 28250.0781,
+        "ex_best": 25499.0311,
+        "fees": 17803.8015,
+        "drawdown": 8386.726,
+        "wins": 116,
+        "profit_factor": 1.9647,
+        "final_equity": 128250.0777,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 197,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.5192720307455063,
+      "status": "NOT_FINALIST"
+    },
+    {
+      "name": "N3_G06",
+      "parameters": {
+        "name": "N3_G06",
+        "lookback": 20,
+        "day_fade_weight": 0.5,
+        "momentum_weight": 0.1,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "training": {
+        "closed": 672,
+        "net": 317506.3432,
+        "ex_best": 308135.2378,
+        "fees": 109846.6372,
+        "drawdown": 18796.9271,
+        "wins": 442,
+        "profit_factor": 2.2857,
+        "final_equity": 417506.3434,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 672
+        }
+      },
+      "calibration": {
+        "closed": 198,
+        "net": 26397.116,
+        "ex_best": 23686.1169,
+        "fees": 17598.1845,
+        "drawdown": 8382.0971,
+        "wins": 115,
+        "profit_factor": 1.8854,
+        "final_equity": 126397.1151,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 197,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.4043314558580162,
+      "status": "NOT_FINALIST"
+    },
+    {
+      "name": "N3_G02",
+      "parameters": {
+        "name": "N3_G02",
+        "lookback": 60,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.5
+      },
+      "training": {
+        "closed": 690,
+        "net": 333225.4083,
+        "ex_best": 323378.3837,
+        "fees": 115670.4756,
+        "drawdown": 19609.0845,
+        "wins": 447,
+        "profit_factor": 2.2787,
+        "final_equity": 433225.4086,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 690
+        }
+      },
+      "calibration": {
+        "closed": 201,
+        "net": 25804.4917,
+        "ex_best": 23101.2246,
+        "fees": 17808.9418,
+        "drawdown": 9194.2072,
+        "wins": 116,
+        "profit_factor": 1.8434,
+        "final_equity": 125804.4911,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 200,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.3159457648316013,
+      "status": "NOT_FINALIST"
+    },
+    {
+      "name": "N3_G11",
+      "parameters": {
+        "name": "N3_G11",
+        "lookback": 10,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.5
+      },
+      "training": {
+        "closed": 582,
+        "net": 463531.2294,
+        "ex_best": 447114.9972,
+        "fees": 145675.851,
+        "drawdown": 26439.5818,
+        "wins": 391,
+        "profit_factor": 2.4789,
+        "final_equity": 563531.2295,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 582
+        }
+      },
+      "calibration": {
+        "closed": 178,
+        "net": 33923.0372,
+        "ex_best": 29711.7815,
+        "fees": 21044.8566,
+        "drawdown": 9366.9993,
+        "wins": 104,
+        "profit_factor": 2.0314,
+        "final_equity": 133923.0373,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 177,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.2830398550403699,
+      "status": "NOT_FINALIST"
+    },
+    {
+      "name": "S1_PARTICIPATION",
+      "parameters": {
+        "policy_version": "S1_PARTICIPATION",
+        "anchor_mode": "base",
+        "base_lookback": 30,
+        "min_base_bars": 15,
+        "entry_start_minute": 630,
+        "entry_end_minute": 855,
+        "min_pace_rvol": 1.8,
+        "min_surge": 1.5,
+        "require_vwap": true,
+        "arm_score": 0.45,
+        "fast_entry_score": 0.85,
+        "fast_entry_max_chase_atr": 0.35,
+        "fast_entry_min_clv": 0.6,
+        "exhaustion_rsi": 85.0,
+        "max_chase_atr": 1.5,
+        "noise_atr_mult": 1.5,
+        "min_noise_pct": 0.012,
+        "min_stop_ticks": 3,
+        "tick": 0.01,
+        "max_stop_pct": 0.035,
+        "retest_atr": 0.5,
+        "arm_expiry_minutes": 15,
+        "max_closes_inside_base": 2,
+        "max_cost_share_of_risk": 0.25,
+        "cooldown_minutes": 30,
+        "max_entries_per_ticker_day": 1,
+        "failed_breakout_closes": 3,
+        "stall_minutes": 45,
+        "stall_max_mfe_r": 0.5,
+        "breakeven_r": 1.0,
+        "partial_r": 2.0,
+        "trail_start_r": 1.5,
+        "trail_atr_mult": 2.0,
+        "trail_min_r": 1.0,
+        "eod_loss_cut_minute": 870
+      },
+      "training": {
+        "closed": 77,
+        "net": -18.8339,
+        "ex_best": -33.6197,
+        "fees": 21.8528,
+        "drawdown": 45.366,
+        "wins": 16,
+        "profit_factor": 0.8365,
+        "final_equity": 1981.1661,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_THESIS_FAILED": 43,
+          "SMART_EOD_LOSS_CUT": 4,
+          "SMART_PAPER_STOP": 12,
+          "SMART_THESIS_STALLED": 12,
+          "SMART_SESSION_DEADLINE": 6
+        }
+      },
+      "status": "UNPROFITABLE_NOT_PROMOTED"
+    },
+    {
+      "name": "S1_PATIENT",
+      "parameters": {
+        "policy_version": "S1_PATIENT",
+        "anchor_mode": "base",
+        "base_lookback": 30,
+        "min_base_bars": 15,
+        "entry_start_minute": 630,
+        "entry_end_minute": 855,
+        "min_pace_rvol": 1.0,
+        "min_surge": 0.0,
+        "require_vwap": false,
+        "arm_score": 0.45,
+        "fast_entry_score": 0.85,
+        "fast_entry_max_chase_atr": 0.35,
+        "fast_entry_min_clv": 0.6,
+        "exhaustion_rsi": 85.0,
+        "max_chase_atr": 1.5,
+        "noise_atr_mult": 1.5,
+        "min_noise_pct": 0.012,
+        "min_stop_ticks": 3,
+        "tick": 0.01,
+        "max_stop_pct": 0.035,
+        "retest_atr": 0.5,
+        "arm_expiry_minutes": 15,
+        "max_closes_inside_base": 2,
+        "max_cost_share_of_risk": 0.25,
+        "cooldown_minutes": 30,
+        "max_entries_per_ticker_day": 1,
+        "failed_breakout_closes": 4,
+        "stall_minutes": 60,
+        "stall_max_mfe_r": 0.5,
+        "breakeven_r": 1.0,
+        "partial_r": 2.0,
+        "trail_start_r": 2.0,
+        "trail_atr_mult": 2.0,
+        "trail_min_r": 1.0,
+        "eod_loss_cut_minute": 870
+      },
+      "training": {
+        "closed": 153,
+        "net": -71.677,
+        "ex_best": -83.8527,
+        "fees": 44.7906,
+        "drawdown": 80.918,
+        "wins": 29,
+        "profit_factor": 0.6492,
+        "final_equity": 1928.323,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_THESIS_FAILED": 91,
+          "SMART_THESIS_STALLED": 19,
+          "SMART_EOD_LOSS_CUT": 12,
+          "SMART_SESSION_DEADLINE": 20,
+          "SMART_PAPER_STOP": 11
+        }
+      },
+      "status": "UNPROFITABLE_NOT_PROMOTED"
+    },
+    {
+      "name": "S2_DAY_HIGH",
+      "parameters": {
+        "policy_version": "S2_DAY_HIGH",
+        "anchor_mode": "day_high",
+        "base_lookback": 30,
+        "min_base_bars": 15,
+        "entry_start_minute": 630,
+        "entry_end_minute": 855,
+        "min_pace_rvol": 1.8,
+        "min_surge": 2.0,
+        "require_vwap": true,
+        "arm_score": 0.45,
+        "fast_entry_score": 0.85,
+        "fast_entry_max_chase_atr": 0.35,
+        "fast_entry_min_clv": 0.6,
+        "exhaustion_rsi": 85.0,
+        "max_chase_atr": 1.5,
+        "noise_atr_mult": 1.5,
+        "min_noise_pct": 0.012,
+        "min_stop_ticks": 3,
+        "tick": 0.01,
+        "max_stop_pct": 0.035,
+        "retest_atr": 0.5,
+        "arm_expiry_minutes": 15,
+        "max_closes_inside_base": 2,
+        "max_cost_share_of_risk": 0.25,
+        "cooldown_minutes": 30,
+        "max_entries_per_ticker_day": 1,
+        "failed_breakout_closes": 4,
+        "stall_minutes": 60,
+        "stall_max_mfe_r": 0.5,
+        "breakeven_r": 1.0,
+        "partial_r": 2.0,
+        "trail_start_r": 1.5,
+        "trail_atr_mult": 2.0,
+        "trail_min_r": 1.0,
+        "eod_loss_cut_minute": 870
+      },
+      "training": {
+        "closed": 51,
+        "net": -29.4694,
+        "ex_best": -41.8875,
+        "fees": 14.1832,
+        "drawdown": 49.1533,
+        "wins": 13,
+        "profit_factor": 0.6817,
+        "final_equity": 1970.5306,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_THESIS_FAILED": 26,
+          "SMART_EOD_LOSS_CUT": 3,
+          "SMART_PAPER_STOP": 10,
+          "SMART_THESIS_STALLED": 8,
+          "SMART_SESSION_DEADLINE": 4
+        }
+      },
+      "status": "UNPROFITABLE_NOT_PROMOTED"
+    },
+    {
+      "name": "S2_RETEST",
+      "parameters": {
+        "policy_version": "S2_RETEST",
+        "anchor_mode": "base",
+        "base_lookback": 30,
+        "min_base_bars": 15,
+        "entry_start_minute": 630,
+        "entry_end_minute": 855,
+        "min_pace_rvol": 1.8,
+        "min_surge": 1.5,
+        "require_vwap": true,
+        "arm_score": 0.45,
+        "fast_entry_score": 1.1,
+        "fast_entry_max_chase_atr": 0.35,
+        "fast_entry_min_clv": 0.6,
+        "exhaustion_rsi": 85.0,
+        "max_chase_atr": 0.5,
+        "noise_atr_mult": 1.5,
+        "min_noise_pct": 0.012,
+        "min_stop_ticks": 3,
+        "tick": 0.01,
+        "max_stop_pct": 0.035,
+        "retest_atr": 0.5,
+        "arm_expiry_minutes": 15,
+        "max_closes_inside_base": 2,
+        "max_cost_share_of_risk": 0.25,
+        "cooldown_minutes": 30,
+        "max_entries_per_ticker_day": 1,
+        "failed_breakout_closes": 4,
+        "stall_minutes": 60,
+        "stall_max_mfe_r": 0.5,
+        "breakeven_r": 1.0,
+        "partial_r": 2.0,
+        "trail_start_r": 2.0,
+        "trail_atr_mult": 2.0,
+        "trail_min_r": 1.0,
+        "eod_loss_cut_minute": 870
+      },
+      "training": {
+        "closed": 65,
+        "net": -3.8992,
+        "ex_best": -18.685,
+        "fees": 18.2806,
+        "drawdown": 42.8272,
+        "wins": 18,
+        "profit_factor": 0.9636,
+        "final_equity": 1996.1008,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_THESIS_FAILED": 37,
+          "SMART_EOD_LOSS_CUT": 5,
+          "SMART_PAPER_STOP": 10,
+          "SMART_SESSION_DEADLINE": 9,
+          "SMART_THESIS_STALLED": 4
+        }
+      },
+      "status": "UNPROFITABLE_NOT_PROMOTED"
+    },
+    {
+      "name": "S3_CLEAN_RETEST",
+      "parameters": {
+        "policy_version": "S3_CLEAN_RETEST",
+        "anchor_mode": "base",
+        "base_lookback": 30,
+        "min_base_bars": 15,
+        "entry_start_minute": 630,
+        "entry_end_minute": 855,
+        "min_pace_rvol": 1.5,
+        "min_surge": 1.5,
+        "require_vwap": true,
+        "arm_score": 0.45,
+        "fast_entry_score": 1.1,
+        "fast_entry_max_chase_atr": 0.35,
+        "fast_entry_min_clv": 0.6,
+        "exhaustion_rsi": 85.0,
+        "max_chase_atr": 0.5,
+        "noise_atr_mult": 2.0,
+        "min_noise_pct": 0.015,
+        "min_stop_ticks": 3,
+        "tick": 0.01,
+        "max_stop_pct": 0.035,
+        "retest_atr": 0.35,
+        "arm_expiry_minutes": 15,
+        "max_closes_inside_base": 3,
+        "max_cost_share_of_risk": 0.25,
+        "cooldown_minutes": 30,
+        "max_entries_per_ticker_day": 1,
+        "failed_breakout_closes": 4,
+        "stall_minutes": 60,
+        "stall_max_mfe_r": 0.5,
+        "breakeven_r": 1.0,
+        "partial_r": 2.0,
+        "trail_start_r": 2.0,
+        "trail_atr_mult": 2.0,
+        "trail_min_r": 1.0,
+        "eod_loss_cut_minute": 870
+      },
+      "training": {
+        "closed": 79,
+        "net": -15.8567,
+        "ex_best": -29.7289,
+        "fees": 18.9689,
+        "drawdown": 47.9119,
+        "wins": 19,
+        "profit_factor": 0.8405,
+        "final_equity": 1984.1433,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_THESIS_FAILED": 44,
+          "SMART_EOD_LOSS_CUT": 8,
+          "SMART_THESIS_STALLED": 8,
+          "SMART_PAPER_STOP": 7,
+          "SMART_SESSION_DEADLINE": 12
+        }
+      },
+      "status": "UNPROFITABLE_NOT_PROMOTED"
+    },
+    {
+      "name": "S3_WINNER_ROOM",
+      "parameters": {
+        "policy_version": "S3_WINNER_ROOM",
+        "anchor_mode": "base",
+        "base_lookback": 30,
+        "min_base_bars": 15,
+        "entry_start_minute": 630,
+        "entry_end_minute": 855,
+        "min_pace_rvol": 1.8,
+        "min_surge": 1.5,
+        "require_vwap": true,
+        "arm_score": 0.45,
+        "fast_entry_score": 1.1,
+        "fast_entry_max_chase_atr": 0.35,
+        "fast_entry_min_clv": 0.6,
+        "exhaustion_rsi": 85.0,
+        "max_chase_atr": 0.5,
+        "noise_atr_mult": 1.5,
+        "min_noise_pct": 0.012,
+        "min_stop_ticks": 3,
+        "tick": 0.01,
+        "max_stop_pct": 0.035,
+        "retest_atr": 0.5,
+        "arm_expiry_minutes": 15,
+        "max_closes_inside_base": 2,
+        "max_cost_share_of_risk": 0.25,
+        "cooldown_minutes": 30,
+        "max_entries_per_ticker_day": 1,
+        "failed_breakout_closes": 6,
+        "stall_minutes": 75,
+        "stall_max_mfe_r": 0.5,
+        "breakeven_r": 1.0,
+        "partial_r": 2.0,
+        "trail_start_r": 2.0,
+        "trail_atr_mult": 3.0,
+        "trail_min_r": 1.0,
+        "eod_loss_cut_minute": 870
+      },
+      "training": {
+        "closed": 65,
+        "net": -24.7662,
+        "ex_best": -39.552,
+        "fees": 18.18,
+        "drawdown": 49.0747,
+        "wins": 18,
+        "profit_factor": 0.8045,
+        "final_equity": 1975.2338,
+        "unresolved": 0,
+        "exit_reasons": {
+          "SMART_PAPER_STOP": 13,
+          "SMART_EOD_LOSS_CUT": 5,
+          "SMART_THESIS_FAILED": 35,
+          "SMART_SESSION_DEADLINE": 9,
+          "SMART_THESIS_STALLED": 3
+        }
+      },
+      "status": "UNPROFITABLE_NOT_PROMOTED"
+    }
+  ],
+  "count": 20,
+  "unique_economic_finalists": 2,
+  "validation_used_for_tuning": false,
+  "new_profit_qualification": false
+}

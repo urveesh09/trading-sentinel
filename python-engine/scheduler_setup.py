@@ -987,6 +987,193 @@ def register_penny_scheduler_jobs(scheduler):
         coalesce=True,
     )
 
+    # [OV2 2026-11-04] Read-only post-close liquidity probe for the ON_V2
+    # shadow: quote the day's ranked picks after the 15:30 close and after the
+    # 16:00 end of the post-close session. Never places an order.
+    async def _run_edge_overnight_probe_safe(phase: str):
+        import edge_overnight_paper as eop
+        if not (settings.EDGE_OVERNIGHT_PAPER_ENABLED and eop.postclose_probe_enabled()):
+            return
+        if not _main.kite.access_token:
+            logger.warning("edge_overnight_probe_skip phase=%s reason=no_access_token", phase)
+            return
+        try:
+            await eop.run_postclose_probe(_main.kite, phase)
+        except Exception as exc:
+            logger.error("edge_overnight_probe_failed phase=%s err=%s", phase, type(exc).__name__, exc_info=True)
+
+    async def _run_edge_overnight_probe_close_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_edge_overnight_probe_safe("CLOSE")
+
+    async def _run_edge_overnight_probe_post_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_edge_overnight_probe_safe("POST")
+
+    scheduler.add_job(
+        _run_edge_overnight_probe_close_safe, "cron",
+        day_of_week="mon-fri", hour=15, minute=32,
+        id="edge_overnight_probe_close",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=300,
+    )
+    scheduler.add_job(
+        _run_edge_overnight_probe_post_safe, "cron",
+        day_of_week="mon-fri", hour=16, minute=3,
+        id="edge_overnight_probe_post",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=1200,
+    )
+
+    # [OV3] Independent capacity evidence, default off. No orders or fills.
+    # Tight windows exclude CAS matching and count later trades only after
+    # the hypothetical decision. Existing ON_V2/probe jobs are untouched.
+    async def _run_overnight_evidence_safe(phase: str):
+        import overnight_execution_evidence as evidence
+        if not (settings.EDGE_OVERNIGHT_PAPER_ENABLED and evidence.enabled()):
+            return
+        if not _main.kite.access_token:
+            return
+        try:
+            await evidence.collect(_main.kite, phase)
+        except Exception as exc:
+            logger.error('overnight_evidence_failed phase=%s err=%s', phase, type(exc).__name__, exc_info=True)
+
+    async def _run_overnight_evidence_pre_safe():
+        if not settings.EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_overnight_evidence_safe('PRE')
+
+    async def _run_overnight_evidence_decision_safe():
+        if not settings.EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_overnight_evidence_safe('DECISION')
+
+    async def _run_overnight_evidence_end_safe():
+        if not settings.EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_overnight_evidence_safe('END')
+
+    scheduler.add_job(
+        _run_overnight_evidence_pre_safe, 'cron',
+        day_of_week='mon-fri', hour=15, minute=49,
+        id='overnight_evidence_pre', max_instances=1, coalesce=True, misfire_grace_time=30,
+    )
+    scheduler.add_job(
+        _run_overnight_evidence_decision_safe, 'cron',
+        day_of_week='mon-fri', hour=15, minute=51,
+        id='overnight_evidence_decision', max_instances=1, coalesce=True, misfire_grace_time=30,
+    )
+    scheduler.add_job(
+        _run_overnight_evidence_end_safe, 'cron',
+        day_of_week='mon-fri', hour=16, minute=3,
+        id='overnight_evidence_end', max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+
+    # [SV3 2026-11-04] Smart V3 paper book (penny_smart_v3.py): opening-auction
+    # reversal. 09:07 pre-open decision, 09:16 settle/fill, 15:15 bid snapshot.
+    # Quotes only; never places an order. Each phase has its own trading-day gate.
+    async def _run_smart_v3_safe(phase: str):
+        if not getattr(settings, 'PENNY_SMART_V3_ENABLED', True):
+            return
+        if not _main.kite.access_token:
+            logger.warning('penny_smart_v3_skip phase=%s reason=no_access_token', phase)
+            return
+        import penny_smart_v3 as sv3
+        run = {'PREOPEN': sv3.run_preopen, 'OPEN': sv3.run_open, 'BID': sv3.run_bid}[phase]
+        try:
+            await run(_main.kite)
+        except Exception as exc:
+            logger.error('penny_smart_v3_failed phase=%s err=%s', phase, type(exc).__name__, exc_info=True)
+
+    async def _run_smart_v3_preopen_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_v3_safe('PREOPEN')
+
+    async def _run_smart_v3_open_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_v3_safe('OPEN')
+
+    async def _run_smart_v3_bid_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_v3_safe('BID')
+
+    scheduler.add_job(
+        _run_smart_v3_preopen_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=7,
+        id='penny_smart_v3_preopen', max_instances=1, coalesce=True, misfire_grace_time=45,
+    )
+    scheduler.add_job(
+        _run_smart_v3_open_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=16,
+        id='penny_smart_v3_open', max_instances=1, coalesce=True, misfire_grace_time=1500,
+    )
+    scheduler.add_job(
+        _run_smart_v3_bid_safe, 'cron',
+        day_of_week='mon-fri', hour=15, minute=15,
+        id='penny_smart_v3_bid', max_instances=1, coalesce=True, misfire_grace_time=240,
+    )
+
+    # Smart exit/capacity evidence is separate from the original V3 book.
+    async def _run_smart_morning_evidence_safe(phase):
+        if not (settings.PENNY_SMART_MORNING_EVIDENCE_ENABLED and settings.PENNY_SMART_V3_ENABLED):
+            return
+        if not _main.kite.access_token:
+            return
+        try:
+            from penny_smart_morning_evidence import collect
+            await collect(_main.kite, phase)
+        except Exception as exc:
+            logger.error('smart_morning_evidence_failed phase=%s err=%s', phase, type(exc).__name__)
+
+    async def _run_smart_matching_evidence_safe():
+        if not settings.PENNY_SMART_MORNING_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_morning_evidence_safe('AUCTION')
+
+    async def _run_smart_bid0930_evidence_safe():
+        if not settings.PENNY_SMART_MORNING_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_morning_evidence_safe('MORNING')
+
+    scheduler.add_job(
+        _run_smart_matching_evidence_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=12,
+        id='smart_matching_evidence', max_instances=1, coalesce=True, misfire_grace_time=45,
+    )
+    scheduler.add_job(
+        _run_smart_bid0930_evidence_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=30,
+        id='smart_bid0930_evidence', max_instances=1, coalesce=True, misfire_grace_time=45,
+    )
+
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
     # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today

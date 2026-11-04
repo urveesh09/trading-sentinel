@@ -1,0 +1,44 @@
+{
+  "candidate": "N3_G05",
+  "status": "RESEARCH_ONLY_NOT_PROMOTED",
+  "genome": {
+    "name": "N3_G05",
+    "lookback": 60,
+    "day_fade_weight": 0.5,
+    "momentum_weight": 0.0,
+    "slots": 2,
+    "min_edge": 0.001,
+    "risk_tilt": 0.5,
+    "use_shipped_candidates": true,
+    "strength_weight": 1.0
+  },
+  "active_genes": {
+    "keep_shipped_EDGE_signals_and_ranking": true,
+    "overnight_return_lookback_sessions": 60,
+    "overnight_return_clip": [
+      -0.05,
+      0.05
+    ],
+    "mean_shrinkage": 0.75,
+    "minimum_shrunk_overnight_mean": 0.001,
+    "max_positions": 2
+  },
+  "inactive_genes": [
+    "day_fade_weight",
+    "momentum_weight",
+    "risk_tilt"
+  ],
+  "allocation_tested": [
+    2000,
+    25000,
+    100000
+  ],
+  "best_native_allocation": 25000,
+  "reason_not_promoted": [
+    "native adverse friction is not profitable",
+    "2025 underperforms incumbent",
+    "gain largely concentration",
+    "conditional static-cohort daily proxies, no untouched execution qualification",
+    "Smart candidates unprofitable"
+  ]
+}

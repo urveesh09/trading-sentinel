@@ -1,0 +1,17 @@
+{
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "packages": {
+    "numpy": "1.26.4",
+    "pandas": "2.2.1",
+    "pytest": "8.0.0",
+    "aiosqlite": "0.21.0"
+  },
+  "dependencies_changed": false,
+  "data_source": "public Yahoo archived raw plus pre-existing V2 Kite/Yahoo pickles",
+  "breeze_calls": 0,
+  "broker_order_calls": 0,
+  "broker_quote_calls_during_research": 0,
+  "replay": "offline functions only, no live process/scheduler started",
+  "scope": "fixed 25000 portfolio proxies; not a whole-system portfolio"
+}

@@ -41,8 +41,9 @@ async def test_penny_experiment_shape_and_honest_nulls(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ready"
-    assert set(body["registry"]) == {"PEN_BASE", "PEN_WINDOW", "PEN_VOLUME"}
+    assert set(body["registry"]) == {"PEN_BASE", "PEN_WINDOW", "PEN_VOLUME", "PEN_AFTERNOON"}
     assert body["registry"]["PEN_WINDOW"]["time_start_min"] == 600
+    assert body["registry"]["PEN_AFTERNOON"]["time_start_min"] == 780
     assert body["registry"]["PEN_VOLUME"]["volume_multiplier"] == 1.5
     assert body["comparison"]["variants"][0]["net_pnl"] is None
     query.assert_awaited_once_with(settings.DB_PATH)

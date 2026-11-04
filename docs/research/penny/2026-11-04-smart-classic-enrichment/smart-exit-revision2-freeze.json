@@ -1,0 +1,69 @@
+{
+  "sources": {
+    "scripts/smart_classic_study.py": "e2071d711f89ea4a36589548ca2e222c855fbe737bd0764498d91fe5c7180ac5",
+    "python-engine/smart_classic_enrichment.py": "3b70e496252c28646361823d74f809320023f4aad68d6990bbb65127f544a14f",
+    "docs/research/penny/2026-11-04-intraday/idata.py": "245a128e50bba689fc8e6f4310149c929ebcdbf6c2c1fbab1248f156f39b2052",
+    "docs/research/penny/2026-11-04-intraday/minute_oar.py": "8cfd720ec3cb19b2f9c9f3b3612353259d027e13a824ac7ea2ba121290fda9da",
+    "docs/research/penny/2026-11-04-intraday/oarsim.py": "36ad809e9d9275b532849ca1b20dd552afd1243b632534c5857661a2e8f5ea5b",
+    "python-engine/penny_smart_v3.py": "9dd5cb246a94fccdfb6e5c3b38dda6794cb35ec67ec44b42c358b9cc0012d224",
+    "python-engine/penny_engine_connors.py": "554b88468d55007cdb73d88debe01fa45fda6052c2bcadc231160f2b6d4b1ea6",
+    "python-engine/penny_engine_breakout.py": "cd4c473f3485c16c516e90593e5717bf2cf31537d62a8abd9c219d57c69dad09",
+    "python-engine/penny_risk.py": "91ca4f1ae55a6e1d75a564802f294dbf316db74ef7b97a795f2ec8ff32e7d1cf",
+    "python-engine/penny_universe.py": "e10dd567e551cff8b07ce25c9d1b7420b636649dcd1877fcd66566fabf1c5a86",
+    "python-engine/research_penny_cnc_lifecycle.py": "cc2dab2013cb043ed117d695de030404f38dc8bae3fcc18cd72ede7f0cc293fd",
+    "python-engine/research_data_contracts.py": "38905b3dfe52184d24ebe44ab5c03a3cb02657e7863ff7355931c53b9de2562f",
+    "python-engine/penny_lifecycle_replay.py": "3d38866756567e698ca3066edb0ca153c8098d79659d73a673c13703b3c8ea69",
+    "python-engine/position_tracker.py": "924a1f633038c5d6ca508ad85c4fc29da6b9cc57fc579ef9ab8f838296fc78cb",
+    "python-engine/config.py": "a14a87f85b2c2833fb26cf4b8d24af09dcf076af2381109fa364193469e0f106",
+    "docs/research/penny/2026-11-04-smart-classic-enrichment/opening_exits.py": "3b3737097f86c32a31f8b5d0a97d4e5478297f68fb5037808ff728dea93c2da4"
+  },
+  "data": {
+    "docs/research/penny/2026-11-04-strategy-search/_local/production-cash.sqlite": "4eaa5575c9606c0d1cb64414754f1af770b770c64ac148ac60b35356d314ca88",
+    "docs/research/kite/2026-10-05-penny-h1/_local/validated-kite.sqlite": "e81821095c26f5f098f4a5838cdb0508028c9d885da8db9a416de38d571acbca",
+    "docs/research/penny/2026-11-04-overnight-enrichment/_local/older/yahoo.sqlite": "de4b69312a0f663614b73af6ff10987d554c2908ce6d2a68933ff78346f98de8",
+    "docs/research/penny/2026-11-04-overnight-v2/_local/yahoo/yahoo.sqlite": "fdb42725847330a163b064ef2a0a330937cfbd51221256e589a279a936f1f738",
+    "docs/research/penny/2026-11-04-overnight-v2/_local/yahoo-split-cuts.json": "003482e849694d32d00a7348c97901e054ec4ce6d054e2b7da727de7db0afd0e",
+    "docs/research/penny/2026-11-04-overnight-v2/_local/yahoo-acquisition.json": "498fa5213eb8a7b7a2a3fb1f836b2ab8cbff08ccf49079db8e024dd6fe31bfa8",
+    "docs/research/penny/2026-11-04-smart-classic-enrichment/cross-name-acquisition.json": "1d31f0ac29ae703e058f6e5781bac585de2e4b41459fb6d423423f763ee446b6",
+    "docs/research/penny/2026-11-04-smart-classic-enrichment/nse-etf-identity.json": "f02ce8dbba10c49d8f7a2aebf1d40a538b3ceeaf39684db1339f09918e35fcc5"
+  },
+  "arms": [
+    "SV3_MORNING_0930",
+    "SV3_GAP_TARGET_1000"
+  ],
+  "entry": "identical V3 final-auction reference pool, cash/volume proxy, ETF exclusion; no claim of pre-auction selection",
+  "exits": [
+    "first positive-volume/non-flat-down bar from09:30",
+    "resting prevclose*0.995 crossed before10:00, else first tradable bar from10:00"
+  ],
+  "models": [
+    [
+      0,
+      0,
+      null
+    ],
+    [
+      25,
+      25,
+      null
+    ],
+    [
+      50,
+      50,
+      null
+    ],
+    [
+      100,
+      100,
+      null
+    ],
+    [
+      25,
+      25,
+      20261104
+    ]
+  ],
+  "cash": 2000,
+  "cross_name_opened": false,
+  "acceptance": "positive/ex-best,30+ closes,no open; >=10% net improvement OR20% lower DD with95% net retained on both seen panels; cross-name check separate, not chronology"
+}

@@ -1,0 +1,22 @@
+{
+  "period": [
+    "2023-01-02",
+    "2023-01-10"
+  ],
+  "result": "EXACT",
+  "metrics": {
+    "closed": 2,
+    "net": -9.2384,
+    "ex_best": -32.5541,
+    "fees": 66.4645,
+    "drawdown": 52.5796,
+    "wins": 1,
+    "profit_factor": 0.7162,
+    "final_equity": 24990.7615,
+    "unresolved": 0,
+    "exit_reasons": {
+      "NEXT_OPEN": 2
+    }
+  },
+  "checked": "shipped scan/own-cash replay versus cached adapter; full equity curves equal"
+}

@@ -1,0 +1,12 @@
+{
+ "exam_kite_jan_jul": {
+  "sessions": 143,
+  "research_trades": 120,
+  "mismatches": []
+ },
+ "production_kite_aug_nov": {
+  "sessions": 55,
+  "research_trades": 36,
+  "mismatches": []
+ }
+}

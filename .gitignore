@@ -17,3 +17,6 @@ __pycache__/
 .DS_Store
 *venv/
 logs/
+
+# Penny research raw candles and scratch state.
+docs/research/penny/**/_local/

@@ -1,0 +1,1653 @@
+{
+  "mechanics": [
+    {
+      "file": "_local\\results\\r1_kite_V2_NATIVE_36_5_0.5.json",
+      "trades": 368,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r1_kite_V2_NATIVE_36_5_0.75.json",
+      "trades": 447,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r1_kite_V2_NATIVE_36_5_1.0.json",
+      "trades": 533,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r1_kite_V2_NATIVE_60_20_0.75.json",
+      "trades": 454,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_DIVERSIFY_36_5_0.5.json",
+      "trades": 319,
+      "open_at_end": 1,
+      "max_daily_reserved": 24964.409999999996
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_DIVERSIFY_36_5_0.75.json",
+      "trades": 396,
+      "open_at_end": 1,
+      "max_daily_reserved": 24964.409999999996
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_DIVERSIFY_36_5_1.0.json",
+      "trades": 481,
+      "open_at_end": 1,
+      "max_daily_reserved": 24964.409999999996
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_DIVERSIFY_60_20_0.75.json",
+      "trades": 405,
+      "open_at_end": 1,
+      "max_daily_reserved": 24964.409999999996
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_HYBRID_36_5_0.5.json",
+      "trades": 533,
+      "open_at_end": 1,
+      "max_daily_reserved": 24967.073416
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_HYBRID_36_5_0.75.json",
+      "trades": 533,
+      "open_at_end": 1,
+      "max_daily_reserved": 24967.073416
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_HYBRID_36_5_1.0.json",
+      "trades": 533,
+      "open_at_end": 1,
+      "max_daily_reserved": 24967.073416
+    },
+    {
+      "file": "_local\\results\\r1_kite_V3_HYBRID_60_20_0.75.json",
+      "trades": 534,
+      "open_at_end": 1,
+      "max_daily_reserved": 24969.557259999998
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V2_NATIVE_36_5_0.5.json",
+      "trades": 1097,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V2_NATIVE_36_5_0.75.json",
+      "trades": 1359,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V2_NATIVE_36_5_1.0.json",
+      "trades": 1606,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V2_NATIVE_60_20_0.75.json",
+      "trades": 1372,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_DIVERSIFY_36_5_0.5.json",
+      "trades": 1091,
+      "open_at_end": 0,
+      "max_daily_reserved": 24966.809832572937
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_DIVERSIFY_36_5_0.75.json",
+      "trades": 1352,
+      "open_at_end": 0,
+      "max_daily_reserved": 24966.809832572937
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_DIVERSIFY_36_5_1.0.json",
+      "trades": 1605,
+      "open_at_end": 0,
+      "max_daily_reserved": 24966.809832572937
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_DIVERSIFY_60_20_0.75.json",
+      "trades": 1365,
+      "open_at_end": 0,
+      "max_daily_reserved": 24966.809832572937
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_HYBRID_36_5_0.5.json",
+      "trades": 1606,
+      "open_at_end": 0,
+      "max_daily_reserved": 24969.988862675094
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_HYBRID_36_5_0.75.json",
+      "trades": 1606,
+      "open_at_end": 0,
+      "max_daily_reserved": 24969.988862675094
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_HYBRID_36_5_1.0.json",
+      "trades": 1606,
+      "open_at_end": 0,
+      "max_daily_reserved": 24969.988862675094
+    },
+    {
+      "file": "_local\\results\\r1_yahoo_V3_HYBRID_60_20_0.75.json",
+      "trades": 1606,
+      "open_at_end": 0,
+      "max_daily_reserved": 24968.564312561037
+    },
+    {
+      "file": "_local\\results\\r2_kite_V2_NATIVE_36_5_0.5.json",
+      "trades": 368,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_kite_V2_NATIVE_36_5_0.75.json",
+      "trades": 447,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_kite_V2_NATIVE_36_5_1.0.json",
+      "trades": 533,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_kite_V2_NATIVE_60_20_0.75.json",
+      "trades": 454,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_ANCHOR_36_5_0.5.json",
+      "trades": 328,
+      "open_at_end": 1,
+      "max_daily_reserved": 24948.879999999997
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_ANCHOR_36_5_0.75.json",
+      "trades": 404,
+      "open_at_end": 1,
+      "max_daily_reserved": 24948.879999999997
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_ANCHOR_36_5_1.0.json",
+      "trades": 485,
+      "open_at_end": 1,
+      "max_daily_reserved": 24948.879999999997
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_ANCHOR_60_20_0.75.json",
+      "trades": 410,
+      "open_at_end": 1,
+      "max_daily_reserved": 24948.879999999997
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_COST_ROUTE_36_5_0.5.json",
+      "trades": 396,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_COST_ROUTE_36_5_0.75.json",
+      "trades": 463,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_COST_ROUTE_36_5_1.0.json",
+      "trades": 533,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_kite_V3_COST_ROUTE_60_20_0.75.json",
+      "trades": 456,
+      "open_at_end": 1,
+      "max_daily_reserved": 24973.550000000003
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V2_NATIVE_36_5_0.5.json",
+      "trades": 1097,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V2_NATIVE_36_5_0.75.json",
+      "trades": 1359,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V2_NATIVE_36_5_1.0.json",
+      "trades": 1606,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V2_NATIVE_60_20_0.75.json",
+      "trades": 1372,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_ANCHOR_36_5_0.5.json",
+      "trades": 1089,
+      "open_at_end": 0,
+      "max_daily_reserved": 24948.900396347046
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_ANCHOR_36_5_0.75.json",
+      "trades": 1358,
+      "open_at_end": 0,
+      "max_daily_reserved": 24948.900396347046
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_ANCHOR_36_5_1.0.json",
+      "trades": 1604,
+      "open_at_end": 0,
+      "max_daily_reserved": 24948.900396347046
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_ANCHOR_60_20_0.75.json",
+      "trades": 1371,
+      "open_at_end": 0,
+      "max_daily_reserved": 24948.900396347046
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_COST_ROUTE_36_5_0.5.json",
+      "trades": 1212,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_COST_ROUTE_36_5_0.75.json",
+      "trades": 1420,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_COST_ROUTE_36_5_1.0.json",
+      "trades": 1606,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\results\\r2_yahoo_V3_COST_ROUTE_60_20_0.75.json",
+      "trades": 1381,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.280017852783
+    },
+    {
+      "file": "_local\\older\\results\\V2_NATIVE_36_5_0.5.json",
+      "trades": 1086,
+      "open_at_end": 0,
+      "max_daily_reserved": 24973.699800491333
+    },
+    {
+      "file": "_local\\older\\results\\V2_NATIVE_36_5_0.75.json",
+      "trades": 1299,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.199605464935
+    },
+    {
+      "file": "_local\\older\\results\\V2_NATIVE_36_5_1.0.json",
+      "trades": 1515,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.199605464935
+    },
+    {
+      "file": "_local\\older\\results\\V2_NATIVE_60_20_0.75.json",
+      "trades": 1307,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.199605464935
+    },
+    {
+      "file": "_local\\older\\results\\V3_COST_ROUTE_36_5_0.5.json",
+      "trades": 1143,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.199605464935
+    },
+    {
+      "file": "_local\\older\\results\\V3_COST_ROUTE_36_5_0.75.json",
+      "trades": 1329,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.199605464935
+    },
+    {
+      "file": "_local\\older\\results\\V3_COST_ROUTE_36_5_1.0.json",
+      "trades": 1515,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.199605464935
+    },
+    {
+      "file": "_local\\older\\results\\V3_COST_ROUTE_60_20_0.75.json",
+      "trades": 1313,
+      "open_at_end": 0,
+      "max_daily_reserved": 24974.199605464935
+    },
+    {
+      "file": "_local\\older\\results\\V3_HYBRID_36_5_0.5.json",
+      "trades": 1515,
+      "open_at_end": 0,
+      "max_daily_reserved": 24966.919403195192
+    },
+    {
+      "file": "_local\\older\\results\\V3_HYBRID_36_5_0.75.json",
+      "trades": 1515,
+      "open_at_end": 0,
+      "max_daily_reserved": 24966.919403195192
+    },
+    {
+      "file": "_local\\older\\results\\V3_HYBRID_36_5_1.0.json",
+      "trades": 1515,
+      "open_at_end": 0,
+      "max_daily_reserved": 24966.919403195192
+    },
+    {
+      "file": "_local\\older\\results\\V3_HYBRID_60_20_0.75.json",
+      "trades": 1515,
+      "open_at_end": 0,
+      "max_daily_reserved": 24969.06547429275
+    }
+  ],
+  "real_panel_parity": {
+    "n": 30,
+    "mismatches": 0,
+    "summary": {
+      "n": 30,
+      "net": 2853.98,
+      "ex_best": 1595.47,
+      "dd": 699.39,
+      "dd_pct_peak": 2.7,
+      "pf": 2.366,
+      "win": 60.0,
+      "mean_pct": 0.778,
+      "median_pct": 0.533,
+      "final": 27853.98,
+      "by_year": {
+        "2025": 2853.98
+      }
+    }
+  },
+  "sensitivity": [
+    {
+      "panel": "yahoo",
+      "model": [
+        36,
+        5,
+        0.5
+      ],
+      "seeds": [
+        {
+          "seed": 20261105,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 75115.96,
+              "dd": 6254.7,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 88702.09,
+              "dd": 3488.66,
+              "open": 0
+            }
+          ],
+          "delta": 13586.12999999999
+        },
+        {
+          "seed": 20261106,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 82758.8,
+              "dd": 2872.34,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 97416.3,
+              "dd": 2949.03,
+              "open": 0
+            }
+          ],
+          "delta": 14657.5
+        },
+        {
+          "seed": 20261107,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 65429.26,
+              "dd": 4642.19,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 81945.6,
+              "dd": 3899.27,
+              "open": 0
+            }
+          ],
+          "delta": 16516.340000000004
+        },
+        {
+          "seed": 20261108,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 73204.26,
+              "dd": 2937.87,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 88713.97,
+              "dd": 2952.9,
+              "open": 0
+            }
+          ],
+          "delta": 15509.710000000006
+        },
+        {
+          "seed": 20261109,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 69957.36,
+              "dd": 3955.48,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 88106.37,
+              "dd": 3130.27,
+              "open": 0
+            }
+          ],
+          "delta": 18149.009999999995
+        },
+        {
+          "seed": 20261110,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 62708.38,
+              "dd": 4183.02,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 80875.38,
+              "dd": 3345.87,
+              "open": 0
+            }
+          ],
+          "delta": 18167.000000000007
+        },
+        {
+          "seed": 20261111,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 76433.83,
+              "dd": 3468.64,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 88132.45,
+              "dd": 3270.91,
+              "open": 0
+            }
+          ],
+          "delta": 11698.619999999995
+        },
+        {
+          "seed": 20261112,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 85207.71,
+              "dd": 3156.64,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 99068.63,
+              "dd": 2921.54,
+              "open": 0
+            }
+          ],
+          "delta": 13860.919999999998
+        },
+        {
+          "seed": 20261113,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 66183.6,
+              "dd": 3128.66,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 84006.85,
+              "dd": 2767.29,
+              "open": 0
+            }
+          ],
+          "delta": 17823.25
+        },
+        {
+          "seed": 20261114,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 73915.09,
+              "dd": 3375.41,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 87919.74,
+              "dd": 2890.67,
+              "open": 0
+            }
+          ],
+          "delta": 14004.650000000009
+        }
+      ],
+      "positive_deltas": 10,
+      "mean_delta": 15397.313,
+      "min_delta": 11698.619999999995,
+      "max_delta": 18167.000000000007
+    },
+    {
+      "panel": "yahoo",
+      "model": [
+        36,
+        5,
+        0.75
+      ],
+      "seeds": [
+        {
+          "seed": 20261105,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 158843.54,
+              "dd": 3428.33,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 160515.46,
+              "dd": 2866.82,
+              "open": 0
+            }
+          ],
+          "delta": 1671.9199999999837
+        },
+        {
+          "seed": 20261106,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 156205.27,
+              "dd": 2817.53,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 160407.17,
+              "dd": 2938.31,
+              "open": 0
+            }
+          ],
+          "delta": 4201.900000000023
+        },
+        {
+          "seed": 20261107,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 150334.3,
+              "dd": 2458.53,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 154504.85,
+              "dd": 2705.68,
+              "open": 0
+            }
+          ],
+          "delta": 4170.5500000000175
+        },
+        {
+          "seed": 20261108,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 149745.03,
+              "dd": 2492.72,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 153370.37,
+              "dd": 2705.68,
+              "open": 0
+            }
+          ],
+          "delta": 3625.3399999999965
+        },
+        {
+          "seed": 20261109,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 149844.64,
+              "dd": 2570.65,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 154997.14,
+              "dd": 2811.88,
+              "open": 0
+            }
+          ],
+          "delta": 5152.5
+        },
+        {
+          "seed": 20261110,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 142147.06,
+              "dd": 3633.61,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 149328.12,
+              "dd": 3318.26,
+              "open": 0
+            }
+          ],
+          "delta": 7181.059999999998
+        },
+        {
+          "seed": 20261111,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 152729.92,
+              "dd": 2511.97,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 154322.77,
+              "dd": 2740.07,
+              "open": 0
+            }
+          ],
+          "delta": 1592.8499999999767
+        },
+        {
+          "seed": 20261112,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 159913.88,
+              "dd": 2507.87,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 161222.77,
+              "dd": 2705.68,
+              "open": 0
+            }
+          ],
+          "delta": 1308.8899999999849
+        },
+        {
+          "seed": 20261113,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 143150.34,
+              "dd": 2511.97,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 150561.57,
+              "dd": 2740.07,
+              "open": 0
+            }
+          ],
+          "delta": 7411.2300000000105
+        },
+        {
+          "seed": 20261114,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 143290.5,
+              "dd": 2866.86,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 146112.2,
+              "dd": 2938.31,
+              "open": 0
+            }
+          ],
+          "delta": 2821.7000000000116
+        }
+      ],
+      "positive_deltas": 10,
+      "mean_delta": 3913.7940000000003,
+      "min_delta": 1308.8899999999849,
+      "max_delta": 7411.2300000000105
+    },
+    {
+      "panel": "yahoo",
+      "model": [
+        60,
+        20,
+        0.5
+      ],
+      "seeds": [
+        {
+          "seed": 20261105,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 54315.06,
+              "dd": 7187.59,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 55333.48,
+              "dd": 7226.75,
+              "open": 0
+            }
+          ],
+          "delta": 1018.4200000000055
+        },
+        {
+          "seed": 20261106,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 62027.45,
+              "dd": 3926.01,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 62025.27,
+              "dd": 3926.01,
+              "open": 0
+            }
+          ],
+          "delta": -2.180000000000291
+        },
+        {
+          "seed": 20261107,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 44995.58,
+              "dd": 6149.08,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 47638.94,
+              "dd": 6149.08,
+              "open": 0
+            }
+          ],
+          "delta": 2643.3600000000006
+        },
+        {
+          "seed": 20261108,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 53123.33,
+              "dd": 3768.38,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 54995.2,
+              "dd": 3768.38,
+              "open": 0
+            }
+          ],
+          "delta": 1871.8699999999953
+        },
+        {
+          "seed": 20261109,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 49705.63,
+              "dd": 4961.47,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 52149.12,
+              "dd": 5026.83,
+              "open": 0
+            }
+          ],
+          "delta": 2443.4900000000052
+        },
+        {
+          "seed": 20261110,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 42202.2,
+              "dd": 5015.29,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 42576.44,
+              "dd": 5024.75,
+              "open": 0
+            }
+          ],
+          "delta": 374.24000000000524
+        },
+        {
+          "seed": 20261111,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 55947.54,
+              "dd": 4228.97,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 57136.61,
+              "dd": 4228.97,
+              "open": 0
+            }
+          ],
+          "delta": 1189.0699999999997
+        },
+        {
+          "seed": 20261112,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 64508.6,
+              "dd": 3736.74,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 64851.94,
+              "dd": 3802.19,
+              "open": 0
+            }
+          ],
+          "delta": 343.3400000000038
+        },
+        {
+          "seed": 20261113,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 46078.85,
+              "dd": 4461.68,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 47405.23,
+              "dd": 4435.21,
+              "open": 0
+            }
+          ],
+          "delta": 1326.3800000000047
+        },
+        {
+          "seed": 20261114,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 53402.78,
+              "dd": 5418.67,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 55192.71,
+              "dd": 5418.67,
+              "open": 0
+            }
+          ],
+          "delta": 1789.9300000000003
+        }
+      ],
+      "positive_deltas": 9,
+      "mean_delta": 1299.792000000002,
+      "min_delta": -2.180000000000291,
+      "max_delta": 2643.3600000000006
+    },
+    {
+      "panel": "yahoo",
+      "model": "50% winner fills correlated within day; seed20261104",
+      "rows": [
+        {
+          "name": "V2_NATIVE",
+          "summary": {
+            "n": 1057,
+            "net": 62251.52,
+            "ex_best": 60032.97,
+            "dd": 4179.78,
+            "dd_pct_peak": 15.72,
+            "pf": 1.751,
+            "win": 46.5,
+            "mean_pct": 0.49,
+            "median_pct": -0.108,
+            "final": 87251.52,
+            "by_year": {
+              "2023": 26493.55,
+              "2024": 18047.59,
+              "2025": 8931.64,
+              "2026": 8778.74
+            },
+            "dd_pct_initial": 16.719
+          },
+          "open": 0
+        },
+        {
+          "name": "V3_COST_ROUTE",
+          "summary": {
+            "n": 1182,
+            "net": 79090.79,
+            "ex_best": 76872.23,
+            "dd": 3638.61,
+            "dd_pct_peak": 13.57,
+            "pf": 1.924,
+            "win": 50.8,
+            "mean_pct": 0.704,
+            "median_pct": 0.045,
+            "final": 104090.79,
+            "by_year": {
+              "2023": 30992.18,
+              "2024": 26136.74,
+              "2025": 10284.8,
+              "2026": 11677.07
+            },
+            "dd_pct_initial": 14.554
+          },
+          "open": 0
+        }
+      ]
+    },
+    {
+      "panel": "older",
+      "model": [
+        36,
+        5,
+        0.5
+      ],
+      "seeds": [
+        {
+          "seed": 20261105,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 9607.57,
+              "dd": 8698.31,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 12158.94,
+              "dd": 8008.32,
+              "open": 0
+            }
+          ],
+          "delta": 2551.370000000001
+        },
+        {
+          "seed": 20261106,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 8242.89,
+              "dd": 8059.72,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 11775.5,
+              "dd": 7733.75,
+              "open": 0
+            }
+          ],
+          "delta": 3532.6100000000006
+        },
+        {
+          "seed": 20261107,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 17719.04,
+              "dd": 8121.55,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 20688.44,
+              "dd": 6387.28,
+              "open": 0
+            }
+          ],
+          "delta": 2969.399999999998
+        },
+        {
+          "seed": 20261108,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 6581.24,
+              "dd": 8071.72,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 10323.3,
+              "dd": 6988.3,
+              "open": 0
+            }
+          ],
+          "delta": 3742.0599999999995
+        },
+        {
+          "seed": 20261109,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 10473.53,
+              "dd": 7470.84,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 15268.52,
+              "dd": 6584.58,
+              "open": 0
+            }
+          ],
+          "delta": 4794.99
+        },
+        {
+          "seed": 20261110,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -1049.17,
+              "dd": 10276.53,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 8156.19,
+              "dd": 8404.99,
+              "open": 0
+            }
+          ],
+          "delta": 9205.36
+        },
+        {
+          "seed": 20261111,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 12448.4,
+              "dd": 6348.46,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 16211.04,
+              "dd": 6375.65,
+              "open": 0
+            }
+          ],
+          "delta": 3762.6400000000012
+        },
+        {
+          "seed": 20261112,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 9052.46,
+              "dd": 8616.89,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 12916.31,
+              "dd": 8162.88,
+              "open": 0
+            }
+          ],
+          "delta": 3863.8500000000004
+        },
+        {
+          "seed": 20261113,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 14081.23,
+              "dd": 8395.11,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 19655.62,
+              "dd": 7247.73,
+              "open": 0
+            }
+          ],
+          "delta": 5574.389999999999
+        },
+        {
+          "seed": 20261114,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 11775.99,
+              "dd": 9150.79,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 17071.97,
+              "dd": 7407.91,
+              "open": 0
+            }
+          ],
+          "delta": 5295.980000000001
+        }
+      ],
+      "positive_deltas": 10,
+      "mean_delta": 4529.265,
+      "min_delta": 2551.370000000001,
+      "max_delta": 9205.36
+    },
+    {
+      "panel": "older",
+      "model": [
+        36,
+        5,
+        0.75
+      ],
+      "seeds": [
+        {
+          "seed": 20261105,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 62214.18,
+              "dd": 5503.42,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 62038.19,
+              "dd": 5548.74,
+              "open": 0
+            }
+          ],
+          "delta": -175.98999999999796
+        },
+        {
+          "seed": 20261106,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 64314.82,
+              "dd": 5584.19,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 65069.93,
+              "dd": 5629.52,
+              "open": 0
+            }
+          ],
+          "delta": 755.1100000000006
+        },
+        {
+          "seed": 20261107,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 74197.59,
+              "dd": 5275.9,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 72804.13,
+              "dd": 5298.44,
+              "open": 0
+            }
+          ],
+          "delta": -1393.4599999999919
+        },
+        {
+          "seed": 20261108,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 67330.83,
+              "dd": 5275.9,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 66960.75,
+              "dd": 5298.44,
+              "open": 0
+            }
+          ],
+          "delta": -370.08000000000175
+        },
+        {
+          "seed": 20261109,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 68685.62,
+              "dd": 5417.53,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 69153.98,
+              "dd": 5462.85,
+              "open": 0
+            }
+          ],
+          "delta": 468.3600000000006
+        },
+        {
+          "seed": 20261110,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 68201.93,
+              "dd": 5404.96,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 67755.48,
+              "dd": 5449.35,
+              "open": 0
+            }
+          ],
+          "delta": -446.4499999999971
+        },
+        {
+          "seed": 20261111,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 71093.11,
+              "dd": 5503.42,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 71581.93,
+              "dd": 5548.74,
+              "open": 0
+            }
+          ],
+          "delta": 488.81999999999243
+        },
+        {
+          "seed": 20261112,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 72369.68,
+              "dd": 5476.41,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 71371.82,
+              "dd": 5476.78,
+              "open": 0
+            }
+          ],
+          "delta": -997.859999999986
+        },
+        {
+          "seed": 20261113,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 68206.33,
+              "dd": 5275.9,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 70184.86,
+              "dd": 5298.44,
+              "open": 0
+            }
+          ],
+          "delta": 1978.5299999999988
+        },
+        {
+          "seed": 20261114,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": 74030.15,
+              "dd": 5335.58,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": 74685.25,
+              "dd": 5335.95,
+              "open": 0
+            }
+          ],
+          "delta": 655.1000000000058
+        }
+      ],
+      "positive_deltas": 5,
+      "mean_delta": 96.20800000000236,
+      "min_delta": -1393.4599999999919,
+      "max_delta": 1978.5299999999988
+    },
+    {
+      "panel": "older",
+      "model": [
+        60,
+        20,
+        0.5
+      ],
+      "seeds": [
+        {
+          "seed": 20261105,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -10727.05,
+              "dd": 18485.1,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -10197.86,
+              "dd": 18691.37,
+              "open": 0
+            }
+          ],
+          "delta": 529.1899999999987
+        },
+        {
+          "seed": 20261106,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -13632.49,
+              "dd": 20635.4,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -13349.07,
+              "dd": 20577.1,
+              "open": 0
+            }
+          ],
+          "delta": 283.4200000000001
+        },
+        {
+          "seed": 20261107,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -7696.13,
+              "dd": 15832.08,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -7285.35,
+              "dd": 15682.23,
+              "open": 0
+            }
+          ],
+          "delta": 410.77999999999975
+        },
+        {
+          "seed": 20261108,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -16734.44,
+              "dd": 20514.11,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -16841.15,
+              "dd": 20732.0,
+              "open": 0
+            }
+          ],
+          "delta": -106.71000000000276
+        },
+        {
+          "seed": 20261109,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -15461.09,
+              "dd": 19668.27,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -14857.37,
+              "dd": 19473.86,
+              "open": 0
+            }
+          ],
+          "delta": 603.7199999999993
+        },
+        {
+          "seed": 20261110,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -20274.02,
+              "dd": 22036.97,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -19318.14,
+              "dd": 22007.44,
+              "open": 0
+            }
+          ],
+          "delta": 955.880000000001
+        },
+        {
+          "seed": 20261111,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -12286.29,
+              "dd": 15489.81,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -12315.92,
+              "dd": 15760.31,
+              "open": 0
+            }
+          ],
+          "delta": -29.6299999999992
+        },
+        {
+          "seed": 20261112,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -10778.8,
+              "dd": 15302.43,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -11396.41,
+              "dd": 15714.2,
+              "open": 0
+            }
+          ],
+          "delta": -617.6100000000006
+        },
+        {
+          "seed": 20261113,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -9055.66,
+              "dd": 12243.69,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -8323.74,
+              "dd": 11884.9,
+              "open": 0
+            }
+          ],
+          "delta": 731.9200000000001
+        },
+        {
+          "seed": 20261114,
+          "rows": [
+            {
+              "name": "V2_NATIVE",
+              "net": -12659.28,
+              "dd": 17448.12,
+              "open": 0
+            },
+            {
+              "name": "V3_COST_ROUTE",
+              "net": -12520.46,
+              "dd": 17826.92,
+              "open": 0
+            }
+          ],
+          "delta": 138.82000000000153
+        }
+      ],
+      "positive_deltas": 7,
+      "mean_delta": 289.9779999999998,
+      "min_delta": -617.6100000000006,
+      "max_delta": 955.880000000001
+    },
+    {
+      "panel": "older",
+      "model": "50% winner fills correlated within day; seed20261104",
+      "rows": [
+        {
+          "name": "V2_NATIVE",
+          "summary": {
+            "n": 1053,
+            "net": -8317.37,
+            "ex_best": -9547.31,
+            "dd": 15392.32,
+            "dd_pct_peak": 51.54,
+            "pf": 0.91,
+            "win": 42.6,
+            "mean_pct": -0.061,
+            "median_pct": -0.318,
+            "final": 16682.63,
+            "by_year": {
+              "2015": 3837.36,
+              "2016": -12486.57,
+              "2017": 1885.92,
+              "2018": -1554.09
+            },
+            "dd_pct_initial": 61.569
+          },
+          "open": 0
+        },
+        {
+          "name": "V3_COST_ROUTE",
+          "summary": {
+            "n": 1099,
+            "net": -2259.75,
+            "ex_best": -3871.23,
+            "dd": 12489.13,
+            "dd_pct_peak": 40.33,
+            "pf": 0.978,
+            "win": 44.9,
+            "mean_pct": 0.062,
+            "median_pct": -0.211,
+            "final": 22740.25,
+            "by_year": {
+              "2015": 5035.78,
+              "2016": -10946.43,
+              "2017": 3736.42,
+              "2018": -85.52
+            },
+            "dd_pct_initial": 49.957
+          },
+          "open": 0
+        }
+      ]
+    }
+  ]
+}

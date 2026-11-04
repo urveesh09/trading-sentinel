@@ -1,0 +1,14 @@
+{
+  "source_commit": "3c54914194ad2eeeaebcbbb51dac4ff92c01afe1",
+  "passed": 6174,
+  "skipped": 4,
+  "warnings": 53,
+  "seconds": 713.72,
+  "exit_code": 0,
+  "failures": 0,
+  "log": "_local/full-suite-final.txt",
+  "log_sha256": "bfd0b831600be455cd0c5ed97143e469cb5fcd35b73d4cfdd2a40d00b35e7ef7",
+  "source_manifest": "final-suite-source.json",
+  "all_final_source_hashes_verified_unchanged": true,
+  "shutdown_log_note": "Existing test_penny_risk.py simulated DB-outage writer reports an unretrieved task through a closed captured log stream at interpreter shutdown; process/test exit remains 0. Preserved, not suppressed."
+}

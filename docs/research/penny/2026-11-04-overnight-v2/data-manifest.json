@@ -1,0 +1,38 @@
+{
+ "kite_cache_copy": {
+  "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\stopped-production\\cache.db",
+  "sha256": "ec9d10da33a5be30e007858d019755ac335796b1fc7a4c2d74c8686b1193d97f",
+  "bytes": 2466689024
+ },
+ "yahoo": {
+  "path": "_local\\yahoo\\yahoo.sqlite",
+  "sha256": "fdb42725847330a163b064ef2a0a330937cfbd51221256e589a279a936f1f738",
+  "bytes": 104058880
+ },
+ "nifty_public": {
+  "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\penny\\2026-11-04-strategy-search\\_local\\public\\public.sqlite",
+  "sha256": "bd4a05099451469d96ddcf945763d68c9a2fc7142fb32743140c94122f12569c",
+  "bytes": 93810688
+ },
+ "days_kite": {
+  "path": "_local\\days-kite.pkl",
+  "sha256": "260586b59901d4ec0c0f88c7b0fce8a6aedb9c384131528f3e269c09b97685cc",
+  "bytes": 46755740
+ },
+ "days_yahoo": {
+  "path": "_local\\days-yahoo.pkl",
+  "sha256": "7cbc8175f69fd50525112587744bcb32b37a5b980c79b8973b8253b50def716d",
+  "bytes": 107650121
+ },
+ "yahoo_acquisition": {
+  "requests": 874,
+  "available": 872,
+  "breeze_calls": 0,
+  "broker_calls": 0,
+  "as_of": "2026-11-04T03:34:22.564556+00:00",
+  "failed": [
+   "AXISVALUE",
+   "LYPSAGEMS"
+  ]
+ }
+}

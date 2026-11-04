@@ -1,0 +1,50 @@
+{
+  "python": "python-engine/winvenv/Scripts/python.exe",
+  "working_copy": "Dev",
+  "commands": [
+    {
+      "task": "acquire older public history",
+      "exit_code": 0,
+      "arguments": "scripts/overnight_enrichment_study.py acquire --run docs/research/penny/2026-11-04-overnight-enrichment"
+    },
+    {
+      "task": "round1 score",
+      "exit_code": 0,
+      "arguments": "scripts/overnight_enrichment_study.py score --round 1 --run docs/research/penny/2026-11-04-overnight-enrichment"
+    },
+    {
+      "task": "round2 score",
+      "exit_code": 0,
+      "arguments": "scripts/overnight_enrichment_study.py score --round 2 --run docs/research/penny/2026-11-04-overnight-enrichment"
+    },
+    {
+      "task": "older frozen score first opening",
+      "exit_code": 0,
+      "arguments": "scripts/overnight_enrichment_exam.py score --run docs/research/penny/2026-11-04-overnight-enrichment"
+    },
+    {
+      "task": "mechanics and fixed-arm diagnostic stress audit",
+      "exit_code": 0,
+      "arguments": "docs/research/penny/2026-11-04-overnight-enrichment/audit.py"
+    },
+    {
+      "task": "focused final calendar/source/surface",
+      "exit_code": 0,
+      "arguments": "-m pytest python-engine/tests/test_penny_cron_gating.py python-engine/tests/test_overnight_enrichment.py python-engine/tests/test_overnight_execution_evidence.py python-engine/tests/test_overnight_v2.py python-engine/tests/test_edge_overnight_paper.py python-engine/tests/test_main_surface_characterization.py -q"
+    },
+    {
+      "task": "initial full suite",
+      "exit_code": 1,
+      "arguments": "-m pytest python-engine/tests -q --tb=short"
+    },
+    {
+      "task": "final full suite",
+      "exit_code": 0,
+      "arguments": "-m pytest python-engine/tests -q --tb=short",
+      "result": "6174 passed, 4 skipped, 53 warnings in 713.72s",
+      "source_commit": "3c54914"
+    }
+  ],
+  "final_full_suite": "complete",
+  "source_bound_before_final_suite": true
+}

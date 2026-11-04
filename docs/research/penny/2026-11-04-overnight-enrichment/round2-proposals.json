@@ -1,0 +1,12 @@
+[
+  {
+    "name": "V3_ANCHOR",
+    "portfolio": "downside",
+    "anchor_first": true
+  },
+  {
+    "name": "V3_COST_ROUTE",
+    "regular_fraction": 0.5,
+    "route_rule": "positive_net"
+  }
+]

@@ -1262,6 +1262,16 @@ class Settings(BaseSettings):
     # noise-aware stop and a three-close thesis failure) beside V1 as its own
     # Rs 2,000 paper book. Research only; V1 is unchanged.
     PENNY_SMART_V2_ENABLED: bool = True
+    # [SV3 2026-11-04] Smart V3 (penny_smart_v3.py): the opening-auction reversal -
+    # buy a Penny name that opens >= 2% below its previous close at the official
+    # open, sell at the official close. Paper only, own book, two variants
+    # (pre-open decision and an after-the-auction reference). Passed its sealed
+    # Jan-Jul 2026 check (docs/research/penny/2026-11-04-intraday/REPORT.md).
+    # Rollback: false (jobs stop; nothing else reads the store).
+    PENNY_SMART_V3_ENABLED: bool = True
+    PENNY_SMART_V3_BANKROLL: float = 2000.0
+    # Read-only 09:12 matching-volume / 09:30 displayed-bid evidence; no orders.
+    PENNY_SMART_MORNING_EVIDENCE_ENABLED: bool = False
     # [FNO-REENTRY 2026-10-07] After a same-day stop in one direction, a new
     # entry in that direction must be beyond the stopped trade's entry level
     # (fno_entry_plan.reentry_confirmed). Never blocks the other direction.
@@ -1489,9 +1499,25 @@ class Settings(BaseSettings):
     # has checked it.
     PARTNER_WATCH_STREAM_ENABLED:  bool  = False
     PARTNER_KITE_WS_URL:           str   = "wss://ws.kite.trade"
+    # [N06 2026-11-04] Owner's order: the Sentinel's own way of trading as advice to the partner
+    # (partner_sentinel.py): its size rule on every plan and check, its rules after a loss and on adding, the
+    # partner's own record on the warnings the frozen score supports, and the Sentinel's main F&O and expiry
+    # paper trades sent as they happen. Messages only. False: the watch as before N06.
+    PARTNER_SENTINEL_ADVICE_ENABLED: bool = True
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True
+    # [OV2 2026-11-04] Read-only quotes of the day's ranked overnight picks at
+    # 15:32 and 16:03: did the post-close session trade enough to fill ON_V2?
+    # No order is placed. Rollback: false (no probe jobs do anything).
+    EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED: bool = True
+    # Separate strict capacity collector, not a fill/order or strategy switch.
+    # Off by default; reads the existing ranked shortlist at 15:49/15:51/16:03.
+    EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED: bool = False
+    # [OV3 2026-11-04] The ON_V3 paper shadow (ON_V2 + 20-day-high picks first +
+    # plain overnight fillers). Paper only; failed its sealed check under 50%
+    # winner denial. Rollback: false (ON_V3 opens nothing; open legs still close).
+    EDGE_OVERNIGHT_V3_SHADOW_ENABLED: bool = True
 
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings

@@ -1,0 +1,14 @@
+[
+  {
+    "panel": "h1",
+    "sessions": 142,
+    "differences": [],
+    "scope": "pure native select/fixed2000/same historical proxy inputs; not lifecycle or fill parity"
+  },
+  {
+    "panel": "recent",
+    "sessions": 65,
+    "differences": [],
+    "scope": "pure native select/fixed2000/same historical proxy inputs; not lifecycle or fill parity"
+  }
+]

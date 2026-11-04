@@ -35,6 +35,16 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_edge_overnight_probe_close_safe",
+    "id": "'edge_overnight_probe_close'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_edge_overnight_probe_post_safe",
+    "id": "'edge_overnight_probe_post'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_expiry_paper_flush_safe",
     "id": "'expiry_paper_flush'",
     "trigger": "'cron'"
@@ -92,6 +102,21 @@
   {
     "func": "_run_momentum_paper_square_off",
     "id": "'momentum_paper_square_off'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_overnight_evidence_decision_safe",
+    "id": "'overnight_evidence_decision'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_overnight_evidence_end_safe",
+    "id": "'overnight_evidence_end'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_overnight_evidence_pre_safe",
+    "id": "'overnight_evidence_pre'",
     "trigger": "'cron'"
   },
   {
@@ -232,6 +257,31 @@
   {
     "func": "_run_research_quote_collection_safe",
     "id": "'research_quote_collection'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_bid0930_evidence_safe",
+    "id": "'smart_bid0930_evidence'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_matching_evidence_safe",
+    "id": "'smart_matching_evidence'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_v3_bid_safe",
+    "id": "'penny_smart_v3_bid'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_v3_open_safe",
+    "id": "'penny_smart_v3_open'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_v3_preopen_safe",
+    "id": "'penny_smart_v3_preopen'",
     "trigger": "'cron'"
   },
   {

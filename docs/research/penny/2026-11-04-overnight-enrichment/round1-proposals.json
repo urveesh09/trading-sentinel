@@ -1,0 +1,11 @@
+[
+  {
+    "name": "V3_DIVERSIFY",
+    "portfolio": "downside",
+    "inverse_risk_weights": true
+  },
+  {
+    "name": "V3_HYBRID",
+    "regular_fraction": 0.5
+  }
+]
