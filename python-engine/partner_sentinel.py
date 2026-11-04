@@ -123,39 +123,53 @@ def size_advice(entry: Optional[float], stop: Optional[float], lot: Optional[int
             "share": per_lot / cash}
 
 
-def size_line(advice: Optional[dict], *, bought_lots: Optional[int] = None, stop_name: str = "the plan stop",
-              verb: str = "bought") -> str:
-    """One line: what the rule gives and what that loses at the stop; "" without advice. ``bought_lots`` over it is
-    said ("You bought 5 lots", or for a check "You asked about 5 lots")."""
+def usual_lots(entry: Optional[float], lot: Optional[int], cash: Optional[float], usual: Optional[float]) -> Optional[int]:
+    """[N06b] The lots the partner's own usual share of cash buys at ``entry`` (at least one); None without a usual."""
+    if not entry or not lot or not cash or not usual or usual <= 0:
+        return None
+    return max(1, int((usual * cash) // (entry * lot)))
+
+
+def _sentinel_part(advice: dict) -> str:
+    rule = f"The Sentinel's own rule (at most {risk_share():.0%} of cash lost at the stop)"
+    if advice["lots"] >= 1:
+        return f"{rule} would take {_lots(advice['lots'])}."
+    return f"{rule} would take less than one lot here: one lot is {_share(advice['share'])} of your cash at the stop."
+
+
+def size_line(advice: Optional[dict], *, usual: Optional[float] = None, entry: Optional[float] = None,
+              bought_lots: Optional[int] = None, stop_name: str = "the plan stop", verb: str = "bought") -> str:
+    """One line on size; "" without advice. [N06b, owner: "don't do extreme conservative, we need them to have
+    freedom"] It leads with the partner's own usual size (``usual``, their share of cash; their usual-size buys
+    were about even, Oct 27 - Nov 4) and what that loses at the stop, then the Sentinel's own 2% rule as a
+    reference. ``bought_lots`` over the usual is said ("You bought 5 lots", for a check "You asked about 5 lots")."""
     if not advice:
         return ""
-    rule = f"it never risks more than {risk_share():.0%} of its cash on one trade"
-    if advice["lots"] >= 1:
-        n = advice["lots"]
-        line = (f"📏 The Sentinel's size for this: {_lots(n)} ({n * advice['lot']}), about −{_amt(n * advice['per_lot'])} "
-                f"at {stop_name}, {_share(n * advice['share'])} of your cash: {rule}.")
+    n = usual_lots(entry, advice["lot"], advice["cash"], usual)
+    if n is not None:
+        line = (f"📏 Your usual size here: about {_lots(n)} ({n * advice['lot']}), {usual:.0%} of your cash; at "
+                f"{stop_name} about −{_amt(n * advice['per_lot'])} ({_share(n * advice['share'])} of your cash). "
+                + _sentinel_part(advice))
+        more = bought_lots is not None and bought_lots > n
     else:
-        line = (f"📏 The Sentinel's size for this: none. One lot ({advice['lot']}) loses about "
-                f"{_amt(advice['per_lot'])} at {stop_name}, {_share(advice['share'])} of your cash, and {rule} "
-                f"({_amt(advice['budget'])} for you): it would pass, or take a cheaper option. If you buy, one lot is "
-                f"the least at risk.")
-    if bought_lots and bought_lots > max(1, advice["lots"]):
+        line = (f"📏 One lot ({advice['lot']}) loses about {_amt(advice['per_lot'])} at {stop_name}, "
+                f"{_share(advice['share'])} of your cash. " + _sentinel_part(advice))
+        more = bought_lots is not None and bought_lots > max(1, advice["lots"])
+    if more:
         line += f" You {verb} {_lots(bought_lots)}."
     return line
 
 
 def follow_line(advice: Optional[dict]) -> str:
-    """For one of the Sentinel's own trades: the lots its rule gives the partner's cash; "" without advice."""
+    """For one of the Sentinel's own trades: what a lot loses at its stop for the partner's cash, and the lots its
+    rule would take; "" without advice. The numbers, not a limit: how many to take is the partner's call."""
     if not advice:
         return ""
-    cash = _amt(advice["cash"])
+    line = (f"📏 For your {_amt(advice['cash'])} cash: each lot ({advice['lot']}) loses about "
+            f"{_amt(advice['per_lot'])} at its stop, {_share(advice['share'])} of your cash. ")
     if advice["lots"] >= 1:
-        n = advice["lots"]
-        return (f"📏 For your {cash} cash its size rule gives {_lots(n)} ({n * advice['lot']}): about "
-                f"−{_amt(n * advice['per_lot'])} at its stop, {_share(n * advice['share'])} of your cash.")
-    return (f"📏 For your {cash} cash: one lot ({advice['lot']}) loses about {_amt(advice['per_lot'])} at its stop, "
-            f"{_share(advice['share'])} of your cash, more than the {risk_share():.0%} it risks itself "
-            f"({_amt(advice['budget'])} for you). If you follow, one lot at most.")
+        return line + f"Its own rule would take {_lots(advice['lots'])} for you."
+    return line + f"Its own rule ({risk_share():.0%} a trade) would take less than one lot for you."
 
 
 AFTER_LOSS_RULE = "After a losing trade the Sentinel itself takes one lot at most for the rest of the day."

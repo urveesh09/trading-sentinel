@@ -50,18 +50,28 @@ def test_the_size_rule_is_the_sentinels_own_two_percent_at_the_stop_with_charges
         assert ps.size_advice(*bad) is None
 
 
-def test_the_size_line_says_what_the_rule_gives_and_never_reads_over_the_rule_as_two_percent():
+def test_the_size_line_leads_with_the_partners_usual_size_and_gives_the_sentinels_rule_as_a_reference():
+    """[N06b] Owner: "don't do extreme conservative, we need them to have freedom". Their usual-size buys were about
+    even; the 2% rule is the Sentinel's own, said beside it, never as "none" or "one lot at most"."""
     a = ps.size_advice(100.0, 90.0, 65, 100_000.0, "NFO")
-    line = ps.size_line(a, bought_lots=5)
-    assert line.startswith("📏 The Sentinel's size for this: 2 lots (130), about −₹")
-    assert "of your cash: it never risks more than 2% of its cash on one trade." in line
+    # 31% of 1 lakh = Rs 31,000 of premium at Rs 100 x 65 = 4 lots.
+    assert ps.usual_lots(100.0, 65, 100_000.0, 0.31) == 4 and ps.usual_lots(100.0, 65, 1_000.0, 0.31) == 1
+    assert ps.usual_lots(100.0, 65, 100_000.0, None) is None
+    line = ps.size_line(a, usual=0.31, entry=100.0, bought_lots=5)
+    assert line.startswith("📏 Your usual size here: about 4 lots (260), 31% of your cash; at the plan stop about −₹")
+    assert "The Sentinel's own rule (at most 2% of cash lost at the stop) would take 2 lots." in line
     assert line.endswith(" You bought 5 lots.")
-    assert ps.size_line(a, bought_lots=2).endswith("on one trade.")            # at the rule: nothing added
-    none = ps.size_line(ps.size_advice(598.75, 499.9, 20, 80456.1, "BFO"), bought_lots=5, verb="asked about")
-    assert "size for this: none. One lot (20) loses about ₹" in none
-    assert "2.5% of your cash" in none                          # one decimal: 2.5%, never "2%" or "3%"
-    assert "(₹1,609 for you): it would pass, or take a cheaper option" in none
-    assert none.endswith("one lot is the least at risk. You asked about 5 lots.")
+    assert "You bought" not in ps.size_line(a, usual=0.31, entry=100.0, bought_lots=4)   # at their usual: nothing
+    nov4 = ps.size_line(ps.size_advice(598.75, 499.9, 20, 80456.1, "BFO"), usual=0.31, entry=598.75, bought_lots=5,
+                        verb="asked about")
+    assert nov4.startswith("📏 Your usual size here: about 2 lots (40), 31% of your cash")
+    assert "would take less than one lot here: one lot is 2.5% of your cash at the stop." in nov4   # never "2%"
+    assert nov4.endswith(" You asked about 5 lots.")
+    for word in ("none", "would pass", "at most.", "least at risk"):
+        assert word not in nov4
+    # No usual known yet: one lot's loss and the Sentinel's rule.
+    bare = ps.size_line(a, bought_lots=5)
+    assert bare.startswith("📏 One lot (65) loses about ₹") and "would take 2 lots. You bought 5 lots." in bare
     assert ps.size_line(None) == ""
 
 
@@ -124,7 +134,7 @@ async def test_a_plan_carries_the_sentinels_size_and_on_a_supported_warning_the_
     plan = pw.Plan(entry=598.75, qty=100, stop=499.9, stop_basis="SWING", swing=98.82, loss=10051.0, cash=80456.1)
     size, notes = await pw._sentinel_notes(db, DAY, plan, lot=20, exchange="BFO", bought=100, bought_px=598.75,
                                            lots=5, usual=0.31, after_loss={"loss": 2957.0, "at": "10:23", "minutes": 1})
-    assert size.startswith("📏 The Sentinel's size for this: none.") and size.endswith("You bought 5 lots.")
+    assert size.startswith("📏 Your usual size here: about 2 lots (40), 31% of your cash") and size.endswith("You bought 5 lots.")
     # 74% of the cash against a usual 31%: the size record; after a loss: the Sentinel's own rule (no record: TOO_FEW).
     assert notes == [ps.record_line(ps.records(db, DAY), "UNUSUAL_SIZE"), ps.AFTER_LOSS_RULE]
     trip = SimpleNamespace(tradingsymbol="SENSEX26N0576700CE", exchange="BFO", product="NRML", open_qty=100, qty=100,
@@ -197,8 +207,8 @@ async def test_the_sentinels_fno_buy_is_offered_once_fresh_with_its_stop_size_an
     assert stop == round(max(120.5 - 0.45 * 60.0, 90.4), 2) == 93.5
     assert text.splitlines()[0] == "🤖 The Sentinel's own trade (paper, not a tip): bought NIFTY 24000 PE (10 Nov) at ₹120.5 at 10:05."
     assert "🛑 Its stop: NIFTY future 24,110, about ₹93.5 on the option. 🎯 Its target: NIFTY future 23,950." in text
-    assert "📏 For your ₹28,600 cash: one lot (65) loses about ₹" in text
-    assert "more than the 2% it risks itself (₹572 for you). If you follow, one lot at most." in text
+    assert "📏 For your ₹28,600 cash: each lot (65) loses about ₹" in text
+    assert text.count("Its own rule (2% a trade) would take less than one lot for you.") == 1 and "at most" not in text
     assert "📊 Its last 1 paper trades: 0 won, −₹750 a lot after charges." in text
     assert text.splitlines()[-1] == "I'll tell you when it sells. Whether to follow is your call."
 
@@ -248,7 +258,8 @@ async def test_the_expiry_main_ticket_is_offered_with_its_size_capped_at_its_own
     assert text.splitlines()[0] == ("🤖 The Sentinel's expiry ticket (paper, not a tip): bought SENSEX 76500 PE "
                                     "(expires today) at ₹40 at 10:04.")
     assert "🛑 Its stop ₹26 or SENSEX 76,950. At 2x (₹80) it sells part and lets the rest run; it sells everything from 15:14." in text
-    assert "📏 For your ₹200,000 cash its size rule gives 2 lots (40)" in text   # 2% of 2 lakh allows more: its own 2
+    assert "📏 For your ₹200,000 cash: each lot (20) loses about ₹" in text
+    assert "Its own rule would take 2 lots for you." in text                    # 2% of 2 lakh allows more: its own 2
     assert "a lot can lose all of its ₹800" in text and "Its first SENSEX expiry ticket on paper" in text
     # Not the main ticket: nothing from the expiry book.
     monkeypatch.setattr(settings, "EXPIRY_MAIN_STRATEGY", "ABC")

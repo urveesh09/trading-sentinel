@@ -57,11 +57,15 @@ sold below its stop between looks counts as sold at the stop.
 
 All of it is messages only, with `PARTNER_SENTINEL_ADVICE_ENABLED` on.
 
-**Every buy's plan and every check** carry "📏 The Sentinel's size for this":
-- the lots its rule allows: at most 2% of the day's cash lost at the plan stop, charges included;
-- or "none" when even one lot loses more. Then it says what one lot loses and that the Sentinel would pass or take
-  a cheaper option.
-- A check adds "You asked about 5 lots" when they ask for more than that; a plan adds "You bought 5 lots".
+**Every buy's plan and every check** carry a 📏 size line. [N06b, owner: "don't do extreme conservative, we need
+them to have freedom"]
+- It leads with the partner's own usual size: the lots their usual share of cash buys at this price, and what
+  that loses at the plan stop. Their usual-size buys were about even.
+- Then the Sentinel's own rule as a reference: at most 2% of the day's cash lost at the stop, charges included. It
+  says how many lots that would take, or "less than one lot here" with one lot's share. It never says "none" and
+  never sets a limit.
+- Bought above their usual adds "You bought 5 lots". A check adds "You asked about 5 lots".
+- Without a usual yet, the line gives what one lot loses and the Sentinel's rule.
 - Shares under 10% show one decimal, so 2.5% never reads as 2%.
 
 **Oversized buys** (over 1.5× their usual share) add their own record: "buys much bigger than your usual, 57
@@ -98,8 +102,9 @@ by "Quiet today"):
   - its stop as an index level and as an option price. For F&O that is the higher of the delta-priced stop and the
     25% backstop, whichever the Sentinel reaches first;
   - its target;
-  - the lots its rule gives the partner's cash: "If you follow, one lot at most" when even one lot is over 2%. For
-    the expiry ticket, capped at its own lots, plus what a lot loses if the price jumps through the stop;
+  - what each lot loses at its stop for the partner's cash, and the lots its own rule would take (or "less than
+    one lot"): numbers, not a limit. For the expiry ticket, capped at its own lots, plus what a lot loses if the
+    price jumps through the stop;
   - its own record: the last 20 closed main-book trades per lot after charges, or the expiry ticket's record on
     that index;
   - that it is paper, can lose, and that following is the partner's call.
@@ -111,7 +116,7 @@ Real-data preview (Nov 4, rendered in Dev from Production's rows copied read-onl
 ```
 🤖 The Sentinel's own trade (paper, not a tip): bought SENSEX 77000 CE (05 Nov) at ₹345.55 at 12:41.
 🛑 Its stop: SENSEX future 76,819, about ₹259.16 on the option. 🎯 Its target: SENSEX future 77,465.
-📏 For your ₹32,305 cash: one lot (20) loses about ₹1,788 at its stop, 5.5% of your cash, more than the 2% it risks itself (₹646 for you). If you follow, one lot at most.
+📏 For your ₹32,305 cash: each lot (20) loses about ₹1,788 at its stop, 5.5% of your cash. Its own rule (2% a trade) would take less than one lot for you.
 📊 Its last 20 paper trades: 7 won, −₹5,308 a lot after charges. It loses on many days; its edge in years of replays is small.
 I'll tell you when it sells. Whether to follow is your call.
 
@@ -122,9 +127,9 @@ I'll tell you when it sells. Whether to follow is your call.
 
 - **The what-if is in-sample.** The rule was not fitted to these days, but the days are seen. The forward check is
   the partner's next weeks: compare buys at or under the Sentinel's size with bigger ones, on the same frozen score.
-- **The 2% rule usually says "none" for this account.** At ₹30k–₹80k of cash, one lot of an at-the-money SENSEX
-  option already risks more than 2% at a normal stop. The message then says one lot at most. That is the honest
-  answer for the size of the account, not a softer rule.
+- **The 2% rule is a reference, not a limit (N06b).** At ₹30k–₹80k of cash, one lot of an at-the-money SENSEX
+  option already risks more than 2% at a normal stop. The owner asked for freedom, so the line leads with the
+  partner's own usual size (about even in their record) and states the Sentinel's rule beside it.
 - **The Sentinel's own forward record is negative.**
   - The last 20 main-book trades are −₹5,308 a lot.
   - The expiry ticket E03.2 runs on SENSEX for the first time on paper. It was fitted on seen NIFTY 2024/2025.

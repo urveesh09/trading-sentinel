@@ -1,3 +1,19 @@
+## November 4 - N06b: partner size advice with freedom; the full Dev branch goes to Production (owner's order)
+
+Owner: "add what you think is best honestly don't do extreme conservative we need them to have freedom ... commit
+push all and deploy ... go deploy it all".
+
+- `partner_sentinel.size_line` leads with the partner's own usual size (`usual_lots`: their usual share of cash
+  at this price) and its loss at the plan stop. The Sentinel's 2% rule follows as a reference ("would take N lots"
+  or "less than one lot here"); never "none" or "one lot at most".
+- `follow_line` (the Sentinel's own trades) gives each lot's loss at its stop and the lots its rule would take.
+- Not added: a "big move is N times more likely" line. In `docs/research/partner/2026-11-04-predictability/` its
+  out-of-sample AUC is 0.60-0.82, but for an option buyer it cuts both ways. It is unscored forward, so it waits
+  for a frozen forward check.
+- Tests: `tests/test_partner_sentinel.py` and the partner tests, 208 passed.
+- Rollout: the owner ordered the whole Dev branch deployed, including the other agent's committed penny and EDGE
+  work. Their uncommitted files are not shipped.
+
 ## November 4 - Smart/Classic enrichment: smart-only-identity-and-readonly-morning-evidence (Dev only)
 
 Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.

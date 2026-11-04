@@ -4665,7 +4665,7 @@ async def _sentinel_notes(db_path: str, day: str, plan: Optional[Plan], *, lot: 
     size_note = ""
     if plan.stop is not None and plan.stop_basis in ("INDEX", "SWING", "CARD") and lot:
         size_note = ps.size_line(ps.size_advice(plan.entry, plan.stop, lot, plan.cash, exchange or "NFO"),
-                                 bought_lots=lots, verb=verb)
+                                 usual=usual, entry=plan.entry, bought_lots=lots, verb=verb)
     recs = await _sentinel_records(db_path, day)
     notes = []
     paid = float(bought_px or 0.0) * float(bought or 0)
