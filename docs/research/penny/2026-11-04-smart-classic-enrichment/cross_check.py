@@ -30,7 +30,7 @@ def freeze():
         'cnc':'daily outcomes already seen; no fresh CNC check claimed','opened':False})
 
 
-def load(f):
+def load(f,audit_name='cross-name-data-audit.json'):
     idata,_,_=legacy();sel=json.loads((HERE/'cross-name-selection.json').read_text());names=set(sel['names'])
     daily_path=ROOT/'docs/research/penny/2026-11-04-overnight-v2/_local/yahoo/yahoo.sqlite'
     cuts=json.loads((daily_path.parents[1]/'yahoo-split-cuts.json').read_text())
@@ -59,7 +59,7 @@ def load(f):
         d+=timedelta(days=1)
     audit.update({'stockdays':len(days),'retained_names':len({d.ticker for d in days}),'calendar_sessions':len(calendar),
         'observed_trading_rows':sum(sum(b[5]>0 for b in d.bars) for d in days)})
-    write(HERE/'cross-name-data-audit.json',dict(audit));return days,daily,calendar
+    write(HERE/audit_name,dict(audit));return days,daily,calendar
 
 
 def score():
@@ -81,5 +81,30 @@ def score():
     write(HERE/'cross-name-results.json',results)
 
 
+def freeze_correction():
+    path=HERE/'cross-contract-correction-freeze.json'
+    if path.exists():raise ValueError('correction freeze exists')
+    original=json.loads((HERE/'cross-name-freeze.json').read_text())
+    write(path,{'sources':bound(),'data':original['data'],'models':original['models'],'window':original['window'],
+        'reason':'synthetic native-rule parity test: reference thinness uses actual clearing price, funded pre-auction basket uses limit; same exit arms and parameters',
+        'original_freeze_sha256':sha(HERE/'cross-name-freeze.json'),'status':'SEEN_CONTRACT_CORRECTION_NOT_A_NEW_EXAM','new_holdout_claim':False})
+
+
+def correct_seen_smart():
+    assert (HERE/'CROSS_NAME_OPENED.json').exists(),'must preserve the original opening'
+    f=json.loads((HERE/'cross-contract-correction-freeze.json').read_text());assert f['sources']==bound()
+    for path,h in f['data'].items():assert sha(ROOT/path)==h,path
+    days,daily,calendar=load(f,'cross-name-corrected-data-audit.json');sets,counts=arms(days,daily,calendar,excluded_etfs());results=[]
+    for name,orders in sets.items():
+        for eb,xb,seed in f['models']:
+            path=HERE/f'_local/results/cross_corrected_{name}_{eb}_{xb}_{seed}.json'
+            if path.exists():raise ValueError('correction output exists')
+            r=run_book(orders,daily,calendar,entry_bps=eb,exit_bps=xb,fill_seed=seed)
+            write(path,r|{'name':name,'model':[eb,xb,seed],'order_counts':counts,'scope':'SEEN_CONTRACT_CORRECTION'})
+            results.append({'name':name,'model':[eb,xb,seed],'summary':r['summary'],'order_counts':counts})
+            print('corrected cross',name,eb,xb,seed,r['summary'],flush=True)
+    assert f['sources']==bound();write(HERE/'cross-name-smart-corrected-results.json',results)
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('command',choices=['freeze','score']);a=p.parse_args();globals()[a.command]()
+    p=argparse.ArgumentParser();p.add_argument('command',choices=['freeze','score','freeze_correction','correct_seen_smart']);a=p.parse_args();globals()[a.command]()

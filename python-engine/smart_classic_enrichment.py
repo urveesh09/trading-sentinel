@@ -125,13 +125,20 @@ def auction_orders(days,daily,calendar,p,bankroll,excluded=()):
             if not universe_ok(t,f,excluded):continue
             est=median(volhist[t][-20:]) if len(volhist[t])>=5 else .008*f['medvol']
             limit=f['close']*(1+p.gap_limit);plan=int((bankroll/p.slots)//limit)
-            if .1*est<.25*plan:continue
             if p.family=='auction_ref':
                 d=by.get((t,day))
                 if not d or not d.day_open or d.day_open/f['close']-1>p.gap_limit:continue
+                # Native reference sizes its thinness test at the clearing
+                # price; funded PRE-auction baskets size at their known limit.
+                # Do not mix these two contracts, especially for deep gaps.
+                from penny_smart_v3 import Candidate,eligible
+                if not eligible(Candidate(t,f['close'],d.day_open,f['tv'],f['medvol'])):continue
+                plan=int((bankroll/p.slots)//d.day_open)
+                if .1*est<.25*plan or plan<1:continue
                 rank=(d.day_open/f['close'],t) # openly labelled final-auction reference
-            elif p.rank=='gapfreq':rank=(-f['gapfreq'],-f['tv'],t)
-            else:rank=(-f['tv'],t)
+            else:
+                if .1*est<.25*plan:continue
+                rank=(-f['gapfreq'],-f['tv'],t) if p.rank=='gapfreq' else (-f['tv'],t)
             pool.append((rank,t,f,est,limit))
         chosen=sorted(pool)[:p.slots]
         for rank,t,f,est,limit in chosen:
@@ -147,7 +154,8 @@ def auction_orders(days,daily,calendar,p,bankroll,excluded=()):
                 bs=bar5(d)
                 outcome=intraday_outcome(d,0,d.day_open,1,0.,p.exit_minute)
             # On 5-minute data this is explicitly a first-5-minute volume proxy.
-            orders.append(Order(day,550,t,d.day_open,1,rank,int(.1*est),cap,
+            known_cap=10**12 if p.family=='auction_ref' else int(.1*est)
+            orders.append(Order(day,550,t,d.day_open,1,rank,known_cap,cap,
                 outcome,{'slot_fraction':1/p.slots,'entry_basis':'AUCTION_ASSUMPTION'},
                 limit if p.family!='auction_ref' else None))
         # Today's opening volume is learned only AFTER today's orders.
@@ -344,7 +352,7 @@ def run_book(orders,daily,calendar,*,bankroll=2000.,entry_bps=25.,exit_bps=25.,m
     for _,equity in curve:peak=max(peak,equity);dd=max(dd,peak-equity)
     months=defaultdict(float);years=defaultdict(float)
     for t in trades:months[t['exit_day'][:7]]+=t['net'];years[t['exit_day'][:4]]+=t['net']
-    net=sum(nets);s={'n':len(trades),'net':round(net,2),'ex_best':round(net-max(nets,default=0),2),
+    net=sum(nets);s={'n':len(trades),'net':round(net,2),'ex_best':round(net-max(0.,max(nets,default=0)),2),
         'dd':round(dd,2),'dd_pct_initial':round(100*dd/bankroll,2),'fees':round(sum(t['fees'] for t in trades),2),
         'win':round(100*sum(x>0 for x in nets)/len(nets),2) if nets else None,
         'months':{k:round(v,2) for k,v in months.items()},'years':{k:round(v,2) for k,v in years.items()},'open':len(held)}

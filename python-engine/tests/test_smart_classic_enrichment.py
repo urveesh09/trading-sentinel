@@ -77,6 +77,12 @@ def test_short_fees_and_cash_identity_are_direction_correct():
     assert r['cash']==pytest.approx(2000+t['net'])
 
 
+def test_no_winner_does_not_remove_a_loss_from_ex_best_winner_metric():
+    d='2026-02-02';o=Order(d,550,'A',20.,1,(0,),9999,9999,(d,900,19.,'loss'),{'slot_fraction':1.})
+    r=run_book([o],{'A':[(d,20.,21.,19.,19.,100000.)]},[d],entry_bps=0,exit_bps=0)
+    assert r['summary']['ex_best']==r['summary']['net']
+
+
 def test_postopen_confirmation_enters_next_completed_bar():
     d=SimpleNamespace(ticker='A',date='2026-02-02',prev_close=20.,median_value20=1000000.,
         median_vol20=100000.,day_open=19.,bars=[(555,19.,19.4,18.9,19.3,10000.),
@@ -90,6 +96,16 @@ def test_missing_today_does_not_change_preselected_auction_pool():
     rows=daily_rows();day=rows['A'][-1][0]
     _,counts=auction_orders([],rows,[day],Policy('basket','basket',slots=4),2000)
     assert counts['PRESELECTED_LIMIT']==4 and counts['MISSING_AUCTION_OUTCOME']==4
+
+
+def test_native_reference_thinness_uses_clearing_price_not_preauction_limit():
+    rows=daily_rows(tickers=('A','B'));day=rows['A'][-1][0]
+    rows['A']=[(*r[:5],50000.) for r in rows['A']]
+    ds=[SimpleNamespace(ticker=t,date=day,day_open=price,day_close=price+.2,day_low=price-.2,
+        bars=[(555,price,price+.3,price-.2,price+.2,100000.)]) for t,price in [('A',10.),('B',19.)]]
+    orders,_=auction_orders(ds,rows,[day],Policy('reference','auction_ref',exit_minute=970),2000)
+    assert orders[0].ticker=='B' # A needs50 shares of normal capacity; only40 available
+    assert orders[0].cap_known>1000000 # history is an admission gate, not realised capacity
 
 
 def test_cnc_pending_deadline_can_wait_beyond_seven_bars_without_fake_exit():

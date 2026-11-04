@@ -116,7 +116,7 @@ def source_hashes():
         *[OLD/n for n in ['idata.py','minute_oar.py','oarsim.py']],
         *[ROOT/'python-engine'/n for n in ['penny_smart_v3.py','penny_engine_connors.py','penny_engine_breakout.py',
             'penny_risk.py','penny_universe.py','research_penny_cnc_lifecycle.py','research_data_contracts.py',
-            'penny_lifecycle_replay.py','position_tracker.py','config.py']]]
+            'penny_lifecycle_replay.py','position_tracker.py','penny_instrument_identity.py','config.py']]]
     return {str(p.relative_to(ROOT)).replace('\\','/'):sha(p) for p in files}
 
 

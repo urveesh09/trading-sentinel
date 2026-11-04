@@ -1,3 +1,13 @@
+## November 4 - Smart/Classic enrichment: smart-only-identity-and-readonly-morning-evidence (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
 ## November 4 - N06 partner advice (pushed, not deployed)
 
 Commit identity: Dev `01671c3`; release branch `codex/n06-partner-advice` `52ef015` (Production `5e30ce0` plus N06 only). Both pushed. Whole suite on the release branch: 3,249 + 2,891 passed, 4 skipped, `pytest_exit=0` each. The PR was not opened (the agent's permission check refused it); not merged, not deployed.

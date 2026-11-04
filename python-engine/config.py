@@ -1270,6 +1270,8 @@ class Settings(BaseSettings):
     # Rollback: false (jobs stop; nothing else reads the store).
     PENNY_SMART_V3_ENABLED: bool = True
     PENNY_SMART_V3_BANKROLL: float = 2000.0
+    # Read-only 09:12 matching-volume / 09:30 displayed-bid evidence; no orders.
+    PENNY_SMART_MORNING_EVIDENCE_ENABLED: bool = False
     # [FNO-REENTRY 2026-10-07] After a same-day stop in one direction, a new
     # entry in that direction must be beyond the stopped trade's entry level
     # (fno_entry_plan.reentry_confirmed). Never blocks the other direction.

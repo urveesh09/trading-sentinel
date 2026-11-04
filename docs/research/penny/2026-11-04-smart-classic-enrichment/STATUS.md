@@ -1,14 +1,19 @@
 # Smart/Classic enrichment status
 
-Mixed-instrument research rounds complete:150+210 models; exit-only30.
-Morning09:30 exit is the most consistent Smart candidate (H1+11.4%net,35.4%
-lowerDD at25bp/side; recent approximatelyflat), not qualified. Other Smart
-alternatives and Classic extensions failed. Native CNC0 entries in both
-minute panels; native MIS exact replay still running.
+Research complete in substance; final reference correction and verification
+in progress. All chronology is seen; no strategy qualified for live capital.
+Retirement recommendation:current Classic MIS/CNC rules; Smart V3 paper only.
+Actual Production and native adapters documented, not inferred from Dev logs.
 
-Identity correction:provider mislabels commodity ETFs as EQUITY. Official
-NSE registry359 exact symbols includes all7 known contaminants. All mixed
-runs preserved; unchanged policies now frozen for stock-only reruns. New
-cross-name minute outcomes remain unopened; final check freeze follows.
-No native strategy, money, Production, push/deployment or setting activation.
-Parallel partner source edits untouched; atlas staged by own module only.
+NSE stock-only correction verified359 ETFs/all7 known contaminants. Native
+fixed-capital selector parity207 sessions,zero differences. Financial audit
+660 result ledgers passed; final corrected Smart-only replays follow. Earlier
+mixed/reference versions preserved,not used as final evidence. Cross-name
+first opening preserved; correction is explicitly SEEN,not a fresh exam.
+
+Dev integration:Smart V3-only ETF exclusion (old held funds still settle);
+independent default-off09:12 matching-volume/09:30 displayed-bid observer.
+No new P&L book/order/capital or shared EDGE-universe change. Two additive
+calendar-gated jobs and API fields. Focused47 passed,one existing warning.
+Final whole-suite run and report pending. No push/deployment; Production
+untouched. Partner01671c3 and owner working bytes remain preserved.

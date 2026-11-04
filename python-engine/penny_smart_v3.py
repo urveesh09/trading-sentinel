@@ -31,6 +31,10 @@ Jobs (scheduler_setup, trading days, ``PENNY_SMART_V3_ENABLED``):
   15:15 ``run_bid``      snapshot each open position: LTP, best bid, day low, lower circuit -
                          the bid is a measured MIS-style exit, the low feeds the lock rule
 Store: ``<DB_PATH>.penny-smart-v3.db``. Never touches the ledger, the executor or V1/V2.
+
+Enrichment Nov4: exact NSE ETF identities also gate new Smart V3 entries;
+previous positions/history still settle normally. The additive morning_evidence
+read side is a separate default-off matching-volume/09:30-bid observer, not fills.
 """
 from __future__ import annotations
 
@@ -136,7 +140,8 @@ class Candidate:
 def eq_series(ticker: str) -> bool:
     """Same-day sale needs rolling settlement: no -BE/-BZ/-SM/... suffix, not an SGB/ETF/bond."""
     from penny_universe import _is_non_equity_symbol
-    return "-" not in ticker and not _is_non_equity_symbol(ticker)
+    from penny_instrument_identity import is_known_etf
+    return "-" not in ticker and not _is_non_equity_symbol(ticker) and not is_known_etf(ticker)
 
 
 def eligible(c: Candidate) -> bool:
@@ -460,6 +465,11 @@ def comparison(db_path: Optional[str] = None) -> dict:
                      "bid_net is the same trade sold at the 15:15 best bid (a measured MIS-style exit).",
                      "Compare with Smart V1/V2 (GET /experiments/penny-smart) on the same sessions."]}
     import os
+    from penny_smart_morning_evidence import summary as morning_summary
+    from penny_instrument_identity import NSE_ETF_AS_OF, NSE_ETF_SHA256
+    out['morning_evidence'] = morning_summary(db_path or settings.DB_PATH)
+    out['equity_identity'] = {'etf_registry_as_of': NSE_ETF_AS_OF, 'etf_registry_sha256': NSE_ETF_SHA256,
+                              'scope': 'Smart V3 only; existing history and shared EDGE universe unchanged'}
     if not os.path.exists(path):
         return out
     try:

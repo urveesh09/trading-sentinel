@@ -260,6 +260,16 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_smart_bid0930_evidence_safe",
+    "id": "'smart_bid0930_evidence'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_matching_evidence_safe",
+    "id": "'smart_matching_evidence'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_smart_v3_bid_safe",
     "id": "'penny_smart_v3_bid'",
     "trigger": "'cron'"

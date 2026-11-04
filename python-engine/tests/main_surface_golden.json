@@ -277,6 +277,18 @@
       "trigger": "cron[minute='*/1', second='25']"
     },
     {
+      "func": "_run_smart_bid0930_evidence_safe",
+      "id": "smart_bid0930_evidence",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='30']"
+    },
+    {
+      "func": "_run_smart_matching_evidence_safe",
+      "id": "smart_matching_evidence",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='12']"
+    },
+    {
       "func": "_run_smart_v3_bid_safe",
       "id": "penny_smart_v3_bid",
       "kwargs": [],

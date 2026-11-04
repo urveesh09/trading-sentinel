@@ -2076,6 +2076,12 @@ Engine dependencies: `config`, `penny_signal_log`
 
 Related tests: `python-engine/tests/test_penny_hourly_report.py`
 
+## `python-engine/penny_instrument_identity.py`
+
+Exact NSE ETF identities for Smart-only equity filtering. Snapshot 2026-11-04. Does not change the shared Penny/EDGE universe. Refresh this versioned snapshot from NSE before a future qualification/release.
+
+Top-level declarations: `is_known_etf` (line 11)
+
 ## `python-engine/penny_intraday_replay.py`
 
 Decision-grade, broker-free replay of classic Penny one-minute evidence. The loader is intentionally strict: only explicitly labelled ``minute`` cache rows are admissible. A requested ticker/day with unknown or mixed interval provenance invalidates the run instead of silently manufacturing confidence.
@@ -2210,6 +2216,18 @@ Top-level declarations: `new_book` (line 29), `_memory` (line 46), `_position` (
 
 Engine dependencies: `adaptive_penny_policy`, `penny_engine_breakout`, `penny_smart_policy`
 
+## `python-engine/penny_smart_morning_evidence.py`
+
+Read-only auction-capacity and 09:30 bid evidence for Smart V3. No order, assumed new position, realised P&L or native-book mutation. Default off. An observed market packet is not proof of our order or queue position.
+
+Top-level declarations: `enabled` (line 18), `store_path` (line 23), `stamp` (line 26), `positive` (line 33), `packet_quality` (line 38), `bid_projection` (line 52), `_schema` (line 76), `_source_rows` (line 81), `collect` (line 91), `summary` (line 133)
+
+Engine dependencies: `config`, `penny_risk`, `penny_smart_v3`
+
+Related tests: `python-engine/tests/test_penny_smart_morning_evidence.py`
+
+Declared tables: `observations`, `runs`
+
 ## `python-engine/penny_smart_policy.py`
 
 Causal Penny strength, setup timing and winner management; no I/O or orders. Reuses the shipped adaptive setup machine. Evidence scores rank opportunities, never represent calibrated probabilities. The paper controller and replay call these same functions. No benchmark is invented when its observations are absent.
@@ -2244,9 +2262,9 @@ Related tests: `python-engine/tests/test_penny_smart_v2.py`
 
 [SV3 2026-11-04] Smart V3 paper book: the opening-auction reversal (paper only, no orders). Research: docs/research/penny/2026-11-04-intraday/ (REPORT.md). Penny stocks that open well below the previous close recover during the day, and most of the recovery is between the pre-open auction print and the first minutes; after 09:30 no intraday window earns a spread (the drift that sinks Smart V1/V2). The rule passed its sealed Jan-Jul 2026 check (Kite minutes, 89 names, Rs 2,000): capped +2,936 vs V1 -1,117 / V2 -802. Rule (one slot, own Rs 2,000 book, profits withheld, losses reduce the next day's capital): the Penny universe (EQ series only), previous close Rs 1-55, 20-day median traded value
 
-Top-level declarations: `enabled` (line 93), `bankroll` (line 97), `store_path` (line 101), `_store` (line 106), `_read_only` (line 114), `_positive` (line 118), `Candidate` (line 128), `eq_series` (line 136), `eligible` (line 142), `thin_estimate` (line 148), `select` (line 156), `fill_shares` (line 172), `locked` (line 179), `charges` (line 188), `capital` (line 195), `busy` (line 202), `_already_ran` (line 208), `_record_run` (line 213), `universe` (line 218), `daily_medians` (line 225), `thin_estimates` (line 238), `_candidates` (line 249), `_within` (line 259), `_quotes` (line 263), `_best_bid` (line 268), `run_preopen` (line 275), `_settle` (line 325), `_enter` (line 353), `run_open` (line 374), `run_bid` (line 425), `comparison` (line 453)
+Top-level declarations: `enabled` (line 97), `bankroll` (line 101), `store_path` (line 105), `_store` (line 110), `_read_only` (line 118), `_positive` (line 122), `Candidate` (line 132), `eq_series` (line 140), `eligible` (line 147), `thin_estimate` (line 153), `select` (line 161), `fill_shares` (line 177), `locked` (line 184), `charges` (line 193), `capital` (line 200), `busy` (line 207), `_already_ran` (line 213), `_record_run` (line 218), `universe` (line 223), `daily_medians` (line 230), `thin_estimates` (line 243), `_candidates` (line 254), `_within` (line 264), `_quotes` (line 268), `_best_bid` (line 273), `run_preopen` (line 280), `_settle` (line 330), `_enter` (line 358), `run_open` (line 379), `run_bid` (line 430), `comparison` (line 458)
 
-Engine dependencies: `config`, `edge_overnight_paper`, `penny_risk`, `penny_universe`
+Engine dependencies: `config`, `edge_overnight_paper`, `penny_instrument_identity`, `penny_risk`, `penny_smart_morning_evidence`, `penny_universe`
 
 Related tests: `python-engine/tests/test_penny_smart_v3.py`
 
@@ -2700,9 +2718,9 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1507)
+Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1546)
 
-Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
+Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `penny_smart_morning_evidence`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 
 ## `python-engine/scheduler_telemetry.py`
 
@@ -2760,9 +2778,9 @@ Related tests: `python-engine/tests/test_skill_test.py`
 
 Pure Smart/Classic research; funded orders, causal inputs, real-clock carries. Never starts a scheduler, broker, executor or paper book. Historical auction and OHLC prices remain conditional proxies, never evidence of own order fills.
 
-Top-level declarations: `wilder_rsi` (line 17), `snapshots` (line 30), `universe_ok` (line 48), `Policy` (line 53), `Order` (line 67), `bar5` (line 81), `long_close_outcome` (line 89), `intraday_outcome` (line 103), `auction_orders` (line 119), `intraday_orders` (line 161), `cnc_orders` (line 212), `run_book` (line 282)
+Top-level declarations: `wilder_rsi` (line 17), `snapshots` (line 30), `universe_ok` (line 48), `Policy` (line 53), `Order` (line 67), `bar5` (line 81), `long_close_outcome` (line 89), `intraday_outcome` (line 103), `auction_orders` (line 119), `intraday_orders` (line 169), `cnc_orders` (line 220), `run_book` (line 290)
 
-Engine dependencies: `penny_engine_breakout`, `penny_engine_connors`, `penny_risk`
+Engine dependencies: `penny_engine_breakout`, `penny_engine_connors`, `penny_risk`, `penny_smart_v3`
 
 Related tests: `python-engine/tests/test_smart_classic_enrichment.py`
 

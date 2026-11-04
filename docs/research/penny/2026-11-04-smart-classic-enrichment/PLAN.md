@@ -187,3 +187,50 @@ first-five-minute bound. CNC daily outcomes are all seen and get no new-exam
 label. Freeze/commit now, then open once. Both failed and corrected outputs
 remain in the report. Source snapshots archived by hash, including shared
 config while unrelated partner work remains unstaged; no.env copied.
+
+## Dev integration slice after completed research
+
+Stock-only reruns preserve all mixed originals. Best exit candidate is the
+previous-close gap target with10:00 deadline: H1 net1614 vs1362 control at
+25bp/side,DD272 vs360; recent still negative(-99 vs-179),ex-best negative.
+09:30 exit lowers H1 DD but sacrifices net. No validated Smart replacement.
+Cross-name check opened once:Smart0 fills/5 capacity refusals (insufficient
+auction evidence),Classics no robust net. Exact native MIS:H1 23 exits,-79.13;
+recent2,+32.46; coverage PARTIAL, constant PR1. Current Production paper MIS
+negative;CNC inactive. Classic alternatives fail; recommend retire current
+MIS/CNC rules from new capital,not delete shared code or change settings now.
+
+Implement two concrete safety/evidence improvements in Dev:Smart V3-only
+exact NSE ETF exclusion,leaving shared/EDGE universe and stored trades intact;
+new independent default-off penny_smart_morning_evidence observer at09:12
+(before continuous trading) and09:30 (walk displayed bid quantities).
+GET Smart V3 adds identity metadata and morning_evidence. No orders,new
+positions or P&L book. Preserve missing/stale packets and short bid depth;
+explicit native pre-open quantity/indicative-price uncertainty. Source Native
+store is read-only; own sibling store only. Rollback evidence flag=false;
+identity correction revert through GitHub if required. No migration/activation.
+
+Acceptance:exact7 ETF identities excluded while real metal/jewellery stocks
+remain;old Smart positions still settle;default-off zero reads/calls/writes;
+source store bytes unchanged;fresh/same-day/pre-continuous clock checks;partial
+bid capacity never full exit;idempotence;exactly2 added gated jobs;full/focused
+verification against a final frozen source. Parallel01671c3 partner work is
+now committed and remains preserved; subsequent atlas staging uses current
+HEAD plus only own module sections. All tests are engineering,not profits.
+
+## Final native-reference contract correction (no alpha retuning)
+
+A synthetic parity test found that our hindsight auction-reference thinness
+gate sized at a pre-auction98% limit,whereas native V3 sizes at the actual
+clearing price; history was also treated as a realised-size cap rather than
+only an admission gate. Fixed only the reference; actual funded basket limits
+and all candidate exits/thresholds unchanged. Compare native pure select on
+fixed-capital sessions;freeze morning revision3 and an explicit SEEN cross
+contract-correction replay. Original cross opening/results remain untouched,
+no new examination/holdout claim or strategy tuning. Final report uses the
+corrected Smart comparisons and labels earlier ones superseded.
+
+Financial statistic correction:when all trades lose,exclude-best-WINNER now
+subtracts zero,not the smallest loss. Raw old artifacts retain their old
+ex_best-trade statistic; derive corrected ex-best-winner in the audit. No
+net/cost/selection change,no negative candidate becomes accepted.

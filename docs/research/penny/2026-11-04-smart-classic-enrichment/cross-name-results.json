@@ -1,0 +1,672 @@
+[
+  {
+    "name": "SV3_CARRY_CONTROL",
+    "model": [
+      0,
+      0,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_CARRY_CONTROL",
+    "model": [
+      25,
+      25,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_CARRY_CONTROL",
+    "model": [
+      50,
+      50,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_CARRY_CONTROL",
+    "model": [
+      100,
+      100,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_CARRY_CONTROL",
+    "model": [
+      25,
+      25,
+      20261104
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_MORNING_0930",
+    "model": [
+      0,
+      0,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_MORNING_0930",
+    "model": [
+      25,
+      25,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_MORNING_0930",
+    "model": [
+      50,
+      50,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_MORNING_0930",
+    "model": [
+      100,
+      100,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_MORNING_0930",
+    "model": [
+      25,
+      25,
+      20261104
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_GAP_TARGET_1000",
+    "model": [
+      0,
+      0,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_GAP_TARGET_1000",
+    "model": [
+      25,
+      25,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_GAP_TARGET_1000",
+    "model": [
+      50,
+      50,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_GAP_TARGET_1000",
+    "model": [
+      100,
+      100,
+      null
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "SV3_GAP_TARGET_1000",
+    "model": [
+      25,
+      25,
+      20261104
+    ],
+    "summary": {
+      "n": 0,
+      "net": 0,
+      "ex_best": 0,
+      "dd": 0.0,
+      "dd_pct_initial": 0.0,
+      "fees": 0,
+      "win": null,
+      "months": {},
+      "years": {},
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_BREAKOUT_CONTROL",
+    "model": [
+      0,
+      0,
+      null
+    ],
+    "summary": {
+      "n": 14,
+      "net": 92.89,
+      "ex_best": 17.04,
+      "dd": 76.62,
+      "dd_pct_initial": 3.83,
+      "fees": 25.41,
+      "win": 50.0,
+      "months": {
+        "2026-09": 31.04,
+        "2026-10": 61.85
+      },
+      "years": {
+        "2026": 92.89
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_BREAKOUT_CONTROL",
+    "model": [
+      25,
+      25,
+      null
+    ],
+    "summary": {
+      "n": 14,
+      "net": -29.6,
+      "ex_best": -91.58,
+      "dd": 128.2,
+      "dd_pct_initial": 6.41,
+      "fees": 24.95,
+      "win": 50.0,
+      "months": {
+        "2026-09": -30.05,
+        "2026-10": 0.45
+      },
+      "years": {
+        "2026": -29.6
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_BREAKOUT_CONTROL",
+    "model": [
+      50,
+      50,
+      null
+    ],
+    "summary": {
+      "n": 14,
+      "net": -145.68,
+      "ex_best": -194.95,
+      "dd": 201.92,
+      "dd_pct_initial": 10.1,
+      "fees": 24.43,
+      "win": 35.71,
+      "months": {
+        "2026-09": -89.7,
+        "2026-10": -55.98
+      },
+      "years": {
+        "2026": -145.68
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_BREAKOUT_CONTROL",
+    "model": [
+      100,
+      100,
+      null
+    ],
+    "summary": {
+      "n": 14,
+      "net": -356.42,
+      "ex_best": -395.26,
+      "dd": 380.12,
+      "dd_pct_initial": 19.01,
+      "fees": 23.18,
+      "win": 28.57,
+      "months": {
+        "2026-09": -201.4,
+        "2026-10": -155.02
+      },
+      "years": {
+        "2026": -356.42
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_BREAKOUT_CONTROL",
+    "model": [
+      25,
+      25,
+      20261104
+    ],
+    "summary": {
+      "n": 12,
+      "net": -97.4,
+      "ex_best": -156.85,
+      "dd": 186.13,
+      "dd_pct_initial": 9.31,
+      "fees": 20.58,
+      "win": 41.67,
+      "months": {
+        "2026-09": -39.67,
+        "2026-10": -57.73
+      },
+      "years": {
+        "2026": -97.4
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON",
+    "model": [
+      0,
+      0,
+      null
+    ],
+    "summary": {
+      "n": 7,
+      "net": -211.11,
+      "ex_best": -209.53,
+      "dd": 211.11,
+      "dd_pct_initial": 10.56,
+      "fees": 12.35,
+      "win": 0.0,
+      "months": {
+        "2026-09": -164.28,
+        "2026-10": -46.83
+      },
+      "years": {
+        "2026": -211.11
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON",
+    "model": [
+      25,
+      25,
+      null
+    ],
+    "summary": {
+      "n": 7,
+      "net": -266.67,
+      "ex_best": -256.21,
+      "dd": 266.67,
+      "dd_pct_initial": 13.33,
+      "fees": 12.21,
+      "win": 0.0,
+      "months": {
+        "2026-09": -194.79,
+        "2026-10": -71.88
+      },
+      "years": {
+        "2026": -266.67
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON",
+    "model": [
+      50,
+      50,
+      null
+    ],
+    "summary": {
+      "n": 7,
+      "net": -319.38,
+      "ex_best": -301.94,
+      "dd": 319.38,
+      "dd_pct_initial": 15.97,
+      "fees": 11.98,
+      "win": 0.0,
+      "months": {
+        "2026-09": -223.87,
+        "2026-10": -95.5
+      },
+      "years": {
+        "2026": -319.38
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON",
+    "model": [
+      100,
+      100,
+      null
+    ],
+    "summary": {
+      "n": 7,
+      "net": -420.11,
+      "ex_best": -396.45,
+      "dd": 420.11,
+      "dd_pct_initial": 21.01,
+      "fees": 11.6,
+      "win": 0.0,
+      "months": {
+        "2026-09": -280.27,
+        "2026-10": -139.84
+      },
+      "years": {
+        "2026": -420.11
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON",
+    "model": [
+      25,
+      25,
+      20261104
+    ],
+    "summary": {
+      "n": 7,
+      "net": -266.67,
+      "ex_best": -256.21,
+      "dd": 266.67,
+      "dd_pct_initial": 13.33,
+      "fees": 12.21,
+      "win": 0.0,
+      "months": {
+        "2026-09": -194.79,
+        "2026-10": -71.88
+      },
+      "years": {
+        "2026": -266.67
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON_RETEST",
+    "model": [
+      0,
+      0,
+      null
+    ],
+    "summary": {
+      "n": 2,
+      "net": -20.53,
+      "ex_best": -22.79,
+      "dd": 22.79,
+      "dd_pct_initial": 1.14,
+      "fees": 3.29,
+      "win": 50.0,
+      "months": {
+        "2026-10": -20.53
+      },
+      "years": {
+        "2026": -20.53
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON_RETEST",
+    "model": [
+      25,
+      25,
+      null
+    ],
+    "summary": {
+      "n": 2,
+      "net": -35.9,
+      "ex_best": -32.55,
+      "dd": 35.9,
+      "dd_pct_initial": 1.8,
+      "fees": 3.28,
+      "win": 0.0,
+      "months": {
+        "2026-10": -35.9
+      },
+      "years": {
+        "2026": -35.9
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON_RETEST",
+    "model": [
+      50,
+      50,
+      null
+    ],
+    "summary": {
+      "n": 2,
+      "net": -51.22,
+      "ex_best": -42.24,
+      "dd": 51.22,
+      "dd_pct_initial": 2.56,
+      "fees": 3.27,
+      "win": 0.0,
+      "months": {
+        "2026-10": -51.22
+      },
+      "years": {
+        "2026": -51.22
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON_RETEST",
+    "model": [
+      100,
+      100,
+      null
+    ],
+    "summary": {
+      "n": 2,
+      "net": -81.69,
+      "ex_best": -61.47,
+      "dd": 81.69,
+      "dd_pct_initial": 4.08,
+      "fees": 3.26,
+      "win": 0.0,
+      "months": {
+        "2026-10": -81.69
+      },
+      "years": {
+        "2026": -81.69
+      },
+      "open": 0
+    }
+  },
+  {
+    "name": "MIS_AFTERNOON_RETEST",
+    "model": [
+      25,
+      25,
+      20261104
+    ],
+    "summary": {
+      "n": 1,
+      "net": -32.55,
+      "ex_best": 0.0,
+      "dd": 32.55,
+      "dd_pct_initial": 1.63,
+      "fees": 2.08,
+      "win": 0.0,
+      "months": {
+        "2026-10": -32.55
+      },
+      "years": {
+        "2026": -32.55
+      },
+      "open": 0
+    }
+  }
+]

@@ -1135,6 +1135,45 @@ def register_penny_scheduler_jobs(scheduler):
         id='penny_smart_v3_bid', max_instances=1, coalesce=True, misfire_grace_time=240,
     )
 
+    # Smart exit/capacity evidence is separate from the original V3 book.
+    async def _run_smart_morning_evidence_safe(phase):
+        if not (settings.PENNY_SMART_MORNING_EVIDENCE_ENABLED and settings.PENNY_SMART_V3_ENABLED):
+            return
+        if not _main.kite.access_token:
+            return
+        try:
+            from penny_smart_morning_evidence import collect
+            await collect(_main.kite, phase)
+        except Exception as exc:
+            logger.error('smart_morning_evidence_failed phase=%s err=%s', phase, type(exc).__name__)
+
+    async def _run_smart_matching_evidence_safe():
+        if not settings.PENNY_SMART_MORNING_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_morning_evidence_safe('AUCTION')
+
+    async def _run_smart_bid0930_evidence_safe():
+        if not settings.PENNY_SMART_MORNING_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_morning_evidence_safe('MORNING')
+
+    scheduler.add_job(
+        _run_smart_matching_evidence_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=12,
+        id='smart_matching_evidence', max_instances=1, coalesce=True, misfire_grace_time=45,
+    )
+    scheduler.add_job(
+        _run_smart_bid0930_evidence_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=30,
+        id='smart_bid0930_evidence', max_instances=1, coalesce=True, misfire_grace_time=45,
+    )
+
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
     # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today

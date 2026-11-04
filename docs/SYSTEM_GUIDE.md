@@ -1,3 +1,13 @@
+## November 4 - Smart/Classic enrichment: smart-only-identity-and-readonly-morning-evidence (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
 ## November 4 - N06: the Sentinel's way of trading, as advice to the partner (Dev only)
 
 Owner's order: the partner lost Rs 51,869 on Nov 4 with every watch message on time; make the advice the
