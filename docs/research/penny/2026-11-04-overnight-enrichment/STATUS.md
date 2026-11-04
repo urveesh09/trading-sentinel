@@ -1,6 +1,6 @@
 # Overnight enrichment status
 
-Research complete; engineering verification in progress. Dev only, no push
+Research complete; focused engineering verification passed; final whole suite running. Dev only, no push
 or deployment. Frozen rounds:4d95c71,a8976d1; older check:a4cf227.
 
 Best conditional candidate is V3_COST_ROUTE, not a qualified replacement.
@@ -17,8 +17,9 @@ observations as UNKNOWN; never claims own fills. Old probe/book/ON_V2/shadows
 remain unchanged. Independent sibling store, no existing-schema migration.
 
 Mechanics:60 primary artifacts reconcile,30 actual-panel legacy parity
-trades match. Focused final source+book+V2+surface tests pass (final count in
-VERIFICATION.md). Full suite running; record exact result before completion.
+trades match. Focused final calendar/source/book/V2/surface tests:78 passed,1 existing
+warning,13.06s. Full-suite initial6171 passed/1 calendar-contract failure,
+now corrected; final whole suite running (see VERIFICATION.md). Full suite running; record exact result before completion.
 Owner bytes preserved; Production tracked state remains unchanged at5e30ce0.
 Zero Breeze/order/live quote calls during research.
 

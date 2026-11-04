@@ -14,7 +14,7 @@
   tests/test_overnight_execution_evidence.py tests/test_overnight_v2.py
   tests/test_edge_overnight_paper.py tests/test_main_surface_characterization.py -q
   (paths relative to python-engine; actual invocation from root uses that prefix).
-  Final count to be inserted after run.
+  76 passed, 1 pre-existing Starlette warning, 8.74s, exit 0.
 - Scheduler golden regeneration deliberate:exactly three new default-off quote
   jobs at15:49/15:51/16:03; no old jobs/routes removed or rescheduled. Rechecked
   without update mode. Initial regeneration2passed/2intentional skips; normal
@@ -30,3 +30,22 @@ migration or reserved-history use. New collector flag defaults false, so no
 new scheduled broker quote occurs until deliberately enabled. API reads do
 not create stores. Rollback:disable only the new flag; old code stays intact.
 Engineering checks establish mechanics, not profitable trading.
+
+Implementation commit:c0f2fc324731f82c00c8141fd6423e3ffd24e56d. Immediate
+post-commit source/docs review complete. Frozen source hashes match a4cf227
+under original Windows line endings; all3 sealed older files unchanged.
+The initial Git-blob-only assertion failed on CRLF representation, not source
+logic; repository-check.json preserves the correction. Atlas298 modules, owner
+document bytes preserved, Production HEAD5e30ce0 tracked diff empty.
+
+Initial whole suite (before final shortlist/denominator refinements):6171
+passed,1 failed(calendar wrapper contract),4 skipped,53 warnings,709.01s.
+Failed log retained at_local/full-suite.txt. New wrapper source now exposes
+the holiday gate directly, without an exemption or test change. Focused
+calendar/source/surface result and final whole rerun recorded below.
+
+Calendar/source/surface correction command:78 passed,1 existing Starlette
+warning,13.06s,exit0. No guard test/allowlist was weakened. Final whole-suite
+run uses the ten bound files in final-suite-source.json; no source edit is
+permitted during that run. Golden changes are exactly three new default-off
+quote jobs (15:49/15:51/16:03), preserving all prior jobs and routes.

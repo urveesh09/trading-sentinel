@@ -1,0 +1,45 @@
+{
+  "implementation_commit": "c0f2fc324731f82c00c8141fd6423e3ffd24e56d",
+  "final_freeze_commit": "a4cf227",
+  "source_git_blob_or_original_windows_checkout_matches": {
+    "python-engine/overnight_enrichment.py": [
+      "git_blob"
+    ],
+    "scripts/overnight_enrichment_study.py": [
+      "git_blob"
+    ],
+    "docs/research/penny/2026-11-04-overnight-v2/lab.py": [
+      "windows_crlf"
+    ],
+    "docs/research/penny/2026-11-04-overnight-v2/arms.py": [
+      "windows_crlf"
+    ],
+    "docs/research/penny/2026-11-04-overnight-v2/round2.py": [
+      "git_blob"
+    ],
+    "docs/research/penny/2026-11-04-overnight-v2/exam.py": [
+      "git_blob"
+    ],
+    "python-engine/penny_edge_engine.py": [
+      "git_blob"
+    ],
+    "python-engine/penny_edge_backtest.py": [
+      "git_blob"
+    ],
+    "python-engine/penny_risk.py": [
+      "windows_crlf"
+    ],
+    "python-engine/config.py": [
+      "windows_crlf"
+    ],
+    "scripts/overnight_enrichment_exam.py": [
+      "git_blob"
+    ]
+  },
+  "sealed_older_data_files_match": 3,
+  "owner_doc_original_bytes_preserved": true,
+  "production_head": "5e30ce0",
+  "production_tracked_diff": "",
+  "atlas_modules": 298,
+  "note": "Initial raw Git-blob hash assertion failed for CRLF source. Verified the original Windows checkout byte representation against the frozen Git snapshot; no price or score change."
+}

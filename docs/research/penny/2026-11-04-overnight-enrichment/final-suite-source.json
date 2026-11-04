@@ -1,0 +1,12 @@
+{
+  "python-engine/overnight_enrichment.py": "238f37e7c605064edc61609bb32a7dc9856d493879b48920285ad73776d7ba2f",
+  "python-engine/overnight_execution_evidence.py": "be6485a8e7e39ddce62f67fa40b5ab743a484b8f8ed70406e733c6e479c8a721",
+  "python-engine/edge_overnight_paper.py": "9f666e799e9d314a05f1ec848c226dd3bf918e9541eaf171b3f19e01b44a2ee8",
+  "python-engine/scheduler_setup.py": "45dc783cb55574c2e17668a9fe44bc38061d42491d9aa0e9e9c6c1bd5e6b72f9",
+  "python-engine/config.py": "dc71a9f66a40a58822fd40ea1aadca3642baa9d297d7a5e9800ed229e0bb27a6",
+  "python-engine/tests/test_overnight_enrichment.py": "b570694a397d4cd529665aac19719243a6d4feffc600766ecc8ac259dc3d863f",
+  "python-engine/tests/test_overnight_execution_evidence.py": "327dd4c6cf4ede9a32ff4694a8415031182fe84f322b371f656dd511cc2eb3be",
+  "python-engine/tests/test_penny_cron_gating.py": "d6cdee3199bf8818addf9407162b3fe75c3846a95274697377536d53a930c918",
+  "python-engine/tests/main_surface_golden.json": "313a5a234282777001b72a7779a0e0ea8d77af97a8f4663a943f2bf92594111d",
+  "python-engine/tests/add_job_census_golden.json": "f3e45691bf78f7f3a2143f7daae96e9e647279febe8134afcd850087b169cf92"
+}

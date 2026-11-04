@@ -1040,20 +1040,33 @@ def register_penny_scheduler_jobs(scheduler):
             return
         if not _main.kite.access_token:
             return
-        if not await _main.is_trading_day(datetime.now(IST).date(), settings.DB_PATH):
-            return
         try:
             await evidence.collect(_main.kite, phase)
         except Exception as exc:
             logger.error('overnight_evidence_failed phase=%s err=%s', phase, type(exc).__name__, exc_info=True)
 
     async def _run_overnight_evidence_pre_safe():
+        if not settings.EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
         await _run_overnight_evidence_safe('PRE')
 
     async def _run_overnight_evidence_decision_safe():
+        if not settings.EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
         await _run_overnight_evidence_safe('DECISION')
 
     async def _run_overnight_evidence_end_safe():
+        if not settings.EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
         await _run_overnight_evidence_safe('END')
 
     scheduler.add_job(

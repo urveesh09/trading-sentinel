@@ -138,3 +138,30 @@ collector, tight clocks/idempotency, missing/late packets UNKNOWN, current
 routes plus exactly three evidence jobs; native strategy behavior preserved.
 Rollback EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED=false (default); no schema
 change to existing stores. Remaining real-order evidence separately authorized.
+
+## Implementation commit and immediate consistency check
+
+c0f2fc3:results/report, separate default-off strict collector, entry-input
+archive, additive API field and three bounded quote jobs. Old book/ON_V2/Oct21
+shadows and original probe unchanged. Focused final76 passed,one existing
+Starlette warning,8.74s. Atlas298 modules. Old data files unchanged;11 freeze
+source hashes verified against frozen a4cf227 with original Windows CRLF
+where appropriate. Owner document bytes preserved; Production tracked diff
+empty at5e30ce0. Full suite has one failure so far, diagnosis pending; exact
+version boundary and correction will be recorded before completion.
+
+## Full-suite failure and correction plan
+
+Initial full suite:6171 passed,1 failed,4 skipped in709.01s. Three new
+wrappers delegated to a calendar-gated helper, but the repository's static
+calendar contract requires a visible gate in each registered wrapper.
+Fix source wrappers (not the test/allowlist):new-flag early return, then
+is_trading_day(today,DB_PATH) before delegating. Remove redundant helper gate.
+No market quote when disabled; no old cron/strategy change. Verify calendar
+guard and focused/source/surface suites, regenerate atlas and record a final
+whole-suite rerun against the completed source. Preserve the failed log.
+
+Calendar wrapper correction complete:78 focused/calendar/source/surface
+tests passed,1 existing warning,13.06s. Atlas298 modules, no golden or native
+strategy behavior change. Final whole-suite run source-bound; final status
+and exact implementation commit recorded in the report/verification.
