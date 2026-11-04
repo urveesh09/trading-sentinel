@@ -1,0 +1,44 @@
+{
+  "schedule": {
+    "BFO": {
+      "schedule_version": "ZERODHA_BSE_OPTIONS_VERIFIED_2026-10-06",
+      "effective_date": null,
+      "market": "BSE_EQUITY_OPTIONS_PREMIUM",
+      "rates": {
+        "brokerage_flat_per_order": 20.0,
+        "stt_sell_pct": 0.0015,
+        "exchange_pct": 0.000325,
+        "sebi_pct": 1e-06,
+        "stamp_duty_buy_pct": 3e-05,
+        "ipft_pct": 1e-09,
+        "gst_pct": 0.18
+      },
+      "verified_as_of": "2026-10-06"
+    },
+    "NFO": {
+      "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01",
+      "effective_date": "2026-04-01",
+      "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+      "rates": {
+        "brokerage_flat_per_order": 20.0,
+        "stt_sell_pct": 0.0015,
+        "exchange_pct": 0.0003553,
+        "sebi_pct": 1e-06,
+        "stamp_duty_buy_pct": 3e-05,
+        "ipft_pct": 1e-09,
+        "gst_pct": 0.18
+      }
+    }
+  },
+  "sources": {
+    "python-engine/partner_coach.py": "f09a6a508436eae71c50c30621b8aaa643386fdd4e05ddaa13339012420d4abc",
+    "python-engine/fno_costs.py": "c148d3deadec3982b90ff617d0c9b3aec3e1794c69c48f69cc4aaaf9cb391e8a",
+    "python-engine/cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd"
+  },
+  "actual_watch_fee_reconciliation": {
+    "trips": 29,
+    "max_abs_rounding_difference": 0.008000000000691898,
+    "sum_difference": 0.007999999994297013
+  },
+  "scope": "Same-quantity fee parity, then recomputed at smaller quantity; modeled schedule, not a broker contract note."
+}

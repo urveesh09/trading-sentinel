@@ -1,3 +1,16 @@
+## November 4 - Partner assistance review (read-only, no runtime changes)
+
+Report: `docs/research/partner/2026-11-04-assistance-review/REPORT.md`;
+plan/verification/results/source receipts in the same folder. N06/N06b is
+now in Production18ed87d (after today's session), runtime source matches8a0c37e.
+Today29 trips/-51869.02 modeled net,74 delivered watch messages. Seen-data
+one-lot arithmetic from10:21 estimates about-21118; no compliance/fill/profit
+proof; late reduction sacrifices recovery. Review identifies unmuted optional
+feed and a reproduced already-closed paper-entry relay; fixes remain proposed.
+Keep partner control, concise current alternatives and forward benefit checks.
+No order/send/config/restart/deploy, and no partner runtime source changed.
+Owner edits and independent Penny work preserved; no push by this review.
+
 ## November 4 - Rollout receipt (Production 18ed87d, PR #131)
 
 - The owner's order: "commit push all and deploy ... go deploy it all". PR #131 merged the whole Dev branch at
