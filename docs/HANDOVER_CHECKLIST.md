@@ -1,3 +1,23 @@
+## November 4 night - Rollout receipt (Production 398d44a, PR #132)
+
+- The owner's word: "deploy". PR #132 merged `67f42a3` (N06c), the auditor's review docs `78f0fad` and the
+  last receipt, as `398d44a`, at 16:58 UTC (22:28 IST).
+- **Before merge:** the whole engine suite on a clean checkout of `67f42a3`: 3,199 + 3,036 passed, 4 skipped,
+  `pytest_exit=0` each. No gateway, agent or compose changes.
+- **Deploy:** Production fast-forwarded and the release stamped. python-engine, node-gateway and agent were built
+  one at a time and recreated; nginx restarted. `.env` untouched. No full data backup, as before.
+- **Verification:** `scripts/verify_deployment.py` exit 0, verified_at 2026-11-04T17:12:03Z. Local and public
+  `/api/health` 200. No error lines in the engine log since start. In the image: `broken_text`,
+  `infer_underlying`, `QUIET_GONE`; no `quiet_keyboard`; `PARTNER_WATCH_BROKEN_ENABLED` defaults true, with no
+  `.env` override.
+- [ ] Nov 5, read-only:
+  - the watch-on message is two lines plus the records and the SENSEX expiry line;
+  - no PLAN or NO_STOP carries a button;
+  - a bare "76700 ce" is answered as a check;
+  - any BROKEN row was sent once a trade, with its choices;
+  - no SENTINEL buy for a trade already closed;
+  - no `partner_sentinel_*_failed` lines in the engine log.
+
 ## November 4 night - N06c: no Quiet, short messages, choices in rupees, BROKEN, the check by the option alone (Dev only)
 
 Owner, after the audit of N06/N06b:
