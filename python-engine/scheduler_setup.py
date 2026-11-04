@@ -1031,6 +1031,47 @@ def register_penny_scheduler_jobs(scheduler):
         misfire_grace_time=1200,
     )
 
+    # [OV3] Independent capacity evidence, default off. No orders or fills.
+    # Tight windows exclude CAS matching and count later trades only after
+    # the hypothetical decision. Existing ON_V2/probe jobs are untouched.
+    async def _run_overnight_evidence_safe(phase: str):
+        import overnight_execution_evidence as evidence
+        if not (settings.EDGE_OVERNIGHT_PAPER_ENABLED and evidence.enabled()):
+            return
+        if not _main.kite.access_token:
+            return
+        if not await _main.is_trading_day(datetime.now(IST).date(), settings.DB_PATH):
+            return
+        try:
+            await evidence.collect(_main.kite, phase)
+        except Exception as exc:
+            logger.error('overnight_evidence_failed phase=%s err=%s', phase, type(exc).__name__, exc_info=True)
+
+    async def _run_overnight_evidence_pre_safe():
+        await _run_overnight_evidence_safe('PRE')
+
+    async def _run_overnight_evidence_decision_safe():
+        await _run_overnight_evidence_safe('DECISION')
+
+    async def _run_overnight_evidence_end_safe():
+        await _run_overnight_evidence_safe('END')
+
+    scheduler.add_job(
+        _run_overnight_evidence_pre_safe, 'cron',
+        day_of_week='mon-fri', hour=15, minute=49,
+        id='overnight_evidence_pre', max_instances=1, coalesce=True, misfire_grace_time=30,
+    )
+    scheduler.add_job(
+        _run_overnight_evidence_decision_safe, 'cron',
+        day_of_week='mon-fri', hour=15, minute=51,
+        id='overnight_evidence_decision', max_instances=1, coalesce=True, misfire_grace_time=30,
+    )
+    scheduler.add_job(
+        _run_overnight_evidence_end_safe, 'cron',
+        day_of_week='mon-fri', hour=16, minute=3,
+        id='overnight_evidence_end', max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
     # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today

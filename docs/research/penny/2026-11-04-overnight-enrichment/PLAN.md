@@ -116,3 +116,25 @@ New script prepares public raw prices with validation and no repair, uses
 original future split restrictions plus older split events, and builds
 current shipped candidates. Universe survivorship and future split cuts
 limit this check. Scoring cash/trade identities are assertions.
+
+## Execution-evidence implementation slice
+
+Older check frozen a4cf227, opened once: cost route passed the declared
+model-minimum check, not ideal full-fill improvement. Subsequent fixed-arm
+seed/correlated-day stresses expose negative cases; no qualification/promotion.
+Daily final-candle candidates cannot prove any 15:20 buy. Therefore add only
+a default-off evidence path, not the research route to a live/paper P&L book.
+
+Files: overnight_execution_evidence.py, additive config/collector scheduler,
+read-only comparison field, focused tests/goldens. Independent sibling store;
+old books/shadows/probe unchanged. PRE 15:49, DECISION 15:51, END 16:03.
+Preserve request denominators, provider/receipt/trade clocks, volume resets,
+missing phases; no quote ohlc.close as same-day close. Capacity never fills.
+Also archive the existing 15:20 ranked shortlist and its exact already-fetched
+quotes/night estimates under the new flag: future comparison must use those
+known inputs, not final daily candidates. No extra entry quote or rescan.
+Acceptance: disabled has zero calls/writes, old book bytes unchanged by the
+collector, tight clocks/idempotency, missing/late packets UNKNOWN, current
+routes plus exactly three evidence jobs; native strategy behavior preserved.
+Rollback EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED=false (default); no schema
+change to existing stores. Remaining real-order evidence separately authorized.

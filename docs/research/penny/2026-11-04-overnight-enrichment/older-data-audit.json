@@ -1,0 +1,12 @@
+{
+  "raw_rows": 710167,
+  "retained_equity_rows": 514884,
+  "zero_volume": 35637,
+  "pre_last_split": 157319,
+  "inconsistent_ohlc": 102,
+  "retained_tickers": 327,
+  "benchmark_sessions": 2225,
+  "scoring_sessions": 986,
+  "sessions_with_candidates": 984,
+  "candidate_observations": 11484
+}

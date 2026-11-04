@@ -105,6 +105,21 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_overnight_evidence_decision_safe",
+    "id": "'overnight_evidence_decision'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_overnight_evidence_end_safe",
+    "id": "'overnight_evidence_end'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_overnight_evidence_pre_safe",
+    "id": "'overnight_evidence_pre'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_analytics_tick_safe",
     "id": "'partner_analytics_tick'",
     "trigger": "'cron'"

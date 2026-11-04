@@ -1,0 +1,106 @@
+{
+  "V3_HYBRID": {
+    "per_model": [
+      {
+        "model": [
+          36,
+          5,
+          1.0
+        ],
+        "pass": false,
+        "net_ratio": 0.7426811909507982,
+        "dd_ratio": 1.050641596694403
+      },
+      {
+        "model": [
+          36,
+          5,
+          0.75
+        ],
+        "pass": false,
+        "net_ratio": 0.9075127353604925,
+        "dd_ratio": 1.0139197189139137
+      },
+      {
+        "model": [
+          36,
+          5,
+          0.5
+        ],
+        "pass": true,
+        "net_ratio": 1.8861289207970209,
+        "dd_ratio": 0.7412928189119594
+      },
+      {
+        "model": [
+          60,
+          20,
+          0.75
+        ],
+        "pass": false,
+        "net_ratio": 0.37782923242285826,
+        "dd_ratio": 1.2099491376970082
+      }
+    ],
+    "adequate": true,
+    "worst_net": 18328.02,
+    "base_worst_net": 20056.19,
+    "max_dd": 7086.66,
+    "base_max_dd": 8159.07,
+    "robustness_pass": false,
+    "full_fill_pass": false,
+    "scope": "conditional daily model, not actual fills or forward qualification"
+  },
+  "V3_COST_ROUTE": {
+    "per_model": [
+      {
+        "model": [
+          36,
+          5,
+          1.0
+        ],
+        "pass": false,
+        "net_ratio": 0.9724154571142756,
+        "dd_ratio": 1.004272256866127
+      },
+      {
+        "model": [
+          36,
+          5,
+          0.75
+        ],
+        "pass": false,
+        "net_ratio": 1.0087522433867353,
+        "dd_ratio": 0.9906615679737002
+      },
+      {
+        "model": [
+          36,
+          5,
+          0.5
+        ],
+        "pass": true,
+        "net_ratio": 1.2148802938145282,
+        "dd_ratio": 0.9339299699598116
+      },
+      {
+        "model": [
+          60,
+          20,
+          0.75
+        ],
+        "pass": false,
+        "net_ratio": 0.9875717241882598,
+        "dd_ratio": 0.991463191844275
+      }
+    ],
+    "adequate": true,
+    "worst_net": 24365.87,
+    "base_worst_net": 20056.19,
+    "max_dd": 7620.0,
+    "base_max_dd": 8159.07,
+    "robustness_pass": true,
+    "full_fill_pass": false,
+    "scope": "conditional daily model, not actual fills or forward qualification"
+  }
+}

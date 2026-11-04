@@ -1496,6 +1496,9 @@ class Settings(BaseSettings):
     # 15:32 and 16:03: did the post-close session trade enough to fill ON_V2?
     # No order is placed. Rollback: false (no probe jobs do anything).
     EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED: bool = True
+    # Separate strict capacity collector, not a fill/order or strategy switch.
+    # Off by default; reads the existing ranked shortlist at 15:49/15:51/16:03.
+    EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED: bool = False
 
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings

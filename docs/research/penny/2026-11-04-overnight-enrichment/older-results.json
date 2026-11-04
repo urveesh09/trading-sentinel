@@ -1,0 +1,605 @@
+[
+  {
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1515,
+      "net": 127734.58,
+      "ex_best": 125483.39,
+      "dd": 5275.9,
+      "dd_pct_peak": 6.77,
+      "pf": 2.18,
+      "win": 60.8,
+      "mean_pct": 0.737,
+      "median_pct": 0.529,
+      "final": 152734.58,
+      "by_year": {
+        "2015": 30212.96,
+        "2016": 27096.75,
+        "2017": 39602.87,
+        "2018": 30822.0
+      },
+      "dd_pct_initial": 21.104
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1515,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_HYBRID",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1515,
+      "net": 94866.07,
+      "ex_best": 92642.97,
+      "dd": 5543.08,
+      "dd_pct_peak": 8.41,
+      "pf": 1.783,
+      "win": 57.4,
+      "mean_pct": 0.555,
+      "median_pct": 0.348,
+      "final": 119866.07,
+      "by_year": {
+        "2015": 22396.26,
+        "2016": 19333.82,
+        "2017": 30139.97,
+        "2018": 22996.03
+      },
+      "dd_pct_initial": 22.172
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1515,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "summary": {
+      "n": 1515,
+      "net": 124211.08,
+      "ex_best": 121959.89,
+      "dd": 5298.44,
+      "dd_pct_peak": 6.94,
+      "pf": 2.134,
+      "win": 60.5,
+      "mean_pct": 0.717,
+      "median_pct": 0.514,
+      "final": 149211.08,
+      "by_year": {
+        "2015": 29491.63,
+        "2016": 26056.55,
+        "2017": 38559.36,
+        "2018": 30103.54
+      },
+      "dd_pct_initial": 21.194
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1515,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ]
+  },
+  {
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1299,
+      "net": 72072.95,
+      "ex_best": 70144.85,
+      "dd": 5572.67,
+      "dd_pct_peak": 8.78,
+      "pf": 1.666,
+      "win": 54.3,
+      "mean_pct": 0.481,
+      "median_pct": 0.234,
+      "final": 97072.95,
+      "by_year": {
+        "2015": 16716.96,
+        "2016": 11638.63,
+        "2017": 26946.24,
+        "2018": 16771.12
+      },
+      "dd_pct_initial": 22.291
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1299,
+      "POSTCLOSE_WINNER_NONFILL": 216,
+      "NO_POSITION_AFTER_NONFILL": 216,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_HYBRID",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1515,
+      "net": 65407.12,
+      "ex_best": 63505.39,
+      "dd": 5650.24,
+      "dd_pct_peak": 9.73,
+      "pf": 1.538,
+      "win": 55.7,
+      "mean_pct": 0.51,
+      "median_pct": 0.277,
+      "final": 90407.12,
+      "by_year": {
+        "2015": 15196.11,
+        "2016": 11182.55,
+        "2017": 23412.8,
+        "2018": 15615.66
+      },
+      "dd_pct_initial": 22.601
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1299,
+      "POSTCLOSE_WINNER_NONFILL": 216,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "summary": {
+      "n": 1329,
+      "net": 72703.75,
+      "ex_best": 70775.65,
+      "dd": 5520.63,
+      "dd_pct_peak": 8.87,
+      "pf": 1.664,
+      "win": 54.9,
+      "mean_pct": 0.505,
+      "median_pct": 0.261,
+      "final": 97703.75,
+      "by_year": {
+        "2015": 17103.97,
+        "2016": 11276.87,
+        "2017": 26796.44,
+        "2018": 17526.46
+      },
+      "dd_pct_initial": 22.083
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1299,
+      "POSTCLOSE_WINNER_NONFILL": 216,
+      "NO_POSITION_AFTER_NONFILL": 186,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ]
+  },
+  {
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1086,
+      "net": 20056.19,
+      "ex_best": 18128.09,
+      "dd": 8159.07,
+      "dd_pct_peak": 25.7,
+      "pf": 1.185,
+      "win": 45.4,
+      "mean_pct": 0.165,
+      "median_pct": -0.186,
+      "final": 45056.19,
+      "by_year": {
+        "2015": 3613.77,
+        "2016": -1513.25,
+        "2017": 10013.22,
+        "2018": 7942.46
+      },
+      "dd_pct_initial": 32.636
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1086,
+      "POSTCLOSE_WINNER_NONFILL": 429,
+      "NO_POSITION_AFTER_NONFILL": 429,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_HYBRID",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1515,
+      "net": 37828.56,
+      "ex_best": 35926.83,
+      "dd": 6048.26,
+      "dd_pct_peak": 18.67,
+      "pf": 1.31,
+      "win": 54.3,
+      "mean_pct": 0.465,
+      "median_pct": 0.21,
+      "final": 62828.56,
+      "by_year": {
+        "2015": 8287.88,
+        "2016": 4298.54,
+        "2017": 14373.62,
+        "2018": 10868.51
+      },
+      "dd_pct_initial": 24.193
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1086,
+      "POSTCLOSE_WINNER_NONFILL": 429,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "summary": {
+      "n": 1143,
+      "net": 24365.87,
+      "ex_best": 22437.77,
+      "dd": 7620.0,
+      "dd_pct_peak": 23.86,
+      "pf": 1.222,
+      "win": 47.3,
+      "mean_pct": 0.247,
+      "median_pct": -0.097,
+      "final": 49365.87,
+      "by_year": {
+        "2015": 4686.61,
+        "2016": -177.22,
+        "2017": 10622.66,
+        "2018": 9233.82
+      },
+      "dd_pct_initial": 30.48
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1086,
+      "POSTCLOSE_WINNER_NONFILL": 429,
+      "NO_POSITION_AFTER_NONFILL": 372,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ]
+  },
+  {
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1307,
+      "net": 48508.74,
+      "ex_best": 46602.3,
+      "dd": 5856.99,
+      "dd_pct_peak": 13.59,
+      "pf": 1.408,
+      "win": 51.3,
+      "mean_pct": 0.327,
+      "median_pct": 0.072,
+      "final": 73508.74,
+      "by_year": {
+        "2015": 11249.31,
+        "2016": 6146.06,
+        "2017": 20050.99,
+        "2018": 11062.37
+      },
+      "dd_pct_initial": 23.428
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1307,
+      "POSTCLOSE_WINNER_NONFILL": 208,
+      "NO_POSITION_AFTER_NONFILL": 208,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_HYBRID",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "summary": {
+      "n": 1515,
+      "net": 18328.02,
+      "ex_best": 16465.35,
+      "dd": 7086.66,
+      "dd_pct_peak": 23.41,
+      "pf": 1.128,
+      "win": 49.6,
+      "mean_pct": 0.224,
+      "median_pct": -0.013,
+      "final": 43328.02,
+      "by_year": {
+        "2015": 4031.81,
+        "2016": 117.58,
+        "2017": 9818.47,
+        "2018": 4360.17
+      },
+      "dd_pct_initial": 28.347
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1307,
+      "POSTCLOSE_WINNER_NONFILL": 208,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ]
+  },
+  {
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "summary": {
+      "n": 1313,
+      "net": 47905.86,
+      "ex_best": 45999.42,
+      "dd": 5806.99,
+      "dd_pct_peak": 13.65,
+      "pf": 1.401,
+      "win": 51.4,
+      "mean_pct": 0.327,
+      "median_pct": 0.082,
+      "final": 72905.86,
+      "by_year": {
+        "2015": 11091.75,
+        "2016": 5723.96,
+        "2017": 19865.76,
+        "2018": 11224.39
+      },
+      "dd_pct_initial": 23.228
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 986,
+      "FUNDED_INTENT": 1515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1307,
+      "POSTCLOSE_WINNER_NONFILL": 208,
+      "NO_POSITION_AFTER_NONFILL": 202,
+      "LIQUIDITY_OR_DUST": 122
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ]
+  }
+]

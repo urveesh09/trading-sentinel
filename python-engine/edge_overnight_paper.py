@@ -932,6 +932,15 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     shadows = _shadow_entries(scan["positions"], fresh, shadow_states, today=today, decided=decided, late=late,
                               nights=nights)
 
+    # Optional evidence only: archive inputs already known at this decision.
+    # Its failure cannot change admissions or block the existing paper book.
+    try:
+        from overnight_execution_evidence import capture_entry
+        capture_entry(db_path, day=today, decided=decided, picks=scan["positions"],
+                      quotes=fresh, nights=nights, late=late)
+    except Exception as exc:
+        logger.warning('overnight_shortlist_evidence_failed err=%s', type(exc).__name__)
+
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
                "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT,
@@ -1239,6 +1248,9 @@ def overnight_shadow_comparison(db_path: Optional[str] = None) -> dict:
                      "[S23-S1] ON_TIGHT_SPREAD limits the fill premium over LTP, not the displayed bid-ask "
                      "spread; realism.entry_spread_pct is the displayed spread. realism.exit_at_bid and "
                      "entry_at_close are counterfactuals on the same trades, for measurement only."]}
+    from overnight_execution_evidence import summary as execution_evidence_summary
+    out['execution_evidence'] = execution_evidence_summary(
+        db_path or settings.DB_PATH, ticket=float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL) / 2)
     if not os.path.exists(store):
         return out
     try:

@@ -91,6 +91,24 @@
       "trigger": "interval[0:01:30]"
     },
     {
+      "func": "_run_overnight_evidence_decision_safe",
+      "id": "overnight_evidence_decision",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='51']"
+    },
+    {
+      "func": "_run_overnight_evidence_end_safe",
+      "id": "overnight_evidence_end",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='16', minute='3']"
+    },
+    {
+      "func": "_run_overnight_evidence_pre_safe",
+      "id": "overnight_evidence_pre",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='49']"
+    },
+    {
       "func": "_run_partner_analytics_tick_safe",
       "id": "partner_analytics_tick",
       "kwargs": [],

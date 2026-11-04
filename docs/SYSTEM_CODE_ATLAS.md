@@ -486,9 +486,9 @@ Related tests: `python-engine/tests/test_dispatch_independence.py`
 
 EDGE overnight paper book: buy the EDGE scan near the close, sell at the next open. Broker-free. It never imports an executor or places an order. Research basis: docs/2026-10-05-edge-overnight-study.md. The shipped EDGE candidates earn their move overnight, while the runtime EDGE buys the following morning. * 15:20 IST (``run_overnight_entry``): one quote batch gives today's provisional bar (open/high/low from the session so far, LTP as the close, volume so far) for every cached ticker in or near the EDGE price band. The shipped ``scan_today`` ranks them on a temporary copy of recent history plus that bar. Each pick is bought on paper at LTP + ``ENTRY_SLIPPAGE_BPS``, capped by 1% of today's
 
-Top-level declarations: `OvernightShadow` (line 86), `prior_session` (line 139), `_price_exit` (line 153), `overnight_db_path` (line 237), `_store` (line 242), `_read_only` (line 271), `_finite_positive` (line 275), `buy_charges` (line 282), `book_state` (line 296), `shadows_enabled` (line 312), `shadow_state` (line 316), `night_means` (line 328), `_shadow_entries` (line 356), `_shadow_open` (line 385), `_official_close_basis` (line 392), `_price_shadows` (line 400), `_close_shadow_items` (line 425), `_already_ran` (line 438), `_record_run` (line 444), `_dated_for_delivery` (line 459), `flush_notices` (line 477), `catch_up` (line 529), `universe_from_cache` (line 558), `provisional_bar` (line 573), `build_scan_db` (line 589), `_quotes` (line 610), `base_symbol` (line 636), `visible_asks` (line 641), `walk_asks` (line 661), `_best_bid` (line 673), `_stamp_age` (line 681), `_trade_age` (line 695), `snapshot_refusal` (line 700), `price_for_cash` (line 712), `realism_refusal` (line 734), `series_refusal` (line 761), `day_high_refusal` (line 771), `_admit` (line 779), `run_overnight_entry` (line 871), `_entry_data_unavailable` (line 966), `run_overnight_exit` (line 998), `retry_waiting_exits` (line 1047), `_realism` (line 1104), `_book_stats` (line 1133), `postclose_probe_enabled` (line 1156), `_probe_tickers` (line 1160), `run_postclose_probe` (line 1174), `postclose_probe_summary` (line 1207), `overnight_shadow_comparison` (line 1230), `_close_items` (line 1290), `_exit_summary` (line 1300), `format_entry_telegram` (line 1307), `format_exit_telegram` (line 1315)
+Top-level declarations: `OvernightShadow` (line 86), `prior_session` (line 139), `_price_exit` (line 153), `overnight_db_path` (line 237), `_store` (line 242), `_read_only` (line 271), `_finite_positive` (line 275), `buy_charges` (line 282), `book_state` (line 296), `shadows_enabled` (line 312), `shadow_state` (line 316), `night_means` (line 328), `_shadow_entries` (line 356), `_shadow_open` (line 385), `_official_close_basis` (line 392), `_price_shadows` (line 400), `_close_shadow_items` (line 425), `_already_ran` (line 438), `_record_run` (line 444), `_dated_for_delivery` (line 459), `flush_notices` (line 477), `catch_up` (line 529), `universe_from_cache` (line 558), `provisional_bar` (line 573), `build_scan_db` (line 589), `_quotes` (line 610), `base_symbol` (line 636), `visible_asks` (line 641), `walk_asks` (line 661), `_best_bid` (line 673), `_stamp_age` (line 681), `_trade_age` (line 695), `snapshot_refusal` (line 700), `price_for_cash` (line 712), `realism_refusal` (line 734), `series_refusal` (line 761), `day_high_refusal` (line 771), `_admit` (line 779), `run_overnight_entry` (line 871), `_entry_data_unavailable` (line 975), `run_overnight_exit` (line 1007), `retry_waiting_exits` (line 1056), `_realism` (line 1113), `_book_stats` (line 1142), `postclose_probe_enabled` (line 1165), `_probe_tickers` (line 1169), `run_postclose_probe` (line 1183), `postclose_probe_summary` (line 1216), `overnight_shadow_comparison` (line 1239), `_close_items` (line 1302), `_exit_summary` (line 1312), `format_entry_telegram` (line 1319), `format_exit_telegram` (line 1327)
 
-Engine dependencies: `config`, `expiry_paper`, `market_calendar`, `penny_edge_live`, `penny_risk`
+Engine dependencies: `config`, `expiry_paper`, `market_calendar`, `overnight_execution_evidence`, `penny_edge_live`, `penny_risk`
 
 Related tests: `python-engine/tests/test_edge_overnight_paper.py`
 
@@ -1555,6 +1555,18 @@ Research-only Overnight v2 enrichment: portfolio downside and entry routing. No 
 Top-level declarations: `legacy_lab` (line 19), `Policy` (line 28), `risk_history` (line 53), `eligible` (line 68), `pair_risk` (line 83), `choose` (line 98), `route_fraction` (line 121), `fill_uniform` (line 135), `simulate` (line 139)
 
 Related tests: `python-engine/tests/test_overnight_enrichment.py`
+
+## `python-engine/overnight_execution_evidence.py`
+
+Conservative post-close capacity evidence; never orders or assumed fills. The independent collector is disabled by default. It measures only the broker-supported 15:50-16:00 interval and preserves missing/stale observations. Even a positive capacity proxy says nothing about our place in the order queue.
+
+Top-level declarations: `stamp` (line 23), `finite` (line 32), `assess` (line 37), `evidence_path` (line 79), `enabled` (line 82), `_schema` (line 87), `capture_entry` (line 93), `collect` (line 117), `summary` (line 164)
+
+Engine dependencies: `config`
+
+Related tests: `python-engine/tests/test_overnight_execution_evidence.py`
+
+Declared tables: `observations`, `runs`, `shortlists`
 
 ## `python-engine/owner_entry_halt.py`
 
@@ -2666,7 +2678,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1403)
+Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1444)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 
