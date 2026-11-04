@@ -1,0 +1,87 @@
+{
+  "round": 1,
+  "source": {
+    "python-engine/overnight_enrichment.py": "d158d8c6a3f521927c12eb96acc2b5d3540f6a78404ed2e8b291d5f66a5d773d",
+    "scripts/overnight_enrichment_study.py": "2d963ba2e3f0f58465b309f79fded76ad515015468cc907c8456543cfdb6c839",
+    "docs/research/penny/2026-11-04-overnight-v2/lab.py": "7e4b53a9b284b80787b98549a1782dbf501155f06863149ae05d0b7ac7ffc191",
+    "docs/research/penny/2026-11-04-overnight-v2/arms.py": "9467efff1acedb9336e54f7342f129ae75e9f05406ea0881a73b8c1517dd20f8",
+    "docs/research/penny/2026-11-04-overnight-v2/round2.py": "3b2e3f51844ec190e9d59d7d71779e6efbffaa2cd8411a1622bd9a3aa669baa5",
+    "docs/research/penny/2026-11-04-overnight-v2/exam.py": "9edcd49dc299fbfa0f4e5d79cba3181b297d4d755f736141da55ef85b02a55ce",
+    "python-engine/penny_edge_engine.py": "afd6bd3e46611898d0673d539ec44d2a514f30206c8d5447cd1b2c52f1a60f54",
+    "python-engine/penny_edge_backtest.py": "6832b9facdbeec2485fbec172f6d7349f2784358b139443c2644a8849c2f4007",
+    "python-engine/penny_risk.py": "91ca4f1ae55a6e1d75a564802f294dbf316db74ef7b97a795f2ec8ff32e7d1cf",
+    "python-engine/config.py": "9affc11bdde3c458f3f5d347b934349cd59689865478354d57cc3ecec07b8195"
+  },
+  "policies": [
+    {
+      "name": "V3_DIVERSIFY",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": true,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false
+    },
+    {
+      "name": "V3_HYBRID",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false
+    }
+  ],
+  "development": {
+    "yahoo": [
+      "2023-01-01",
+      "2026-10-30"
+    ],
+    "kite": [
+      "2025-07-01",
+      "2026-09-30"
+    ]
+  },
+  "data": {
+    "yahoo": "7cbc8175f69fd50525112587744bcb32b37a5b980c79b8973b8253b50def716d",
+    "kite": "260586b59901d4ec0c0f88c7b0fce8a6aedb9c384131528f3e269c09b97685cc"
+  },
+  "models": [
+    [
+      36,
+      5,
+      1.0
+    ],
+    [
+      36,
+      5,
+      0.75
+    ],
+    [
+      36,
+      5,
+      0.5
+    ],
+    [
+      60,
+      20,
+      0.75
+    ]
+  ],
+  "cash": "fixed 25000; no reinvestment; losses reduce own capital",
+  "old_history_check": [
+    "2015-01-01",
+    "2018-12-31"
+  ],
+  "old_history_opened": false,
+  "acceptance": "net/ex-best positive, >=100 closes, 10% more same-model net with <=1.5x DD OR 20% lower DD with >=95% net; no unresolved; conditional, not live qualification",
+  "frozen_at": "2026-11-04T04:51:36.754543+00:00"
+}

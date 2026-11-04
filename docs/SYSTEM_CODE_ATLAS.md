@@ -1548,6 +1548,14 @@ Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_order_execution_readiness.py`
 
+## `python-engine/overnight_enrichment.py`
+
+Research-only Overnight v2 enrichment: portfolio downside and entry routing. No broker, scheduler, notification or live-state access. Inputs are frozen daily observations; next-session outcomes are read only when settling held positions. All post-close fills are assumptions, not evidence of execution.
+
+Top-level declarations: `legacy_lab` (line 19), `Policy` (line 28), `risk_history` (line 48), `eligible` (line 63), `pair_risk` (line 78), `choose` (line 93), `fill_uniform` (line 112), `simulate` (line 116)
+
+Related tests: `python-engine/tests/test_overnight_enrichment.py`
+
 ## `python-engine/owner_entry_halt.py`
 
 [WORKFLOW-A1 2026-09-20] Owner entry-only global halt + per-channel control. Audit-defect A1 required an explicit owner entry-only halt and per-channel kill-switch surface. Per ``docs/2026-09-20-independent-system-readiness-audit.md`` §3-A1 and §4, manual Momentum Telegram execution remained broker-capable after the per-sleeve live-disable switches; that left an operator without a single lever to silence all new entries while preserving exits. This module is the lever. It exposes a pure predicate ``is_owner_entry_halted(channel)`` and a structured result type ``EntryHaltVerdict`` that callers can serialize into the structured log or surface in the operator readiness report. Design choices: *

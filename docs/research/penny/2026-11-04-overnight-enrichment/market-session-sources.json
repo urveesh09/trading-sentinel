@@ -1,0 +1,6 @@
+{
+  "broker_current": "https://zerodha.com/marketintel/bulletin/439989/introduction-of-closing-auction-session-cas-in-the-equity-cash-segment-and-certain-modifications-in-the-pre-open-auction-session",
+  "broker_support": "https://support.zerodha.com/category/trading-and-markets/trading-faqs/market-sessions/articles/what-are-pre-market-and-post-market-sessions-and-orders",
+  "exchange_generic": "https://www.nseindia.com/static/market-data/market-timings",
+  "dated_policy": "broker-supported post-close 15:50-16:00; market auction order entry before09:05; common conservative snapshot interval excludes CAS"
+}
