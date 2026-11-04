@@ -76,3 +76,21 @@ identity, verification commands/results and environmental limits.
 
 Plan only; no new strategy score or code change yet. Existing Dev owner changes
 and untracked parity files remain preserved. Production checkout `5e30ce0`.
+
+## Round 1 outcome and round 2 freeze
+
+Implementation/freeze commit 4d95c71; seven unit tests passed. Both panels
+scored against identical native V2, four declared models, fixed capital.
+Full-fill diversification lost 15% Yahoo net for 25% lower DD, failing the
+95%-net hurdle. Half-regular routing lost 16% ideal net but increased
+50%-winning-fill stress net by 41% (Yahoo) and 74% (Kite). It is a conditional
+robustness candidate, not full-fill dominance. Kite leaves one exposure at the
+end of available cached bars, so is partial evidence, not a formal pass.
+
+Round 2: keep first ranked eligible pick; change its equal-weight second
+partner only with >=20% lower estimated downside risk. Second hypothesis:
+route half early only when the causal shrunk overnight mean clears full
+modeled roundtrip costs; otherwise all post-close. No new learned predictor.
+Older public acquisition: 874 requested, 443 returned, 710167 rows; no outcome
+inspection or strategy score. Fresh check still sealed. Timing: use dated
+broker's 15:50-16:00, not stale generic 15:40 start.

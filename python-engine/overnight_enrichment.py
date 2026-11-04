@@ -37,12 +37,17 @@ class Policy:
     min_overlap:int=20
     max_weight:float=.65
     screen_before_depth:bool=False   # legacy research control only
+    anchor_first:bool=False
+    min_risk_improvement:float=.20
+    route_rule:str='constant'        # constant | positive_net
 
     def __post_init__(self):
         if self.portfolio not in ('rank','downside'):raise ValueError('unknown portfolio')
         if not 0<=self.regular_fraction<=1:raise ValueError('invalid route fraction')
         if self.slots!=2:raise ValueError('this study uses two funded tickets')
         if not .5<=self.max_weight<=.75:raise ValueError('invalid concentration cap')
+        if not 0<=self.min_risk_improvement<1:raise ValueError('invalid risk hurdle')
+        if self.route_rule not in ('constant','positive_net'):raise ValueError('invalid route rule')
 
 
 def risk_history(days):
@@ -95,6 +100,7 @@ def choose(day,p,histories):
     if p.portfolio=='downside' and len(cands)>=2:
         options=[]
         for i,a in enumerate(cands):
+            if p.anchor_first and i!=0:continue
             for j in range(i+1,len(cands)):
                 b=cands[j]
                 if a.ticker.split('-')[0]==b.ticker.split('-')[0]:continue
@@ -102,11 +108,28 @@ def choose(day,p,histories):
                 if r is not None:options.append((r[0],i,j,r[1]))
         if options:
             _,i,j,w=min(options)
+            base=pair_risk(cands[0].ticker,cands[1].ticker,histories,p)
+            if p.anchor_first and (base is None or min(options)[0]>base[0]*(1-p.min_risk_improvement)):
+                return cands,weights,'ANCHOR_RETAINED_PAIR'
             selected=[cands[i],cands[j]]
             cands=selected+[c for k,c in enumerate(cands) if k not in (i,j)]
             weights[selected[0].ticker]=w;weights[selected[1].ticker]=1-w;status='DOWNSIDE_PAIR'
         else:status='RISK_HISTORY_UNAVAILABLE_FALLBACK'
     return cands,weights,status
+
+
+def route_fraction(c,p,bankroll,regular_bps,exit_bps):
+    """Earlier entry only when a causal night estimate clears declared costs.
+
+    Daily close is a regular-session price proxy, not a tradable 15:20 quote.
+    This hurdle cannot establish actual spread, slippage or pre-close drift.
+    """
+    if p.route_rule=='constant':return p.regular_fraction
+    qty=int((bankroll/p.slots)//(c.close*1.002))
+    if qty<1:return 0.
+    fees=legacy_lab().cnc_costs(c.close,c.close,qty)/(qty*c.close)
+    hurdle=fees+(regular_bps+exit_bps)/10000
+    return p.regular_fraction if c.f.get('night_mean',0)>hurdle else 0.
 
 
 def fill_uniform(ticker,day,seed):
@@ -164,17 +187,18 @@ def simulate(days,p,*,start,end,bankroll=25000.,regular_bps=36.,exit_bps=5.,
                 # replacement picks. Downside weights use a capped funded ticket.
                 budget=free/(p.slots-entered) if p.portfolio=='rank' else min(free,risk_capital*weights[c.ticker])
                 rp=c.close*(1+regular_bps/10000)
+                fraction=route_fraction(c,p,risk_capital,regular_bps,exit_bps)
                 if budget<=0:outcomes['NO_FREE_CASH']+=1;continue
-                if p.regular_fraction==0:
+                if fraction==0:
                     qp=int(budget//(c.close*1.002));qr=0
-                elif p.regular_fraction==1:
+                elif fraction==1:
                     qr=int(budget//(rp*1.002));qp=0
                 else:
-                    qr=int(budget*p.regular_fraction//(rp*1.002))
-                    qp=int(budget*(1-p.regular_fraction)//(c.close*1.002))
+                    qr=int(budget*fraction//(rp*1.002))
+                    qp=int(budget*(1-fraction)//(c.close*1.002))
                 planned_cash=risk_capital*(.5 if p.portfolio=='rank' else weights[c.ticker])
-                qr=min(qr,int(planned_cash*p.regular_fraction//rp))
-                qp=min(qp,int(planned_cash*(1-p.regular_fraction)//c.close))
+                qr=min(qr,int(planned_cash*fraction//rp))
+                qp=min(qp,int(planned_cash*(1-fraction)//c.close))
                 capacity=int(.01*c.close*d.bar[c.ticker]['volume']//c.close)
                 total=qr+qp
                 if total>capacity:

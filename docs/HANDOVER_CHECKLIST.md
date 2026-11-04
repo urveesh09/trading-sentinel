@@ -1,3 +1,16 @@
+## November 4 — Overnight v2 enrichment: freeze-refined-second-round (Dev only)
+
+Owner authorizes creative portfolio/execution improvements beyond ON_V2.
+Study: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Preserve V2, older shadows, historical exams and owner bytes. Fixed Rs25k
+capital; new downside-diversification and split-entry hypotheses, paired
+fill/cost stresses, fresh 2015-2018 historical check frozen before outcomes.
+Public acquisition only; zero Breeze/broker calls. Production read-only
+comparison exported: old shadows remain unprofitable, ON_V2 not deployed.
+Current broker phase windows and unknown fills are explicit. No real order,
+native capital change, push/deployment or Production edit. All verification
+results, failures and remaining work are recorded in the study status.
+
 ## November 4 — Overnight v2 enrichment: freeze-portfolio-and-execution-round1 (Dev only)
 
 Owner authorizes creative portfolio/execution improvements beyond ON_V2.

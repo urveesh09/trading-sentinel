@@ -1552,7 +1552,7 @@ Related tests: `python-engine/tests/test_order_execution_readiness.py`
 
 Research-only Overnight v2 enrichment: portfolio downside and entry routing. No broker, scheduler, notification or live-state access. Inputs are frozen daily observations; next-session outcomes are read only when settling held positions. All post-close fills are assumptions, not evidence of execution.
 
-Top-level declarations: `legacy_lab` (line 19), `Policy` (line 28), `risk_history` (line 48), `eligible` (line 63), `pair_risk` (line 78), `choose` (line 93), `fill_uniform` (line 112), `simulate` (line 116)
+Top-level declarations: `legacy_lab` (line 19), `Policy` (line 28), `risk_history` (line 53), `eligible` (line 68), `pair_risk` (line 83), `choose` (line 98), `route_fraction` (line 121), `fill_uniform` (line 135), `simulate` (line 139)
 
 Related tests: `python-engine/tests/test_overnight_enrichment.py`
 

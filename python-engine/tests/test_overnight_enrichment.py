@@ -3,7 +3,7 @@ from datetime import date,timedelta
 
 import pytest
 
-from overnight_enrichment import Policy,choose,legacy_lab,pair_risk,risk_history,simulate
+from overnight_enrichment import Policy,choose,legacy_lab,pair_risk,risk_history,route_fraction,simulate
 
 
 def tape(n=70):
@@ -77,3 +77,23 @@ def test_native_depth_is_taken_before_night_screen():
     for c in d.cands:d.bar[c.ticker]={'open':20,'high':21,'low':19,'close':20,'volume':100000};d.prev_close[c.ticker]=20
     assert not choose(d,Policy('native'),{})[0]
     assert len(choose(d,Policy('legacy',screen_before_depth=True),{})[0])==2
+
+
+def test_anchored_pair_preserves_first_pick_and_requires_material_improvement():
+    d=tape(2)[0]
+    h={t:tuple((str(i),v) for i in range(30)) for t,v in [('AAA',-.02),('BBB',-.02),('CCC',-.001)]}
+    p=Policy('anchor',portfolio='downside',anchor_first=True)
+    cs,_,status=choose(d,p,h)
+    assert [c.ticker for c in cs[:2]]==['AAA','CCC']
+    assert status=='DOWNSIDE_PAIR'
+    cs,_,status=choose(d,Policy('strict',portfolio='downside',anchor_first=True,min_risk_improvement=.99),h)
+    assert [c.ticker for c in cs[:2]]==['AAA','BBB'] and status=='ANCHOR_RETAINED_PAIR'
+
+
+def test_cost_hurdle_routes_only_positive_estimated_net_without_future_return():
+    c=tape(2)[0].cands[0];p=Policy('route',regular_fraction=.5,route_rule='positive_net')
+    c.f['night_mean']=.001
+    assert route_fraction(c,p,25000,36,5)==0
+    c.f['night_mean']=.03
+    assert route_fraction(c,p,25000,36,5)==.5
+    assert route_fraction(c,p,25000,400,5)==0
