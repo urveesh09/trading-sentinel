@@ -123,7 +123,7 @@ def source_hashes():
 def inputs():
     idata,_,o=legacy()
     return [idata.DEV_DAILY,idata.EXAM_DB,o.OLD,o.V2/'yahoo/yahoo.sqlite',o.V2/'yahoo-split-cuts.json',
-            o.V2/'yahoo-acquisition.json',RUN/'cross-name-acquisition.json']
+            o.V2/'yahoo-acquisition.json',RUN/'cross-name-acquisition.json',RUN/'nse-etf-identity.json']
 
 
 def proposals(round_):
@@ -160,6 +160,8 @@ def freeze(round_,revision=1):
 def excluded_etfs():
     paths=[ROOT/'docs/research/penny/2026-11-04-overnight-v2/_local/yahoo-acquisition.json',RUN/'cross-name-acquisition.json']
     out={'NIFTYBEES','NIFTY 50'}
+    registry=RUN/'nse-etf-identity.json'
+    if registry.exists():out.update(json.loads(registry.read_text())['symbols'])
     for p in paths:
         if not p.exists():continue
         x=json.loads(p.read_text())
@@ -187,7 +189,7 @@ def score(round_,revision=1):
     from smart_classic_enrichment import Policy,auction_orders,intraday_orders,cnc_orders,run_book
     f=json.loads(freeze_path(round_,revision).read_text());assert f['sources']==source_hashes()
     for p,h in f['data'].items():assert sha(ROOT/p)==h,p
-    excluded=excluded_etfs();rows=[];write(RUN/'excluded-etfs.json',sorted(excluded))
+    excluded=excluded_etfs();rows=[];write(RUN/f'excluded-etfs-r{round_}v{revision}.json',sorted(excluded))
     for panel,window in f['development'].items():
         days,daily,calendar=seen_panel(panel)
         controls=([Policy('CNC_NIGHT_CONTROL','cnc_night'),Policy('CNC_WILDER_CONTROL','cnc_wilder')] if round_>1 else [])

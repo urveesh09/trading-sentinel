@@ -169,3 +169,21 @@ parallel work entered a2e41ac. Correct its staged atlas to this task's own
 module section fromb135fd6, leaving the fully regenerated working atlas and
 all partner source edits untouched/unstaged. Subsequent commits stage only
 our atlas section. Record this concurrency/version boundary in verification.
+
+## Instrument-identity correction before cross-name opening
+
+Yahoo identifies the seven known commodity ETFs as EQUITY; relying only on
+provider instrument_type did not remove them. Downloaded the official NSE ETF
+register (359 exact symbols; all7 verified). Preserve150 R1+210 R2+30 exit
+models as MIXED-INSTRUMENT diagnostics, not stock-only evidence. No alpha
+parameters change:freeze R2 revision2 and morning-exit revision2 with exact
+NSE exclusions, then re-score identical policies/controls on actual stocks.
+This is an identity-contract correction, not retuning to a financial result.
+
+Cross-name final check:freeze the two morning exit arms and two afternoon
+Classic arms before reading the new158-name five-minute outcomes. All dates
+already seen, no chronological qualification; auction volume is an optimistic
+first-five-minute bound. CNC daily outcomes are all seen and get no new-exam
+label. Freeze/commit now, then open once. Both failed and corrected outputs
+remain in the report. Source snapshots archived by hash, including shared
+config while unrelated partner work remains unstaged; no.env copied.

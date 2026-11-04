@@ -52,8 +52,8 @@ def arms(days,daily,calendar,excluded):
 def bound():return source_hashes()|{str(Path(__file__).resolve().relative_to(ROOT)).replace('\\','/'):sha(Path(__file__).resolve())}
 
 
-def freeze():
-    target=HERE/'smart-exit-freeze.json'
+def freeze(revision=1):
+    target=HERE/('smart-exit-freeze.json' if revision==1 else f'smart-exit-revision{revision}-freeze.json')
     if target.exists():raise ValueError('exit freeze exists')
     write(target,{'sources':bound(),'data':{str(p.relative_to(ROOT)).replace('\\','/'):sha(p) for p in inputs()},
         'arms':['SV3_MORNING_0930','SV3_GAP_TARGET_1000'],'entry':'identical V3 final-auction reference pool, cash/volume proxy, ETF exclusion; no claim of pre-auction selection',
@@ -62,8 +62,9 @@ def freeze():
         'cash':2000,'cross_name_opened':False,'acceptance':'positive/ex-best,30+ closes,no open; >=10% net improvement OR20% lower DD with95% net retained on both seen panels; cross-name check separate, not chronology'})
 
 
-def score():
-    f=json.loads((HERE/'smart-exit-freeze.json').read_text());assert f['sources']==bound()
+def score(revision=1):
+    freeze_path=HERE/('smart-exit-freeze.json' if revision==1 else f'smart-exit-revision{revision}-freeze.json')
+    f=json.loads(freeze_path.read_text());assert f['sources']==bound()
     for path,h in f['data'].items():assert sha(ROOT/path)==h,path
     rows=[];excluded=excluded_etfs()
     for panel in ['h1','recent']:
@@ -71,14 +72,15 @@ def score():
         for name,orders in sets.items():
             orders=[o for o in orders if o.day>=('2026-01-01' if panel=='h1' else '2026-08-10')]
             for eb,xb,seed in f['models']:
-                path=HERE/f'_local/results/smart3_{panel}_{name}_{eb}_{xb}_{seed}.json'
+                path=HERE/f'_local/results/smart3v{revision}_{panel}_{name}_{eb}_{xb}_{seed}.json'
                 if path.exists():raise ValueError('result exists')
                 r=run_book(orders,daily,calendar,entry_bps=eb,exit_bps=xb,fill_seed=seed)
                 write(path,r|{'name':name,'model':[eb,xb,seed],'order_counts':counts})
                 rows.append({'panel':panel,'name':name,'model':[eb,xb,seed],'summary':r['summary']})
                 print(panel,name,eb,xb,seed,r['summary'],flush=True)
-    assert f['sources']==bound();write(HERE/'smart-exit-results.json',rows)
+    assert f['sources']==bound();write(HERE/('smart-exit-results.json' if revision==1 else f'smart-exit-revision{revision}-results.json'),rows)
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('command',choices=['freeze','score']);a=p.parse_args();globals()[a.command]()
+    p=argparse.ArgumentParser();p.add_argument('command',choices=['freeze','score']);p.add_argument('--revision',type=int,default=1)
+    a=p.parse_args();globals()[a.command](a.revision)
