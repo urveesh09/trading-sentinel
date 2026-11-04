@@ -93,6 +93,16 @@ class Cand:
     hist_rev: float     # shrunk mean of this stock's past open->close on its gap<=-2% days (before today)
     hist_n: int
     next_open: float | None
+    next_low: float | None = None
+    next_close: float | None = None
+    at_band: bool = False   # auction price on a circuit-band level (-2/-5/-10/-20% of the previous close)
+
+
+BANDS = (0.02, 0.05, 0.10, 0.20)
+
+
+def at_band(o, pc):
+    return any(abs(o - pc * (1 - b)) <= 0.0101 + 1e-9 for b in BANDS)
 
 
 def build_rows(bars: dict, start: str, end: str, min_gap=MIN_GAP_STORED) -> dict:
@@ -117,11 +127,13 @@ def build_rows(bars: dict, start: str, end: str, min_gap=MIN_GAP_STORED) -> dict
                     s50, s200 = sma(50), sma(200)
                     k = len(rev_hist[-40:])
                     hist = sum(rev_hist[-40:]) / (k + 20) if k else 0.0
-                    nxt = seq[i + 1][1][0] if i + 1 < len(seq) else None
+                    nb = seq[i + 1][1] if i + 1 < len(seq) else None
                     out[d].append(Cand(t, d, pc, o, h, l, c, v, gap, medv, (vols[9] + vols[10]) / 2,
                                        bool(s50 and pc > s50), bool(s200 and pc > s200), _rsi2(closes[:i]),
                                        pc / pc2 - 1, (pc - pl) / (ph - pl) if ph > pl else 0.5,
-                                       pc / closes[i - 6] - 1 if i >= 6 else 0.0, hist, k, nxt))
+                                       pc / closes[i - 6] - 1 if i >= 6 else 0.0, hist, k,
+                                       nb[0] if nb else None, nb[2] if nb else None, nb[3] if nb else None,
+                                       at_band(o, pc)))
             if gap <= -0.02 and 1 <= pc <= 55:
                 rev_hist.append(c / o - 1)
     return dict(out)
@@ -155,6 +167,7 @@ class Policy:
     yday: str = ""                  # "" | "not_down3" | "down3"
     exit: str = "close"             # close | next_open
     eq_only: bool = False
+    skip_band: bool = False         # skip auction prices on a circuit-band level (lower circuit)
     extra: tuple = ()
 
 
@@ -173,9 +186,10 @@ MODELS = {
     "M2": Fill("M2", win_fill=0.75),
     "M3": Fill("M3", win_fill=0.5),
     "M4": Fill("M4", win_fill=0.5, correlated=True),
-    "M5": Fill("M5", kappa=0.005),
-    "M6": Fill("M6", kappa=0.005, win_fill=0.5),
+    "M5": Fill("M5", kappa=0.001),
+    "M6": Fill("M6", kappa=0.001, win_fill=0.5),
     "M7": Fill("M7", entry_bps=50, exit_bps=50),
+    "M8": Fill("M8", entry_bps=100, exit_bps=50),
 }
 SEEDS = list(range(20261104, 20261114))
 
@@ -198,6 +212,8 @@ def eligible(c: Cand, p: Policy) -> bool:
     if p.yday == "down3" and c.yday_ret >= -0.03:
         return False
     if p.exit == "next_open" and not c.next_open:
+        return False
+    if p.skip_band and c.at_band:
         return False
     return True
 
@@ -238,7 +254,23 @@ def simulate(panel: dict, p: Policy, fm: Fill, *, start, end, bankroll=25000.0, 
                 break
             budget = cap / p.slots
             entry = c.open * (1 + fm.entry_bps / 1e4)
-            exit_ref = c.close if p.exit == "close" else c.next_open
+            intraday = p.exit == "close"
+            locked = False
+            if p.exit == "close":
+                exit_ref = c.close
+                if c.close <= c.low * (1 + 1e-4) and c.close < c.open * (1 - 1e-4):
+                    # Closed on its low below the open: a lower-circuit lock has no buyers, so the
+                    # sale carries to the next session (delivery charges): its open, or its close if
+                    # it opens and stays locked; no next bar -> 5% under the close.
+                    locked, intraday = True, False
+                    if c.next_open is None:
+                        exit_ref = c.close * 0.95
+                    elif c.next_open <= c.next_low * (1 + 1e-4) and c.next_close <= c.next_low * (1 + 1e-4):
+                        exit_ref = c.next_close
+                    else:
+                        exit_ref = c.next_open
+            else:
+                exit_ref = c.next_open
             exit_px = exit_ref * (1 - fm.exit_bps / 1e4)
             qty = int(budget // entry)
             if fm.kappa is not None:
@@ -248,8 +280,9 @@ def simulate(panel: dict, p: Policy, fm: Fill, *, start, end, bankroll=25000.0, 
                 out["CAPACITY_OR_DUST"] += 1
                 entered += 1     # the slot was used by an order that could not fill
                 continue
-            intraday = p.exit == "close"
             fees = float(calc_penny_costs(entry, exit_px, qty, is_intraday=intraday))
+            if locked:
+                out["LOCKED_EXIT"] += 1
             net = (exit_px - entry) * qty - fees
             if net > 0 and fm.win_fill < 1:
                 u = night_u if fm.correlated else _sha(seed, d, c.ticker)
@@ -262,7 +295,7 @@ def simulate(panel: dict, p: Policy, fm: Fill, *, start, end, bankroll=25000.0, 
             day_net += net
             tr = {"date": d, "ticker": c.ticker, "net": net}
             if keep:
-                tr.update({"gap": c.gap, "entry": entry, "exit": exit_px, "qty": qty, "fees": fees,
+                tr.update({"gap": c.gap, "locked": locked, "at_band": c.at_band, "entry": entry, "exit": exit_px, "qty": qty, "fees": fees,
                            "value": qty * entry, "med_value20": c.med_value20, "ret": exit_px / entry - 1})
             trades.append(tr)
         realized += day_net

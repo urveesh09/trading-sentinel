@@ -66,3 +66,42 @@ gap-down reversion first), OAR_RANDOM (null order), OAR_GAP3 (gap <= -3%), OAR_M
 (-10% < gap <= -2%), OAR_GAP_1 / OAR_GAP_3 (one / three slots), OAR_NIGHT (OAR_GAP, held to the next
 open, delivery charges). Read: robust net and M1 net per panel; consistency across all five panels
 picks round 2. Nothing from round 1 is promoted by itself.
+
+### Round 1 corrections before any selection
+
+- First run (`results/round1-nolock.json`) sold at the official close even when a stock closed on
+  its low below the open (a lower-circuit lock has no buyers). Rule added: such a sale carries to the
+  next session (its open, or its close if it opens and stays locked; delivery charges).
+- M5 capacity was 0.5% of the 20-day median volume. Kite's 09:15 candle on gap-down days (Production
+  feed, 149 stock-days) has a median value of Rs 37k, p25 Rs 1k: the opening auction is thin.
+  M5/M6 now use 0.1%, and M8 (+100 bp entry, -50 bp exit) was added. Round 1 was rerun on both fixes.
+
+### Round 1 result (`results/round1.json`, Rs 25,000; panels 1014 / 1518 / 1922 / 2325 / 26b)
+
+| Arm | M1 net | robust (min M1-M8) |
+|---|---|---|
+| OAR_GAP | 718k / 548k / 521k / 358k / 26.7k | 75.9k / 19.4k / 12.0k / 38.1k / 2.2k |
+| OAR_VAL | 536k / 386k / 253k / 199k / 21.4k | 81.2k / -8.2k / -25.0k / -24.9k / -2.7k |
+| OAR_HIST | 595k / 473k / 417k / 330k / 31.3k | 48.6k / 3.8k / -6.6k / 6.8k / 4.4k |
+| OAR_RANDOM | 544k / 447k / 401k / 216k / 18.9k | 42.8k / -2.7k / -8.6k / -23.6k / -4.9k |
+| OAR_GAP3 | 627k / 480k / 496k / 349k / 26.7k | 74.8k / 17.3k / 13.4k / 39.2k / 2.2k |
+| OAR_MID | 616k / 521k / 479k / 336k / 23.5k | 48.0k / 16.1k / 2.1k / 25.2k / -1.2k |
+| OAR_GAP_1 | 914k / 646k / 565k / 363k / 38.7k | 80.2k / 15.7k / -2.3k / 26.6k / 7.7k |
+| OAR_GAP_3 | 602k / 504k / 482k / 358k / 24.0k | 76.4k / 27.3k / 19.5k / 45.0k / -0.3k |
+| OAR_NIGHT | 548k / 406k / 159k / -17k / -7.5k | negative from 1518 |
+
+Lessons: deepest gap first is best and the deepest gaps (< -10%) are the best trades; liquid-first
+loses under +100 bp; holding overnight loses (confirms the descriptive finding); capacity (M5/M6)
+is the binding stress at Rs 25k (only 490 of 1,761 OAR_GAP trades fill under M5 on 1014). Win rate
+falls from 73% (2011-14) to 45% (2023-25): older panels hold only today's survivors, so the
+recent panels are the honest guide. These are still daily-bar models of auction fills.
+
+## Round 2 (declared before any round-2 score)
+
+Arms (Rs 25,000 unless stated, gap <= -2%, deepest first, exit at the official close):
+OAR_CAP (skip names whose 0.1%-of-median-volume capacity cannot take a quarter of the ticket:
+a causal filter on the 20-day median volume), OAR_CAP4 (OAR_CAP, four slots), OAR_NOBAND (skip
+auction prices on a circuit-band level), OAR_CAP_NOBAND, OAR_HIST_CAP (own-history order with the
+capacity filter), OAR_CAP_HISTOK (OAR_CAP, skipping names whose own shrunk history is below zero
+after 3+ gap-down days). Smart's native Rs 2,000 book: OAR_GAP at one and two slots (S1, S2).
+Read as round 1.
