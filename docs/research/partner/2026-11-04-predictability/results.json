@@ -1,0 +1,306 @@
+{
+ "sessions": {
+  "train_2024": 246,
+  "test_2025": 247,
+  "test_2026": 190
+ },
+ "decisions": {
+  "train_2024": 16236,
+  "test_2025": 16302,
+  "test_2026": 12540
+ },
+ "horizon_min": 30,
+ "big_move": 0.005,
+ "tests": {
+  "up_next_30m": {
+   "train_2024": [
+    {
+     "model": "logistic",
+     "n": 16236,
+     "accuracy": 0.5275,
+     "base_rate": 0.5155,
+     "auc": 0.5412,
+     "event_rate": 0.5155,
+     "top_decile_event_rate": 0.5985,
+     "bottom_decile_event_rate": 0.4452
+    },
+    {
+     "model": "binned",
+     "n": 16236,
+     "accuracy": 0.5585,
+     "base_rate": 0.5155,
+     "auc": 0.5797,
+     "event_rate": 0.5155,
+     "top_decile_event_rate": 0.6498,
+     "bottom_decile_event_rate": 0.4016
+    }
+   ],
+   "test_2025": [
+    {
+     "model": "logistic",
+     "n": 16302,
+     "accuracy": 0.5242,
+     "base_rate": 0.5087,
+     "auc": 0.5272,
+     "event_rate": 0.5087,
+     "top_decile_event_rate": 0.5524,
+     "bottom_decile_event_rate": 0.4856
+    },
+    {
+     "model": "binned",
+     "n": 16302,
+     "accuracy": 0.515,
+     "base_rate": 0.5087,
+     "auc": 0.5131,
+     "event_rate": 0.5087,
+     "top_decile_event_rate": 0.5008,
+     "bottom_decile_event_rate": 0.4633
+    }
+   ],
+   "test_2026": [
+    {
+     "model": "logistic",
+     "n": 12540,
+     "accuracy": 0.5168,
+     "base_rate": 0.5207,
+     "auc": 0.5289,
+     "event_rate": 0.4793,
+     "top_decile_event_rate": 0.5199,
+     "bottom_decile_event_rate": 0.4418
+    },
+    {
+     "model": "binned",
+     "n": 12540,
+     "accuracy": 0.4996,
+     "base_rate": 0.5207,
+     "auc": 0.5076,
+     "event_rate": 0.4793,
+     "top_decile_event_rate": 0.4797,
+     "bottom_decile_event_rate": 0.4479
+    }
+   ],
+   "logistic_weights": {
+    "const": 0.0623,
+    "r5": -0.0666,
+    "r15": -0.0091,
+    "r30": -0.0378,
+    "r60": 0.0519,
+    "ropen": 0.0834,
+    "gap": 0.0416,
+    "pos": 0.0442,
+    "rv": 0.0769,
+    "tod": -0.0379
+   }
+  },
+  "big_fall_30m": {
+   "train_2024": [
+    {
+     "model": "logistic",
+     "n": 16236,
+     "accuracy": 0.9771,
+     "base_rate": 0.977,
+     "auc": 0.7553,
+     "event_rate": 0.023,
+     "top_decile_event_rate": 0.0887,
+     "bottom_decile_event_rate": 0.0025
+    },
+    {
+     "model": "binned",
+     "n": 16236,
+     "accuracy": 0.977,
+     "base_rate": 0.977,
+     "auc": 0.8329,
+     "event_rate": 0.023,
+     "top_decile_event_rate": 0.1229,
+     "bottom_decile_event_rate": 0.0018
+    }
+   ],
+   "test_2025": [
+    {
+     "model": "logistic",
+     "n": 16302,
+     "accuracy": 0.9879,
+     "base_rate": 0.9879,
+     "auc": 0.8192,
+     "event_rate": 0.0121,
+     "top_decile_event_rate": 0.0668,
+     "bottom_decile_event_rate": 0.0031
+    },
+    {
+     "model": "binned",
+     "n": 16302,
+     "accuracy": 0.9879,
+     "base_rate": 0.9879,
+     "auc": 0.6365,
+     "event_rate": 0.0121,
+     "top_decile_event_rate": 0.0276,
+     "bottom_decile_event_rate": 0.006
+    }
+   ],
+   "test_2026": [
+    {
+     "model": "logistic",
+     "n": 12540,
+     "accuracy": 0.9832,
+     "base_rate": 0.9833,
+     "auc": 0.5966,
+     "event_rate": 0.0167,
+     "top_decile_event_rate": 0.051,
+     "bottom_decile_event_rate": 0.0167
+    },
+    {
+     "model": "binned",
+     "n": 12540,
+     "accuracy": 0.9833,
+     "base_rate": 0.9833,
+     "auc": 0.5872,
+     "event_rate": 0.0167,
+     "top_decile_event_rate": 0.026,
+     "bottom_decile_event_rate": 0.0074
+    }
+   ],
+   "logistic_weights": {
+    "const": -3.9866,
+    "r5": -0.0859,
+    "r15": -0.1308,
+    "r30": -0.0887,
+    "r60": 0.2321,
+    "ropen": -0.0047,
+    "gap": 0.0676,
+    "pos": 0.1357,
+    "rv": 0.5417,
+    "tod": -0.0588
+   }
+  },
+  "big_rise_30m": {
+   "train_2024": [
+    {
+     "model": "logistic",
+     "n": 16236,
+     "accuracy": 0.9831,
+     "base_rate": 0.9832,
+     "auc": 0.843,
+     "event_rate": 0.0168,
+     "top_decile_event_rate": 0.0967,
+     "bottom_decile_event_rate": 0.0006
+    },
+    {
+     "model": "binned",
+     "n": 16236,
+     "accuracy": 0.9832,
+     "base_rate": 0.9832,
+     "auc": 0.8656,
+     "event_rate": 0.0168,
+     "top_decile_event_rate": 0.1037,
+     "bottom_decile_event_rate": 0.0
+    }
+   ],
+   "test_2025": [
+    {
+     "model": "logistic",
+     "n": 16302,
+     "accuracy": 0.9894,
+     "base_rate": 0.9899,
+     "auc": 0.7918,
+     "event_rate": 0.0101,
+     "top_decile_event_rate": 0.0466,
+     "bottom_decile_event_rate": 0.0
+    },
+    {
+     "model": "binned",
+     "n": 16302,
+     "accuracy": 0.9899,
+     "base_rate": 0.9899,
+     "auc": 0.6109,
+     "event_rate": 0.0101,
+     "top_decile_event_rate": 0.0195,
+     "bottom_decile_event_rate": 0.0048
+    }
+   ],
+   "test_2026": [
+    {
+     "model": "logistic",
+     "n": 12540,
+     "accuracy": 0.9827,
+     "base_rate": 0.9828,
+     "auc": 0.7582,
+     "event_rate": 0.0172,
+     "top_decile_event_rate": 0.0598,
+     "bottom_decile_event_rate": 0.0008
+    },
+    {
+     "model": "binned",
+     "n": 12540,
+     "accuracy": 0.9828,
+     "base_rate": 0.9828,
+     "auc": 0.6173,
+     "event_rate": 0.0172,
+     "top_decile_event_rate": 0.0334,
+     "bottom_decile_event_rate": 0.0087
+    }
+   ],
+   "logistic_weights": {
+    "const": -4.5194,
+    "r5": -0.025,
+    "r15": -0.1661,
+    "r30": -0.0773,
+    "r60": 0.4247,
+    "ropen": 0.1775,
+    "gap": 0.1068,
+    "pos": -0.2938,
+    "rv": 0.7813,
+    "tod": 0.1977
+   }
+  }
+ },
+ "after_strong_opening_run": {
+  "up_run": {
+   "train_2024": {
+    "days": 3,
+    "next30_same_direction": 0.333,
+    "big_move_against_within_30m": 0.0
+   },
+   "test_2025": {
+    "days": 13,
+    "next30_same_direction": 0.231,
+    "big_move_against_within_30m": 0.077
+   },
+   "test_2026": {
+    "days": 8,
+    "next30_same_direction": 0.375,
+    "big_move_against_within_30m": 0.125
+   }
+  },
+  "down_run": {
+   "train_2024": {
+    "days": 14,
+    "next30_same_direction": 0.357,
+    "big_move_against_within_30m": 0.214
+   },
+   "test_2025": {
+    "days": 11,
+    "next30_same_direction": 0.455,
+    "big_move_against_within_30m": 0.0
+   },
+   "test_2026": {
+    "days": 16,
+    "next30_same_direction": 0.5,
+    "big_move_against_within_30m": 0.0
+   }
+  }
+ },
+ "intraday_momentum_first_vs_last_half_hour": {
+  "2024": {
+   "days": 246,
+   "same_sign": 0.52
+  },
+  "2025": {
+   "days": 247,
+   "same_sign": 0.498
+  },
+  "2026": {
+   "days": 213,
+   "same_sign": 0.479
+  }
+ }
+}
