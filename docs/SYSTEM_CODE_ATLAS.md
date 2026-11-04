@@ -2690,7 +2690,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1501)
+Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1507)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 
