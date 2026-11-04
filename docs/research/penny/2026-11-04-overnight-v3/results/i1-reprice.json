@@ -1,0 +1,212 @@
+{
+ "older V2_NATIVE reg36 exit5 fill1.0": {
+  "closes": null,
+  "net": 127734.58,
+  "dd": 5275.9,
+  "pf": 2.18,
+  "win_rate": null
+ },
+ "older V3_COST_ROUTE reg36 exit5 fill1.0": {
+  "closes": null,
+  "net": 124211.08,
+  "dd": 5298.44,
+  "pf": 2.134,
+  "win_rate": null
+ },
+ "older V2_NATIVE reg36 exit5 fill0.5": {
+  "closes": null,
+  "net": 20056.19,
+  "dd": 8159.07,
+  "pf": 1.185,
+  "win_rate": null
+ },
+ "older V3_COST_ROUTE reg36 exit5 fill0.5": {
+  "closes": null,
+  "net": 24365.87,
+  "dd": 7620.0,
+  "pf": 1.222,
+  "win_rate": null
+ },
+ "older V3_COST_ROUTE reg100 exit5 fill1.0": {
+  "closes": null,
+  "net": 126963.39,
+  "dd": 5275.9,
+  "pf": 2.17,
+  "win_rate": null
+ },
+ "older V3_COST_ROUTE reg100 exit5 fill0.5": {
+  "closes": null,
+  "net": 19423.65,
+  "dd": 8152.07,
+  "pf": 1.179,
+  "win_rate": null
+ },
+ "older V3_COST_ROUTE reg135 exit5 fill1.0": {
+  "closes": null,
+  "net": 127199.57,
+  "dd": 5275.9,
+  "pf": 2.174,
+  "win_rate": null
+ },
+ "older V3_COST_ROUTE reg135 exit5 fill0.5": {
+  "closes": null,
+  "net": 19447.21,
+  "dd": 8150.54,
+  "pf": 1.18,
+  "win_rate": null
+ },
+ "older V2_NATIVE reg36 exit110 fill1.0": {
+  "closes": null,
+  "net": -24998.99,
+  "dd": 26214.14,
+  "pf": 0.577,
+  "win_rate": null
+ },
+ "older V3_COST_ROUTE reg36 exit110 fill1.0": {
+  "closes": null,
+  "net": -25011.44,
+  "dd": 26155.01,
+  "pf": 0.575,
+  "win_rate": null
+ },
+ "yahoo1922 V2_NATIVE reg36 exit5 fill1.0": {
+  "closes": null,
+  "net": 184227.14,
+  "dd": 8733.07,
+  "pf": 2.659,
+  "win_rate": null
+ },
+ "yahoo1922 V3_COST_ROUTE reg36 exit5 fill1.0": {
+  "closes": null,
+  "net": 176036.09,
+  "dd": 8759.06,
+  "pf": 2.553,
+  "win_rate": null
+ },
+ "yahoo1922 V2_NATIVE reg36 exit5 fill0.5": {
+  "closes": null,
+  "net": 32515.29,
+  "dd": 9909.71,
+  "pf": 1.296,
+  "win_rate": null
+ },
+ "yahoo1922 V3_COST_ROUTE reg36 exit5 fill0.5": {
+  "closes": null,
+  "net": 46004.22,
+  "dd": 9662.6,
+  "pf": 1.408,
+  "win_rate": null
+ },
+ "yahoo1922 V3_COST_ROUTE reg100 exit5 fill1.0": {
+  "closes": null,
+  "net": 183212.64,
+  "dd": 8733.07,
+  "pf": 2.647,
+  "win_rate": null
+ },
+ "yahoo1922 V3_COST_ROUTE reg100 exit5 fill0.5": {
+  "closes": null,
+  "net": 32810.66,
+  "dd": 9902.91,
+  "pf": 1.298,
+  "win_rate": null
+ },
+ "yahoo1922 V3_COST_ROUTE reg135 exit5 fill1.0": {
+  "closes": null,
+  "net": 184017.91,
+  "dd": 8733.07,
+  "pf": 2.657,
+  "win_rate": null
+ },
+ "yahoo1922 V3_COST_ROUTE reg135 exit5 fill0.5": {
+  "closes": null,
+  "net": 32485.86,
+  "dd": 9807.42,
+  "pf": 1.296,
+  "win_rate": null
+ },
+ "yahoo1922 V2_NATIVE reg36 exit110 fill1.0": {
+  "closes": null,
+  "net": -6470.46,
+  "dd": 19675.02,
+  "pf": 0.959,
+  "win_rate": null
+ },
+ "yahoo1922 V3_COST_ROUTE reg36 exit110 fill1.0": {
+  "closes": null,
+  "net": -6518.66,
+  "dd": 19665.77,
+  "pf": 0.959,
+  "win_rate": null
+ },
+ "yahoo2326 V2_NATIVE reg36 exit5 fill1.0": {
+  "closes": null,
+  "net": 227941.77,
+  "dd": 2458.53,
+  "pf": 3.744,
+  "win_rate": null
+ },
+ "yahoo2326 V3_COST_ROUTE reg36 exit5 fill1.0": {
+  "closes": null,
+  "net": 219879.7,
+  "dd": 2705.68,
+  "pf": 3.568,
+  "win_rate": null
+ },
+ "yahoo2326 V2_NATIVE reg36 exit5 fill0.5": {
+  "closes": null,
+  "net": 81310.49,
+  "dd": 3395.85,
+  "pf": 1.98,
+  "win_rate": null
+ },
+ "yahoo2326 V3_COST_ROUTE reg36 exit5 fill0.5": {
+  "closes": null,
+  "net": 96061.73,
+  "dd": 3047.29,
+  "pf": 2.122,
+  "win_rate": null
+ },
+ "yahoo2326 V3_COST_ROUTE reg100 exit5 fill1.0": {
+  "closes": null,
+  "net": 227572.14,
+  "dd": 2458.53,
+  "pf": 3.732,
+  "win_rate": null
+ },
+ "yahoo2326 V3_COST_ROUTE reg100 exit5 fill0.5": {
+  "closes": null,
+  "net": 81045.15,
+  "dd": 3395.85,
+  "pf": 1.974,
+  "win_rate": null
+ },
+ "yahoo2326 V3_COST_ROUTE reg135 exit5 fill1.0": {
+  "closes": null,
+  "net": 227941.77,
+  "dd": 2458.53,
+  "pf": 3.744,
+  "win_rate": null
+ },
+ "yahoo2326 V3_COST_ROUTE reg135 exit5 fill0.5": {
+  "closes": null,
+  "net": 81310.49,
+  "dd": 3395.85,
+  "pf": 1.98,
+  "win_rate": null
+ },
+ "yahoo2326 V2_NATIVE reg36 exit110 fill1.0": {
+  "closes": null,
+  "net": 16377.52,
+  "dd": 18864.83,
+  "pf": 1.095,
+  "win_rate": null
+ },
+ "yahoo2326 V3_COST_ROUTE reg36 exit110 fill1.0": {
+  "closes": null,
+  "net": 16377.52,
+  "dd": 18864.83,
+  "pf": 1.095,
+  "win_rate": null
+ }
+}
