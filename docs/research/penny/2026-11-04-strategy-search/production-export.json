@@ -1,0 +1,8 @@
+{
+  "consistent_read_transaction": true,
+  "source_readonly": true,
+  "rows": {
+    "ohlcv_cache": 84021,
+    "intraday_cache": 774898
+  }
+}

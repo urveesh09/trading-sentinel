@@ -1,0 +1,1211 @@
+{
+  "daily": {
+    "contract_version": "sentinel_bar_data_contract_v1",
+    "interval": "day",
+    "requested": {
+      "before": "2026-11-04",
+      "tickers": [
+        "ACEVECTOR",
+        "AFIL",
+        "AHCL",
+        "ALLCARGO",
+        "ARTNIRMAN",
+        "ASHOKAMET",
+        "ATL",
+        "ATLANTAA",
+        "ATLPP-E1",
+        "AVONMORE",
+        "AVROIND",
+        "BALAXI",
+        "BESTAGRO",
+        "BOHRAIND",
+        "CLEDUCATE",
+        "COFFEEDAY",
+        "COUNCODOS",
+        "DAVANGERE",
+        "DBEIL",
+        "DCMFINSERV",
+        "DEVX",
+        "DHANBANK",
+        "DOLLEX",
+        "DSFCL",
+        "DWARKESH",
+        "ELGIRUBCO",
+        "ESAFSFB",
+        "FCL",
+        "GAYAHWS",
+        "GAYAPROJ",
+        "GEEKAYWIRE",
+        "GFLLIMITED",
+        "GLFL",
+        "GRANDOAK",
+        "GROWWSLVR",
+        "GTECJAINX",
+        "HCC",
+        "HINDCON",
+        "HTMEDIA",
+        "IBULLSLTD",
+        "IDEA",
+        "IWP",
+        "JETFREIGHT",
+        "JHS",
+        "JINDWORLD",
+        "JISLJALEQS",
+        "JYOTISTRUC",
+        "KAMDHENU",
+        "KANANIIND",
+        "KESORAMIND",
+        "KHANDSE",
+        "KMSUGAR",
+        "KOHINOOR",
+        "KOTYARK",
+        "KREBSBIO",
+        "KRIDHANINF",
+        "KWIL",
+        "LAL",
+        "LCCINFOTEC",
+        "LEXUS",
+        "LIBAS",
+        "MANAKALUCO",
+        "MANGALAM",
+        "MANIKA",
+        "MCLEODRUSS",
+        "METAL",
+        "MGEL",
+        "MMWL",
+        "MOL",
+        "MONEYVIEW",
+        "MOTISONS",
+        "MOTOGENFIN",
+        "MUKTAARTS",
+        "MWL",
+        "NAGREEKCAP",
+        "NARMADA",
+        "NDL",
+        "NECCLTD",
+        "NGIL",
+        "NIFTYBEES",
+        "OLAELEC",
+        "ONIDA",
+        "ONMOBILE",
+        "OPTIFIN",
+        "OSWALAGRO",
+        "OSWALSEEDS",
+        "PALREDTEC",
+        "PATINTLOG",
+        "PCJEWELLER",
+        "PEARLPOLY",
+        "PERFECT-SZ",
+        "PHOENXINTL",
+        "PLAZACABLE",
+        "PRAXIS",
+        "PRIMO",
+        "PRITIKAUTO",
+        "PVP",
+        "RETAIL",
+        "RHETAN",
+        "ROML",
+        "RUSHIL",
+        "SADHNANIQ",
+        "SAKUMA",
+        "SARVESHWAR",
+        "SBGLP",
+        "SETCO",
+        "SHIVAMAUTO",
+        "SHYAMTEL",
+        "SIGACHI",
+        "SIL",
+        "SILVER1",
+        "SILVERADD",
+        "SILVERCASE",
+        "SOUTHBANK",
+        "SPENCERS",
+        "SPLIL",
+        "STEELXIND",
+        "STLNETWORK",
+        "STLSTRINF",
+        "SUBEXLTD",
+        "SUMIT",
+        "SUPERSPIN",
+        "SUZLON",
+        "SVPGLOB",
+        "SYNCOMF",
+        "TAKE",
+        "TATAGOLD",
+        "TATSILV",
+        "TCC",
+        "TCIFINANCE",
+        "TEXMOPIPES",
+        "TIGERLOGS",
+        "TNTELE",
+        "TREEHOUSE",
+        "TREL",
+        "TRIGYN",
+        "TTL",
+        "UNITEDPOLY",
+        "VAISHALI",
+        "VAKRANGEE",
+        "VARDHACRLC",
+        "VEDAVAAG",
+        "VEDPOWER",
+        "VINNY",
+        "VIPCLOTHNG",
+        "VISACHROME",
+        "VISL",
+        "VITAL",
+        "VIVOBIOT",
+        "VMSTMT",
+        "WELSPLSOL",
+        "WEWIN",
+        "YESBANK",
+        "ZEELEARN"
+      ]
+    },
+    "kind": "daily",
+    "source": "sqlite:ohlcv_cache(read-only)",
+    "point_in_time_rule": "bar dated D informs decisions only after D",
+    "adjustment_basis": "UNKNOWN_AS_CACHED",
+    "corporate_action_rule": "abs move > 40% reported as suspected, never repaired",
+    "accepted_rows": 38692,
+    "zero_volume_days": 15244,
+    "invalid": {
+      "ACEVECTOR": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "AFIL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ALLCARGO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ARTNIRMAN": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ASHOKAMET": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ATL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ATLANTAA": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "AVONMORE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "AVROIND": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "BALAXI": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "BOHRAIND": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      },
+      "CLEDUCATE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "COFFEEDAY": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "COUNCODOS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "DAVANGERE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "DBEIL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "DCMFINSERV": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 4
+      },
+      "DEVX": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "DHANBANK": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "DOLLEX": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "DSFCL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "DWARKESH": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ELGIRUBCO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ESAFSFB": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "GAYAHWS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "GAYAPROJ": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "GEEKAYWIRE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "GFLLIMITED": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "GLFL": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 8
+      },
+      "GRANDOAK": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "GROWWSLVR": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "GTECJAINX": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 3
+      },
+      "HINDCON": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "HTMEDIA": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "IWP": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "JETFREIGHT": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "JHS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KAMDHENU": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KANANIIND": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KHANDSE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KMSUGAR": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KOHINOOR": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KREBSBIO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KRIDHANINF": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "KWIL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "LAL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "LCCINFOTEC": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "LEXUS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "LIBAS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MANAKALUCO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MANGALAM": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MANIKA": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "METAL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MGEL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MMWL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MOL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MOTOGENFIN": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "MUKTAARTS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "NAGREEKCAP": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 5
+      },
+      "NARMADA": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "NDL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "NECCLTD": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "NGIL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "NIFTYBEES": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ONIDA": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      },
+      "ONMOBILE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "OPTIFIN": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "OSWALAGRO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "OSWALSEEDS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PALREDTEC": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PATINTLOG": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PEARLPOLY": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PHOENXINTL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PLAZACABLE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PRAXIS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PRIMO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PRITIKAUTO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "PVP": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      },
+      "RETAIL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "ROML": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SAKUMA": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SBGLP": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SETCO": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      },
+      "SHIVAMAUTO": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SHYAMTEL": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 9
+      },
+      "SIGACHI": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SIL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SILVER1": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SILVERCASE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SOUTHBANK": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SPENCERS": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SPLIL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "STEELXIND": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "STLSTRINF": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SUBEXLTD": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SUMIT": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "SUPERSPIN": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      },
+      "SVPGLOB": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      },
+      "TAKE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TATAGOLD": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TATSILV": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TCIFINANCE": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 7
+      },
+      "TEXMOPIPES": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TNTELE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TREEHOUSE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TREL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TRIGYN": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "TTL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VAISHALI": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VAKRANGEE": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VARDHACRLC": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VEDAVAAG": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VINNY": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VIPCLOTHNG": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VISACHROME": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VITAL": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "VIVOBIOT": {
+        "non_positive_or_non_finite_price": 1
+      },
+      "WEWIN": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      },
+      "ZEELEARN": {
+        "non_positive_or_non_finite_price": 1,
+        "ohlc_bounds_violated": 1
+      }
+    },
+    "suspected_corporate_actions": {
+      "BESTAGRO": [
+        "2024-04-10"
+      ],
+      "KESORAMIND": [
+        "2025-03-03"
+      ],
+      "SADHNANIQ": [
+        "2026-02-09"
+      ],
+      "YESBANK": [
+        "2020-03-06",
+        "2020-03-16",
+        "2020-03-17"
+      ]
+    },
+    "off_calendar_dates": {},
+    "calendar": {
+      "source": "market_calendar.NSE_HOLIDAYS_STATIC",
+      "valid_from": "2026-01-01",
+      "valid_through": "2026-12-31",
+      "holidays": [
+        "2026-01-15",
+        "2026-01-26",
+        "2026-02-15",
+        "2026-03-03",
+        "2026-03-21",
+        "2026-03-26",
+        "2026-03-31",
+        "2026-04-03",
+        "2026-04-14",
+        "2026-05-01",
+        "2026-05-28",
+        "2026-06-26",
+        "2026-08-15",
+        "2026-09-14",
+        "2026-10-02",
+        "2026-10-20",
+        "2026-11-08",
+        "2026-11-10",
+        "2026-11-24",
+        "2026-12-25"
+      ]
+    },
+    "dataset_sha256": "sha256:249a2fc033d7f3330a08a810a41b042bc6c61b580edcb4027d1e20ac3b22bf11"
+  },
+  "daily_invalid": {
+    "ACEVECTOR": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "AFIL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ALLCARGO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ARTNIRMAN": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ASHOKAMET": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ATL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ATLANTAA": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "AVONMORE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "AVROIND": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "BALAXI": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "BOHRAIND": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    },
+    "CLEDUCATE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "COFFEEDAY": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "COUNCODOS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "DAVANGERE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "DBEIL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "DCMFINSERV": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 4
+    },
+    "DEVX": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "DHANBANK": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "DOLLEX": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "DSFCL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "DWARKESH": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ELGIRUBCO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ESAFSFB": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "GAYAHWS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "GAYAPROJ": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "GEEKAYWIRE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "GFLLIMITED": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "GLFL": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 8
+    },
+    "GRANDOAK": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "GROWWSLVR": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "GTECJAINX": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 3
+    },
+    "HINDCON": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "HTMEDIA": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "IWP": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "JETFREIGHT": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "JHS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KAMDHENU": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KANANIIND": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KHANDSE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KMSUGAR": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KOHINOOR": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KREBSBIO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KRIDHANINF": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "KWIL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "LAL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "LCCINFOTEC": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "LEXUS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "LIBAS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MANAKALUCO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MANGALAM": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MANIKA": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "METAL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MGEL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MMWL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MOL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MOTOGENFIN": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "MUKTAARTS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "NAGREEKCAP": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 5
+    },
+    "NARMADA": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "NDL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "NECCLTD": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "NGIL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "NIFTYBEES": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ONIDA": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    },
+    "ONMOBILE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "OPTIFIN": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "OSWALAGRO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "OSWALSEEDS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PALREDTEC": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PATINTLOG": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PEARLPOLY": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PHOENXINTL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PLAZACABLE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PRAXIS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PRIMO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PRITIKAUTO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "PVP": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    },
+    "RETAIL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "ROML": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SAKUMA": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SBGLP": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SETCO": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    },
+    "SHIVAMAUTO": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SHYAMTEL": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 9
+    },
+    "SIGACHI": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SIL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SILVER1": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SILVERCASE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SOUTHBANK": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SPENCERS": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SPLIL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "STEELXIND": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "STLSTRINF": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SUBEXLTD": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SUMIT": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "SUPERSPIN": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    },
+    "SVPGLOB": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    },
+    "TAKE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TATAGOLD": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TATSILV": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TCIFINANCE": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 7
+    },
+    "TEXMOPIPES": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TNTELE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TREEHOUSE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TREL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TRIGYN": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "TTL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VAISHALI": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VAKRANGEE": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VARDHACRLC": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VEDAVAAG": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VINNY": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VIPCLOTHNG": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VISACHROME": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VITAL": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "VIVOBIOT": {
+      "non_positive_or_non_finite_price": 1
+    },
+    "WEWIN": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    },
+    "ZEELEARN": {
+      "non_positive_or_non_finite_price": 1,
+      "ohlc_bounds_violated": 1
+    }
+  },
+  "intraday": {
+    "contract_version": "sentinel_bar_data_contract_v1",
+    "interval": "minute",
+    "clock": "IST_WALL_CLOCK_BAR_START",
+    "requested": {
+      "start": "2026-09-07",
+      "end": "2026-11-03",
+      "tickers": [
+        "ACEVECTOR",
+        "AFIL",
+        "AHCL",
+        "ALLCARGO",
+        "ARTNIRMAN",
+        "ASHOKAMET",
+        "ATL",
+        "ATLANTAA",
+        "ATLPP-E1",
+        "AVONMORE",
+        "AVROIND",
+        "BALAXI",
+        "BESTAGRO",
+        "BOHRAIND",
+        "CLEDUCATE",
+        "COFFEEDAY",
+        "COUNCODOS",
+        "DAVANGERE",
+        "DBEIL",
+        "DCMFINSERV",
+        "DEVX",
+        "DHANBANK",
+        "DOLLEX",
+        "DSFCL",
+        "DWARKESH",
+        "ELGIRUBCO",
+        "ESAFSFB",
+        "FCL",
+        "GAYAHWS",
+        "GAYAPROJ",
+        "GEEKAYWIRE",
+        "GFLLIMITED",
+        "GLFL",
+        "GRANDOAK",
+        "GROWWSLVR",
+        "GTECJAINX",
+        "HCC",
+        "HINDCON",
+        "HTMEDIA",
+        "IBULLSLTD",
+        "IDEA",
+        "IWP",
+        "JETFREIGHT",
+        "JHS",
+        "JINDWORLD",
+        "JISLJALEQS",
+        "JYOTISTRUC",
+        "KAMDHENU",
+        "KANANIIND",
+        "KESORAMIND",
+        "KHANDSE",
+        "KMSUGAR",
+        "KOHINOOR",
+        "KOTYARK",
+        "KREBSBIO",
+        "KRIDHANINF",
+        "KWIL",
+        "LAL",
+        "LCCINFOTEC",
+        "LEXUS",
+        "LIBAS",
+        "MANAKALUCO",
+        "MANGALAM",
+        "MANIKA",
+        "MCLEODRUSS",
+        "METAL",
+        "MGEL",
+        "MMWL",
+        "MOL",
+        "MONEYVIEW",
+        "MOTISONS",
+        "MOTOGENFIN",
+        "MUKTAARTS",
+        "MWL",
+        "NAGREEKCAP",
+        "NARMADA",
+        "NDL",
+        "NECCLTD",
+        "NGIL",
+        "OLAELEC",
+        "ONIDA",
+        "ONMOBILE",
+        "OPTIFIN",
+        "OSWALAGRO",
+        "OSWALSEEDS",
+        "PALREDTEC",
+        "PATINTLOG",
+        "PCJEWELLER",
+        "PEARLPOLY",
+        "PERFECT-SZ",
+        "PHOENXINTL",
+        "PLAZACABLE",
+        "PRAXIS",
+        "PRIMO",
+        "PRITIKAUTO",
+        "PVP",
+        "RETAIL",
+        "RHETAN",
+        "ROML",
+        "RUSHIL",
+        "SADHNANIQ",
+        "SAKUMA",
+        "SARVESHWAR",
+        "SBGLP",
+        "SETCO",
+        "SHIVAMAUTO",
+        "SHYAMTEL",
+        "SIGACHI",
+        "SIL",
+        "SILVER1",
+        "SILVERADD",
+        "SILVERCASE",
+        "SOUTHBANK",
+        "SPENCERS",
+        "SPLIL",
+        "STEELXIND",
+        "STLNETWORK",
+        "STLSTRINF",
+        "SUBEXLTD",
+        "SUMIT",
+        "SUPERSPIN",
+        "SUZLON",
+        "SVPGLOB",
+        "SYNCOMF",
+        "TAKE",
+        "TATAGOLD",
+        "TATSILV",
+        "TCC",
+        "TCIFINANCE",
+        "TEXMOPIPES",
+        "TIGERLOGS",
+        "TNTELE",
+        "TREEHOUSE",
+        "TREL",
+        "TRIGYN",
+        "TTL",
+        "UNITEDPOLY",
+        "VAISHALI",
+        "VAKRANGEE",
+        "VARDHACRLC",
+        "VEDAVAAG",
+        "VEDPOWER",
+        "VINNY",
+        "VIPCLOTHNG",
+        "VISACHROME",
+        "VISL",
+        "VITAL",
+        "VIVOBIOT",
+        "VMSTMT",
+        "WELSPLSOL",
+        "WEWIN",
+        "YESBANK",
+        "ZEELEARN"
+      ]
+    },
+    "kind": "intraday",
+    "source": "sqlite:intraday_cache(read-only)",
+    "calendar": {
+      "source": "market_calendar.NSE_HOLIDAYS_STATIC",
+      "valid_from": "2026-01-01",
+      "valid_through": "2026-12-31",
+      "holidays": [
+        "2026-01-15",
+        "2026-01-26",
+        "2026-02-15",
+        "2026-03-03",
+        "2026-03-21",
+        "2026-03-26",
+        "2026-03-31",
+        "2026-04-03",
+        "2026-04-14",
+        "2026-05-01",
+        "2026-05-28",
+        "2026-06-26",
+        "2026-08-15",
+        "2026-09-14",
+        "2026-10-02",
+        "2026-10-20",
+        "2026-11-08",
+        "2026-11-10",
+        "2026-11-24",
+        "2026-12-25"
+      ]
+    },
+    "row_counts": {
+      "selected_interval_accepted": 889927,
+      "by_label": {
+        "minute": 893734
+      },
+      "outside_request": 0
+    },
+    "status_counts": {
+      "COMPLETE": 8,
+      "INVALID": 16,
+      "PARTIAL": 4696,
+      "UNAVAILABLE": 1247
+    },
+    "dataset_sha256": "sha256:9426e62e334109129d755a46fe150c618e2ae51b70ae754cc43136f87d50cc89"
+  },
+  "windows": {
+    "development": {
+      "status_counts": {
+        "UNAVAILABLE": 1234,
+        "PARTIAL": 3043,
+        "COMPLETE": 7
+      },
+      "symbols_with_bars": 152
+    },
+    "validation": {
+      "status_counts": {
+        "PARTIAL": 1653,
+        "UNAVAILABLE": 13,
+        "COMPLETE": 1,
+        "INVALID": 16
+      },
+      "symbols_with_bars": 152
+    }
+  },
+  "sources": [
+    {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\yahoo\\2026-10-04-penny-trader-window\\_local\\validated-yahoo.sqlite",
+      "start": "2026-09-07",
+      "end": "2026-10-01",
+      "rows": 352764
+    },
+    {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\penny\\2026-11-04-strategy-search\\_local\\production-cash.sqlite",
+      "start": "2026-10-02",
+      "end": "2026-10-06",
+      "rows": 32449
+    },
+    {
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\penny\\2026-11-04-strategy-search\\_local\\public\\public.sqlite",
+      "start": "2026-10-07",
+      "end": "2026-11-03",
+      "rows": 508521
+    }
+  ],
+  "no_strategy_results_inspected": true,
+  "snapshot_sha256": "24752a506005411ca61931447c2b18c8fe68bbe2ff3aad07f34466aec474b1ad"
+}

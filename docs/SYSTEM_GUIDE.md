@@ -1,3 +1,16 @@
+## November 4 — Penny strategy research (round-1-frozen, Dev only)
+
+Owner-authorized iterative Penny/Smart/EDGE study. New research-only continuous
+Smart and current classic profit-lock reference, daily thesis candidates and
+bounded runner; no runtime strategy, source binding, flag, schema or deployment
+change. Plan/evidence: `docs/research/penny/2026-11-04-strategy-search/PLAN.md`.
+Public acquisition: 766 requests, zero Breeze/broker requests; immutable cash
+snapshot, coverage and pre-score source/data freezes retained. Six initial
+mechanical/causal/cash checks pass. The reserved Jan–Jul exam stays unscored.
+Validation is conditional historical evidence, not untouched qualification.
+Next: baseline and round-1 scores, diagnose failures, freeze later rounds.
+Commit identity and post-commit consistency are recorded in the study receipts.
+
 ## November 3 — expiry-v5: E03.2 is the main expiry paper ticket, NIFTY and SENSEX (commit `71857c0`, DEPLOYED as Production 5e30ce0 (PR #130 merged on the owner's word), Nov 3 23:29 IST: rollback images tagged rollback-06bed07, three services built with one stamp and recreated, nginx restarted, verify_deployment.py exit 0 (receipt in sentinel-operations/release-receipts); in the engine: EXPIRY_MAIN_STRATEGY=E032, EXPIRY_E032_SHADOW_ENABLED=True, E02/E03/E03.1 off, NIFTY,SENSEX; no startup errors. No full data backup (as before: no migration). The restart may have dropped the partner's Kite login; the morning prompt asks again)
 
 Owner order (Nov 3, 22:50 IST): make E03.2 the main expiry strategy, run it on SENSEX this Thursday on paper, deploy now.
