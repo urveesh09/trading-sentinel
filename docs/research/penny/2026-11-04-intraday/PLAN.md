@@ -136,3 +136,41 @@ official open, sell at the official close, lock rule). Pass = all of:
 6. Jan-Jul daily Yahoo band universe, S1 at Rs 2,000: robust (min M1-M8) > 0.
 Reported, not pass: uncapped, 25% capacity, +50 bp entry, two slots, Rs 25,000 daily OAR_GAP/OAR_GAP_3.
 Wiring run on seen data (`results/exam-wire.json`, 15 s) replays all arms.
+
+## Exam result (opened once: `EXAM_OPENED.json`, `exam-results.json`) - PASS
+
+Jan 1 - Jul 31 2026, Kite minutes, 89 EQ names, Rs 2,000, one slot (S1_THIN):
+
+| Fill model | Closes | Net | Ex-best | Drawdown |
+|---|---:|---:|---:|---:|
+| capped 10% of the 09:15 candle, official close (check 1) | 104 | **+2,936** | +2,691 | 355 |
+| capped, 15:15 last trade -25 bp (check 2) | 104 | +2,603 | +2,360 | 417 |
+| capped 25% | 108 | +2,989 | | 358 |
+| capped, +50 bp entry | 103 | +1,899 | | 472 |
+| uncapped S1 | 142 | +5,120 | | 187 |
+| Smart V1 (`run_smart`, 10 bp spread) | 1,077 | **-1,117** | | 1,138 |
+| Smart V2 (`run_smart`, 10 bp spread) | 1,159 | **-802** | | 836 |
+
+Months (check 1): -179, +362, +1,121, +554, +536, +293, +248 (6 of 7). V1 and V2 lost every month.
+Daily Yahoo band universe Jan-Jul, S1 at Rs 2,000: M1 +7,966, robust +2,207 (check 6). Rs 25,000
+daily (reported): OAR_GAP M1 +84.1k, robust +5.7k (M6); OAR_GAP_3 robust +7.3k.
+All six checks pass. Jan - Jul 2026 Kite minutes are now SEEN.
+
+Post-hoc (after opening, not part of the verdict, `results/exam-post-noetf.json`): 7 of the 89
+names are silver/gold/metal ETFs (32 of 104 primary trades, +1,185). Without them: capped close
++2,328 on 87 closes, 6 of 7 months positive, drawdown 166; 15:15 exit +2,065; +50 bp +1,456.
+
+Runtime parity (`scripts/parity.py`, `results/parity.json`): `penny_smart_v3.select` picks the same
+name as the research S1_THIN on all 143 exam sessions (120 trades) and 55 Production-export
+sessions (36 trades): 0 mismatches.
+
+## Classic MIS and Classic CNC (after Smart; descriptive, `scripts/breakout_events.py`, `scripts/connors_events.py`)
+
+- Classic MIS breakout (approximating penny_engine_breakout: 10:30-14:30, close > day high +0.3%,
+  1.8x paced volume, RSI(14) < 70, noise stop, 2R target, 15:00 exit): gross per trade before any
+  spread or charge -0.13% (86, Sep-Nov) and +0.09% (103, Jan-Jul). No edge to cost. Only 13:00-14:30
+  breakouts were positive in both samples (+0.73% n=18, +0.76% n=11): added as the paper shadow
+  PEN_AFTERNOON for forward evidence, not a finding.
+- Classic CNC (Connors RSI(2) < 10 in an uptrend): 2011-2026 daily excluding Jan-Jul 2026, 45,827
+  setups, close -> close+3 -0.27% (night +0.07%, next day -0.31%); the shipped rule with its
+  "RSI rising two bars" confirmation fired 60 times in 16 years, -0.25%. No edge; nothing to build.
