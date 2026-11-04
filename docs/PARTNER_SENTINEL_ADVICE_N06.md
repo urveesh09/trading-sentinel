@@ -6,7 +6,7 @@ strategies built for N08–N11 and the expiry book, and "no matter what still we
 of the partner. Only advice."
 
 Code: `python-engine/partner_sentinel.py` (new), `python-engine/partner_watch.py`, `python-engine/config.py`
-(`PARTNER_SENTINEL_ADVICE_ENABLED`, default true). Tests: `python-engine/tests/test_partner_sentinel.py`. Study
+(`PARTNER_SENTINEL_ADVICE_ENABLED` and [N06c] `PARTNER_WATCH_BROKEN_ENABLED`, both default true). Tests: `python-engine/tests/test_partner_sentinel.py`. Study
 scripts and their read-only outputs: `docs/research/partner/2026-11-04-n06/`.
 
 ## What the stored days say (Production, read-only)
@@ -53,83 +53,118 @@ sold below its stop between looks counts as sold at the stop.
 - The Sentinel's edge in years of replays is small, and it loses on many days. No model here predicts minute-scale
   option moves. What it has is discipline: few trades, a fixed loss per trade, stops, and smaller size after a loss.
 
-## What the partner now gets
+## What the partner now gets (N06c, Nov 4 night)
 
-All of it is messages only, with `PARTNER_SENTINEL_ADVICE_ENABLED` on.
+**Owner's direction:**
+- "remove the quiet today button itself and the explaination thing";
+- "long long paragraph with market on reading is impossible: if with concrete the explaination is consice and
+  direct its good else" drop it;
+- build the auditor's ideas only where they really help the partner.
 
-**Every buy's plan and every check** carry a 📏 size line. [N06b, owner: "don't do extreme conservative, we need
-them to have freedom"]
-- It leads with the partner's own usual size: the lots their usual share of cash buys at this price, and what
-  that loses at the plan stop. Their usual-size buys were about even.
-- Then the Sentinel's own rule as a reference: at most 2% of the day's cash lost at the stop, charges included. It
-  says how many lots that would take, or "less than one lot here" with one lot's share. It never says "none" and
-  never sets a limit.
-- Bought above their usual adds "You bought 5 lots". A check adds "You asked about 5 lots".
-- Without a usual yet, the line gives what one lot loses and the Sentinel's rule.
-- Shares under 10% show one decimal, so 2.5% never reads as 2%.
-
-**Oversized buys** (over 1.5× their usual share) add their own record: "buys much bigger than your usual, 57
-trades, −₹38,024; your usual size, 175 trades, −₹2,130". This line appears only while the frozen score says
-SUPPORTED.
-
-**Buys within 30 minutes of a losing exit** add the Sentinel's own rule and their record. The rule: after a losing
-trade it takes one lot at most for the rest of the day (`fno_n11.lot_ceiling`). The record also appears only while
-SUPPORTED.
-
-**Averaging down** (an ADDED buy under the first one) adds: the Sentinel adds a lot only to a trade already up by a
-full stop, never to a falling one (N11's earned lot).
-
-**The DAY message** adds the after-loss rule when the day had buys right after losses.
-
-**A check:**
-- leaves out the ⚠️ chased-spike line while that warning's frozen verdict is NOT_SUPPORTED. The run stays among
-  the facts.
-- says what the Sentinel holds on that index now: "🤖 The Sentinel now holds …" or "holds nothing on SENSEX now
-  (1 trade today)".
-
-**The watch-on message (after login)** adds:
-- both supported records;
-- what the Sentinel will send;
-- a line when NIFTY or SENSEX options expire today.
-
-**The Sentinel's own trades**, as they happen (new kinds `SENTINEL` and `SENTINEL_EXIT`; fixed text; never muted
-by "Quiet today"):
-- **What is relayed:**
-  - the F&O paper main book's buys (source `FNO_PAPER`, the N11 book; the earned lot `N11_ADD` is left out);
-  - the expiry book's main ticket while `EXPIRY_MAIN_STRATEGY` is `E032`.
-- **Each buy says:**
-  - the option, its price and time;
-  - its stop as an index level and as an option price. For F&O that is the higher of the delta-priced stop and the
-    25% backstop, whichever the Sentinel reaches first;
-  - its target;
-  - what each lot loses at its stop for the partner's cash, and the lots its own rule would take (or "less than
-    one lot"): numbers, not a limit. For the expiry ticket, capped at its own lots, plus what a lot loses if the
-    price jumps through the stop;
-  - its own record: the last 20 closed main-book trades per lot after charges, or the expiry ticket's record on
-    that index;
-  - that it is paper, can lose, and that following is the partner's call.
-- **Timing:** a buy is told only while 5 minutes fresh. A sale is told while 30 minutes fresh, and only once its
-  buy was sent. It adds "You still hold N of it" when they do.
-
-Real-data preview (Nov 4, rendered in Dev from Production's rows copied read-only; `preview.py`):
+**Rendered from Nov 4's real rows in Dev's code** (`normal_day.py` in the scratchpad, shown here):
 
 ```
-🤖 The Sentinel's own trade (paper, not a tip): bought SENSEX 77000 CE (05 Nov) at ₹345.55 at 12:41.
-🛑 Its stop: SENSEX future 76,819, about ₹259.16 on the option. 🎯 Its target: SENSEX future 77,465.
-📏 For your ₹32,305 cash: each lot (20) loses about ₹1,788 at its stop, 5.5% of your cash. Its own rule (2% a trade) would take less than one lot for you.
-📊 Its last 20 paper trades: 7 won, −₹5,308 a lot after charges. It loses on many days; its edge in years of replays is small.
-I'll tell you when it sells. Whether to follow is your call.
+After login
+✅ Trade watch on until 15:40: stops missing, moved or not selling, refused orders, a trade under its plan stop, and each 10% of cash the day loses or gives back. Messages only: nothing is placed for you.
+🔎 Before a buy, send the option, e.g. 76700 ce.
+📊 Your buys since 27 Oct: usual size −₹2,130 (175) · oversized −₹38,024 (57) · within 30 min of a loss −₹31,721 (143).
+🤖 The Sentinel's own trades (paper) come here as it takes them.
+⏳ SENSEX expires today: its options lose time value fastest and settle at the close.
 
-🤖 The Sentinel sold its SENSEX 77000 CE at ₹345.4 at 13:11 (its time limit): −₹42 a lot after charges (paper).
+A buy (Nov 4, 10:24: 5 lots, a minute after a loss)
+🟢 You bought SENSEX 76700 CE · 5 lots (100) at ₹598.75
+🛑 Plan stop ₹499.9: one normal 5-minute swing (₹98.82) under your price. If it sells there: about −₹10,051 with charges, 12% of your cash.
+⚠️ ₹59,875 in this trade, 74% of your cash: much bigger than your usual 31%. Since 27 Oct such buys: −₹38,024 (57); usual size −₹2,130 (175).
+📏 At the plan stop: 1 lot −₹2,048 (2.5%) · 2 lots −₹4,049 (5.0%). The Sentinel risks at most 2% (₹1,609).
+🎯 Target zone ₹784.95 (SENSEX future 77,439).
+⚠️ Your last trade closed −₹2,957 at 10:23, 1 min before this buy. Since 27 Oct such buys: −₹31,721 (143). The Sentinel takes 1 lot after a loss.
+Trade 13 today · ₹1,808 in charges so far.
+Place an SL sell now: trigger ₹499.9, limit a little under it; the price was ₹597 at 10:24:40.
+
+The price goes under the plan stop (no stop of their own at or over it)
+⛔ SENSEX 76700 CE (100) is under its plan stop ₹499.9: ₹495 now.
+Sell all now −₹10,610, 13% of your cash · sell 2 lots (40) −₹4,264 · or hold: your call.
+
+The Sentinel's own trade, then its sale
+🤖 Sentinel bought SENSEX 77000 CE (05 Nov) at ₹345.55, 12:41:15 (paper).
+🛑 Stop SENSEX fut 76,819 (option ≈₹259.16) · 🎯 target fut 77,465.
+📏 At its stop: 1 lot −₹1,788 (5.5%) · 2 lots −₹3,528 (11%). The Sentinel risks at most 2% (₹646).
+📊 Its last 20 paper trades: 7 won, −₹5,308 a lot. It loses often. Your call.
+🤖 Sentinel sold SENSEX 77000 CE at ₹345.4, 13:11 (time limit): −₹42 a lot (paper).
 ```
+
+**What each part does and why:**
+- **No "Quiet today" button.**
+  - An accidental tap silenced the watch for the day; to silence the chat they can mute it in Telegram.
+  - A tap on an old button in the chat history is answered ("Quiet was removed …") and changes nothing.
+  - The muting code and the quiet-day SIZE message are gone. The review page's "quiet today" line can no longer
+    show, because `watch_status` always says quiet is off.
+- **The check takes just the option.** "76700 ce" or "sensex 76700ce 120 2 lots" is a check now.
+  - Such a message counts only when every word reads and it names a strike and CE or PE. "b 22300 pe 75", "ok" and
+    "75.5" are not checks, so chat and old trade reports go on as before.
+  - Without an index, the check takes the one whose nearest expiry lists that strike (`infer_underlying`;
+    NIFTY's 50s near 24,000, SENSEX's 100s near 77,000). It guesses nothing when none or both do.
+- **The size line gives choices in rupees** (the audit's first point):
+  - the loss at the plan stop for 1 lot and for 2 lots, each with its own charges (order fees paid once), as a
+    share of the day's cash;
+  - and the most the Sentinel risks on a trade, 2%.
+  - The partner's own size is already in the stop line above it. Their usual size is described only in the size
+    warning ("much bigger than your usual"), never as advice.
+- **A warning and its record are one line:**
+  - the oversized-buy record joins the size warning;
+  - the after-loss record and the Sentinel's rule ("takes 1 lot after a loss") join the after-loss warning.
+  - Records appear only while the frozen score says SUPPORTED.
+- **The PLAN lost two lines of explanation:**
+  - the "•" facts line (the swing, the 15-minute run, the trend). The run warning was refuted for this partner,
+    and the trend said "with you" on every big loser on Nov 4. The check, which they ask for, keeps the facts.
+  - "The futures stop … sits inside that swing".
+  - Also "In a fast fall an SL order can trigger and still not fill" from the SL line, which UNFILLED tells when
+    it happens.
+- **BROKEN** (the audit's third point, for losing trades):
+  - **When:** one message when the price is first read under the plan stop after being read over it, from 2
+    minutes past the buy (before that NO_STOP and the PLAN say it).
+  - **Only if not already protected:** no stop of the partner's own at or above the plan stop. Such a stop sells by
+    itself, and UNFILLED tells it if it does not.
+  - **What it says:** what selling all gives now, against the bids' sizes ("or worse" when the bids shown take
+    fewer), and half in whole lots when two lots or more are held, "or hold: your call". A lower stop of their own
+    is named.
+  - **Once a trade.** Rebuilt at send, so it is not sent if the price is back over the stop or the trade is sold.
+  - **Switch:** `PARTNER_WATCH_BROKEN_ENABLED` (default true).
+  - On Nov 4 it would have come for the 10:13 and 10:24 trades, sold at ₹600 and ₹422.65 against plan stops of
+    ₹650.25 and ₹499.9.
+- **The Sentinel's own trades** (`SENTINEL`, `SENTINEL_EXIT`, fixed texts):
+  - **What is relayed:**
+    - the F&O paper main book's buys (source `FNO_PAPER`; the earned lot `N11_ADD` is left out);
+    - the expiry book's main ticket while `EXPIRY_MAIN_STRATEGY` is `E032`.
+  - **Which buys:** a buy is told only while the trade is still open and at most 2 minutes old. The audit's case of
+    a trade bought and sold inside the window announced as a fresh buy is fixed and reproduced in tests.
+  - **Sales:** told while 30 minutes fresh, only once their buy was sent.
+  - **Each buy is four short lines:**
+    - the option and price;
+    - its stop and target. For F&O the option stop is the higher of the delta-priced stop and the 25% backstop;
+    - the loss at its stop for 1 and 2 lots in the partner's rupees;
+    - its own record, "It loses often. Your call."
+- **Kept from N06:**
+  - averaging down (ADDED under the first buy) adds "The Sentinel adds only to a trade already up a full stop";
+  - DAY adds the after-loss rule when the day had buys right after losses;
+  - a check leaves out the chased-spike warning while its frozen verdict refutes it, and says what the Sentinel
+    holds on that index.
+
+**Not built, and why:**
+- **Winner management** (hold, partial profit, trailing): those are judgments that must be frozen and scored on
+  recorded days before they are sent (owner rule). The watch records the price looks for that.
+- **A "big move is N× more likely" line:** for an option buyer it cuts both ways. Its out-of-sample AUC
+  (0.60–0.82) measures ranking, not a probability for the next trade, so it waits for a frozen forward check.
+- **Measuring what the partner did after each message** (stop placed, sold, added, followed): useful to the owner,
+  not to the partner. It is the next step, read from the stored orders and messages.
 
 ## Honest limits
 
 - **The what-if is in-sample.** The rule was not fitted to these days, but the days are seen. The forward check is
   the partner's next weeks: compare buys at or under the Sentinel's size with bigger ones, on the same frozen score.
-- **The 2% rule is a reference, not a limit (N06b).** At ₹30k–₹80k of cash, one lot of an at-the-money SENSEX
-  option already risks more than 2% at a normal stop. The owner asked for freedom, so the line leads with the
-  partner's own usual size (about even in their record) and states the Sentinel's rule beside it.
+- **The 2% rule is a reference, not a limit.** At ₹30k–₹80k of cash, one lot of an at-the-money SENSEX option
+  already risks more than 2% at a normal stop. The owner asked for freedom, so the line gives the rupees for 1 and
+  2 lots and states the Sentinel's rule beside them.
 - **The Sentinel's own forward record is negative.**
   - The last 20 main-book trades are −₹5,308 a lot.
   - The expiry ticket E03.2 runs on SENSEX for the first time on paper. It was fitted on seen NIFTY 2024/2025.
@@ -144,10 +179,17 @@ I'll tell you when it sells. Whether to follow is your call.
 
 - **Rollout:** no migration. The new kinds use the existing `partner_watch_messages` outbox. One new setting:
   `PARTNER_SENTINEL_ADVICE_ENABLED` (default true).
-- **Rollback without a code change:** set `PARTNER_SENTINEL_ADVICE_ENABLED=false` in `.env` and recreate the
-  engine. The watch is then exactly as before N06; the tests pin that, because `tests/conftest.py` sets it false.
-- **Verification in Dev:**
-  - `tests/test_partner_sentinel.py`: 11 passed.
-  - Partner tests: 252 passed.
-  - The partner-watch tests with the advice on: only the two DAY wording assertions differ, no errors.
-  - Whole engine suite: 3,309 + 2,905 passed, 4 skipped, `pytest_exit=0` for each half.
+- **Rollback without a code change:**
+  - `PARTNER_SENTINEL_ADVICE_ENABLED=false` turns off the Sentinel advice: the size line, the records, the rules,
+    the Sentinel's trades, the spike gate and the check's Sentinel line.
+  - `PARTNER_WATCH_BROKEN_ENABLED=false` turns off BROKEN.
+  - Set either in `.env` and recreate the engine.
+  - Not behind a switch (owner's orders, N06c): no Quiet button, the shorter PLAN and watch-on texts, and the check
+    by the option alone. Going back on those needs a revert.
+- **Verification in Dev (N06c):**
+  - `tests/test_partner_sentinel.py`: 16 passed.
+  - Two end-to-end BROKEN tests through the watch tick, in `tests/test_partner_watch.py`.
+  - Partner tests: 280 passed.
+  - Whole engine suite: 3,199 + 3,036 passed, 4 skipped, `pytest_exit=0` for each half.
+  - In one earlier full run `test_s5_provider_lanes::test_cancelled_bulk_waiter_is_removed` failed once. It is
+    unrelated (Kite request lanes) and passed 3 of 3 alone and in every other full run.

@@ -1,3 +1,68 @@
+## November 4 night - N06c: no Quiet, short messages, choices in rupees, BROKEN, the check by the option alone (Dev only)
+
+Owner, after the audit of N06/N06b:
+- "remove the quiet today button itself and the explaination thing";
+- "long long paragraph with market on reading is impossible: if with concrete the explaination is consice and
+  direct its good else" drop it;
+- build the auditor's ideas only where they help the partner, with "absolute correctness and precision".
+
+Doc: `docs/PARTNER_SENTINEL_ADVICE_N06.md`, section "What the partner now gets (N06c)".
+
+- **Quiet is gone:**
+  - no button, no muting, no SIZE message;
+  - a tap on an old button is answered `QUIET_GONE` and changes nothing;
+  - `watch_status` quiet is always False.
+- **The option alone is a check:** "76700 ce", "sensex 76700ce 120 2 lots" (`parse_check`; any other word: not a
+  check). Without an index, `infer_underlying` takes the one whose nearest expiry lists the strike.
+- **`size_line`:** the loss at the plan stop for 1 and 2 lots, each with its own charges, and the Sentinel's 2%.
+- **Records** join their warning lines (`record_tail`).
+- **The PLAN is shorter:** no facts line, a shorter SWING stop line, no "fast fall" sentence. The watch-on text is
+  two lines.
+- **BROKEN (new kind):**
+  - once a trade, the first fresh read under the plan stop after one over it, from 120 s past the buy;
+  - only when no stop of the partner's own rests at or over the plan stop;
+  - it says what selling all and half (whole lots) gives against the bids, "or hold: your call";
+  - switch `PARTNER_WATCH_BROKEN_ENABLED` (default true).
+- **The Sentinel's trades:** a buy only while open and at most 2 min old (the audit's closed-trade case, fixed and
+  tested); four short lines.
+- **Tests:** test_partner_sentinel 16; partner 280; the whole suite 3,199 + 3,036 passed, 4 skipped,
+  `pytest_exit=0` each. Not deployed: the owner will have it checked first.
+
+## November 4 - Partner assistance review (read-only, no runtime changes)
+
+Report: `docs/research/partner/2026-11-04-assistance-review/REPORT.md`;
+plan/verification/results/source receipts in the same folder. N06/N06b is
+now in Production18ed87d (after today's session), runtime source matches8a0c37e.
+Today29 trips/-51869.02 modeled net,74 delivered watch messages. Seen-data
+one-lot arithmetic from10:21 estimates about-21118; no compliance/fill/profit
+proof; late reduction sacrifices recovery. Review identifies unmuted optional
+feed and a reproduced already-closed paper-entry relay; fixes remain proposed.
+Keep partner control, concise current alternatives and forward benefit checks.
+No order/send/config/restart/deploy, and no partner runtime source changed.
+Owner edits and independent Penny work preserved; no push by this review.
+
+## November 4 - Rollout receipt (Production 18ed87d, PR #131)
+
+- The owner's order: "commit push all and deploy ... go deploy it all". PR #131 merged the whole Dev branch at
+  `8a0c37e` (44 commits) as `18ed87d` at 14:21 UTC (19:51 IST). It carries:
+  - N06 and N06b partner advice;
+  - the other agent's committed penny and EDGE work: overnight v2/v3 shadows, the post-close probe, Smart V3 and
+    Classic shadows, research freezes.
+  - Their uncommitted files were not shipped.
+- **Before merge:** the whole engine suite on a clean checkout of `8a0c37e`: 3,196 + 3,036 passed, 4 skipped,
+  `pytest_exit=0` each. No gateway, agent or compose changes.
+- **Deploy:** Production fast-forwarded and the release stamped. python-engine, node-gateway and agent were built
+  one at a time and recreated; nginx restarted. `.env` untouched. No full data backup, as on earlier deploys.
+- **Verification:** `scripts/verify_deployment.py` exit 0, verified_at 2026-11-04T14:29:44Z, receipt in
+  `sentinel-operations/release-receipts/`. Local and public `/api/health` 200. No error lines in the engine log
+  since start. `partner_sentinel.py` is in the image and `PARTNER_SENTINEL_ADVICE_ENABLED` defaults true, with no
+  `.env` override.
+- [ ] Nov 5 (SENSEX expiry), read-only:
+  - the partner's watch-on message carries their two records and the SENSEX expiry line;
+  - PLAN messages carry the 📏 size line;
+  - any SENTINEL / SENTINEL_EXIT rows were sent;
+  - no `partner_sentinel_*_failed` lines in the engine log.
+
 ## November 4 - N06b: partner size advice with freedom; the full Dev branch goes to Production (owner's order)
 
 Owner: "add what you think is best honestly don't do extreme conservative we need them to have freedom ... commit
