@@ -1,0 +1,150 @@
+{
+  "window": [
+    "2011-01-01",
+    "2014-12-31"
+  ],
+  "warmup": "2010-01-01",
+  "tail": "2015-01-10",
+  "source": {
+    "docs/research/penny/2026-11-04-overnight-v3/v3sim.py": "4093e8955857ffaae7219071707ab42903c12573d9c8f4474a2b93a669241b81",
+    "docs/research/penny/2026-11-04-overnight-v3/scripts/rounds.py": "afeeb268a347edea98cebc54b7698e23260d7c6d14ed45cb9af6bbdc3f558b1c",
+    "docs/research/penny/2026-11-04-overnight-v3/scripts/exam.py": "76dbd87ceb6806dd431bc855cb1b4a9ab91f5ea4d4329e0391a042a67df49121",
+    "docs/research/penny/2026-11-04-overnight-v2/lab.py": "7e4b53a9b284b80787b98549a1782dbf501155f06863149ae05d0b7ac7ffc191",
+    "python-engine/penny_edge_engine.py": "afd6bd3e46611898d0673d539ec44d2a514f30206c8d5447cd1b2c52f1a60f54",
+    "python-engine/penny_edge_backtest.py": "6832b9facdbeec2485fbec172f6d7349f2784358b139443c2644a8849c2f4007",
+    "python-engine/penny_risk.py": "91ca4f1ae55a6e1d75a564802f294dbf316db74ef7b97a795f2ec8ff32e7d1cf",
+    "python-engine/config.py": "dc71a9f66a40a58822fd40ea1aadca3642baa9d297d7a5e9800ed229e0bb27a6"
+  },
+  "data": {
+    "docs/research/penny/2026-11-04-overnight-enrichment/_local/older/yahoo.sqlite": "de4b69312a0f663614b73af6ff10987d554c2908ce6d2a68933ff78346f98de8",
+    "docs/research/penny/2026-11-04-overnight-enrichment/older-acquisition.json": "e36be2a7e65c3d46f87fa050986c04105b5efaf4d0bf14d72dedb8ee82032d1f",
+    "docs/research/penny/2026-11-04-overnight-v2/_local/yahoo-split-cuts.json": "003482e849694d32d00a7348c97901e054ec4ce6d054e2b7da727de7db0afd0e"
+  },
+  "control": {
+    "name": "V2",
+    "slots": 2,
+    "depth": 10,
+    "night_min": 0.001,
+    "rank": "strength",
+    "min_day_value": 0.0,
+    "filler": "",
+    "filler_order": "night",
+    "edge_pool": true,
+    "cap_kappa": 0.0,
+    "extra": {}
+  },
+  "finalists": [
+    {
+      "name": "V2_HI_F3N",
+      "slots": 2,
+      "depth": 10,
+      "night_min": 0.001,
+      "rank": "strength_hi20",
+      "min_day_value": 0.0,
+      "filler": "F3",
+      "filler_order": "night",
+      "edge_pool": true,
+      "cap_kappa": 0.0,
+      "extra": {}
+    },
+    {
+      "name": "V2_HI_F3L",
+      "slots": 2,
+      "depth": 10,
+      "night_min": 0.001,
+      "rank": "strength_hi20",
+      "min_day_value": 0.0,
+      "filler": "F3",
+      "filler_order": "value",
+      "edge_pool": true,
+      "cap_kappa": 0.0,
+      "extra": {}
+    }
+  ],
+  "models": {
+    "M1": {
+      "name": "M1",
+      "win_fill": 1.0,
+      "correlated": false,
+      "kappa": null,
+      "exit_bps": 5.0
+    },
+    "M2": {
+      "name": "M2",
+      "win_fill": 0.75,
+      "correlated": false,
+      "kappa": null,
+      "exit_bps": 5.0
+    },
+    "M3": {
+      "name": "M3",
+      "win_fill": 0.5,
+      "correlated": false,
+      "kappa": null,
+      "exit_bps": 5.0
+    },
+    "M4": {
+      "name": "M4",
+      "win_fill": 0.5,
+      "correlated": true,
+      "kappa": null,
+      "exit_bps": 5.0
+    },
+    "M5": {
+      "name": "M5",
+      "win_fill": 1.0,
+      "correlated": false,
+      "kappa": 0.001,
+      "exit_bps": 5.0
+    },
+    "M6": {
+      "name": "M6",
+      "win_fill": 0.5,
+      "correlated": false,
+      "kappa": 0.001,
+      "exit_bps": 5.0
+    },
+    "M7": {
+      "name": "M7",
+      "win_fill": 1.0,
+      "correlated": false,
+      "kappa": null,
+      "exit_bps": 20.0
+    }
+  },
+  "seeds": [
+    20261104,
+    20261105,
+    20261106,
+    20261107,
+    20261108,
+    20261109,
+    20261110,
+    20261111,
+    20261112,
+    20261113
+  ],
+  "null_books": 200,
+  "rules": {
+    "pass": [
+      "closes >= 100 at M1 and no unresolved exposure at the end",
+      "net > 0 under every model M1..M7",
+      "robust net (minimum over M1..M7) >= 1.10 x V2 robust net",
+      "M1 net >= 0.95 x V2 M1 net",
+      "M1 drawdown <= 1.5 x V2 M1 drawdown",
+      "positive in >= 3 of the 4 years at M1"
+    ],
+    "reported_not_pass": "ranking claim: finalist M1 net above the 90th percentile of 200 random-order books from its own pool",
+    "primary": "V2_HI_F3N; V2_HI_F3L is the liquidity-first sibling"
+  },
+  "preparation": "enrichment prepare(): raw positive finite OHLCV, high/low consistency, positive volume; drop history before the latest archived split (incl. later known splits); NIFTYBEES calendar; no repair",
+  "limits": [
+    "current surviving membership",
+    "later-known split cuts",
+    "daily bars only: no fill is proven",
+    "current fees for all years",
+    "single public dataset"
+  ],
+  "frozen_at": "2026-11-04T07:49:33.666210+00:00",
+  "opened": false
+}

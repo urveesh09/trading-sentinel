@@ -53,7 +53,7 @@ class Policy:
     extra: dict = field(default_factory=dict, hash=False, compare=False)
 
     def __post_init__(self):
-        if self.rank not in ("strength", "night", "night_hi20", "strength_hi20", "night_cap"):
+        if self.rank not in ("strength", "night", "night_hi20", "strength_hi20", "night_cap", "random"):
             raise ValueError("unknown rank")
         if self.slots < 1:
             raise ValueError("slots")
@@ -137,6 +137,8 @@ def fillers(days, day, p):
             out.append(c)
     if p.filler_order == "value":
         out.sort(key=lambda c: -c.f["tv"])
+    elif p.filler_order == "random":          # ranking null: same fillers, random order
+        out.sort(key=lambda c: _u(p.extra["null_seed"], day.date, c.ticker, "fill"))
     else:
         out.sort(key=lambda c: -c.f["night_mean"])
     return out
@@ -173,6 +175,8 @@ def _edge_pool(day, p: Policy) -> list:
         out.sort(key=lambda c: (-(c.f.get("near_hi20", -1) > -.01), -c.f.get("night_mean", 0)))
     elif p.rank == "strength_hi20":           # stable: shipped strength order inside each group
         out.sort(key=lambda c: -(c.f.get("near_hi20", -1) > -.01))
+    elif p.rank == "random":                  # ranking null: same pool, random order
+        out.sort(key=lambda c: _u(p.extra["null_seed"], day.date, c.ticker))
     elif p.rank == "night_cap":               # night mean x the share of a half ticket 0.1% of today's volume covers
         def score(c):
             vol = day.bar[c.ticker]["volume"]

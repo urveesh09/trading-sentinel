@@ -112,3 +112,17 @@ the day tables (`v3sim.filler_table`), the same realism refusal, and no stop/str
 - **V2_HI_F3L**: V2_HI, then F3 fillers by today's traded value (liquidity first).
 - **F3_ONLY_HI**: no EDGE pool; F3 names only, 20-day-high names first, then night mean.
 - **V2_HI_F5L**: V2_HI, then F5 fillers (night mean ≥ 0.5% and up ≥ 2%) by traded value.
+
+## Round 4 result and finalist freeze (before any 2010–2014 day table exists)
+
+V2_HI_F3N beat v2 in all four panels at full fills (145.6k vs 127.7k, 214.6k vs 184.2k,
+251.4k vs 227.9k, 59.8k vs 51.8k) and on robust net (5.7k vs 3.3k, 25.7k vs 20.3k, 60.1k vs
+56.3k, 7.6k vs 4.6k); fillers add 170–200 trades per four-year panel at Rs 76–152 net each,
+and every year is positive. V2_HI_F3L (fillers by traded value) also passes the four-panel rule
+but by less. F3_ONLY_HI (no EDGE pool) is far better in 2015–22 but loses robust net in 2023–26.
+V2_HI_F5L fails. Development stops here (three arm rounds, as planned).
+
+Finalists frozen in `exam-freeze.json` by `scripts/exam.py freeze`: **V2_HI_F3N** (primary) and
+**V2_HI_F3L**, against V2. The self-test on the Kite panel already shows random order inside the
+same pool doing as well (65.6–67.7k vs 59.8k): the ranking claim is expected to fail; the
+improvement, if any, is the fillers.
