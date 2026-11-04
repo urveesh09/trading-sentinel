@@ -149,3 +149,23 @@ Focused source/native-indicator/CNC-lifecycle group80 passed,4.23s. Original
 shared RSI helper, Classic rules and all runtime files unchanged. New native
 MIS exact-adapter baseline to run (constant PR1,2k, strict coverage). R2 also
 binds identity receipt files used only to exclude provider-identified ETFs.
+
+## Smart exit-only round3 (new perspectives; not a parameter grid)
+
+Round2 post-open confirmation loses after costs; keep V3's conditional
+auction picks and change only exit. Two declared candidates:09:30 first
+tradable-bar exit; or a standing gap-recovery target at99.5% of previous
+close,latest10:00 first-tradable-bar exit. Strict target crossing, intrabar
+execution timestamp at completed five-minute end; flat-down prints do not
+prove a sale. Unfilled sale reserves cash until a later observed tradable
+bar. Two arms only, source/data freeze before score, same entry/cost models.
+No cross-name prices have been opened and no new full-chronology claim.
+
+Parallel owner work detected in partner_watch.py/config.py/conftest.py and
+new partner_sentinel.py. No such source was staged or changed by this task.
+Penny settings AST remains identical to inheritedd502c1f; raw config matches
+the active round2 freeze. An incidental generated atlas section from that
+parallel work entered a2e41ac. Correct its staged atlas to this task's own
+module section fromb135fd6, leaving the fully regenerated working atlas and
+all partner source edits untouched/unstaged. Subsequent commits stage only
+our atlas section. Record this concurrency/version boundary in verification.
