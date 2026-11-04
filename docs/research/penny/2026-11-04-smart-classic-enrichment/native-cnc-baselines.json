@@ -1,0 +1,61 @@
+[
+  {
+    "panel": "h1",
+    "summary": {
+      "entries": 0,
+      "closed_trades": 0,
+      "unresolved_trades": 0,
+      "net_pnl": null,
+      "win_rate_pct": null,
+      "profit_factor": null,
+      "expectancy": null,
+      "net_excluding_best_winner": null,
+      "exit_reasons": {}
+    },
+    "funnel": {
+      "evaluations": 10385,
+      "NO_PARTIAL_CANDLE_EVIDENCE": 1274,
+      "reject_reasons": {
+        "RSI not rising for 2 bars": 516,
+        "RSI(2) not below buy threshold": 1807,
+        "below 200 SMA": 6071,
+        "below 50 SMA": 825,
+        "insufficient_history": 1165,
+        "volume too low": 1
+      },
+      "admission_outcomes": {}
+    },
+    "rejections": null,
+    "status": "PARTIAL",
+    "limits": "native PENNY_PAPER bankroll100000/constant PR1; not operational historical regime or live CNC"
+  },
+  {
+    "panel": "recent",
+    "summary": {
+      "entries": 0,
+      "closed_trades": 0,
+      "unresolved_trades": 0,
+      "net_pnl": null,
+      "win_rate_pct": null,
+      "profit_factor": null,
+      "expectancy": null,
+      "net_excluding_best_winner": null,
+      "exit_reasons": {}
+    },
+    "funnel": {
+      "NO_PARTIAL_CANDLE_EVIDENCE": 2805,
+      "evaluations": 2083,
+      "reject_reasons": {
+        "RSI not rising for 2 bars": 214,
+        "RSI(2) not below buy threshold": 761,
+        "below 200 SMA": 583,
+        "below 50 SMA": 379,
+        "insufficient_history": 146
+      },
+      "admission_outcomes": {}
+    },
+    "rejections": null,
+    "status": "PARTIAL",
+    "limits": "native PENNY_PAPER bankroll100000/constant PR1; not operational historical regime or live CNC"
+  }
+]

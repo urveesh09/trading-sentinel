@@ -99,3 +99,15 @@ The first CNC arm remains the rolling-RSI oversold entry's one-night phase.
 Compare2k and25k fixed own cash as capital sensitivity, never use differing
 capital as a headline improvement. This is a new research rule, not a silent
 indicator change or retroactive alteration to the old study.
+
+## Pre-score mechanical revision (original freeze preserved)
+
+Initial5628e73 freeze has no new strategy score. A partial-fill carry test
+found that spare cash could open a second name despite a one-slot policy.
+Fix explicit concurrent-position reservation; four funded basket slots are
+also explicit. Calendar includes every verified2026 session, not only dates
+with supplied minute bars. Add regression test. Preserve original round1
+freeze; round1 revision2 supersedes mechanics only, arms unchanged, committed
+before any candidate score. Native V3 old result reproduced exactly:104
+closes,+2936.12,4 locked exits. Native CNC first panel:0 admissions/10385
+evaluations; incomplete partial candles/history remain PARTIAL, not zero PnL.

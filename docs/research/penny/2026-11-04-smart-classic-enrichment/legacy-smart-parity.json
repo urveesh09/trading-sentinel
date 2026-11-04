@@ -1,0 +1,20 @@
+{
+  "summary": {
+    "n": 104,
+    "net": 2936.12,
+    "ex_best": 2691.19,
+    "dd": 354.52,
+    "pf": 3.545,
+    "win": 0.577,
+    "mean": 28.232,
+    "days": 104
+  },
+  "mismatches": 0,
+  "lock_outcomes": {
+    "SKIP_THIN": 107,
+    "LOCKED": 4,
+    "FILLED": 100,
+    "CAPACITY_OR_DUST": 16
+  },
+  "not_a_new_exam": "previously seen; old script preserved; new corrected carry control is separate"
+}

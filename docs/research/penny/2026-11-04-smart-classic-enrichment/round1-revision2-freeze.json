@@ -1,0 +1,158 @@
+{
+  "round": 1,
+  "revision": 2,
+  "sources": {
+    "scripts/smart_classic_study.py": "21915f047a7cc7ddbcaa76a70dd36527ad90d1a9732433c6fd83a0338315b835",
+    "python-engine/smart_classic_enrichment.py": "28d797cdb3f04791102618501bbfbb8d6e5233926c53686f7de3fd51cbf4c55d",
+    "docs/research/penny/2026-11-04-intraday/idata.py": "245a128e50bba689fc8e6f4310149c929ebcdbf6c2c1fbab1248f156f39b2052",
+    "docs/research/penny/2026-11-04-intraday/minute_oar.py": "8cfd720ec3cb19b2f9c9f3b3612353259d027e13a824ac7ea2ba121290fda9da",
+    "docs/research/penny/2026-11-04-intraday/oarsim.py": "36ad809e9d9275b532849ca1b20dd552afd1243b632534c5857661a2e8f5ea5b",
+    "python-engine/penny_smart_v3.py": "9dd5cb246a94fccdfb6e5c3b38dda6794cb35ec67ec44b42c358b9cc0012d224",
+    "python-engine/penny_engine_connors.py": "554b88468d55007cdb73d88debe01fa45fda6052c2bcadc231160f2b6d4b1ea6",
+    "python-engine/penny_engine_breakout.py": "cd4c473f3485c16c516e90593e5717bf2cf31537d62a8abd9c219d57c69dad09",
+    "python-engine/penny_risk.py": "91ca4f1ae55a6e1d75a564802f294dbf316db74ef7b97a795f2ec8ff32e7d1cf",
+    "python-engine/penny_universe.py": "e10dd567e551cff8b07ce25c9d1b7420b636649dcd1877fcd66566fabf1c5a86",
+    "python-engine/research_penny_cnc_lifecycle.py": "cc2dab2013cb043ed117d695de030404f38dc8bae3fcc18cd72ede7f0cc293fd",
+    "python-engine/research_data_contracts.py": "38905b3dfe52184d24ebe44ab5c03a3cb02657e7863ff7355931c53b9de2562f",
+    "python-engine/config.py": "47ab7fd3348de3ea2f43c68ed12a7aca96cc4c4f172404b76998932444b75665"
+  },
+  "data": {
+    "docs/research/penny/2026-11-04-strategy-search/_local/production-cash.sqlite": "4eaa5575c9606c0d1cb64414754f1af770b770c64ac148ac60b35356d314ca88",
+    "docs/research/kite/2026-10-05-penny-h1/_local/validated-kite.sqlite": "e81821095c26f5f098f4a5838cdb0508028c9d885da8db9a416de38d571acbca",
+    "docs/research/penny/2026-11-04-overnight-enrichment/_local/older/yahoo.sqlite": "de4b69312a0f663614b73af6ff10987d554c2908ce6d2a68933ff78346f98de8",
+    "docs/research/penny/2026-11-04-overnight-v2/_local/yahoo/yahoo.sqlite": "fdb42725847330a163b064ef2a0a330937cfbd51221256e589a279a936f1f738",
+    "docs/research/penny/2026-11-04-overnight-v2/_local/yahoo-split-cuts.json": "003482e849694d32d00a7348c97901e054ec4ce6d054e2b7da727de7db0afd0e"
+  },
+  "policies": [
+    {
+      "name": "SV4_BASKET_LIQ",
+      "family": "basket",
+      "rank": "liquidity",
+      "slots": 4,
+      "exit_minute": 970,
+      "gap_limit": -0.02,
+      "hold_days": 5,
+      "afternoon": false,
+      "stop_pct": 0.03
+    },
+    {
+      "name": "SV4_BASKET_FREQ",
+      "family": "basket",
+      "rank": "gapfreq",
+      "slots": 4,
+      "exit_minute": 970,
+      "gap_limit": -0.02,
+      "hold_days": 5,
+      "afternoon": false,
+      "stop_pct": 0.03
+    },
+    {
+      "name": "MIS_RETEST",
+      "family": "pullback",
+      "rank": "liquidity",
+      "slots": 1,
+      "exit_minute": 900,
+      "gap_limit": -0.02,
+      "hold_days": 5,
+      "afternoon": false,
+      "stop_pct": 0.03
+    },
+    {
+      "name": "MIS_FADE",
+      "family": "fade",
+      "rank": "liquidity",
+      "slots": 1,
+      "exit_minute": 900,
+      "gap_limit": -0.02,
+      "hold_days": 5,
+      "afternoon": false,
+      "stop_pct": 0.03
+    },
+    {
+      "name": "CNC_NIGHT",
+      "family": "cnc_night",
+      "rank": "liquidity",
+      "slots": 1,
+      "exit_minute": 900,
+      "gap_limit": -0.02,
+      "hold_days": 5,
+      "afternoon": false,
+      "stop_pct": 0.03
+    },
+    {
+      "name": "CNC_WILDER",
+      "family": "cnc_wilder",
+      "rank": "liquidity",
+      "slots": 1,
+      "exit_minute": 900,
+      "gap_limit": -0.02,
+      "hold_days": 5,
+      "afternoon": false,
+      "stop_pct": 0.03
+    }
+  ],
+  "development": {
+    "h1": [
+      "2026-01-01",
+      "2026-07-31"
+    ],
+    "recent": [
+      "2026-08-10",
+      "2026-11-02"
+    ]
+  },
+  "daily_panels": {
+    "old": [
+      "2011-01-01",
+      "2018-12-31"
+    ],
+    "middle": [
+      "2019-01-01",
+      "2022-12-31"
+    ],
+    "recent": [
+      "2023-01-01",
+      "2026-10-09"
+    ]
+  },
+  "daily_tails": {
+    "old": "2019-01-31",
+    "middle": "2023-01-31",
+    "recent": "2026-11-03"
+  },
+  "models": [
+    [
+      0,
+      0,
+      null
+    ],
+    [
+      25,
+      25,
+      null
+    ],
+    [
+      50,
+      50,
+      null
+    ],
+    [
+      100,
+      100,
+      null
+    ],
+    [
+      25,
+      25,
+      20261104
+    ]
+  ],
+  "capital": 2000,
+  "cnc_capital_sensitivity": 25000,
+  "cash": "profits withheld; actual-clock exits/carry; no leverage",
+  "auction_clock": "09:10 clearing outcome conditional; fixed limit quantities, orders preselected strictly from prior bars; cancel unfilled before continuous",
+  "daily_clock": "previous closed bars; next-open regular entry or prior postclose conditional night entry",
+  "cross_name_opened": false,
+  "verdict": "all old panels seen, no prospective qualification",
+  "frozen_at": "2026-11-04T12:51:13.891955+00:00"
+}

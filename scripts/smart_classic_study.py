@@ -137,10 +137,14 @@ def proposals(round_):
     return [asdict(p) for p in ps]
 
 
-def freeze(round_):
-    target=RUN/f'round{round_}-freeze.json'
+def freeze_path(round_,revision=1):
+    return RUN/(f'round{round_}-freeze.json' if revision==1 else f'round{round_}-revision{revision}-freeze.json')
+
+
+def freeze(round_,revision=1):
+    target=freeze_path(round_,revision)
     if target.exists():raise ValueError('immutable round freeze exists')
-    write(target,{'round':round_,'sources':source_hashes(),'data':{str(p.relative_to(ROOT)).replace('\\','/'):sha(p) for p in inputs()},
+    write(target,{'round':round_,'revision':revision,'sources':source_hashes(),'data':{str(p.relative_to(ROOT)).replace('\\','/'):sha(p) for p in inputs()},
         'policies':proposals(round_),'development':{'h1':['2026-01-01','2026-07-31'],'recent':['2026-08-10','2026-11-02']},
         'daily_panels':{'old':['2011-01-01','2018-12-31'],'middle':['2019-01-01','2022-12-31'],'recent':['2023-01-01','2026-10-09']},
         'daily_tails':{'old':'2019-01-31','middle':'2023-01-31','recent':'2026-11-03'},
@@ -168,14 +172,18 @@ def seen_panel(panel):
     start,end=('2026-01-01','2026-07-31') if panel=='h1' else ('2026-07-30','2026-11-02')
     days=idata.build(path,path,start,end,min_bars=1);daily=idata._daily(path)
     names={d.ticker for d in days};daily={t:x for t,x in daily.items() if t in names}
-    dates=sorted({d.date for d in days})
+    from research_data_contracts import default_calendar
+    cal=default_calendar();dates=[];date=datetime.fromisoformat(start).date();last=datetime.fromisoformat(end).date()
+    while date<=last:
+        if cal.is_trading_day(date):dates.append(date.isoformat())
+        date+=timedelta(days=1)
     return days,daily,dates
 
 
-def score(round_):
+def score(round_,revision=1):
     from dataclasses import asdict
     from smart_classic_enrichment import Policy,auction_orders,intraday_orders,cnc_orders,run_book
-    f=json.loads((RUN/f'round{round_}-freeze.json').read_text());assert f['sources']==source_hashes()
+    f=json.loads(freeze_path(round_,revision).read_text());assert f['sources']==source_hashes()
     for p,h in f['data'].items():assert sha(ROOT/p)==h,p
     excluded=excluded_etfs();rows=[];write(RUN/'excluded-etfs.json',sorted(excluded))
     for panel,window in f['development'].items():
@@ -189,8 +197,8 @@ def score(round_):
                 # Auction executes at a clearing price; shocks may deny a
                 # fixed limit but never resize it using that clearing price.
                 r=run_book(orders,daily,calendar,bankroll=2000,entry_bps=eb,exit_bps=xb,
-                    max_new_day=p.slots if p.family=='basket' else 1,fill_seed=seed)
-                target=RUN/f'_local/results/r{round_}_{panel}_{p.name}_{eb}_{xb}_{seed}.json'
+                    max_new_day=p.slots if p.family=='basket' else 1,max_positions=p.slots,fill_seed=seed)
+                target=RUN/f'_local/results/r{round_}v{revision}_{panel}_{p.name}_{eb}_{xb}_{seed}.json'
                 if target.exists():raise ValueError('result already exists')
                 write(target,r|{'policy':asdict(p),'order_counts':counts,'model':[eb,xb,seed]})
                 rows.append({'panel':panel,'policy':asdict(p),'model':[eb,xb,seed],'summary':r['summary'],'order_counts':counts})
@@ -207,13 +215,13 @@ def score(round_):
             for cash in [2000,25000]:
                 for eb,xb,seed in f['models']:
                     r=run_book(orders,daily,calendar,bankroll=cash,entry_bps=eb,exit_bps=xb,fill_seed=seed)
-                    target=RUN/f'_local/results/r{round_}_daily-{panel}_{p.name}_{cash}_{eb}_{xb}_{seed}.json'
+                    target=RUN/f'_local/results/r{round_}v{revision}_daily-{panel}_{p.name}_{cash}_{eb}_{xb}_{seed}.json'
                     if target.exists():raise ValueError('result already exists')
                     write(target,r|{'policy':asdict(p),'capital':cash,'model':[eb,xb,seed]})
                     rows.append({'panel':'daily-'+panel,'capital':cash,'policy':asdict(p),'model':[eb,xb,seed],'summary':r['summary']})
                     print('daily',panel,p.name,cash,eb,xb,seed,r['summary'],flush=True)
     assert f['sources']==source_hashes()
-    write(RUN/f'round{round_}-results.json',rows)
+    write(RUN/(f'round{round_}-results.json' if revision==1 else f'round{round_}-revision{revision}-results.json'),rows)
 
 
 def baseline():
@@ -241,7 +249,7 @@ def baseline():
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('command',choices=['select','acquire','freeze','score','baseline']);p.add_argument('--round',type=int)
+    p=argparse.ArgumentParser();p.add_argument('command',choices=['select','acquire','freeze','score','baseline']);p.add_argument('--round',type=int);p.add_argument('--revision',type=int,default=1)
     a=p.parse_args()
-    if a.command in ('freeze','score'):globals()[a.command](a.round)
+    if a.command in ('freeze','score'):globals()[a.command](a.round,a.revision)
     else:globals()[a.command]()

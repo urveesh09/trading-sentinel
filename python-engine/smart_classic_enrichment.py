@@ -249,7 +249,7 @@ def cnc_orders(daily,calendar,p,excluded=()):
     return orders,{}
 
 
-def run_book(orders,daily,calendar,*,bankroll=2000.,entry_bps=25.,exit_bps=25.,max_new_day=1,fill_seed=None):
+def run_book(orders,daily,calendar,*,bankroll=2000.,entry_bps=25.,exit_bps=25.,max_new_day=1,max_positions=1,fill_seed=None):
     """Future outcomes are scheduled; cash is released only at their actual clock."""
     if bankroll<=0 or not math.isfinite(bankroll):raise ValueError('invalid bankroll')
     by=defaultdict(list)
@@ -272,6 +272,7 @@ def run_book(orders,daily,calendar,*,bankroll=2000.,entry_bps=25.,exit_bps=25.,m
         for o in sorted(by.get(day,()),key=lambda x:(x.minute,x.score)):
             settle((day,o.minute))
             if taken>=max_new_day:counts['DAILY_ORDER_LIMIT']+=1;continue
+            if len(held)>=max_positions:counts['POSITIONS_RESERVED_BY_CARRY']+=1;continue
             if o.ticker in {p['order'].ticker for p in held.values()}:counts['ALREADY_HELD']+=1;continue
             risk=max(0,min(bankroll,bankroll+realized));free=cash-max(realized,0)-sum(p['buffer'] for p in held.values())
             budget=min(free,risk*o.meta['slot_fraction'])

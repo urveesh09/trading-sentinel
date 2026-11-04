@@ -33,10 +33,10 @@ def test_preselected_limit_not_final_price_determines_quantity():
     for i,t in enumerate('ABCD'):
         orders.append(Order(d,550,t,18.,1,(i,),9999,9999,(d,970,20.,'proxy'),{'slot_fraction':.25},19.6))
     rows={t:[(d,18.,21.,17.,20.,100000.)] for t in 'ABCD'}
-    a=run_book(orders,rows,[d],entry_bps=0,exit_bps=0,max_new_day=4)
+    a=run_book(orders,rows,[d],entry_bps=0,exit_bps=0,max_new_day=4,max_positions=4)
     changed=deepcopy(orders)
     for o in changed:o.entry=17.
-    b=run_book(changed,rows,[d],entry_bps=0,exit_bps=0,max_new_day=4)
+    b=run_book(changed,rows,[d],entry_bps=0,exit_bps=0,max_new_day=4,max_positions=4)
     assert [x['qty'] for x in a['intents']]==[x['qty'] for x in b['intents']]
     assert sum(x['reserved'] for x in a['intents'])<=2000
 
@@ -56,6 +56,16 @@ def test_missing_exit_remains_open_without_fabricated_haircut():
     d='2026-02-02';o=Order(d,550,'A',20.,1,(0,),9999,9999,None,{'slot_fraction':1.})
     r=run_book([o],{'A':[(d,20.,21.,19.,19.,100000.)]},[d],entry_bps=0,exit_bps=0)
     assert r['summary']['net']==0 and r['open']==1 and not r['trades']
+
+
+def test_partial_carry_reserves_position_slot_even_with_spare_cash():
+    dates=['2026-02-02','2026-02-03','2026-02-04']
+    a=Order(dates[0],550,'A',20.,1,(0,),25,25,(dates[2],555,21.,'carry'),{'slot_fraction':1.})
+    b=Order(dates[1],550,'B',20.,1,(0,),9999,9999,(dates[1],970,30.,'unfunded'),{'slot_fraction':1.})
+    rows={t:[(d,20.,21.,19.,20.,100000.) for d in dates] for t in 'AB'}
+    r=run_book([a,b],rows,dates,entry_bps=0,exit_bps=0)
+    assert [t['ticker'] for t in r['trades']]==['A']
+    assert r['outcomes']['POSITIONS_RESERVED_BY_CARRY']==1
 
 
 def test_short_fees_and_cash_identity_are_direction_correct():
