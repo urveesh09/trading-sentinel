@@ -74,3 +74,19 @@ All: two equal halves, night screen ≥ 0.1%, realism refusals as v2, post-close
 - **NIGHTALL_HI**: as NIGHTALL, but names closing within 1% of their 20-day high first.
 - **NIGHTALL_CAP**: as NIGHTALL, plus a decision-time capacity rule: reserve at most 0.10% of the
   day's share volume; a name that cannot take a quarter ticket is skipped and the slot kept.
+
+## Round 2 result and the change to the random fill models (recorded before round 3 and before any exam build)
+
+No round 2 arm won in all four panels. Night ranking helps 2015–22 and loses 2023–26 and Kite
+under the capacity models: the 60-night mean leans to thin names, which the capacity models
+partly fill. NIGHTALL_HI came closest (robust 11.2k vs 3.3k, 32.1k vs 20.3k, 47.1k vs 56.3k,
+1.5k vs 4.6k). A single seed swung M4 by tens of thousands, so **M2, M3, M4 and M6 are now the mean
+of ten seeds (20261104 … 20261113)** in development and in the sealed check. All else unchanged.
+
+## Round 3 arms (declared before scoring)
+
+- **V2_HI**: v2's top-10 pool in shipped strength order, names within 1% of their 20-day high first.
+- **V2_Q4**: v2 with the night screen raised to 0.4% (fewer, stronger nights).
+- **ALL_HI**: every candidate, shipped strength order, 20-day-high names first.
+- **CAPRANK**: every candidate, ranked by night mean × the share of a half ticket that 0.1% of the
+  day's share volume covers (a capacity-aware expected-rupee order).

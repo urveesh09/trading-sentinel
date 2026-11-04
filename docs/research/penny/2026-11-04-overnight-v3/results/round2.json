@@ -1,0 +1,1512 @@
+{
+ "1518|V2": {
+  "M1": {
+   "net": 127734,
+   "net_seed0": 127734,
+   "net_min_seed": 127734,
+   "dd": 5276,
+   "closes": 1515,
+   "pf": 2.18,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 30213,
+   "2016": 27097,
+   "2017": 39600,
+   "2018": 30824
+  },
+  "outcomes": {
+   "FILLED": 1515,
+   "LIQUIDITY_OR_DUST": 122
+  },
+  "M2": {
+   "net": 68868,
+   "net_seed0": 72071,
+   "net_min_seed": 62212,
+   "dd": 5584,
+   "closes": 1299,
+   "pf": 1.666,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 10721,
+   "net_seed0": 20054,
+   "net_min_seed": -1049,
+   "dd": 10277,
+   "closes": 1086,
+   "pf": 1.185,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 8515,
+   "net_seed0": -11138,
+   "net_min_seed": -11138,
+   "dd": 13370,
+   "closes": 1022,
+   "pf": 0.859,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 76476,
+   "net_seed0": 76476,
+   "net_min_seed": 76476,
+   "dd": 4513,
+   "closes": 1515,
+   "pf": 2.053,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 3344,
+   "net_seed0": 7040,
+   "net_min_seed": -2919,
+   "dd": 8676,
+   "closes": 1087,
+   "pf": 1.098,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 100310,
+   "net_seed0": 100310,
+   "net_min_seed": 100310,
+   "dd": 5467,
+   "closes": 1515,
+   "pf": 1.843,
+   "open_at_end": 0
+  },
+  "robust": 3344
+ },
+ "1518|NIGHT10": {
+  "M1": {
+   "net": 136569,
+   "net_seed0": 136569,
+   "net_min_seed": 136569,
+   "dd": 4851,
+   "closes": 1515,
+   "pf": 2.258,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 30086,
+   "2016": 34256,
+   "2017": 43429,
+   "2018": 28797
+  },
+  "outcomes": {
+   "FILLED": 1515,
+   "LIQUIDITY_OR_DUST": 141
+  },
+  "M2": {
+   "net": 76684,
+   "net_seed0": 73018,
+   "net_min_seed": 72006,
+   "dd": 5173,
+   "closes": 1281,
+   "pf": 1.673,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 17087,
+   "net_seed0": 17113,
+   "net_min_seed": 14152,
+   "dd": 9635,
+   "closes": 1071,
+   "pf": 1.158,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 13609,
+   "net_seed0": -9946,
+   "net_min_seed": -9946,
+   "dd": 11743,
+   "closes": 1002,
+   "pf": 0.882,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 78049,
+   "net_seed0": 78049,
+   "net_min_seed": 78049,
+   "dd": 4619,
+   "closes": 1515,
+   "pf": 2.076,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 5268,
+   "net_seed0": 4325,
+   "net_min_seed": 1453,
+   "dd": 9694,
+   "closes": 1074,
+   "pf": 1.06,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 109207,
+   "net_seed0": 109207,
+   "net_min_seed": 109207,
+   "dd": 5042,
+   "closes": 1515,
+   "pf": 1.919,
+   "open_at_end": 0
+  },
+  "robust": 5268
+ },
+ "1518|NIGHTALL": {
+  "M1": {
+   "net": 136604,
+   "net_seed0": 136604,
+   "net_min_seed": 136604,
+   "dd": 4851,
+   "closes": 1533,
+   "pf": 2.25,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 30287,
+   "2016": 35552,
+   "2017": 40530,
+   "2018": 30234
+  },
+  "outcomes": {
+   "FILLED": 1533,
+   "LIQUIDITY_OR_DUST": 153
+  },
+  "M2": {
+   "net": 76606,
+   "net_seed0": 71591,
+   "net_min_seed": 71179,
+   "dd": 5174,
+   "closes": 1293,
+   "pf": 1.655,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 16272,
+   "net_seed0": 15438,
+   "net_min_seed": 13016,
+   "dd": 8120,
+   "closes": 1080,
+   "pf": 1.141,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 12384,
+   "net_seed0": -7064,
+   "net_min_seed": -7064,
+   "dd": 9359,
+   "closes": 1022,
+   "pf": 0.922,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 75617,
+   "net_seed0": 75617,
+   "net_min_seed": 75617,
+   "dd": 4681,
+   "closes": 1533,
+   "pf": 2.074,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 4637,
+   "net_seed0": 3266,
+   "net_min_seed": 17,
+   "dd": 9920,
+   "closes": 1082,
+   "pf": 1.047,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 109089,
+   "net_seed0": 109089,
+   "net_min_seed": 109089,
+   "dd": 5042,
+   "closes": 1533,
+   "pf": 1.912,
+   "open_at_end": 0
+  },
+  "robust": 4637
+ },
+ "1518|NIGHTALL_HI": {
+  "M1": {
+   "net": 147786,
+   "net_seed0": 147786,
+   "net_min_seed": 147786,
+   "dd": 4851,
+   "closes": 1533,
+   "pf": 2.384,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 33441,
+   "2016": 38065,
+   "2017": 44447,
+   "2018": 31833
+  },
+  "outcomes": {
+   "FILLED": 1533,
+   "LIQUIDITY_OR_DUST": 156
+  },
+  "M2": {
+   "net": 86250,
+   "net_seed0": 83617,
+   "net_min_seed": 80567,
+   "dd": 5051,
+   "closes": 1293,
+   "pf": 1.783,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 23433,
+   "net_seed0": 23576,
+   "net_min_seed": 18337,
+   "dd": 7638,
+   "closes": 1075,
+   "pf": 1.221,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 19299,
+   "net_seed0": -1101,
+   "net_min_seed": -1101,
+   "dd": 7187,
+   "closes": 1012,
+   "pf": 0.989,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 86167,
+   "net_seed0": 86167,
+   "net_min_seed": 86167,
+   "dd": 4681,
+   "closes": 1533,
+   "pf": 2.239,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 11245,
+   "net_seed0": 10593,
+   "net_min_seed": 6198,
+   "dd": 8608,
+   "closes": 1075,
+   "pf": 1.153,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 120244,
+   "net_seed0": 120244,
+   "net_min_seed": 120244,
+   "dd": 5042,
+   "closes": 1533,
+   "pf": 2.029,
+   "open_at_end": 0
+  },
+  "robust": 11245
+ },
+ "1518|NIGHTALL_CAP": {
+  "M1": {
+   "net": 84756,
+   "net_seed0": 84756,
+   "net_min_seed": 84756,
+   "dd": 4471,
+   "closes": 1350,
+   "pf": 2.115,
+   "open_at_end": 0
+  },
+  "years": {
+   "2015": 20222,
+   "2016": 14998,
+   "2017": 35113,
+   "2018": 14424
+  },
+  "outcomes": {
+   "LIQUIDITY_OR_DUST": 644,
+   "FILLED": 1350
+  },
+  "M2": {
+   "net": 45677,
+   "net_seed0": 43788,
+   "net_min_seed": 39683,
+   "dd": 5821,
+   "closes": 1144,
+   "pf": 1.576,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 6816,
+   "net_seed0": 5124,
+   "net_min_seed": 2638,
+   "dd": 10616,
+   "closes": 945,
+   "pf": 1.068,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 4105,
+   "net_seed0": -6861,
+   "net_min_seed": -6861,
+   "dd": 10587,
+   "closes": 891,
+   "pf": 0.899,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 84756,
+   "net_seed0": 84756,
+   "net_min_seed": 84756,
+   "dd": 4471,
+   "closes": 1350,
+   "pf": 2.115,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 6816,
+   "net_seed0": 5124,
+   "net_min_seed": 2638,
+   "dd": 10616,
+   "closes": 945,
+   "pf": 1.068,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 63323,
+   "net_seed0": 63323,
+   "net_min_seed": 63323,
+   "dd": 4709,
+   "closes": 1350,
+   "pf": 1.752,
+   "open_at_end": 0
+  },
+  "robust": 4105
+ },
+ "1922|V2": {
+  "M1": {
+   "net": 184222,
+   "net_seed0": 184222,
+   "net_min_seed": 184222,
+   "dd": 8732,
+   "closes": 1470,
+   "pf": 2.659,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 26030,
+   "2020": 50253,
+   "2021": 70604,
+   "2022": 37335
+  },
+  "outcomes": {
+   "FILLED": 1470,
+   "LIQUIDITY_OR_DUST": 83
+  },
+  "M2": {
+   "net": 112130,
+   "net_seed0": 103903,
+   "net_min_seed": 103903,
+   "dd": 10342,
+   "closes": 1208,
+   "pf": 1.937,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 38229,
+   "net_seed0": 32517,
+   "net_min_seed": 32517,
+   "dd": 12173,
+   "closes": 983,
+   "pf": 1.296,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 33408,
+   "net_seed0": 40285,
+   "net_min_seed": 11887,
+   "dd": 15425,
+   "closes": 986,
+   "pf": 1.37,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 122564,
+   "net_seed0": 122564,
+   "net_min_seed": 122564,
+   "dd": 4741,
+   "closes": 1470,
+   "pf": 2.484,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 20255,
+   "net_seed0": 20467,
+   "net_min_seed": 13350,
+   "dd": 10467,
+   "closes": 985,
+   "pf": 1.253,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 157411,
+   "net_seed0": 157411,
+   "net_min_seed": 157411,
+   "dd": 9098,
+   "closes": 1470,
+   "pf": 2.313,
+   "open_at_end": 0
+  },
+  "robust": 20255
+ },
+ "1922|NIGHT10": {
+  "M1": {
+   "net": 201554,
+   "net_seed0": 201554,
+   "net_min_seed": 201554,
+   "dd": 6239,
+   "closes": 1470,
+   "pf": 3.079,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 28336,
+   "2020": 52382,
+   "2021": 69194,
+   "2022": 51642
+  },
+  "outcomes": {
+   "FILLED": 1470,
+   "LIQUIDITY_OR_DUST": 113
+  },
+  "M2": {
+   "net": 126883,
+   "net_seed0": 121989,
+   "net_min_seed": 121989,
+   "dd": 7845,
+   "closes": 1202,
+   "pf": 2.262,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 53813,
+   "net_seed0": 58879,
+   "net_min_seed": 44469,
+   "dd": 9916,
+   "closes": 980,
+   "pf": 1.609,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 49287,
+   "net_seed0": 47971,
+   "net_min_seed": 37109,
+   "dd": 10158,
+   "closes": 981,
+   "pf": 1.505,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 124122,
+   "net_seed0": 124122,
+   "net_min_seed": 124122,
+   "dd": 4298,
+   "closes": 1470,
+   "pf": 2.773,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 28859,
+   "net_seed0": 32716,
+   "net_min_seed": 22183,
+   "dd": 8026,
+   "closes": 980,
+   "pf": 1.475,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 175543,
+   "net_seed0": 175543,
+   "net_min_seed": 175543,
+   "dd": 6591,
+   "closes": 1470,
+   "pf": 2.668,
+   "open_at_end": 0
+  },
+  "robust": 28859
+ },
+ "1922|NIGHTALL": {
+  "M1": {
+   "net": 219027,
+   "net_seed0": 219027,
+   "net_min_seed": 219027,
+   "dd": 4687,
+   "closes": 1500,
+   "pf": 3.422,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 35523,
+   "2020": 62020,
+   "2021": 68574,
+   "2022": 52910
+  },
+  "outcomes": {
+   "FILLED": 1500,
+   "LIQUIDITY_OR_DUST": 158
+  },
+  "M2": {
+   "net": 141160,
+   "net_seed0": 140559,
+   "net_min_seed": 135880,
+   "dd": 5551,
+   "closes": 1243,
+   "pf": 2.555,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 67646,
+   "net_seed0": 73382,
+   "net_min_seed": 60024,
+   "dd": 7517,
+   "closes": 1007,
+   "pf": 1.812,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 60424,
+   "net_seed0": 58423,
+   "net_min_seed": 51537,
+   "dd": 9389,
+   "closes": 989,
+   "pf": 1.653,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 122864,
+   "net_seed0": 122864,
+   "net_min_seed": 122864,
+   "dd": 4105,
+   "closes": 1500,
+   "pf": 2.934,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 31756,
+   "net_seed0": 36669,
+   "net_min_seed": 26220,
+   "dd": 7787,
+   "closes": 1008,
+   "pf": 1.58,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 192389,
+   "net_seed0": 192389,
+   "net_min_seed": 192389,
+   "dd": 5092,
+   "closes": 1500,
+   "pf": 2.943,
+   "open_at_end": 0
+  },
+  "robust": 31756
+ },
+ "1922|NIGHTALL_HI": {
+  "M1": {
+   "net": 218162,
+   "net_seed0": 218162,
+   "net_min_seed": 218162,
+   "dd": 4687,
+   "closes": 1500,
+   "pf": 3.329,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 36369,
+   "2020": 62673,
+   "2021": 70421,
+   "2022": 48699
+  },
+  "outcomes": {
+   "FILLED": 1500,
+   "LIQUIDITY_OR_DUST": 149
+  },
+  "M2": {
+   "net": 139535,
+   "net_seed0": 135642,
+   "net_min_seed": 131618,
+   "dd": 5551,
+   "closes": 1237,
+   "pf": 2.448,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 66101,
+   "net_seed0": 66705,
+   "net_min_seed": 58712,
+   "dd": 7642,
+   "closes": 1006,
+   "pf": 1.712,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 58568,
+   "net_seed0": 58125,
+   "net_min_seed": 50800,
+   "dd": 9389,
+   "closes": 992,
+   "pf": 1.627,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 125144,
+   "net_seed0": 125144,
+   "net_min_seed": 125144,
+   "dd": 4105,
+   "closes": 1500,
+   "pf": 2.888,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 32064,
+   "net_seed0": 35654,
+   "net_min_seed": 27790,
+   "dd": 9044,
+   "closes": 1007,
+   "pf": 1.541,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 191494,
+   "net_seed0": 191494,
+   "net_min_seed": 191494,
+   "dd": 5092,
+   "closes": 1500,
+   "pf": 2.87,
+   "open_at_end": 0
+  },
+  "robust": 32064
+ },
+ "1922|NIGHTALL_CAP": {
+  "M1": {
+   "net": 146041,
+   "net_seed0": 146041,
+   "net_min_seed": 146041,
+   "dd": 5657,
+   "closes": 1349,
+   "pf": 2.924,
+   "open_at_end": 0
+  },
+  "years": {
+   "2019": 17617,
+   "2020": 38475,
+   "2021": 51126,
+   "2022": 38822
+  },
+  "outcomes": {
+   "LIQUIDITY_OR_DUST": 762,
+   "FILLED": 1349
+  },
+  "M2": {
+   "net": 91046,
+   "net_seed0": 88398,
+   "net_min_seed": 84611,
+   "dd": 8384,
+   "closes": 1124,
+   "pf": 2.164,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 38060,
+   "net_seed0": 38053,
+   "net_min_seed": 33592,
+   "dd": 9139,
+   "closes": 907,
+   "pf": 1.503,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 31648,
+   "net_seed0": 32303,
+   "net_min_seed": 20708,
+   "dd": 10373,
+   "closes": 897,
+   "pf": 1.428,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 146041,
+   "net_seed0": 146041,
+   "net_min_seed": 146041,
+   "dd": 5657,
+   "closes": 1349,
+   "pf": 2.924,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 38060,
+   "net_seed0": 38053,
+   "net_min_seed": 33592,
+   "dd": 9139,
+   "closes": 907,
+   "pf": 1.503,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 124341,
+   "net_seed0": 124341,
+   "net_min_seed": 124341,
+   "dd": 6349,
+   "closes": 1349,
+   "pf": 2.494,
+   "open_at_end": 0
+  },
+  "robust": 31648
+ },
+ "2326|V2": {
+  "M1": {
+   "net": 227943,
+   "net_seed0": 227943,
+   "net_min_seed": 227943,
+   "dd": 2459,
+   "closes": 1606,
+   "pf": 3.744,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 73210,
+   "2024": 64611,
+   "2025": 40134,
+   "2026": 49989
+  },
+  "outcomes": {
+   "FILLED": 1606,
+   "LIQUIDITY_OR_DUST": 35
+  },
+  "M2": {
+   "net": 152470,
+   "net_seed0": 161775,
+   "net_min_seed": 142148,
+   "dd": 3634,
+   "closes": 1359,
+   "pf": 2.947,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 73831,
+   "net_seed0": 81311,
+   "net_min_seed": 62709,
+   "dd": 6255,
+   "closes": 1097,
+   "pf": 1.98,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 73670,
+   "net_seed0": 74495,
+   "net_min_seed": 58200,
+   "dd": 4127,
+   "closes": 1072,
+   "pf": 1.898,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 179319,
+   "net_seed0": 179319,
+   "net_min_seed": 179319,
+   "dd": 2062,
+   "closes": 1607,
+   "pf": 3.529,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 56260,
+   "net_seed0": 60987,
+   "net_min_seed": 48838,
+   "dd": 5253,
+   "closes": 1098,
+   "pf": 1.862,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 197932,
+   "net_seed0": 197932,
+   "net_min_seed": 197932,
+   "dd": 2848,
+   "closes": 1606,
+   "pf": 3.109,
+   "open_at_end": 0
+  },
+  "robust": 56260
+ },
+ "2326|NIGHT10": {
+  "M1": {
+   "net": 212560,
+   "net_seed0": 212560,
+   "net_min_seed": 212560,
+   "dd": 1910,
+   "closes": 1606,
+   "pf": 3.574,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 66980,
+   "2024": 64223,
+   "2025": 33738,
+   "2026": 47620
+  },
+  "outcomes": {
+   "FILLED": 1606,
+   "LIQUIDITY_OR_DUST": 53
+  },
+  "M2": {
+   "net": 138638,
+   "net_seed0": 152237,
+   "net_min_seed": 126433,
+   "dd": 3665,
+   "closes": 1363,
+   "pf": 2.843,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 64650,
+   "net_seed0": 73319,
+   "net_min_seed": 56605,
+   "dd": 5778,
+   "closes": 1113,
+   "pf": 1.889,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 66886,
+   "net_seed0": 71904,
+   "net_min_seed": 53779,
+   "dd": 5992,
+   "closes": 1070,
+   "pf": 1.872,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 148593,
+   "net_seed0": 148593,
+   "net_min_seed": 148593,
+   "dd": 1657,
+   "closes": 1607,
+   "pf": 3.297,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 42043,
+   "net_seed0": 47785,
+   "net_min_seed": 36070,
+   "dd": 8460,
+   "closes": 1114,
+   "pf": 1.742,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 182972,
+   "net_seed0": 182972,
+   "net_min_seed": 182972,
+   "dd": 2488,
+   "closes": 1606,
+   "pf": 2.963,
+   "open_at_end": 0
+  },
+  "robust": 42043
+ },
+ "2326|NIGHTALL": {
+  "M1": {
+   "net": 221319,
+   "net_seed0": 221319,
+   "net_min_seed": 221319,
+   "dd": 2103,
+   "closes": 1628,
+   "pf": 3.62,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 69840,
+   "2024": 68867,
+   "2025": 36226,
+   "2026": 46386
+  },
+  "outcomes": {
+   "FILLED": 1628,
+   "LIQUIDITY_OR_DUST": 71
+  },
+  "M2": {
+   "net": 144269,
+   "net_seed0": 154660,
+   "net_min_seed": 133786,
+   "dd": 3744,
+   "closes": 1367,
+   "pf": 2.831,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 68627,
+   "net_seed0": 77542,
+   "net_min_seed": 58977,
+   "dd": 8693,
+   "closes": 1125,
+   "pf": 1.919,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 71986,
+   "net_seed0": 72988,
+   "net_min_seed": 59373,
+   "dd": 9198,
+   "closes": 1081,
+   "pf": 1.865,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 146351,
+   "net_seed0": 146351,
+   "net_min_seed": 146351,
+   "dd": 1716,
+   "closes": 1629,
+   "pf": 3.247,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 41458,
+   "net_seed0": 49327,
+   "net_min_seed": 36277,
+   "dd": 9345,
+   "closes": 1126,
+   "pf": 1.762,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 191464,
+   "net_seed0": 191464,
+   "net_min_seed": 191464,
+   "dd": 2649,
+   "closes": 1628,
+   "pf": 3.015,
+   "open_at_end": 0
+  },
+  "robust": 41458
+ },
+ "2326|NIGHTALL_HI": {
+  "M1": {
+   "net": 224699,
+   "net_seed0": 224699,
+   "net_min_seed": 224699,
+   "dd": 2103,
+   "closes": 1628,
+   "pf": 3.741,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 65309,
+   "2024": 70414,
+   "2025": 40775,
+   "2026": 48201
+  },
+  "outcomes": {
+   "FILLED": 1628,
+   "LIQUIDITY_OR_DUST": 66
+  },
+  "M2": {
+   "net": 148224,
+   "net_seed0": 156489,
+   "net_min_seed": 142615,
+   "dd": 4003,
+   "closes": 1364,
+   "pf": 2.909,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 71602,
+   "net_seed0": 78427,
+   "net_min_seed": 63043,
+   "dd": 7691,
+   "closes": 1110,
+   "pf": 1.957,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 73154,
+   "net_seed0": 75263,
+   "net_min_seed": 58153,
+   "dd": 7574,
+   "closes": 1077,
+   "pf": 1.919,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 157073,
+   "net_seed0": 157073,
+   "net_min_seed": 157073,
+   "dd": 1685,
+   "closes": 1629,
+   "pf": 3.417,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 47143,
+   "net_seed0": 53148,
+   "net_min_seed": 37335,
+   "dd": 7742,
+   "closes": 1111,
+   "pf": 1.823,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 194693,
+   "net_seed0": 194693,
+   "net_min_seed": 194693,
+   "dd": 2175,
+   "closes": 1628,
+   "pf": 3.106,
+   "open_at_end": 0
+  },
+  "robust": 47143
+ },
+ "2326|NIGHTALL_CAP": {
+  "M1": {
+   "net": 164787,
+   "net_seed0": 164787,
+   "net_min_seed": 164787,
+   "dd": 1951,
+   "closes": 1561,
+   "pf": 3.243,
+   "open_at_end": 0
+  },
+  "years": {
+   "2023": 53110,
+   "2024": 63371,
+   "2025": 21437,
+   "2026": 26868
+  },
+  "outcomes": {
+   "LIQUIDITY_OR_DUST": 473,
+   "FILLED": 1561
+  },
+  "M2": {
+   "net": 105177,
+   "net_seed0": 116232,
+   "net_min_seed": 97316,
+   "dd": 3431,
+   "closes": 1320,
+   "pf": 2.583,
+   "open_at_end": 0
+  },
+  "M3": {
+   "net": 47237,
+   "net_seed0": 55020,
+   "net_min_seed": 41894,
+   "dd": 8641,
+   "closes": 1091,
+   "pf": 1.75,
+   "open_at_end": 0
+  },
+  "M4": {
+   "net": 46130,
+   "net_seed0": 47565,
+   "net_min_seed": 34174,
+   "dd": 8907,
+   "closes": 1042,
+   "pf": 1.648,
+   "open_at_end": 0
+  },
+  "M5": {
+   "net": 164787,
+   "net_seed0": 164787,
+   "net_min_seed": 164787,
+   "dd": 1951,
+   "closes": 1561,
+   "pf": 3.243,
+   "open_at_end": 0
+  },
+  "M6": {
+   "net": 47237,
+   "net_seed0": 55020,
+   "net_min_seed": 41894,
+   "dd": 8641,
+   "closes": 1091,
+   "pf": 1.75,
+   "open_at_end": 0
+  },
+  "M7": {
+   "net": 139541,
+   "net_seed0": 139541,
+   "net_min_seed": 139541,
+   "dd": 2088,
+   "closes": 1561,
+   "pf": 2.684,
+   "open_at_end": 0
+  },
+  "robust": 46130
+ },
+ "kite|V2": {
+  "M1": {
+   "net": 51836,
+   "net_seed0": 51836,
+   "net_min_seed": 51836,
+   "dd": 1532,
+   "closes": 533,
+   "pf": 2.741,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 17773,
+   "2026": 34062
+  },
+  "outcomes": {
+   "FILLED": 533,
+   "LIQUIDITY_OR_DUST": 24
+  },
+  "M2": {
+   "net": 31978,
+   "net_seed0": 32904,
+   "net_min_seed": 27422,
+   "dd": 2214,
+   "closes": 447,
+   "pf": 2.105,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 11014,
+   "net_seed0": 11301,
+   "net_min_seed": 4957,
+   "dd": 3232,
+   "closes": 368,
+   "pf": 1.38,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 10612,
+   "net_seed0": 14814,
+   "net_min_seed": 5140,
+   "dd": 3807,
+   "closes": 371,
+   "pf": 1.498,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 36093,
+   "net_seed0": 36093,
+   "net_min_seed": 36093,
+   "dd": 1555,
+   "closes": 533,
+   "pf": 2.367,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": 4550,
+   "net_seed0": 3202,
+   "net_min_seed": 998,
+   "dd": 5014,
+   "closes": 368,
+   "pf": 1.123,
+   "open_at_end": 1
+  },
+  "M7": {
+   "net": 42954,
+   "net_seed0": 42954,
+   "net_min_seed": 42954,
+   "dd": 1605,
+   "closes": 533,
+   "pf": 2.285,
+   "open_at_end": 1
+  },
+  "robust": 4550
+ },
+ "kite|NIGHT10": {
+  "M1": {
+   "net": 50632,
+   "net_seed0": 50632,
+   "net_min_seed": 50632,
+   "dd": 1640,
+   "closes": 533,
+   "pf": 2.708,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 17466,
+   "2026": 33166
+  },
+  "outcomes": {
+   "FILLED": 533,
+   "LIQUIDITY_OR_DUST": 30
+  },
+  "M2": {
+   "net": 30818,
+   "net_seed0": 30222,
+   "net_min_seed": 23901,
+   "dd": 2366,
+   "closes": 448,
+   "pf": 2.02,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 8910,
+   "net_seed0": 8146,
+   "net_min_seed": 1592,
+   "dd": 5518,
+   "closes": 367,
+   "pf": 1.279,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 10773,
+   "net_seed0": 17288,
+   "net_min_seed": 7543,
+   "dd": 4474,
+   "closes": 377,
+   "pf": 1.583,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 28984,
+   "net_seed0": 28984,
+   "net_min_seed": 28984,
+   "dd": 1736,
+   "closes": 533,
+   "pf": 2.092,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": 20,
+   "net_seed0": -1529,
+   "net_min_seed": -4674,
+   "dd": 6391,
+   "closes": 368,
+   "pf": 0.939,
+   "open_at_end": 1
+  },
+  "M7": {
+   "net": 41798,
+   "net_seed0": 41798,
+   "net_min_seed": 41798,
+   "dd": 1904,
+   "closes": 533,
+   "pf": 2.254,
+   "open_at_end": 1
+  },
+  "robust": 20
+ },
+ "kite|NIGHTALL": {
+  "M1": {
+   "net": 53523,
+   "net_seed0": 53523,
+   "net_min_seed": 53523,
+   "dd": 2103,
+   "closes": 564,
+   "pf": 2.545,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 19306,
+   "2026": 34217
+  },
+  "outcomes": {
+   "FILLED": 564,
+   "LIQUIDITY_OR_DUST": 71
+  },
+  "M2": {
+   "net": 32359,
+   "net_seed0": 31849,
+   "net_min_seed": 27067,
+   "dd": 2578,
+   "closes": 477,
+   "pf": 1.919,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 8050,
+   "net_seed0": 6875,
+   "net_min_seed": -294,
+   "dd": 7979,
+   "closes": 386,
+   "pf": 1.199,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 11276,
+   "net_seed0": 16250,
+   "net_min_seed": 5018,
+   "dd": 8793,
+   "closes": 389,
+   "pf": 1.469,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 28103,
+   "net_seed0": 28103,
+   "net_min_seed": 28103,
+   "dd": 1552,
+   "closes": 564,
+   "pf": 2.0,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": -740,
+   "net_seed0": -1460,
+   "net_min_seed": -4255,
+   "dd": 6942,
+   "closes": 386,
+   "pf": 0.946,
+   "open_at_end": 2
+  },
+  "M7": {
+   "net": 44317,
+   "net_seed0": 44317,
+   "net_min_seed": 44317,
+   "dd": 2175,
+   "closes": 564,
+   "pf": 2.155,
+   "open_at_end": 1
+  },
+  "robust": -740
+ },
+ "kite|NIGHTALL_HI": {
+  "M1": {
+   "net": 54729,
+   "net_seed0": 54729,
+   "net_min_seed": 54729,
+   "dd": 2103,
+   "closes": 564,
+   "pf": 2.691,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 19389,
+   "2026": 35340
+  },
+  "outcomes": {
+   "FILLED": 564,
+   "LIQUIDITY_OR_DUST": 58
+  },
+  "M2": {
+   "net": 34927,
+   "net_seed0": 33347,
+   "net_min_seed": 29455,
+   "dd": 2605,
+   "closes": 474,
+   "pf": 2.03,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 10362,
+   "net_seed0": 7328,
+   "net_min_seed": 4304,
+   "dd": 6345,
+   "closes": 378,
+   "pf": 1.227,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 12415,
+   "net_seed0": 20634,
+   "net_min_seed": 4029,
+   "dd": 7560,
+   "closes": 395,
+   "pf": 1.638,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 30948,
+   "net_seed0": 30948,
+   "net_min_seed": 30948,
+   "dd": 1552,
+   "closes": 564,
+   "pf": 2.146,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": 1528,
+   "net_seed0": 126,
+   "net_min_seed": -2245,
+   "dd": 6283,
+   "closes": 378,
+   "pf": 1.005,
+   "open_at_end": 1
+  },
+  "M7": {
+   "net": 45502,
+   "net_seed0": 45502,
+   "net_min_seed": 45502,
+   "dd": 2175,
+   "closes": 564,
+   "pf": 2.259,
+   "open_at_end": 1
+  },
+  "robust": 1528
+ },
+ "kite|NIGHTALL_CAP": {
+  "M1": {
+   "net": 36815,
+   "net_seed0": 36815,
+   "net_min_seed": 36815,
+   "dd": 1622,
+   "closes": 540,
+   "pf": 2.257,
+   "open_at_end": 1
+  },
+  "years": {
+   "2025": 13314,
+   "2026": 23501
+  },
+  "outcomes": {
+   "FILLED": 540,
+   "LIQUIDITY_OR_DUST": 312
+  },
+  "M2": {
+   "net": 20150,
+   "net_seed0": 19559,
+   "net_min_seed": 17302,
+   "dd": 2627,
+   "closes": 453,
+   "pf": 1.668,
+   "open_at_end": 1
+  },
+  "M3": {
+   "net": 2644,
+   "net_seed0": 1135,
+   "net_min_seed": -3051,
+   "dd": 7517,
+   "closes": 369,
+   "pf": 1.04,
+   "open_at_end": 1
+  },
+  "M4": {
+   "net": 3529,
+   "net_seed0": 3428,
+   "net_min_seed": -1431,
+   "dd": 6002,
+   "closes": 368,
+   "pf": 1.117,
+   "open_at_end": 1
+  },
+  "M5": {
+   "net": 36815,
+   "net_seed0": 36815,
+   "net_min_seed": 36815,
+   "dd": 1622,
+   "closes": 540,
+   "pf": 2.257,
+   "open_at_end": 1
+  },
+  "M6": {
+   "net": 2644,
+   "net_seed0": 1135,
+   "net_min_seed": -3051,
+   "dd": 7517,
+   "closes": 369,
+   "pf": 1.04,
+   "open_at_end": 1
+  },
+  "M7": {
+   "net": 28831,
+   "net_seed0": 28831,
+   "net_min_seed": 28831,
+   "dd": 1657,
+   "closes": 540,
+   "pf": 1.884,
+   "open_at_end": 1
+  },
+  "robust": 2644
+ }
+}

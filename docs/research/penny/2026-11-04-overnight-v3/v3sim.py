@@ -50,7 +50,7 @@ class Policy:
     extra: dict = field(default_factory=dict, hash=False, compare=False)
 
     def __post_init__(self):
-        if self.rank not in ("strength", "night", "night_hi20"):
+        if self.rank not in ("strength", "night", "night_hi20", "strength_hi20", "night_cap"):
             raise ValueError("unknown rank")
         if self.slots < 1:
             raise ValueError("slots")
@@ -90,6 +90,13 @@ def pool(day, p: Policy) -> list:
         out.sort(key=lambda c: -c.f.get("night_mean", 0))
     elif p.rank == "night_hi20":
         out.sort(key=lambda c: (-(c.f.get("near_hi20", -1) > -.01), -c.f.get("night_mean", 0)))
+    elif p.rank == "strength_hi20":           # stable: shipped strength order inside each group
+        out.sort(key=lambda c: -(c.f.get("near_hi20", -1) > -.01))
+    elif p.rank == "night_cap":               # night mean x the share of a half ticket 0.1% of today's volume covers
+        def score(c):
+            vol = day.bar[c.ticker]["volume"]
+            return c.f.get("night_mean", 0) * min(1.0, .001 * vol * c.close / 12500.0)
+        out.sort(key=lambda c: -score(c))
     return out
 
 
