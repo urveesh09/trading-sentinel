@@ -1,0 +1,410 @@
+{
+  "comparisons": [
+    {
+      "name": "N3_G07",
+      "bankroll": 100000,
+      "entry_slip": 25,
+      "exit_slip": 10,
+      "metrics": {
+        "closed": 216,
+        "net": 54590.4776,
+        "ex_best": 49043.7858,
+        "fees": 31589.6846,
+        "drawdown": 10784.7867,
+        "wins": 127,
+        "profit_factor": 1.8458,
+        "final_equity": 154590.4782,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 216
+        }
+      },
+      "baseline": {
+        "closed": 327,
+        "net": 66664.5474,
+        "ex_best": 61377.7318,
+        "fees": 37226.9021,
+        "drawdown": 8309.5966,
+        "wins": 188,
+        "profit_factor": 1.8862,
+        "final_equity": 166664.5475,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 326,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": false,
+      "audit": {
+        "closed_checked": 216,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G05",
+      "bankroll": 100000,
+      "entry_slip": 25,
+      "exit_slip": 10,
+      "metrics": {
+        "closed": 255,
+        "net": 75771.1277,
+        "ex_best": 69041.8365,
+        "fees": 40475.962,
+        "drawdown": 11031.8974,
+        "wins": 149,
+        "profit_factor": 1.9571,
+        "final_equity": 175771.1269,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 254,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "baseline": {
+        "closed": 327,
+        "net": 66664.5474,
+        "ex_best": 61377.7318,
+        "fees": 37226.9021,
+        "drawdown": 8309.5966,
+        "wins": 188,
+        "profit_factor": 1.8862,
+        "final_equity": 166664.5475,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 326,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": true,
+      "audit": {
+        "closed_checked": 255,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G07",
+      "bankroll": 100000,
+      "entry_slip": 50,
+      "exit_slip": 30,
+      "metrics": {
+        "closed": 217,
+        "net": 1198.5746,
+        "ex_best": -2972.6283,
+        "fees": 26279.4526,
+        "drawdown": 16363.6345,
+        "wins": 104,
+        "profit_factor": 1.0164,
+        "final_equity": 101198.5744,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 217
+        }
+      },
+      "baseline": {
+        "closed": 331,
+        "net": 4487.2098,
+        "ex_best": 455.9531,
+        "fees": 30741.2494,
+        "drawdown": 13764.1393,
+        "wins": 151,
+        "profit_factor": 1.0534,
+        "final_equity": 104487.2095,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 330,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": false,
+      "audit": {
+        "closed_checked": 217,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G05",
+      "bankroll": 100000,
+      "entry_slip": 50,
+      "exit_slip": 30,
+      "metrics": {
+        "closed": 258,
+        "net": 8211.8021,
+        "ex_best": 2485.8405,
+        "fees": 32707.9746,
+        "drawdown": 18569.1258,
+        "wins": 120,
+        "profit_factor": 1.093,
+        "final_equity": 108211.8022,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 257,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "baseline": {
+        "closed": 331,
+        "net": 4487.2098,
+        "ex_best": 455.9531,
+        "fees": 30741.2494,
+        "drawdown": 13764.1393,
+        "wins": 151,
+        "profit_factor": 1.0534,
+        "final_equity": 104487.2095,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 330,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": true,
+      "audit": {
+        "closed_checked": 258,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G07",
+      "bankroll": 100000,
+      "entry_slip": 100,
+      "exit_slip": 60,
+      "metrics": {
+        "closed": 217,
+        "net": -53599.677,
+        "ex_best": -57243.843,
+        "fees": 19508.93,
+        "drawdown": 54298.5026,
+        "wins": 56,
+        "profit_factor": 0.3775,
+        "final_equity": 46400.3231,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 217
+        }
+      },
+      "baseline": {
+        "closed": 336,
+        "net": -55951.2794,
+        "ex_best": -58737.4217,
+        "fees": 22706.7151,
+        "drawdown": 56250.7893,
+        "wins": 92,
+        "profit_factor": 0.4143,
+        "final_equity": 44048.7212,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 335,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": false,
+      "audit": {
+        "closed_checked": 217,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G05",
+      "bankroll": 100000,
+      "entry_slip": 100,
+      "exit_slip": 60,
+      "metrics": {
+        "closed": 258,
+        "net": -56614.0982,
+        "ex_best": -60877.9983,
+        "fees": 23150.7337,
+        "drawdown": 58180.2666,
+        "wins": 69,
+        "profit_factor": 0.4294,
+        "final_equity": 43385.9019,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 257,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "baseline": {
+        "closed": 336,
+        "net": -55951.2794,
+        "ex_best": -58737.4217,
+        "fees": 22706.7151,
+        "drawdown": 56250.7893,
+        "wins": 92,
+        "profit_factor": 0.4143,
+        "final_equity": 44048.7212,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 335,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": false,
+      "audit": {
+        "closed_checked": 258,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G07",
+      "bankroll": 25000,
+      "entry_slip": 25,
+      "exit_slip": 10,
+      "metrics": {
+        "closed": 217,
+        "net": 11992.6201,
+        "ex_best": 10649.0812,
+        "fees": 10442.5704,
+        "drawdown": 2667.3695,
+        "wins": 127,
+        "profit_factor": 1.7021,
+        "final_equity": 36992.6198,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 217
+        }
+      },
+      "baseline": {
+        "closed": 337,
+        "net": 14465.3116,
+        "ex_best": 13225.7704,
+        "fees": 13334.0155,
+        "drawdown": 2135.9027,
+        "wins": 188,
+        "profit_factor": 1.7091,
+        "final_equity": 39465.312,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 336,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": false,
+      "audit": {
+        "closed_checked": 217,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G05",
+      "bankroll": 25000,
+      "entry_slip": 25,
+      "exit_slip": 10,
+      "metrics": {
+        "closed": 258,
+        "net": 18096.9636,
+        "ex_best": 16464.3436,
+        "fees": 13288.5462,
+        "drawdown": 2583.1409,
+        "wins": 151,
+        "profit_factor": 1.8611,
+        "final_equity": 43096.9628,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 257,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "baseline": {
+        "closed": 337,
+        "net": 14465.3116,
+        "ex_best": 13225.7704,
+        "fees": 13334.0155,
+        "drawdown": 2135.9027,
+        "wins": 188,
+        "profit_factor": 1.7091,
+        "final_equity": 39465.312,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 336,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": true,
+      "audit": {
+        "closed_checked": 258,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G07",
+      "bankroll": 2000,
+      "entry_slip": 25,
+      "exit_slip": 10,
+      "metrics": {
+        "closed": 169,
+        "net": -1991.6327,
+        "ex_best": -2060.4051,
+        "fees": 2780.7253,
+        "drawdown": 1991.6325,
+        "wins": 14,
+        "profit_factor": 0.1063,
+        "final_equity": 8.3675,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 169
+        }
+      },
+      "baseline": {
+        "closed": 161,
+        "net": -1988.7657,
+        "ex_best": -2028.4223,
+        "fees": 2597.8228,
+        "drawdown": 1988.7656,
+        "wins": 12,
+        "profit_factor": 0.0725,
+        "final_equity": 11.2344,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 160,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": false,
+      "audit": {
+        "closed_checked": 169,
+        "cash_fee_identity": "PASS"
+      }
+    },
+    {
+      "name": "N3_G05",
+      "bankroll": 2000,
+      "entry_slip": 25,
+      "exit_slip": 10,
+      "metrics": {
+        "closed": 182,
+        "net": -1993.8631,
+        "ex_best": -2062.6355,
+        "fees": 3004.8678,
+        "drawdown": 1993.8637,
+        "wins": 21,
+        "profit_factor": 0.1446,
+        "final_equity": 6.1363,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 181,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "baseline": {
+        "closed": 161,
+        "net": -1988.7657,
+        "ex_best": -2028.4223,
+        "fees": 2597.8228,
+        "drawdown": 1988.7656,
+        "wins": 12,
+        "profit_factor": 0.0725,
+        "final_equity": 11.2344,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 160,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "passes": false,
+      "audit": {
+        "closed_checked": 182,
+        "cash_fee_identity": "PASS"
+      }
+    }
+  ],
+  "qualification": false
+}

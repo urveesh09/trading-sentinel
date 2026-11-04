@@ -1,3 +1,16 @@
+## November 4 — Penny research final-smart-and-diagnostics-frozen (Dev only, not deployed)
+
+Study: `docs/research/penny/2026-11-04-strategy-search/PLAN.md`. Three
+rounds, all failed alternatives retained; 108-stock no-split daily
+cohort and partial native-minute Smart experiments. G05 daily validation
+at Rs 25k: +18,096.96 vs overnight incumbent +14,465.31; drawdown
+2,583.14 vs 2,135.90. Primary Rs 100k gain only 14%, severe friction
+and Rs 2k fail. Conditional historical proxy; not qualification.
+Smart training rescore after cash-rollover correction is complete;
+its final validation/diagnostics are recorded in the study status.
+27 focused checks passed; real-data shipped baseline/cache parity exact.
+No runtime flag/schema/capital/deployment/Production/Breeze change.
+
 ## November 4 — Penny research corrected-cash-and-finalists-frozen (Dev only, not deployed)
 
 Initial source/data freeze `ca3b748`; original baseline evidence preserved.

@@ -69,3 +69,29 @@ Dev `b6786e3`, Production `5e30ce0`; earlier inheritance assessment is available
 beside this study. Owner's four modified tracked files and untracked evidence
 are preserved. No implementation/scoring yet. Data feasibility determines the
 final declared scope; unsupported coverage cannot be converted into profit.
+
+## Current progress — November 4
+
+- `ca3b748`: initial source/data/round-1 freeze, six initial mechanics checks.
+- `e04b254`: round-2 overnight persistence hypotheses, initial failed daytime
+  families retained; 23 focused checks and two causal-night tests.
+- `dbfcde6`: audited 108-stock nominal-price cohort and Smart retest round.
+- `15d9eff`: bounded 12-genome round, causal cache/unchanged-book parity checks.
+- `bc53808`: per-observation Smart carry-rollover correction, identical-parameter
+  rescore freeze, economic finalist deduplication and daily validation freeze;
+  27 focused checks pass. Post-commit guide/plan/checklist/atlas consistency
+  verified by the isolated staging helper at each commit. Owner bytes preserved.
+
+Daily validation is now open: G05 passes the original paired acceptance at
+Rs 25,000 and Rs 100,000; it improves native net by about 25% with about 21%
+greater drawdown. It fails severe slippage and the Rs 2,000 capital check.
+The primary Rs 100,000 net gain is about 14%, below the additional 20%
+material-improvement hurdle. No wholesale Penny replacement or qualification.
+Detailed fixed stress/size results are in `basis-v2/validation-results.json`.
+
+All eight Smart training arms have been rerun after the rollover correction;
+all six candidates remain negative. Final Smart validation and frozen
+non-selection overnight attribution/prefix diagnostics remain to run. A
+classic CNC reference, final financial audit/report and evidence sealing also
+remain. Original exploratory scores/corrections are preserved. No Production,
+native runtime binding, schema, actual capital, login or Breeze change.
