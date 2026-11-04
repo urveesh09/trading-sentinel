@@ -2746,6 +2746,16 @@ Top-level declarations: `TradeSpec` (line 86), `skill_threshold` (line 101), `ru
 
 Related tests: `python-engine/tests/test_skill_test.py`
 
+## `python-engine/smart_classic_enrichment.py`
+
+Pure Smart/Classic research; funded orders, causal inputs, real-clock carries. Never starts a scheduler, broker, executor or paper book. Historical auction and OHLC prices remain conditional proxies, never evidence of own order fills.
+
+Top-level declarations: `wilder_rsi` (line 17), `snapshots` (line 30), `universe_ok` (line 48), `Policy` (line 53), `Order` (line 66), `bar5` (line 80), `long_close_outcome` (line 88), `intraday_outcome` (line 102), `auction_orders` (line 118), `intraday_orders` (line 160), `cnc_orders` (line 199), `run_book` (line 252)
+
+Engine dependencies: `penny_engine_breakout`, `penny_engine_connors`, `penny_risk`
+
+Related tests: `python-engine/tests/test_smart_classic_enrichment.py`
+
 ## `python-engine/standard_capital.py`
 
 [O21-SC 2026-10-21] Every paper book on one standard capital. Each book trades its own notional (F&O ₹2.5L, Momentum ₹50k, overnight ₹25k, Penny ₹1L...), so their rupee results cannot be compared, and none answers "what would ₹2L in this book have done?". The owner's plan is to give a proven book a standard amount (₹2L or ₹5L), then test real money scaled down. This module replays each book's own closed trades on one capital S, without changing any book: - every trade keeps the book's exposure relative to its own reference capital: units at S = round(book units x S / reference), whole lots or shares, so a trade too small for S (one NIFTY lot at ₹10k) is skipped and counted, not shrunk to a f

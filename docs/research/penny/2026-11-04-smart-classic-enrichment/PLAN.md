@@ -87,3 +87,15 @@ Cross-name source will be native5-minute bars, validated independently; not
 mislabelled as1-minute auction volume. Its V3 auction capacity is not directly
 observable and remains an explicitly optimistic reference. Metadata only
 until finalists freeze. No new chronological holdout remains.
+
+## Indicator audit, still before any new score
+
+The current 'Wilder-style RSI2' helper actually uses only the last two price
+changes, with no Wilder recursion. Preserve it as the legacy contract; it is
+not the conventional RSI2 pullback rule. CNC round1 second arm now uses real
+Wilder RSI2, SMA200 uptrend, price belowSMA5, next-open entry, exit next open
+after a close aboveSMA5/RSI2>70 or after5 sessions, protective3% stop/6% target.
+The first CNC arm remains the rolling-RSI oversold entry's one-night phase.
+Compare2k and25k fixed own cash as capital sensitivity, never use differing
+capital as a headline improvement. This is a new research rule, not a silent
+indicator change or retroactive alteration to the old study.
