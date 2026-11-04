@@ -2214,7 +2214,7 @@ Related tests: `python-engine/tests/test_penny_smart_v2.py`
 
 Penny research v1: causal continuous Smart books and own-cash daily theses. Research only. No scheduler, broker or notification imports. Candle prices are declared execution proxies; unavailable rows never establish actual market fills. Historical replay modules and runtime strategy bindings remain unchanged.
 
-Top-level declarations: `financial_summary` (line 31), `smart_rollover` (line 49), `run_smart` (line 58), `CurrentClassicReplay` (line 137), `run_classic` (line 170), `DailyGenome` (line 189), `daily_features` (line 203), `candidate_score` (line 238), `daily_signals` (line 253), `DailyThesisPolicy` (line 274), `run_daily` (line 291), `accepts` (line 304)
+Top-level declarations: `financial_summary` (line 31), `smart_rollover` (line 49), `run_smart` (line 58), `CurrentClassicReplay` (line 140), `run_classic` (line 173), `DailyGenome` (line 192), `daily_features` (line 206), `candidate_score` (line 241), `daily_signals` (line 256), `DailyThesisPolicy` (line 277), `run_daily` (line 294), `accepts` (line 307)
 
 Engine dependencies: `adaptive_penny_policy`, `daily_portfolio`, `penny_engine_breakout`, `penny_lifecycle_replay`, `penny_profit_lock`, `penny_shadow`, `penny_smart_book`, `penny_smart_policy`, `penny_smart_v2`
 

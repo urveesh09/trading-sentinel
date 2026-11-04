@@ -1,0 +1,553 @@
+{
+  "all_trials": [
+    {
+      "genome": {
+        "name": "N3_G07",
+        "lookback": 10,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.001,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "train": {
+        "closed": 445,
+        "net": 350793.3586,
+        "ex_best": 337488.3922,
+        "fees": 104264.631,
+        "drawdown": 18660.6034,
+        "wins": 306,
+        "profit_factor": 2.6045,
+        "final_equity": 450793.3586,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 445
+        }
+      },
+      "calibration": {
+        "closed": 139,
+        "net": 40650.5522,
+        "ex_best": 36226.7344,
+        "fees": 17916.0817,
+        "drawdown": 2953.4304,
+        "wins": 88,
+        "profit_factor": 2.8756,
+        "final_equity": 140650.5518,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 139
+        }
+      },
+      "fitness": 2.17841574190468,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G09",
+        "lookback": 10,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.001,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "train": {
+        "closed": 445,
+        "net": 350793.3586,
+        "ex_best": 337488.3922,
+        "fees": 104264.631,
+        "drawdown": 18660.6034,
+        "wins": 306,
+        "profit_factor": 2.6045,
+        "final_equity": 450793.3586,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 445
+        }
+      },
+      "calibration": {
+        "closed": 139,
+        "net": 40650.5522,
+        "ex_best": 36226.7344,
+        "fees": 17916.0817,
+        "drawdown": 2953.4304,
+        "wins": 88,
+        "profit_factor": 2.8756,
+        "final_equity": 140650.5518,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 139
+        }
+      },
+      "fitness": 2.17841574190468,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G05",
+        "lookback": 60,
+        "day_fade_weight": 0.5,
+        "momentum_weight": 0.0,
+        "slots": 2,
+        "min_edge": 0.001,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "train": {
+        "closed": 524,
+        "net": 390689.6032,
+        "ex_best": 375921.6391,
+        "fees": 130070.5809,
+        "drawdown": 25484.578,
+        "wins": 347,
+        "profit_factor": 2.3478,
+        "final_equity": 490689.6036,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 524
+        }
+      },
+      "calibration": {
+        "closed": 163,
+        "net": 51897.9326,
+        "ex_best": 47119.8447,
+        "fees": 21217.9932,
+        "drawdown": 4443.7944,
+        "wins": 99,
+        "profit_factor": 3.0889,
+        "final_equity": 151897.9329,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 163
+        }
+      },
+      "fitness": 2.0364446529191103,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G04",
+        "lookback": 60,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.1,
+        "slots": 3,
+        "min_edge": 0.001,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.8
+      },
+      "train": {
+        "closed": 568,
+        "net": 273892.8205,
+        "ex_best": 265539.5224,
+        "fees": 93059.2314,
+        "drawdown": 16776.4754,
+        "wins": 374,
+        "profit_factor": 2.3693,
+        "final_equity": 373892.8207,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 568
+        }
+      },
+      "calibration": {
+        "closed": 177,
+        "net": 33723.3606,
+        "ex_best": 30849.9147,
+        "fees": 16753.0177,
+        "drawdown": 3816.6162,
+        "wins": 106,
+        "profit_factor": 2.6053,
+        "final_equity": 133723.3607,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 177
+        }
+      },
+      "fitness": 2.0101576639870373,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G10",
+        "lookback": 20,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.05,
+        "slots": 2,
+        "min_edge": -1.0,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.8
+      },
+      "train": {
+        "closed": 621,
+        "net": 498757.9482,
+        "ex_best": 481474.4586,
+        "fees": 166478.1881,
+        "drawdown": 29344.9071,
+        "wins": 405,
+        "profit_factor": 2.2951,
+        "final_equity": 598757.9474,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 621
+        }
+      },
+      "calibration": {
+        "closed": 185,
+        "net": 48054.0958,
+        "ex_best": 43396.1516,
+        "fees": 22277.5555,
+        "drawdown": 9662.7783,
+        "wins": 110,
+        "profit_factor": 2.4654,
+        "final_equity": 148054.0954,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 184,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.6375616946492226,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G03",
+        "lookback": 20,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.8
+      },
+      "train": {
+        "closed": 600,
+        "net": 379908.893,
+        "ex_best": 365287.8675,
+        "fees": 138649.0075,
+        "drawdown": 28110.8184,
+        "wins": 396,
+        "profit_factor": 2.1809,
+        "final_equity": 479908.8925,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 600
+        }
+      },
+      "calibration": {
+        "closed": 181,
+        "net": 43508.7486,
+        "ex_best": 38995.5931,
+        "fees": 21742.67,
+        "drawdown": 8846.6005,
+        "wins": 106,
+        "profit_factor": 2.2649,
+        "final_equity": 143508.7484,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 180,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.547758161320554,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G08",
+        "lookback": 20,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.5
+      },
+      "train": {
+        "closed": 671,
+        "net": 311699.3174,
+        "ex_best": 302434.2335,
+        "fees": 109736.2999,
+        "drawdown": 18594.4831,
+        "wins": 440,
+        "profit_factor": 2.2769,
+        "final_equity": 411699.3166,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 671
+        }
+      },
+      "calibration": {
+        "closed": 198,
+        "net": 28250.0781,
+        "ex_best": 25499.0311,
+        "fees": 17803.8015,
+        "drawdown": 8386.726,
+        "wins": 116,
+        "profit_factor": 1.9647,
+        "final_equity": 128250.0777,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 197,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.5192720307455063,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G06",
+        "lookback": 20,
+        "day_fade_weight": 0.5,
+        "momentum_weight": 0.1,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": true,
+        "strength_weight": 1.0
+      },
+      "train": {
+        "closed": 672,
+        "net": 317506.3432,
+        "ex_best": 308135.2378,
+        "fees": 109846.6372,
+        "drawdown": 18796.9271,
+        "wins": 442,
+        "profit_factor": 2.2857,
+        "final_equity": 417506.3434,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 672
+        }
+      },
+      "calibration": {
+        "closed": 198,
+        "net": 26397.116,
+        "ex_best": 23686.1169,
+        "fees": 17598.1845,
+        "drawdown": 8382.0971,
+        "wins": 115,
+        "profit_factor": 1.8854,
+        "final_equity": 126397.1151,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 197,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.4043314558580162,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G02",
+        "lookback": 60,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.5
+      },
+      "train": {
+        "closed": 690,
+        "net": 333225.4083,
+        "ex_best": 323378.3837,
+        "fees": 115670.4756,
+        "drawdown": 19609.0845,
+        "wins": 447,
+        "profit_factor": 2.2787,
+        "final_equity": 433225.4086,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 690
+        }
+      },
+      "calibration": {
+        "closed": 201,
+        "net": 25804.4917,
+        "ex_best": 23101.2246,
+        "fees": 17808.9418,
+        "drawdown": 9194.2072,
+        "wins": 116,
+        "profit_factor": 1.8434,
+        "final_equity": 125804.4911,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 200,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.3159457648316013,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N3_G11",
+        "lookback": 10,
+        "day_fade_weight": 1.0,
+        "momentum_weight": 0.1,
+        "slots": 2,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": true,
+        "strength_weight": 0.5
+      },
+      "train": {
+        "closed": 582,
+        "net": 463531.2294,
+        "ex_best": 447114.9972,
+        "fees": 145675.851,
+        "drawdown": 26439.5818,
+        "wins": 391,
+        "profit_factor": 2.4789,
+        "final_equity": 563531.2295,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 582
+        }
+      },
+      "calibration": {
+        "closed": 178,
+        "net": 33923.0372,
+        "ex_best": 29711.7815,
+        "fees": 21044.8566,
+        "drawdown": 9366.9993,
+        "wins": 104,
+        "profit_factor": 2.0314,
+        "final_equity": 133923.0373,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 177,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "fitness": 1.2830398550403699,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N2_PRESSURE",
+        "lookback": 20,
+        "day_fade_weight": 0.5,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.5,
+        "use_shipped_candidates": false,
+        "strength_weight": 0.8
+      },
+      "train": {
+        "closed": 2788,
+        "net": 29674.6295,
+        "ex_best": 23723.8431,
+        "fees": 191527.0561,
+        "drawdown": 36334.3876,
+        "wins": 1404,
+        "profit_factor": 1.065,
+        "final_equity": 129674.6255,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 2788
+        }
+      },
+      "calibration": {
+        "closed": 735,
+        "net": 51814.028,
+        "ex_best": 48597.809,
+        "fees": 60630.481,
+        "drawdown": 10191.7256,
+        "wins": 406,
+        "profit_factor": 1.6223,
+        "final_equity": 151814.0278,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 735
+        }
+      },
+      "fitness": 0.20417730599097808,
+      "eligible": true
+    },
+    {
+      "genome": {
+        "name": "N2_PERSISTENT",
+        "lookback": 20,
+        "day_fade_weight": 0.0,
+        "momentum_weight": 0.0,
+        "slots": 3,
+        "min_edge": 0.0,
+        "risk_tilt": 0.0,
+        "use_shipped_candidates": false,
+        "strength_weight": 0.8
+      },
+      "train": {
+        "closed": 2786,
+        "net": -33643.3083,
+        "ex_best": -37198.8272,
+        "fees": 175385.3731,
+        "drawdown": 57862.3605,
+        "wins": 1378,
+        "profit_factor": 0.9395,
+        "final_equity": 66356.6894,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 2785,
+          "OPEN_DELAYED": 1
+        }
+      },
+      "calibration": {
+        "closed": 735,
+        "net": 28503.745,
+        "ex_best": 24128.5398,
+        "fees": 57322.6932,
+        "drawdown": 12543.9893,
+        "wins": 399,
+        "profit_factor": 1.2417,
+        "final_equity": 128503.7452,
+        "unresolved": 0,
+        "exit_reasons": {
+          "NEXT_OPEN": 733,
+          "OPEN_DELAYED": 2
+        }
+      },
+      "fitness": -0.1453592111058103,
+      "eligible": false
+    }
+  ],
+  "finalists": [
+    {
+      "name": "N3_G07",
+      "lookback": 10,
+      "day_fade_weight": 0.0,
+      "momentum_weight": 0.1,
+      "slots": 2,
+      "min_edge": 0.001,
+      "risk_tilt": 0.0,
+      "use_shipped_candidates": true,
+      "strength_weight": 1.0
+    },
+    {
+      "name": "N3_G09",
+      "lookback": 10,
+      "day_fade_weight": 1.0,
+      "momentum_weight": 0.1,
+      "slots": 2,
+      "min_edge": 0.001,
+      "risk_tilt": 0.5,
+      "use_shipped_candidates": true,
+      "strength_weight": 1.0
+    }
+  ],
+  "validation_opened": false
+}

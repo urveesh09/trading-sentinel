@@ -82,3 +82,32 @@ def test_cash_and_fee_identity_of_shared_daily_book():
     assert closed
     assert result['equity_curve'][-1][1]==pytest.approx(1000+sum(t['net_pnl'] for t in closed),abs=.001)
     for t in closed: assert t['gross_pnl']-t['costs']==pytest.approx(t['net_pnl'])
+
+
+def test_carry_close_rolls_equity_before_next_observation(monkeypatch):
+    import penny_strategy_research as lab
+    from types import SimpleNamespace
+    from datetime import datetime,timedelta,timezone
+    now=datetime(2026,9,2,9,15,tzinfo=timezone(timedelta(hours=5,minutes=30)))
+    day=now.date().isoformat()
+    bar=SimpleNamespace(start=now,available_at=now+timedelta(minutes=1),open=10.,high=10.1,
+                        low=9.9,close=10.,volume=1000.,executable=True)
+    tape=SimpleNamespace(coverage=[{'ticker':'X','trading_date':day,'status':'COMPLETE'}],
+                         bars={('X',day):(bar,)})
+    daily=SimpleNamespace(invalid={},known_before=lambda *a,**k:[])
+    original=lab.new_book;calls=[]
+    def fresh(d,b,e):
+        state=original(d,b,e)
+        if not calls and d==day and b==2000:
+            state['day']='2026-09-01';state['positions']={'X':{}}
+        return state
+    def observe(state,*args,**kwargs):
+        calls.append((state['day'],state['bankroll']))
+        if len(calls)==1:
+            state['positions']={};state['realized']=-5
+        state['marked_pnl']=state['realized']
+        return state,[]
+    monkeypatch.setattr(lab,'new_book',fresh);monkeypatch.setattr(lab,'step_book',observe)
+    lab.run_smart(tape,daily,['X'],start=day,end=day)
+    assert calls[0]==('2026-09-01',2000)
+    assert calls[1]==(day,1995)

@@ -72,12 +72,15 @@ def source_hashes():
 
 
 def freeze(run):
-    selected=json.loads((run/'genome-selection.json').read_text())
+    selection=run/'genome-selection-v2.json'
+    if not selection.exists():selection=run/'genome-selection.json'
+    selected=json.loads(selection.read_text())
     parent=json.loads((run/'round3-freeze.json').read_text())
     f={'source':source_hashes(),'snapshot_sha256':parent['snapshot_sha256'],
        'finalists':selected['finalists'],'validation':['2024-01-01','2025-12-31'],
        'scenarios':[[100000,25,10],[100000,50,30],[100000,100,60],[25000,25,10],[2000,25,10]],
-       'acceptance':parent['acceptance'],'selection_sha256':hashlib.sha256((run/'genome-selection.json').read_bytes()).hexdigest(),
+       'acceptance':parent['acceptance'],'selection_sha256':hashlib.sha256(selection.read_bytes()).hexdigest(),
+       'material_improvement_rule':'at least 20% more primary net than the existing overnight book; original drawdown acceptance still applies',
        'frozen_at':datetime.now(timezone.utc).isoformat(),'qualification':False,
        'limitations':['108-stock no-split fixed cohort, survivorship','daily close entry and next-open sale proxies','no historical bid/ask/depth or dated full universe','historical periods previously used by other Sentinel studies; conditional validation only']}
     if (run/'final-freeze.json').exists():raise ValueError('final freeze exists')

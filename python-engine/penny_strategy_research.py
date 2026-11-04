@@ -94,6 +94,9 @@ def run_smart(intraday, daily, tickers, *, start, end, params=SMART_V2_PARAMS,
             medians[t] = median([b.volume for b in prior[-20:]]) if len(prior) >= 5 else 0
         recorded = len(state['trades'])
         for minute in range(556, 931):
+            rolled = smart_rollover(state, day)
+            if rolled is not state:
+                state, recorded = rolled, 0
             now = _aware(date.fromisoformat(day), minute)
             observations, quotes = {}, {}
             for t, td in tds.items():
