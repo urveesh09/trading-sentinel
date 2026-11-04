@@ -218,6 +218,7 @@ class Arm:
     bankroll: float = 25000.0
     depth: int = RANK_DEPTH
     params: tuple = ()               # selector parameters as (key, value) pairs
+    compound: bool = True            # False: size on min(bankroll, equity); profits are not re-risked
 
 
 SELECTORS: dict[str, Callable] = {}
@@ -292,7 +293,7 @@ def run_book(days: list[Day], arm: Arm, *, start: str, end: str, keep_trades: bo
             del held[t]
         # 2. entries at the close
         if day.date <= end:
-            equity = arm.bankroll + realized
+            equity = arm.bankroll + realized if arm.compound else min(arm.bankroll, arm.bankroll + realized)
             entered = 0
             for c in _ranked(day, arm, equity):
                 if entered >= arm.slots:
@@ -328,7 +329,8 @@ def run_book(days: list[Day], arm: Arm, *, start: str, end: str, keep_trades: bo
                 planned = eq_share if arm.sizing == "equal" else c.shares_plan
                 plan = min(planned, eq_share)
                 wanted = min(planned, capacity)
-                budget = cash / (arm.slots - entered)
+                free = cash if arm.compound else cash - max(0.0, realized)
+                budget = free / (arm.slots - entered)
                 affordable = int(budget // (ep * 1.002))
                 shares = min(wanted, affordable)
                 if shares < 1 or shares < 0.25 * plan:
