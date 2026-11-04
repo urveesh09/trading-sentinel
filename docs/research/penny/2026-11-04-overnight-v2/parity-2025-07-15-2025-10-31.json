@@ -1,0 +1,33 @@
+{
+ "window": [
+  "2025-07-15",
+  "2025-10-31"
+ ],
+ "ref_closed": 175,
+ "lab_closed": 175,
+ "mismatches": 0,
+ "first_diffs": [],
+ "ref_net": 3719.8708,
+ "lab_net": 3719.8708,
+ "cost_mismatch": 0,
+ "ref_outcomes": {
+  "CASH_LIMITED_RESIZE": 141,
+  "DAILY_ENTRY_CAP": 182,
+  "FILLED": 175,
+  "LIQUIDITY_LIMITED_RESIZE": 3,
+  "LIQUIDITY_REJECTED": 3,
+  "REALISM_at_day_high_after_rise": 86,
+  "REALISM_duplicate_series": 24,
+  "REALISM_sme_series": 114,
+  "REALISM_weak_kind_MR_mid": 120
+ },
+ "lab_outcomes": {
+  "FILLED": 175,
+  "DAILY_ENTRY_CAP": 182,
+  "REALISM_at_day_high_after_rise": 86,
+  "REALISM_weak_kind_MR_mid": 120,
+  "REALISM_sme_series": 114,
+  "REALISM_duplicate_series": 24,
+  "LIQUIDITY_REJECTED": 3
+ }
+}
