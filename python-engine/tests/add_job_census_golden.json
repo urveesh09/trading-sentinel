@@ -260,6 +260,21 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_smart_v3_bid_safe",
+    "id": "'penny_smart_v3_bid'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_v3_open_safe",
+    "id": "'penny_smart_v3_open'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_smart_v3_preopen_safe",
+    "id": "'penny_smart_v3_preopen'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_scheduler_tick_job",
     "id": "'scheduler_tick'",
     "trigger": "'interval'"

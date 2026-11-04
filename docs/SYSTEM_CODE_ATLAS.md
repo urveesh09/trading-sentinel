@@ -2172,7 +2172,7 @@ Related tests: `python-engine/tests/test_penny_sector_filter.py`
 
 Broker-free paper-shadow experiments for the classic Penny MIS breakout.
 
-Top-level declarations: `PennyShadowVariant` (line 23), `_json_safe` (line 39), `_ticker` (line 56), `_identity` (line 63), `_selected` (line 76), `_fingerprint` (line 86), `_execution_snapshot` (line 96), `_costs_from_snapshot` (line 122), `evaluate_penny_shadows` (line 156), `init_penny_shadow_db` (line 250), `_finite_price` (line 351), `_frame_bars` (line 361), `_exit_for_bar` (line 385), `_advance_open_trades` (line 408), `_insert_virtual_trade` (line 457), `persist_penny_shadow_results` (line 497), `penny_shadow_comparison` (line 558)
+Top-level declarations: `PennyShadowVariant` (line 23), `_json_safe` (line 43), `_ticker` (line 60), `_identity` (line 67), `_selected` (line 80), `_fingerprint` (line 90), `_execution_snapshot` (line 100), `_costs_from_snapshot` (line 126), `evaluate_penny_shadows` (line 160), `init_penny_shadow_db` (line 254), `_finite_price` (line 355), `_frame_bars` (line 365), `_exit_for_bar` (line 389), `_advance_open_trades` (line 412), `_insert_virtual_trade` (line 461), `persist_penny_shadow_results` (line 501), `penny_shadow_comparison` (line 562)
 
 Engine dependencies: `config`, `cost_schedules`, `penny_engine_breakout`
 
@@ -2229,6 +2229,18 @@ Top-level declarations: none
 Engine dependencies: `penny_smart_policy`
 
 Related tests: `python-engine/tests/test_penny_smart_v2.py`
+
+## `python-engine/penny_smart_v3.py`
+
+[SV3 2026-11-04] Smart V3 paper book: the opening-auction reversal (paper only, no orders). Research: docs/research/penny/2026-11-04-intraday/ (REPORT.md). Penny stocks that open well below the previous close recover during the day, and most of the recovery is between the pre-open auction print and the first minutes; after 09:30 no intraday window earns a spread (the drift that sinks Smart V1/V2). The rule passed its sealed Jan-Jul 2026 check (Kite minutes, 89 names, Rs 2,000): capped +2,936 vs V1 -1,117 / V2 -802. Rule (one slot, own Rs 2,000 book, profits withheld, losses reduce the next day's capital): the Penny universe (EQ series only), previous close Rs 1-55, 20-day median traded value
+
+Top-level declarations: `enabled` (line 93), `bankroll` (line 97), `store_path` (line 101), `_store` (line 106), `_read_only` (line 114), `_positive` (line 118), `Candidate` (line 128), `eq_series` (line 136), `eligible` (line 142), `thin_estimate` (line 148), `select` (line 156), `fill_shares` (line 172), `locked` (line 179), `charges` (line 188), `capital` (line 195), `busy` (line 202), `_already_ran` (line 208), `_record_run` (line 213), `universe` (line 218), `daily_medians` (line 225), `thin_estimates` (line 238), `_candidates` (line 249), `_within` (line 259), `_quotes` (line 263), `_best_bid` (line 268), `run_preopen` (line 275), `_settle` (line 325), `_enter` (line 353), `run_open` (line 374), `run_bid` (line 425), `comparison` (line 453)
+
+Engine dependencies: `config`, `edge_overnight_paper`, `penny_risk`, `penny_universe`
+
+Related tests: `python-engine/tests/test_penny_smart_v3.py`
+
+Declared tables: `sv3_first_minute`, `sv3_preopen`, `sv3_runs`, `sv3_trades`
 
 ## `python-engine/penny_strategy_research.py`
 
@@ -2646,9 +2658,9 @@ Engine dependencies: `config`, `partner_broker_sync`, `partner_coach`, `partner_
 
 Authenticated read-only surface for classic Penny paper experiments.
 
-Top-level declarations: `get_edge_overnight_experiment` (line 12), `get_penny_smart_experiment` (line 21), `get_penny_experiment` (line 30)
+Top-level declarations: `get_edge_overnight_experiment` (line 12), `get_penny_smart_experiment` (line 21), `get_penny_smart_v3_experiment` (line 30), `get_penny_experiment` (line 39)
 
-Engine dependencies: `config`, `edge_overnight_paper`, `penny_smart_shadow`
+Engine dependencies: `config`, `edge_overnight_paper`, `penny_smart_shadow`, `penny_smart_v3`
 
 ## `python-engine/routes_portfolio.py`
 
@@ -2678,7 +2690,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1457)
+Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1501)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 

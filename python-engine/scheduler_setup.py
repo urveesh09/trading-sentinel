@@ -1085,6 +1085,56 @@ def register_penny_scheduler_jobs(scheduler):
         id='overnight_evidence_end', max_instances=1, coalesce=True, misfire_grace_time=60,
     )
 
+    # [SV3 2026-11-04] Smart V3 paper book (penny_smart_v3.py): opening-auction
+    # reversal. 09:07 pre-open decision, 09:16 settle/fill, 15:15 bid snapshot.
+    # Quotes only; never places an order. Each phase has its own trading-day gate.
+    async def _run_smart_v3_safe(phase: str):
+        if not getattr(settings, 'PENNY_SMART_V3_ENABLED', True):
+            return
+        if not _main.kite.access_token:
+            logger.warning('penny_smart_v3_skip phase=%s reason=no_access_token', phase)
+            return
+        import penny_smart_v3 as sv3
+        run = {'PREOPEN': sv3.run_preopen, 'OPEN': sv3.run_open, 'BID': sv3.run_bid}[phase]
+        try:
+            await run(_main.kite)
+        except Exception as exc:
+            logger.error('penny_smart_v3_failed phase=%s err=%s', phase, type(exc).__name__, exc_info=True)
+
+    async def _run_smart_v3_preopen_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_v3_safe('PREOPEN')
+
+    async def _run_smart_v3_open_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_v3_safe('OPEN')
+
+    async def _run_smart_v3_bid_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_smart_v3_safe('BID')
+
+    scheduler.add_job(
+        _run_smart_v3_preopen_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=7,
+        id='penny_smart_v3_preopen', max_instances=1, coalesce=True, misfire_grace_time=45,
+    )
+    scheduler.add_job(
+        _run_smart_v3_open_safe, 'cron',
+        day_of_week='mon-fri', hour=9, minute=16,
+        id='penny_smart_v3_open', max_instances=1, coalesce=True, misfire_grace_time=1500,
+    )
+    scheduler.add_job(
+        _run_smart_v3_bid_safe, 'cron',
+        day_of_week='mon-fri', hour=15, minute=15,
+        id='penny_smart_v3_bid', max_instances=1, coalesce=True, misfire_grace_time=240,
+    )
+
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
     # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today

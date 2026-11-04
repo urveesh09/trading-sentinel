@@ -1,3 +1,33 @@
+## November 4 - Penny intraday: Smart V3 (opening-auction reversal) paper book; Classic MIS/CNC diagnostics (Dev only)
+
+Study: `docs/research/penny/2026-11-04-intraday/` (PLAN.md, REPORT.md). Owner asked for Smart, then
+the other two Penny modules (Classic MIS, Classic CNC). Findings: penny stocks drift down by day
+(-0.5% open to close, every year 2010-2026); names up 2% by 10:30 lose 0.49% more by 15:00, which is
+what Smart V1/V2 and the Classic breakout buy. The opening auction overshoots: a name opening >= 2%
+below the previous close recovers +1.1% to +2.9% to the close (every year; Kite official prices
+agree), mostly between the auction print and the first minutes. Smart V3 = buy that name in the
+pre-open auction, sell at the official close, one ticket on Rs 2,000, deepest gap first, thin
+auctions skipped. Sealed Jan-Jul 2026 Kite-minute check (89 names, opened once) PASSED all six
+frozen checks: capped +2,936 (104 closes, 6 of 7 months), 15:15 exit +2,603, vs Smart V1 -1,117
+and V2 -802 on the same names and days; without 7 commodity ETFs +2,328. Classic MIS breakout:
+-0.13% / +0.09% a trade before costs (no edge); Classic CNC RSI(2): 60 signals in 16 years,
+-0.25% over three days (no edge). Jan-Jul 2026 Kite minutes are now seen.
+Runtime (paper only): new `penny_smart_v3.py` (PEN_SMART_V3), store `<DB_PATH>.penny-smart-v3.db`,
+variants SV3_PREOPEN (09:07 pre-open quote decision, limit 1% above the indicative price) and SV3_REF
+(decided on the official open at 09:16, reference), each on its own Rs 2,000 book. Jobs
+`penny_smart_v3_preopen` 09:07, `penny_smart_v3_open` 09:16 (settle at the previous session's
+official close, or a lower-circuit lock at today's open with delivery charges; record first-minute
+volumes; fill at the official open, at most 10% of the volume by ~09:16), `penny_smart_v3_bid` 15:15
+(best bid, day low, lower circuit). Same Penny universe as V1/V2, EQ series only.
+`GET /experiments/penny-smart-v3`. Settings PENNY_SMART_V3_ENABLED (default true; rollback false)
+and PENNY_SMART_V3_BANKROLL (2000). Classic shadow `penny_shadow.PEN_AFTERNOON` (breakouts from
+13:00; paper, forward evidence only). V1, V2, Classic rules, EDGE, ledger unchanged; no orders,
+Breeze or Production access; no schema change outside the new sibling store.
+Parity: runtime selection = research picks on 198 sessions, 0 mismatches (`results/parity.json`).
+Next: after 20+ SV3_PREOPEN closes compare with V1/V2 on the same sessions; check
+`preopen.indicative_moved` (if 0, the 09:07 quote cannot see the auction), `at_1515_bid`, refusals.
+Classic MIS/CNC retirement and any real auction order are the owner's calls.
+
 ## November 4 - Overnight v3: commit identity ca2d9b3 (Dev only)
 
 ON_V3 implementation commit `ca2d9b3` (research commits d05a2ca, b57a603, 4455793, 601c140,

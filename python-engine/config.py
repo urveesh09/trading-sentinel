@@ -1262,6 +1262,14 @@ class Settings(BaseSettings):
     # noise-aware stop and a three-close thesis failure) beside V1 as its own
     # Rs 2,000 paper book. Research only; V1 is unchanged.
     PENNY_SMART_V2_ENABLED: bool = True
+    # [SV3 2026-11-04] Smart V3 (penny_smart_v3.py): the opening-auction reversal -
+    # buy a Penny name that opens >= 2% below its previous close at the official
+    # open, sell at the official close. Paper only, own book, two variants
+    # (pre-open decision and an after-the-auction reference). Passed its sealed
+    # Jan-Jul 2026 check (docs/research/penny/2026-11-04-intraday/REPORT.md).
+    # Rollback: false (jobs stop; nothing else reads the store).
+    PENNY_SMART_V3_ENABLED: bool = True
+    PENNY_SMART_V3_BANKROLL: float = 2000.0
     # [FNO-REENTRY 2026-10-07] After a same-day stop in one direction, a new
     # entry in that direction must be beyond the stopped trade's entry level
     # (fno_entry_plan.reentry_confirmed). Never blocks the other direction.

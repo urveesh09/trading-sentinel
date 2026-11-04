@@ -277,6 +277,24 @@
       "trigger": "cron[minute='*/1', second='25']"
     },
     {
+      "func": "_run_smart_v3_bid_safe",
+      "id": "penny_smart_v3_bid",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='15']"
+    },
+    {
+      "func": "_run_smart_v3_open_safe",
+      "id": "penny_smart_v3_open",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='16']"
+    },
+    {
+      "func": "_run_smart_v3_preopen_safe",
+      "id": "penny_smart_v3_preopen",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='7']"
+    },
+    {
       "func": "bootstrap_0800_job",
       "id": "daily_bootstrap_0800",
       "kwargs": [],
@@ -574,6 +592,14 @@
         "GET"
       ],
       "path": "/experiments/penny-smart",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_penny_smart_v3_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/penny-smart-v3",
       "response_model": null
     },
     {

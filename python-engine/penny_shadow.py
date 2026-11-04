@@ -30,6 +30,10 @@ _VARIANT_ROWS = (
     PennyShadowVariant("PEN_BASE", None, None),
     PennyShadowVariant("PEN_WINDOW", 10 * 60, None),
     PennyShadowVariant("PEN_VOLUME", None, 1.50),
+    # [SV3 2026-11-04] Breakouts from 13:00 only: the one window whose breakouts were positive
+    # before costs in both minute samples (+0.73% n=18 Sep-Nov, +0.76% n=11 Jan-Jul 2026;
+    # all-day +0.09%/-0.13%). Too few trades to trust: forward evidence only.
+    PennyShadowVariant("PEN_AFTERNOON", 13 * 60, None),
 )
 VARIANTS: Mapping[str, PennyShadowVariant] = MappingProxyType({
     variant.name: variant for variant in _VARIANT_ROWS

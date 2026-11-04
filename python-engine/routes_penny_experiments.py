@@ -26,6 +26,15 @@ async def get_penny_smart_experiment(request: Request):
     return smart_policy_comparison(settings.DB_PATH)
 
 
+@router.get("/experiments/penny-smart-v3")
+async def get_penny_smart_v3_experiment(request: Request):
+    """[SV3] Smart V3 (opening-auction reversal) paper books, both variants (read-only)."""
+    _main = importlib.import_module("main")
+    _main._check_internal_secret(request, "get_penny_smart_v3_experiment")
+    from penny_smart_v3 import comparison
+    return comparison(settings.DB_PATH)
+
+
 @router.get("/experiments/penny")
 async def get_penny_experiment(request: Request):
     # Resolve at call time: tests and operational reload tooling may replace
