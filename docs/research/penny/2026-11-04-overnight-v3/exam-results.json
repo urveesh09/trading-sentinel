@@ -1,0 +1,266 @@
+{
+  "opened_at": "2026-11-04T07:49:58.495315+00:00",
+  "window": [
+    "2011-01-01",
+    "2014-12-31"
+  ],
+  "audit": {
+    "raw_rows": 351239,
+    "pre_last_split": 81768,
+    "retained_equity_rows": 249558,
+    "zero_volume": 18613,
+    "inconsistent_ohlc": 62,
+    "retained_tickers": 246,
+    "scoring_sessions": 981,
+    "sessions_with_candidates": 975
+  },
+  "arms": {
+    "V2": {
+      "M1": {
+        "net": 108444.87,
+        "net_min_seed": 108444.87,
+        "dd": 2909.04,
+        "closes": 1038,
+        "open_at_end": 0
+      },
+      "years": {
+        "2011": 5093,
+        "2012": 37213,
+        "2013": 29800,
+        "2014": 36338
+      },
+      "summary": {
+        "n": 1038,
+        "net": 108444.87,
+        "ex_best": 106037.44,
+        "dd": 2909.04,
+        "pf": 2.64,
+        "win": 62.5,
+        "mean_pct": 0.893
+      },
+      "outcomes": {
+        "FILLED": 1038,
+        "LIQUIDITY_OR_DUST": 133
+      },
+      "M2": {
+        "net": 65497.03,
+        "net_min_seed": 61747.8,
+        "dd": 4659.17,
+        "closes": 883,
+        "open_at_end": 0
+      },
+      "M3": {
+        "net": 21192.08,
+        "net_min_seed": 14980.97,
+        "dd": 6917.84,
+        "closes": 721,
+        "open_at_end": 0
+      },
+      "M4": {
+        "net": 22307.49,
+        "net_min_seed": 11762.22,
+        "dd": 8055.18,
+        "closes": 720,
+        "open_at_end": 0
+      },
+      "M5": {
+        "net": 59958.04,
+        "net_min_seed": 59958.04,
+        "dd": 2100.08,
+        "closes": 1038,
+        "open_at_end": 0
+      },
+      "M6": {
+        "net": 12283.17,
+        "net_min_seed": 8608.6,
+        "dd": 3969.58,
+        "closes": 721,
+        "open_at_end": 0
+      },
+      "M7": {
+        "net": 90206.09,
+        "net_min_seed": 90206.09,
+        "dd": 3245.38,
+        "closes": 1038,
+        "open_at_end": 0
+      },
+      "robust": 12283.17
+    },
+    "V2_HI_F3N": {
+      "M1": {
+        "net": 128281.14,
+        "net_min_seed": 128281.14,
+        "dd": 4624.49,
+        "closes": 1310,
+        "open_at_end": 0
+      },
+      "years": {
+        "2011": 5788,
+        "2012": 40690,
+        "2013": 36373,
+        "2014": 45430
+      },
+      "summary": {
+        "n": 1310,
+        "net": 128281.14,
+        "ex_best": 125873.71,
+        "dd": 4624.49,
+        "pf": 2.456,
+        "win": 61.6,
+        "mean_pct": 0.822
+      },
+      "outcomes": {
+        "FILLED": 1310,
+        "LIQUIDITY_OR_DUST": 169
+      },
+      "M2": {
+        "net": 74764.01,
+        "net_min_seed": 72464.31,
+        "dd": 7854.7,
+        "closes": 1111,
+        "open_at_end": 0
+      },
+      "M3": {
+        "net": 16380.09,
+        "net_min_seed": 11112.36,
+        "dd": 11980.13,
+        "closes": 919,
+        "open_at_end": 0
+      },
+      "M4": {
+        "net": 17633.97,
+        "net_min_seed": 590.48,
+        "dd": 14125.91,
+        "closes": 924,
+        "open_at_end": 0
+      },
+      "M5": {
+        "net": 72369.84,
+        "net_min_seed": 72369.84,
+        "dd": 2706.87,
+        "closes": 1310,
+        "open_at_end": 0
+      },
+      "M6": {
+        "net": 12427.13,
+        "net_min_seed": 10438.84,
+        "dd": 7707.73,
+        "closes": 909,
+        "open_at_end": 0
+      },
+      "M7": {
+        "net": 105126.24,
+        "net_min_seed": 105126.24,
+        "dd": 5255.12,
+        "closes": 1310,
+        "open_at_end": 0
+      },
+      "robust": 12427.13,
+      "verdict": {
+        "checks": {
+          "1_closes_and_resolved": true,
+          "2_positive_all_models": true,
+          "3_robust_vs_v2": false,
+          "4_full_fill_vs_v2": true,
+          "5_drawdown": false,
+          "6_years_positive": true
+        },
+        "pass": false
+      },
+      "null": {
+        "p10": 114014.37,
+        "p50": 119987.37,
+        "p90": 125958.39,
+        "rank_pct": 96.0
+      }
+    },
+    "V2_HI_F3L": {
+      "M1": {
+        "net": 125679.16,
+        "net_min_seed": 125679.16,
+        "dd": 4623.72,
+        "closes": 1310,
+        "open_at_end": 0
+      },
+      "years": {
+        "2011": 5935,
+        "2012": 38253,
+        "2013": 34953,
+        "2014": 46538
+      },
+      "summary": {
+        "n": 1310,
+        "net": 125679.16,
+        "ex_best": 123271.73,
+        "dd": 4623.72,
+        "pf": 2.437,
+        "win": 61.8,
+        "mean_pct": 0.804
+      },
+      "outcomes": {
+        "FILLED": 1310,
+        "LIQUIDITY_OR_DUST": 161
+      },
+      "M2": {
+        "net": 73633.26,
+        "net_min_seed": 69947.0,
+        "dd": 7786.81,
+        "closes": 1106,
+        "open_at_end": 0
+      },
+      "M3": {
+        "net": 16811.77,
+        "net_min_seed": 11423.73,
+        "dd": 12286.93,
+        "closes": 918,
+        "open_at_end": 0
+      },
+      "M4": {
+        "net": 17258.59,
+        "net_min_seed": 1173.93,
+        "dd": 15103.81,
+        "closes": 919,
+        "open_at_end": 0
+      },
+      "M5": {
+        "net": 71213.33,
+        "net_min_seed": 71213.33,
+        "dd": 2706.87,
+        "closes": 1310,
+        "open_at_end": 0
+      },
+      "M6": {
+        "net": 12175.1,
+        "net_min_seed": 10337.33,
+        "dd": 7800.86,
+        "closes": 908,
+        "open_at_end": 0
+      },
+      "M7": {
+        "net": 102498.91,
+        "net_min_seed": 102498.91,
+        "dd": 5363.31,
+        "closes": 1310,
+        "open_at_end": 0
+      },
+      "robust": 12175.1,
+      "verdict": {
+        "checks": {
+          "1_closes_and_resolved": true,
+          "2_positive_all_models": true,
+          "3_robust_vs_v2": false,
+          "4_full_fill_vs_v2": true,
+          "5_drawdown": false,
+          "6_years_positive": true
+        },
+        "pass": false
+      },
+      "null": {
+        "p10": 114014.37,
+        "p50": 119987.37,
+        "p90": 125958.39,
+        "rank_pct": 87.5
+      }
+    }
+  }
+}

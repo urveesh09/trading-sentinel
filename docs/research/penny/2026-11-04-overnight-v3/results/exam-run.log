@@ -1,0 +1,4 @@
+V2 {'M1': 108444.87, 'M2': 65497.03, 'M3': 21192.08, 'M4': 22307.49, 'M5': 59958.04, 'M6': 12283.17, 'M7': 90206.09} robust 12283.17
+V2_HI_F3N {'M1': 128281.14, 'M2': 74764.01, 'M3': 16380.09, 'M4': 17633.97, 'M5': 72369.84, 'M6': 12427.13, 'M7': 105126.24} robust 12427.13 {'checks': {'1_closes_and_resolved': True, '2_positive_all_models': True, '3_robust_vs_v2': False, '4_full_fill_vs_v2': True, '5_drawdown': False, '6_years_positive': True}, 'pass': False} {'p10': 114014.37, 'p50': 119987.37, 'p90': 125958.39, 'rank_pct': 96.0}
+V2_HI_F3L {'M1': 125679.16, 'M2': 73633.26, 'M3': 16811.77, 'M4': 17258.59, 'M5': 71213.33, 'M6': 12175.1, 'M7': 102498.91} robust 12175.1 {'checks': {'1_closes_and_resolved': True, '2_positive_all_models': True, '3_robust_vs_v2': False, '4_full_fill_vs_v2': True, '5_drawdown': False, '6_years_positive': True}, 'pass': False} {'p10': 114014.37, 'p50': 119987.37, 'p90': 125958.39, 'rank_pct': 87.5}
+exit 0

@@ -126,3 +126,20 @@ Finalists frozen in `exam-freeze.json` by `scripts/exam.py freeze`: **V2_HI_F3N*
 **V2_HI_F3L**, against V2. The self-test on the Kite panel already shows random order inside the
 same pool doing as well (65.6–67.7k vs 59.8k): the ranking claim is expected to fail; the
 improvement, if any, is the fillers.
+
+## Sealed check opened once (2011–2014): both finalists FAIL
+
+246 tickers, 981 sessions (`exam-results.json`, `results/exam-run.log`). V2: M1 108.4k, robust 12.3k,
+M1 drawdown 2,909. V2_HI_F3N: M1 **128.3k (+18%)**, every year better, M2 74.8k vs 65.5k, M5 72.4k vs
+60.0k, M7 105.1k vs 90.2k, but M3 16.4k vs 21.2k and M4 17.6k vs 22.3k; robust 12.4k (needs ≥ 13.5k)
+and M1 drawdown 4,624 (> 1.5 × 2,909). Checks 3 and 5 fail; 1, 2, 4 and 6 pass. V2_HI_F3L the same.
+Ranking claim (reported only): V2_HI_F3N at the 96th percentile of 200 random-order books.
+
+Reading: across all five periods the fillers add 10–18% whenever at least 75% of winning post-close
+orders fill (M1, M2, M5, M7 better everywhere); their lower profit factor (2.46 vs 2.64 here) costs
+money when half the winners are denied, which happened on the unseen years. Not qualified.
+
+Decision recorded after the opening (owner precedent O31b/c: a candidate that fails narrowly goes on
+paper, never real money): add V2_HI_F3N as a paper shadow **ON_V3** beside ON_V2, same 15:20 inputs,
+own Rs 25k, no orders, so the forward record and the post-close probe decide between them. No
+change to either finalist or to any rule.
