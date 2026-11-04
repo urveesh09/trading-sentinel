@@ -111,3 +111,41 @@ freeze; round1 revision2 supersedes mechanics only, arms unchanged, committed
 before any candidate score. Native V3 old result reproduced exactly:104
 closes,+2936.12,4 locked exits. Native CNC first panel:0 admissions/10385
 evaluations; incomplete partial candles/history remain PARTIAL, not zero PnL.
+
+## Round1 result and round2 plan (cross-name outcomes still unopened)
+
+Round1 revision2 frozenb135fd6 scored150 paired models. New funded baskets
+do not beat V3:frequency basket +24.57 H1/-38.38 recent at25bp/side. Breakout
+retest reduces H1 losses(-229 vs-520); fading is worse(-857). Recent intraday
+legs contain an unresolved sale:never report partial money as a full pass.
+Rolling-RSI night and genuine Wilder RSI2 with3% stops are not profitable;
+DP costs on small books and224 stop-first exits in old Wilder25k explain
+failures. Native CNC0 entries in both available2026 samples; not a net zero
+profit claim (partial evidence).
+
+Round2 two Smart arms:one preselected funded frequency-ranked limit instead
+of4,and an executable next-five-minute-bar confirmed gap rebound with09:45
+exit. MIS two afternoon variants:breakout and its retest. No more short
+optimisation:cover/eligibility risk plus weak net already rejects it. CNC:
+Wilder pullback without the intraday3% stop (five-session/mean/6% target
+exits remain),and rolling-RSI one-night trades only if causal night estimate
+clears fees on the known funded quantity. Zero-trade cash remains the null.
+
+Contract correction:if a long's planned timed sale has no trade, retry at
+the first observed tradable bar on a later day, with delivery charges/cash
+reserved. If CNC stop/deadline meets a circuit lock, keep its pending sale
+until an observed tradable open,rather than ending the search after7 bars.
+Short failed covers remain unresolved. Re-score unchanged controls so this
+correction cannot masquerade as alpha. Exact early feature rejections improve
+speed without changing signal arithmetic. All originals retained.
+
+Round2 CNC second arm is a cost hurdle on the prior60 clipped overnight
+returns, shrunk byn/(n+20), evaluated against the actual known funded ticket
+fees/slippage; at2k the fixed DP fee is a meaningful hurdle. It replaces
+liquidity-only tightening because round1 gross/cost decomposition shows
+fees as a binding problem. No external data outcome has been opened.
+
+Focused source/native-indicator/CNC-lifecycle group80 passed,4.23s. Original
+shared RSI helper, Classic rules and all runtime files unchanged. New native
+MIS exact-adapter baseline to run (constant PR1,2k, strict coverage). R2 also
+binds identity receipt files used only to exclude provider-identified ETFs.

@@ -60,6 +60,7 @@ class Policy:
     hold_days:int=5
     afternoon:bool=False
     stop_pct:float=.03
+    night_cost_gate:bool=False
 
 
 @dataclass
@@ -159,7 +160,8 @@ def auction_orders(days,daily,calendar,p,bankroll,excluded=()):
 
 def intraday_orders(days,p,excluded=()):
     from penny_engine_breakout import _rsi_14_wilder
-    orders=[]
+    orders=[];future=defaultdict(list)
+    for d in sorted(days,key=lambda x:(x.ticker,x.date)):future[d.ticker].append(d)
     for d in days:
         if d.ticker in excluded or '-' in d.ticker or not 1<=d.prev_close<=55 or d.median_value20<500000:continue
         bs=bar5(d)
@@ -191,6 +193,17 @@ def intraday_orders(days,p,excluded=()):
             if side*(entry-stop)<=0:continue
             cap_known=int(.01*v);cap_actual=int(.01*bs[i+1][5])
             outcome=intraday_outcome(d,i+1,entry,side,stop,p.exit_minute,target=target)
+            if outcome is None and side==1:
+                # A missed intraday sale becomes funded delivery exposure.
+                # Retry only at an observed later tradable bar; never freeze
+                # cash forever merely because the planned clock had no bar.
+                for later in future[d.ticker]:
+                    if later.date<=d.date:continue
+                    if later.day_open and later.day_low and later.day_close and later.day_close<=later.day_low*1.0001 and later.day_open<=later.day_low*1.0001:
+                        continue
+                    bar=next((b for b in bar5(later) if b[5]>0 and b[2]>b[3]),None)
+                    if bar:
+                        outcome=(later.date,bar[0],bar[1],'MIS_LONG_CARRY_FIRST_OBSERVED_BAR');break
             orders.append(Order(d.date,m+5,d.ticker,entry,side,(m+5,d.ticker),cap_known,cap_actual,outcome,
                 {'slot_fraction':1.,'decision_completed_at':m+5,'entry_basis':'NEXT_FIVE_MINUTE_BAR'}));break
     return orders,{}
@@ -205,11 +218,21 @@ def cnc_orders(daily,calendar,p,excluded=()):
             day=rows[i][0]
             if day not in allowed:continue
             prior=rows[i-20:i];cv=closes[max(0,i-5):i]
+            # Exact early rejection: avoids evaluating long means on stocks
+            # that cannot pass. Does not change any signal or its arithmetic.
+            if not 1<=closes[i-1]<=55:continue
+            rsi=_rsi_2(cv)
+            if p.family=='cnc_wilder':
+                if wr[i-1]>=10:continue
+            elif rsi>=10:continue
+            if p.family=='cnc_legacy' and not rsi>_rsi_2(cv[:-1])>_rsi_2(cv[:-2]):continue
             f={'n':i,'close':closes[i-1],'tv':median(r[4]*r[5] for r in prior),
                 'medvol':median(r[5] for r in prior),'sma200':mean(closes[i-200:i]),
                 'sma50':mean(closes[i-50:i]),'sma5':mean(closes[i-5:i]),'wilder':wr[i-1],
                 'rsi':_rsi_2(cv),'rsi_prev':_rsi_2(cv[:-1]),'rsi_prev2':_rsi_2(cv[:-2])}
             if not universe_ok(t,f,excluded):continue
+            ns=[max(-.05,min(.05,rows[k][1]/rows[k-1][4]-1)) for k in range(max(1,i-60),i)]
+            nightmean=mean(ns)*len(ns)/(len(ns)+20) if ns else 0.
             # Hist is before day. Signals refer to previous completed session;
             # regular entry is today's open, never yesterday's attainable close.
             if not f['sma200'] or f['close']<=f['sma200']:continue
@@ -226,26 +249,33 @@ def cnc_orders(daily,calendar,p,excluded=()):
                 orderday,minute=prevday,970
             else:
                 orderday,minute=day,555;stop=entry*(1-p.stop_pct);target=entry*1.06
-                for j in range(i,min(len(rows),i+p.hold_days+2)):
+                pending=False
+                for j in range(i,len(rows)):
                     date,o,h,l,c,v=rows[j]
                     if v<=0:continue
+                    if pending:
+                        if o<=l*1.0001 and c<=l*1.0001:continue
+                        outcome=(date,555,o,'PENDING_CNC_SALE_FIRST_TRADABLE_OPEN');break
                     if j>i and o<=stop:
-                        if o==h==l==c:continue
+                        if o==h==l==c:pending=True;continue
                         outcome=(date,555,o,'GAP_STOP');break
                     if j>i and o>=target:outcome=(date,555,o,'GAP_TARGET');break
                     if l<=stop:
-                        if o==h==l==c:continue
+                        if o==h==l==c:pending=True;continue
                         outcome=(date,960,min(o,stop),'DAILY_STOP_FIRST');break
                     if h>=target:outcome=(date,960,max(o,target),'DAILY_TARGET');break
                     cs=[r[4] for r in rows[:j+1]]
                     exit_signal=(j-i+1>=p.hold_days or (p.family=='cnc_wilder' and (c>mean(cs[-5:]) or wr[j]>70)))
                     if exit_signal and j+1<len(rows):
                         nxt=rows[j+1]
-                        if nxt[5]>0:outcome=(nxt[0],555,nxt[1],'NEXT_OPEN_AFTER_CLOSE_SIGNAL');break
+                        if nxt[5]>0 and not(nxt[1]<=nxt[3]*1.0001 and nxt[4]<=nxt[3]*1.0001):
+                            outcome=(nxt[0],555,nxt[1],'NEXT_OPEN_AFTER_CLOSE_SIGNAL');break
+                        pending=True
             cap=int(.001*f['medvol'])
             actual=cap if p.family=='cnc_night' else int(.01*bar[5])
             orders.append(Order(orderday,minute,t,entry,1,(-f['tv'],t),cap,actual,outcome,
-                {'slot_fraction':1.,'entry_basis':'POSTCLOSE_PROXY' if p.family=='cnc_night' else 'NEXT_DAY_OPEN'}))
+                {'slot_fraction':1.,'entry_basis':'POSTCLOSE_PROXY' if p.family=='cnc_night' else 'NEXT_DAY_OPEN',
+                 'night_cost_gate':p.night_cost_gate,'night_mean':nightmean}))
     return orders,{}
 
 
@@ -283,6 +313,13 @@ def run_book(orders,daily,calendar,*,bankroll=2000.,entry_bps=25.,exit_bps=25.,m
             # eventual auction price. A better fill cannot enlarge the order.
             quantity_price=o.limit if o.limit is not None else entry
             plan=int(max(0,budget-15.34)//(quantity_price*1.002))
+            if o.meta.get('night_cost_gate'):
+                known_qty=min(plan,o.cap_known)
+                fees=(float(calc_penny_costs(o.entry,o.entry,known_qty,is_intraday=False))
+                      /(known_qty*o.entry)) if known_qty>0 else float('inf')
+                hurdle=fees+(entry_bps+exit_bps)/10000
+                if o.meta['night_mean']<=hurdle:
+                    counts['NIGHT_ESTIMATE_BELOW_FEES']+=1;continue
             qty=min(plan,o.cap_known,o.cap_actual)
             taken+=1
             if qty<1 or qty<.25*plan:counts['CAPACITY_OR_DUST']+=1;continue

@@ -115,13 +115,15 @@ def source_hashes():
     files=[Path(__file__).resolve(),ROOT/'python-engine/smart_classic_enrichment.py',
         *[OLD/n for n in ['idata.py','minute_oar.py','oarsim.py']],
         *[ROOT/'python-engine'/n for n in ['penny_smart_v3.py','penny_engine_connors.py','penny_engine_breakout.py',
-            'penny_risk.py','penny_universe.py','research_penny_cnc_lifecycle.py','research_data_contracts.py','config.py']]]
+            'penny_risk.py','penny_universe.py','research_penny_cnc_lifecycle.py','research_data_contracts.py',
+            'penny_lifecycle_replay.py','position_tracker.py','config.py']]]
     return {str(p.relative_to(ROOT)).replace('\\','/'):sha(p) for p in files}
 
 
 def inputs():
     idata,_,o=legacy()
-    return [idata.DEV_DAILY,idata.EXAM_DB,o.OLD,o.V2/'yahoo/yahoo.sqlite',o.V2/'yahoo-split-cuts.json']
+    return [idata.DEV_DAILY,idata.EXAM_DB,o.OLD,o.V2/'yahoo/yahoo.sqlite',o.V2/'yahoo-split-cuts.json',
+            o.V2/'yahoo-acquisition.json',RUN/'cross-name-acquisition.json']
 
 
 def proposals(round_):
@@ -188,6 +190,7 @@ def score(round_,revision=1):
     excluded=excluded_etfs();rows=[];write(RUN/'excluded-etfs.json',sorted(excluded))
     for panel,window in f['development'].items():
         days,daily,calendar=seen_panel(panel)
+        controls=([Policy('CNC_NIGHT_CONTROL','cnc_night'),Policy('CNC_WILDER_CONTROL','cnc_wilder')] if round_>1 else [])
         ps=[Policy('SV3_CARRY_CONTROL','auction_ref',exit_minute=970),Policy('MIS_BREAKOUT_CONTROL','breakout'),
             *[Policy(**p) for p in f['policies'] if not p['family'].startswith('cnc_')]]
         for p in ps:
@@ -205,7 +208,7 @@ def score(round_,revision=1):
                 print(panel,p.name,eb,xb,seed,r['summary'],flush=True)
     _,_,o=legacy();raw=o.load_bars(reserved=None)
     daily={t:[(d,*bar) for d,bar in seq] for t,seq in raw.items()};all_calendar=sorted({d for seq in daily.values() for d,*_ in seq})
-    ps=[Policy('CNC_LEGACY_DAILY_CONTROL','cnc_legacy',hold_days=15),*[Policy(**p) for p in f['policies'] if p['family'].startswith('cnc_')]]
+    ps=[Policy('CNC_LEGACY_DAILY_CONTROL','cnc_legacy',hold_days=15),*controls,*[Policy(**p) for p in f['policies'] if p['family'].startswith('cnc_')]]
     for panel,window in f['daily_panels'].items():
         tail=[d for d in all_calendar if window[0]<=d<=f['daily_tails'][panel]]
         # Tail sessions settle existing exposure only, never new entries.
@@ -248,8 +251,26 @@ def baseline():
     write(RUN/'native-cnc-baselines.json',native)
 
 
+def native_mis():
+    idata,_,_=legacy()
+    from research_data_contracts import load_daily_dataset,load_intraday_dataset
+    from penny_lifecycle_replay import PennyLifecycleConfig,run_penny_lifecycle
+    out=[]
+    for panel,start,end in [('h1','2026-01-01','2026-07-31'),('recent','2026-08-10','2026-11-02')]:
+        path=idata.EXAM_DB if panel=='h1' else idata.DEV_DAILY
+        c=sqlite3.connect(path.as_uri()+'?mode=ro',uri=True);names=[t for t, in c.execute('SELECT DISTINCT ticker FROM intraday_cache')];c.close()
+        daily=load_daily_dataset(str(path),tickers=names,before=(datetime.fromisoformat(end)+timedelta(days=1)).date().isoformat())
+        tape=load_intraday_dataset(str(path),interval='minute',tickers=names,start=start,end=end)
+        r=run_penny_lifecycle(tape,daily,PennyLifecycleConfig(tuple(names),bankroll=2000),start=start,end=end)
+        write(RUN/f'_local/native-mis-{panel}.json',r)
+        out.append({'panel':panel,'status':r.get('status'),'summary':r.get('summary'),'funnel':r.get('funnel'),
+            'scope':'exact native MIS/2000 own cash/constant PR1/data completeness gates; not historic operational regime'})
+        print(out[-1],flush=True)
+    write(RUN/'native-mis-baselines.json',out)
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('command',choices=['select','acquire','freeze','score','baseline']);p.add_argument('--round',type=int);p.add_argument('--revision',type=int,default=1)
+    p=argparse.ArgumentParser();p.add_argument('command',choices=['select','acquire','freeze','score','baseline','native_mis']);p.add_argument('--round',type=int);p.add_argument('--revision',type=int,default=1)
     a=p.parse_args()
     if a.command in ('freeze','score'):globals()[a.command](a.round,a.revision)
     else:globals()[a.command]()

@@ -1,13 +1,14 @@
 # Smart/Classic enrichment status
 
-Research in progress, Dev only; startd502c1f. Plan/name selection152f3ef;
-first mechanics freeze5628e73. Original Smart V3 legacy replay reproduced
-exactly104 closes,+2936.12 (4 locked outcomes). Native CNC baseline underway.
+Round1 revision2 complete:150 paired models, all originals preserved. No
+new strategy qualified. V3 legacy parityexact104 closes,+2936.12; native
+CNC0 entries in both minute panels, PARTIAL evidence. Production paper Smart
+V1/V2 negative; Classic MIS36 closed rows totalnet-103.46, CNC no rows.
 
-Public cross-name acquisition complete:160 requested,158 returned,289937
-five-minute bars; prices/outcomes remain unopened. No Breeze/broker calls.
-New helper/8 then9 tests verify cash, quantities at pre-known limits, carries,
-next completed-bar entries and true Wilder smoothing. Mechanical revision2
-fixes concurrent slot reservation before any new strategy score. Old freeze
-preserved; no arm changes from scored outcomes. No native behavior/config/
-Production change, no push/deployment or retirement.
+Round2 planned from losses:single funded preselected limit and executable
+post-open recovery; afternoon breakout/retest; Wilder without3% stop and
+one-night RSI setup only above its actual-book fee hurdle. Correct pending
+long-liquidation recovery, unchanged controls re-scored.80 focused tests pass.
+Cross-name prices remain unopened (160requested/158returned/2899375min bars).
+All chronological panels are seen. No configuration, native book, Production,
+orders or capital changed; no push/deployment. Owner bytes preserved.

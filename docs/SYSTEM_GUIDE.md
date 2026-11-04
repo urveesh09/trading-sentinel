@@ -1,3 +1,13 @@
+## November 4 - Smart/Classic enrichment: freeze-second-round-after-loss-and-carry-audit (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.
+Plan: `docs/research/penny/2026-11-04-smart-classic-enrichment/PLAN.md`.
+Owner requests Smart improvements and Classic MIS/CNC retirement verdicts.
+Preserve V3, overnight modules, old results and owner bytes. All old exams
+are seen; new minute names are cross-name checks, not chronological holdouts.
+Cash/carry/clock/fee audits and all failures retained; no profit qualification
+from tests. No order, push/deployment, retirement or Production edit.
+
 ## November 4 - Smart/Classic enrichment: freeze-corrected-carry-slots-before-first-score (Dev only)
 
 Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.

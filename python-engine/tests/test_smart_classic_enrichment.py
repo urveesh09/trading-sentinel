@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 from smart_classic_enrichment import (Order,Policy,auction_orders,bar5,intraday_orders,
-                                      run_book,snapshots,wilder_rsi)
+                                      run_book,snapshots,wilder_rsi,cnc_orders)
 from penny_engine_connors import _rsi_2
 
 
@@ -90,3 +90,26 @@ def test_missing_today_does_not_change_preselected_auction_pool():
     rows=daily_rows();day=rows['A'][-1][0]
     _,counts=auction_orders([],rows,[day],Policy('basket','basket',slots=4),2000)
     assert counts['PRESELECTED_LIMIT']==4 and counts['MISSING_AUCTION_OUTCOME']==4
+
+
+def test_cnc_pending_deadline_can_wait_beyond_seven_bars_without_fake_exit():
+    from datetime import date,timedelta
+    rows=[]
+    for i in range(272):
+        day=(date(2025,1,1)+timedelta(days=i)).isoformat();c=10+.04*i
+        if 256<=i<260:c=20.-.2*(i-256)
+        if 260<=i<270:
+            c=19.2-.4*(i-260);rows.append((day,c,c,c,c,1000000.));continue
+        if i>=270:rows.append((day,16.,16.5,15.9,16.3,1000000.));continue
+        rows.append((day,c,c+.1,c-.1,c,1000000.))
+    orders,_=cnc_orders({'A':rows},[rows[260][0]],Policy('cnc','cnc_wilder'))
+    assert orders and orders[0].outcome[:2]==(rows[270][0],555)
+    assert orders[0].outcome[3]=='PENDING_CNC_SALE_FIRST_TRADABLE_OPEN'
+
+
+def test_night_cost_gate_uses_known_quantity_and_rejects_fee_negative_ticket():
+    d='2026-02-02';o=Order(d,970,'A',20.,1,(0,),9999,9999,('2026-02-03',555,21.,'night'),
+        {'slot_fraction':1.,'night_cost_gate':True,'night_mean':.001})
+    daily={'A':[(d,20,21,19,20,100000),('2026-02-03',21,22,20,21,100000)]}
+    r=run_book([o],daily,list(x[0] for x in daily['A']),entry_bps=0,exit_bps=0)
+    assert not r['intents'] and r['outcomes']['NIGHT_ESTIMATE_BELOW_FEES']==1
