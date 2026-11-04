@@ -1,3 +1,27 @@
+## November 4 - Overnight v3: ON_V3 paper shadow and sealed 2011-14 check (Dev only)
+
+Study: `docs/research/penny/2026-11-04-overnight-v3/` (PLAN.md, REPORT.md; simulator `v3sim.py`
+reproduces the enrichment V2 within Rs 3). Fixed Rs 25k, post-close entry, auction exit.
+Findings: the enrichment cost route needs a +36 bp regular sleeve; Production's forward record has
+15:20 fills ~1.35% above the official close, at which it returns to V2. Selling at the 09:17 bid
+instead of the pre-open auction loses. Ranking inside the pool moves results a few percent.
+V2_HI_F3N (V2 + 20-day-high picks first + F3 fillers for empty slots) made +10-18% at full fills
+in all five periods, but the sealed 2011-14 check (built after the freeze, opened once) FAILED:
+worse at 50% winner denial (16.4k vs 21.2k), drawdown 1.59x V2. 2010-14 Yahoo is now seen.
+Runtime (paper only): new shadow ON_V3 in `edge_overnight_paper.py` = ON_V2 rules + hi_first +
+filler="F3" (`overnight_features`, `filler_rule`, `filler_picks`, `FillerPick`; one re-quote of
+at most 10 fillers, one per company, before the decision clock, which moves the book's decision
+about a second later; ENTRY receipt `v3_inputs`). OvernightShadow gains
+`hi_first`/`filler` (configs in GET /experiments/edge-overnight show them). ON_V2's night screen
+uses a shared helper with identical output. Filler parity vs research: 0 rule mismatches in 5,912
+stock-days (`results/filler-parity.json`). Flag EDGE_OVERNIGHT_V3_SHADOW_ENABLED (default true;
+rollback false, open legs still close). Book, ON_V2, Oct 21 shadows, probe, evidence path
+unchanged. No orders, Breeze or Production access; no schema change.
+Verification: focused 102 passed; full suite 6,182 passed, 4 skipped, exit 0 (688 s) on this
+commit's source. Dev only: not pushed, not deployed; Production unchanged.
+Next: after 20+ ON_V3 closes compare ON_V3 vs ON_V2 on the same nights with
+postclose_probe.covers_ticket_share; a real post-close order test is the owner's call.
+
 ## November 4 - Overnight enrichment: finalize-enrichment-verdict-and-verification (Dev only)
 
 Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.

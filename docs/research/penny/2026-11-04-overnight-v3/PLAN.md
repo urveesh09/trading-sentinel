@@ -143,3 +143,15 @@ Decision recorded after the opening (owner precedent O31b/c: a candidate that fa
 paper, never real money): add V2_HI_F3N as a paper shadow **ON_V3** beside ON_V2, same 15:20 inputs,
 own Rs 25k, no orders, so the forward record and the post-close probe decide between them. No
 change to either finalist or to any rule.
+
+## Runtime slice (ON_V3 paper shadow)
+
+Files: `python-engine/edge_overnight_paper.py` (OvernightShadow `hi_first`/`filler`, ON_V3,
+`overnight_features`, `filler_rule`, `filler_picks`, `FillerPick`, shared `_shrunk_night_mean`,
+`shadow_entries_enabled`, ENTRY receipt `v3_inputs`), `python-engine/config.py`
+(`EDGE_OVERNIGHT_V3_SHADOW_ENABLED`, default true), `tests/test_overnight_v3.py` (8 tests), config
+expectations in `test_overnight_v2.py` / `test_oct21_audit_fixes.py`. Acceptance: book, ON_V2 and
+older shadows unchanged; fillers only take slots the EDGE picks leave; inputs failing never block
+the book; switch off = no V3 entries and no filler quote; research/runtime filler parity
+(`results/filler-parity.json`: 0 rule mismatches in 5,912 stock-days). Rollback: the switch false.
+No schema change, no orders, no Production change.

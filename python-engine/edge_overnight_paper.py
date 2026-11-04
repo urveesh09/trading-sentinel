@@ -97,6 +97,11 @@ class OvernightShadow:
     # official close, the price of the NSE post-close session (15:40-16:00).
     night_min: Optional[float] = None
     entry_basis: str = "fill"
+    # [OV3 2026-11-04] Optional: ranked picks within 1% of their 20-session
+    # high go first (order kept otherwise), and a slot the EDGE picks leave
+    # empty may take a plain overnight filler (``filler_picks``; "F3").
+    hi_first: bool = False
+    filler: Optional[str] = None
 
 
 # [O21-ON 2026-10-21] Declared before any scoring, from the book's own cost
@@ -126,11 +131,33 @@ OVERNIGHT_SHADOWS = (
                     "two equal halves, overnight-history screen, entry at the official close (post-close "
                     "session) instead of the 15:20 ask, exit at the opening auction",
                     night_min=0.001, entry_basis="official_close"),
+    # [OV3 2026-11-04] docs/research/penny/2026-11-04-overnight-v3/PLAN.md:
+    # ON_V2 plus 20-day-high picks first and F3 fillers for empty slots. In
+    # replays it made 10-18% more than ON_V2 in all five periods whenever at
+    # least 75% of winning post-close orders fill, but it FAILED its sealed
+    # 2011-14 check (robust net and drawdown) when half the winners are denied.
+    # Paper only, so the forward record and the probe decide between them.
+    OvernightShadow("ON_V3", 2, True, None,
+                    "ON_V2 with picks at a 20-day high first and, for a slot the EDGE picks leave empty, a "
+                    "plain overnight filler (up >= 5%, upper half of the day's range, >= 2x the 20-day median "
+                    "volume, night mean >= 0.1%); failed its sealed check under 50% winner denial",
+                    night_min=0.001, entry_basis="official_close", hi_first=True, filler="F3"),
 )
 OVERNIGHT_V2_DECLARED = "2026-11-04"
+OVERNIGHT_V3_DECLARED = "2026-11-04"
 NIGHT_LOOKBACK = 60          # nights, the last one ending at today's open
 NIGHT_PRIOR = 20             # shrinkage: mean x n / (n + NIGHT_PRIOR)
 NIGHT_CLIP = 0.05            # each night's return is clipped to +/-5%
+# [OV3] Plain overnight fillers (the research's F3 rule, on 15:20 quotes).
+FILLER_PRICE_BAND = (5.0, 55.0)
+FILLER_MIN_RET = 0.05        # today's LTP vs the previous close
+FILLER_MIN_CLV = 0.5         # LTP in the upper half of today's range
+FILLER_MIN_RVOL = 2.0        # today's volume vs the median of the prior 20 sessions
+RVOL_SESSIONS = 20
+FILLER_MIN_NIGHTS = 20       # a shorter overnight history is not scored
+FILLER_DEPTH = 10            # best-night fillers re-quoted at entry
+HI20_SESSIONS = 20           # today plus the prior 19 sessions
+HI20_TOLERANCE = 0.01        # "at the 20-day high" = within 1% of it
 ENTRY_MAX_TRADE_AGE = timedelta(minutes=30)     # activity: the stock traded recently
 ENTRY_QUOTE_TTL = timedelta(seconds=120)        # snapshot: the displayed depth is current
 ENTRY_QUOTE_MAX_AHEAD = timedelta(seconds=5)    # provider clock may lead ours by this much
@@ -313,6 +340,13 @@ def shadows_enabled() -> bool:
     return bool(getattr(settings, "EDGE_OVERNIGHT_SHADOWS_ENABLED", True))
 
 
+def shadow_entries_enabled(shadow: "OvernightShadow") -> bool:
+    """[OV3] ON_V3 has its own switch; every other shadow follows the shadows flag."""
+    if shadow.name == "ON_V3":
+        return bool(getattr(settings, "EDGE_OVERNIGHT_V3_SHADOW_ENABLED", True))
+    return True
+
+
 def shadow_state(conn: sqlite3.Connection, variant: str, bankroll: float) -> dict:
     """A shadow's own book: the same equity/cash rule as ``book_state``."""
     realized = conn.execute("SELECT COALESCE(SUM(net_pnl), 0) FROM edge_overnight_shadow_trades "
@@ -341,20 +375,103 @@ def night_means(cache_path: str, tickers: list[str], today: str, opens: dict) ->
         for ticker in tickers:
             rows = conn.execute("SELECT open, close FROM ohlcv_cache WHERE ticker=? AND date < ? "
                                 "ORDER BY date DESC LIMIT ?", (ticker, today, NIGHT_LOOKBACK)).fetchall()[::-1]
-            nights = [max(-NIGHT_CLIP, min(NIGHT_CLIP, float(o) / float(pc) - 1))
-                      for (o, _c), (_o, pc) in zip(rows[1:], rows[:-1])
-                      if _finite_positive(o) and _finite_positive(pc)]
-            today_open = opens.get(ticker)
-            if rows and _finite_positive(today_open) and _finite_positive(rows[-1][1]):
-                nights.append(max(-NIGHT_CLIP, min(NIGHT_CLIP, float(today_open) / float(rows[-1][1]) - 1)))
-            nights = nights[-NIGHT_LOOKBACK:]
-            out[ticker] = (sum(nights) / len(nights) * len(nights) / (len(nights) + NIGHT_PRIOR)
-                           if nights else None)
+            mean, _n = _shrunk_night_mean(rows, opens.get(ticker))
+            out[ticker] = mean
     return out
 
 
+def _shrunk_night_mean(rows: list, today_open) -> tuple[Optional[float], int]:
+    """(shrunk mean, nights used) from ascending (open, close) rows before today."""
+    nights = [max(-NIGHT_CLIP, min(NIGHT_CLIP, float(o) / float(pc) - 1))
+              for (o, _c), (_o, pc) in zip(rows[1:], rows[:-1])
+              if _finite_positive(o) and _finite_positive(pc)]
+    if rows and _finite_positive(today_open) and _finite_positive(rows[-1][1]):
+        nights.append(max(-NIGHT_CLIP, min(NIGHT_CLIP, float(today_open) / float(rows[-1][1]) - 1)))
+    nights = nights[-NIGHT_LOOKBACK:]
+    if not nights:
+        return None, 0
+    return sum(nights) / len(nights) * len(nights) / (len(nights) + NIGHT_PRIOR), len(nights)
+
+
+@dataclass(frozen=True)
+class FillerPick:
+    """[OV3] A plain overnight candidate (no EDGE signal): the fields ``_admit`` reads."""
+    ticker: str
+    night_mean: float
+    near_hi20: float
+    signal_subtype: str = "FILL_F3"
+    adjusted_strength: float = 0.0
+    shares: int = 0
+
+
+def overnight_features(cache_path: str, bars_today: dict, today: str) -> dict:
+    """[OV3] Causal daily features of every quoted ticker at the 15:20 decision.
+
+    History is the cached daily bars dated before ``today`` (one read); today
+    is the quote's provisional bar (open, high, low, LTP, volume so far). Per
+    ticker: ``ret`` (LTP / previous close - 1), ``clv`` (LTP's place in today's
+    range), ``rvol`` (today's volume / median of the prior 20 sessions'),
+    ``night_mean`` and ``nights`` (``night_means``' rule), ``near_hi20`` (LTP /
+    the highest high of today and the prior 19 sessions - 1). A ticker without
+    20 prior sessions has no features. Volume at 15:20 is not the day's total,
+    so ``rvol`` reads lower than on the final bar.
+    """
+    names = [t for t in bars_today if t != NIFTY_PROXY]
+    if not names:
+        return {}
+    history: dict = {}
+    with _read_only(cache_path) as conn:
+        for ticker, _d, o, h, c, v in conn.execute(
+                "SELECT ticker, date, open, high, close, volume FROM ohlcv_cache WHERE date < ? "
+                "AND date >= date(?, '-150 days') ORDER BY ticker, date", (today, today)):
+            history.setdefault(ticker, []).append((o, h, c, v))
+    out = {}
+    for ticker in names:
+        rows = history.get(ticker, [])[-NIGHT_LOOKBACK:]
+        if len(rows) < RVOL_SESSIONS or not _finite_positive(rows[-1][2]):
+            continue
+        o, h, l, ltp, volume = bars_today[ticker]
+        prior_vol = sorted(float(r[3] or 0) for r in rows[-RVOL_SESSIONS:])
+        mid = len(prior_vol) // 2
+        median_vol = (prior_vol[mid - 1] + prior_vol[mid]) / 2 if len(prior_vol) % 2 == 0 else prior_vol[mid]
+        mean, n = _shrunk_night_mean([(r[0], r[2]) for r in rows], o)
+        highs = [float(r[1]) for r in rows[-(HI20_SESSIONS - 1):] if _finite_positive(r[1])] + [h]
+        prev_close = float(rows[-1][2])
+        out[ticker] = {"ret": ltp / prev_close - 1, "clv": (ltp - l) / (h - l) if h > l else 0.5,
+                       "rvol": volume / median_vol if median_vol > 0 else 0.0,
+                       "night_mean": mean, "nights": n, "near_hi20": ltp / max(highs) - 1,
+                       "price": ltp, "prev_close": prev_close}
+    return out
+
+
+def filler_rule(f: dict) -> bool:
+    """[OV3] The research's F3 rule (the realism refusals apply later, in ``_admit``)."""
+    lo, hi = FILLER_PRICE_BAND
+    return (f.get("night_mean") is not None and f["nights"] >= FILLER_MIN_NIGHTS
+            and lo <= f["price"] <= hi and f["ret"] >= FILLER_MIN_RET and f["clv"] >= FILLER_MIN_CLV
+            and f["rvol"] >= FILLER_MIN_RVOL and f["night_mean"] >= 0.001)
+
+
+def filler_picks(features: dict, exclude: set, depth: int = FILLER_DEPTH) -> list[FillerPick]:
+    """[OV3] The best-night F3 names not already ranked by the EDGE scan.
+
+    One name per company (``CALSOFT`` / ``CALSOFT-BE``): the twin with the
+    better night mean, as the admission would refuse the second anyway.
+    """
+    picks = [FillerPick(t, f["night_mean"], f["near_hi20"]) for t, f in features.items()
+             if t not in exclude and not t.endswith(SME_SUFFIXES) and filler_rule(f)]
+    picks.sort(key=lambda p: (-p.night_mean, p.ticker))
+    seen, out = set(), []
+    for p in picks:
+        if base_symbol(p.ticker) not in seen:
+            seen.add(base_symbol(p.ticker))
+            out.append(p)
+    return out[:depth]
+
+
 def _shadow_entries(picks, fresh: dict, shadow_states: dict, *, today: str, decided: datetime,
-                    late: Optional[dict], nights: Optional[dict] = None) -> dict:
+                    late: Optional[dict], nights: Optional[dict] = None, features: Optional[dict] = None,
+                    fillers: Optional[list] = None, filler_fresh: Optional[dict] = None) -> dict:
     out = {}
     for shadow in OVERNIGHT_SHADOWS:
         state = shadow_states.get(shadow.name)
@@ -372,14 +489,30 @@ def _shadow_entries(picks, fresh: dict, shadow_states: dict, *, today: str, deci
                                      "night_mean": None if mean is None else round(mean, 6)})
                 else:
                     eligible.append(pick)
-        opened, skipped, cash = _admit(eligible, fresh, state, slots=slots, today=today, decided=decided, late=late,
+        quotes, night_of = fresh, dict(nights or {})
+        if shadow.hi_first:
+            # [OV3] Stable: the scan's order is kept inside each group.
+            eligible.sort(key=lambda p: not _at_hi20((features or {}).get(p.ticker)))
+        if shadow.filler:
+            # [OV3] Fillers come after every EDGE pick, so they only take a slot
+            # the EDGE picks (after the screen and the refusals) leave empty.
+            taken = {p.ticker for p in picks}
+            extra = [f for f in (fillers or []) if f.ticker not in taken]
+            eligible = eligible + extra
+            quotes = {**(filler_fresh or {}), **fresh}
+            night_of.update({f.ticker: f.night_mean for f in extra})
+        opened, skipped, cash = _admit(eligible, quotes, state, slots=slots, today=today, decided=decided, late=late,
                                        fill_cash_share=shadow.fill_cash_share,
                                        max_entry_cost_pct=shadow.max_entry_cost_pct)
         if shadow.night_min is not None:
             for o in opened:
-                o["night_mean"] = round(nights[o["ticker"]], 6)
+                o["night_mean"] = round(night_of[o["ticker"]], 6)
         out[shadow.name] = {"opened": opened, "skipped": screened + skipped, "cash_after": round(cash, 4)}
     return out
+
+
+def _at_hi20(f: Optional[dict]) -> bool:
+    return bool(f) and f.get("near_hi20") is not None and f["near_hi20"] > -HI20_TOLERANCE
 
 
 def _shadow_open(conn: sqlite3.Connection, today: str) -> list:
@@ -890,7 +1023,8 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
             return {**previous, "repeat": True}
         state = book_state(conn, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
         shadow_states = ({shadow.name: shadow_state(conn, shadow.name, float(settings.EDGE_OVERNIGHT_PAPER_BANKROLL))
-                          for shadow in OVERNIGHT_SHADOWS} if shadows_enabled() else {})
+                          for shadow in OVERNIGHT_SHADOWS if shadow_entries_enabled(shadow)}
+                         if shadows_enabled() else {})
 
     tickers = universe_from_cache(db_path)
     quotes = await _quotes(kite, [*tickers, NIFTY_PROXY])
@@ -914,6 +1048,25 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     except Exception as exc:                          # noqa: BLE001 - a failed refresh refuses, never stale fills
         logger.warning("edge_overnight_entry_requote_failed error=%s", type(exc).__name__)
         fresh = {}
+    # [OV3] Only for an enabled shadow that orders by the 20-day high or takes
+    # fillers: features from the quotes already fetched plus cached history,
+    # and one re-quote of the best fillers before the decision clock is read.
+    features, fillers, filler_fresh = None, [], {}
+    wanted = [s for s in OVERNIGHT_SHADOWS if s.name in shadow_states and (s.hi_first or s.filler)]
+    if wanted:
+        try:
+            features = overnight_features(db_path, bars_today, today)
+            if any(s.filler for s in wanted):
+                fillers = filler_picks(features, {pick.ticker for pick in scan["positions"]})
+        except Exception as exc:                      # noqa: BLE001 - a shadow's input never blocks the book
+            logger.warning("edge_overnight_v3_inputs_failed error=%s", type(exc).__name__)
+            features, fillers = None, []
+        if fillers:
+            try:
+                filler_fresh = await _quotes(kite, [f.ticker for f in fillers])
+            except Exception as exc:                  # noqa: BLE001 - no fresh quote refuses the filler
+                logger.warning("edge_overnight_v3_filler_requote_failed error=%s", type(exc).__name__)
+                filler_fresh = {}
     # Decide on the clock after the scan and re-quote, not the start time.
     decided = clock()
     if decided.date().isoformat() != today or decided.time() > ENTRY_LATEST:
@@ -930,7 +1083,7 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
         opens = {t: ((fresh.get(t) or quotes.get(t) or {}).get("ohlc") or {}).get("open") for t in ranked}
         nights = night_means(db_path, ranked, today, opens)
     shadows = _shadow_entries(scan["positions"], fresh, shadow_states, today=today, decided=decided, late=late,
-                              nights=nights)
+                              nights=nights, features=features, fillers=fillers, filler_fresh=filler_fresh)
 
     # Optional evidence only: archive inputs already known at this decision.
     # Its failure cannot change admissions or block the existing paper book.
@@ -945,6 +1098,9 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
                "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT,
                "started_at": now.isoformat(), "decided_at": decided.isoformat()}
+    if wanted:
+        summary["v3_inputs"] = {"features": len(features or {}), "fillers": [f.ticker for f in fillers],
+                                "fillers_quoted": len(filler_fresh)}
     if shadows:
         summary["shadows"] = {name: {"opened": [{"ticker": o["ticker"], "shares": o["shares"],
                                                  "entry_price": o["entry_price"]} for o in result["opened"]],

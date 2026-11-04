@@ -1499,6 +1499,10 @@ class Settings(BaseSettings):
     # Separate strict capacity collector, not a fill/order or strategy switch.
     # Off by default; reads the existing ranked shortlist at 15:49/15:51/16:03.
     EDGE_OVERNIGHT_EXECUTION_EVIDENCE_ENABLED: bool = False
+    # [OV3 2026-11-04] The ON_V3 paper shadow (ON_V2 + 20-day-high picks first +
+    # plain overnight fillers). Paper only; failed its sealed check under 50%
+    # winner denial. Rollback: false (ON_V3 opens nothing; open legs still close).
+    EDGE_OVERNIGHT_V3_SHADOW_ENABLED: bool = True
 
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings

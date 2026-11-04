@@ -682,7 +682,7 @@ async def test_shadows_exit_on_the_same_quotes_and_are_compared_with_the_book(ov
     assert by_name["ON_TWO_LARGER"]["closed"] == 2 and by_name["ON_TIGHT_SPREAD"]["closed"] == 1
     assert by_name["ON_TIGHT_SPREAD"]["config"] == {"slots": None, "fill_cash_share": False,
                                                     "max_entry_cost_pct": 0.0035, "night_min": None,
-                                                    "entry_basis": "fill"}
+                                                    "entry_basis": "fill", "hi_first": False, "filler": None}
     assert by_name["ON_TWO_LARGER"]["avg_position_value"] > 2 * comparison["book"]["avg_position_value"]
 
 

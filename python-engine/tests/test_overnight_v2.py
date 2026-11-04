@@ -103,7 +103,8 @@ async def test_on_v2_books_its_pnl_from_the_official_close(v2):
     v2_row = next(s for s in comparison["shadows"] if s["variant"] == "ON_V2")
     assert v2_row["since"] == TODAY.isoformat() and v2_row["entry_basis_counts"] == {"official_close": 2}
     assert v2_row["config"] == {"slots": 2, "fill_cash_share": True, "max_entry_cost_pct": None,
-                                "night_min": 0.001, "entry_basis": "official_close"}
+                                "night_min": 0.001, "entry_basis": "official_close", "hi_first": False,
+                                "filler": None}
     assert v2_row["book_same_nights"]["closed"] == 3
 
 
