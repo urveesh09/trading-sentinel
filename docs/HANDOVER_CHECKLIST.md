@@ -1,3 +1,9 @@
+## November 4 - N06 partner advice (Dev only, not deployed)
+
+- [ ] On the owner's merge and deploy: Production engine image carries `partner_sentinel.py`; `PARTNER_SENTINEL_ADVICE_ENABLED` true by default.
+- [ ] First live day, read-only: the watch-on message carries the partner's two records and the expiry line on an expiry day; PLAN messages carry "📏 The Sentinel's size"; any SENTINEL / SENTINEL_EXIT rows in `partner_watch_messages` were sent, with no `partner_sentinel_*_failed` in the engine log.
+- [ ] After a week: score buys at or under the Sentinel's size against bigger ones with `partner_watch_score` (no tuning on seen days).
+
 ## November 4 - Smart/Classic enrichment: freeze-nse-identity-correction-and-final-cross-name-check (Dev only)
 
 Study/status: `docs/research/penny/2026-11-04-smart-classic-enrichment/STATUS.md`.

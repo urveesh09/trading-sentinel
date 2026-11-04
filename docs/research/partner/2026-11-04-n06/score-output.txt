@@ -1,0 +1,22 @@
+Check warnings scored, 2026-10-27 to 2026-11-04 (frozen rule v2-a3150fcf5a68; decision days from 2026-10-27)
+232 closed trades on 7 days.
+  CHASED_SPIKE: NOT_SUPPORTED
+    warned:   96 trades, 46 won, total +₹49,703, mean +₹518
+    unwarned: 132 trades, 44 won, total −₹94,312, mean −₹714
+    unknown:  4 trades (an input missing at the buy): left out
+  AFTER_LOSS: SUPPORTED
+    warned:   143 trades, 54 won, total −₹31,721, mean −₹222
+    unwarned: 89 trades, 38 won, total −₹8,433, mean −₹95
+  BIGGER_AFTER_LOSS: NOT_SUPPORTED
+    warned:   22 trades, 9 won, total +₹1,787, mean +₹81
+    unwarned: 210 trades, 83 won, total −₹41,941, mean −₹200
+  UNUSUAL_SIZE: SUPPORTED
+    warned:   57 trades, 22 won, total −₹38,024, mean −₹667
+    unwarned: 175 trades, 70 won, total −₹2,130, mean −₹12
+  ANY: NOT_SUPPORTED
+    warned:   204 trades, 83 won, total −₹35,057, mean −₹172
+    unwarned: 25 trades, 8 won, total −₹5,621, mean −₹225
+    unknown:  3 trades (an input missing at the buy): left out
+  checked before the buy:   2 trades, 0 won, total −₹2,646, mean −₹1,323
+  not checked before the buy: 230 trades, 92 won, total −₹37,508, mean −₹163
+A verdict needs at least 20 warned trades and informs the owner; it changes nothing. Results are after modelled charges, not the contract note.

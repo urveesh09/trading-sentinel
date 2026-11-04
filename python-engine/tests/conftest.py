@@ -95,6 +95,9 @@ def patch_settings(monkeypatch, tmp_path):
     # [expiry-v5] Production's expiry main ticket is E03.2. The A/B/C expiry tests describe that book as it
     # was; tests of the E03.2 main set it themselves (tests/test_expiry_main_e032.py).
     monkeypatch.setattr(settings, "EXPIRY_MAIN_STRATEGY", "ABC")
+    # [N06] The partner watch's Sentinel advice adds lines to its messages. The watch's tests pin the texts as they
+    # were; tests of the advice switch it on themselves (tests/test_partner_sentinel.py).
+    monkeypatch.setattr(settings, "PARTNER_SENTINEL_ADVICE_ENABLED", False)
     for name in ("TELEGRAM_BOT_TOKEN", "PARTNER_TELEGRAM_BOT_TOKEN"):        # [O26c] never the real bots
         monkeypatch.setattr(settings, name, f"test-{name.lower()}")
     for name in ("TELEGRAM_CHAT_ID", "PARTNER_TELEGRAM_CHAT_ID"):
