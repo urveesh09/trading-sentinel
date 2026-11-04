@@ -1,0 +1,404 @@
+{
+  "retained": [
+    "ACEVECTOR",
+    "ARTNIRMAN",
+    "ASHOKAMET",
+    "ATL",
+    "ATLANTAA",
+    "ATLPP-E1",
+    "COFFEEDAY",
+    "COUNCODOS",
+    "DCMFINSERV",
+    "DEVX",
+    "DHANBANK",
+    "DOLLEX",
+    "DSFCL",
+    "DWARKESH",
+    "ELGIRUBCO",
+    "ESAFSFB",
+    "GAYAHWS",
+    "GAYAPROJ",
+    "GFLLIMITED",
+    "GLFL",
+    "GRANDOAK",
+    "GROWWSLVR",
+    "HCC",
+    "HTMEDIA",
+    "IBULLSLTD",
+    "IDEA",
+    "IWP",
+    "JHS",
+    "JISLJALEQS",
+    "JYOTISTRUC",
+    "KESORAMIND",
+    "KHANDSE",
+    "KMSUGAR",
+    "KOHINOOR",
+    "KREBSBIO",
+    "KRIDHANINF",
+    "KWIL",
+    "LCCINFOTEC",
+    "LEXUS",
+    "MANAKALUCO",
+    "MANGALAM",
+    "MANIKA",
+    "MCLEODRUSS",
+    "METAL",
+    "MMWL",
+    "MOL",
+    "MONEYVIEW",
+    "MUKTAARTS",
+    "NAGREEKCAP",
+    "NECCLTD",
+    "NGIL",
+    "OLAELEC",
+    "ONIDA",
+    "ONMOBILE",
+    "OPTIFIN",
+    "OSWALAGRO",
+    "PALREDTEC",
+    "PATINTLOG",
+    "PEARLPOLY",
+    "PERFECT-SZ",
+    "PHOENXINTL",
+    "PLAZACABLE",
+    "PRAXIS",
+    "PRIMO",
+    "PRITIKAUTO",
+    "PVP",
+    "RETAIL",
+    "RHETAN",
+    "ROML",
+    "SETCO",
+    "SHIVAMAUTO",
+    "SHYAMTEL",
+    "SIL",
+    "SILVER1",
+    "SILVERCASE",
+    "SOUTHBANK",
+    "SPENCERS",
+    "SPLIL",
+    "STLNETWORK",
+    "STLSTRINF",
+    "SUBEXLTD",
+    "SUPERSPIN",
+    "SUZLON",
+    "SVPGLOB",
+    "SYNCOMF",
+    "TAKE",
+    "TATAGOLD",
+    "TATSILV",
+    "TCIFINANCE",
+    "TEXMOPIPES",
+    "TIGERLOGS",
+    "TNTELE",
+    "TREEHOUSE",
+    "TREL",
+    "TRIGYN",
+    "VAKRANGEE",
+    "VARDHACRLC",
+    "VEDAVAAG",
+    "VEDPOWER",
+    "VIPCLOTHNG",
+    "VISACHROME",
+    "VISL",
+    "VITAL",
+    "VIVOBIOT",
+    "VMSTMT",
+    "WELSPLSOL",
+    "YESBANK",
+    "ZEELEARN"
+  ],
+  "excluded": {
+    "AFIL": "split_or_bonus_unit_basis",
+    "AHCL": "split_or_bonus_unit_basis",
+    "ALLCARGO": "split_or_bonus_unit_basis",
+    "AVONMORE": "split_or_bonus_unit_basis",
+    "AVROIND": "split_or_bonus_unit_basis",
+    "BALAXI": "split_or_bonus_unit_basis",
+    "BESTAGRO": "split_or_bonus_unit_basis",
+    "BOHRAIND": "split_or_bonus_unit_basis",
+    "CLEDUCATE": "split_or_bonus_unit_basis",
+    "DAVANGERE": "split_or_bonus_unit_basis",
+    "DBEIL": "split_or_bonus_unit_basis",
+    "FCL": "split_or_bonus_unit_basis",
+    "GEEKAYWIRE": "split_or_bonus_unit_basis",
+    "GTECJAINX": "split_or_bonus_unit_basis",
+    "HINDCON": "split_or_bonus_unit_basis",
+    "JETFREIGHT": "split_or_bonus_unit_basis",
+    "JINDWORLD": "split_or_bonus_unit_basis",
+    "KAMDHENU": "split_or_bonus_unit_basis",
+    "KANANIIND": "split_or_bonus_unit_basis",
+    "KOTYARK": "split_or_bonus_unit_basis",
+    "LAL": "split_or_bonus_unit_basis",
+    "LIBAS": "split_or_bonus_unit_basis",
+    "MGEL": "split_or_bonus_unit_basis",
+    "MOTISONS": "split_or_bonus_unit_basis",
+    "MOTOGENFIN": "split_or_bonus_unit_basis",
+    "MWL": "split_or_bonus_unit_basis",
+    "NARMADA": "split_or_bonus_unit_basis",
+    "NDL": "split_or_bonus_unit_basis",
+    "OSWALSEEDS": "split_or_bonus_unit_basis",
+    "PCJEWELLER": "split_or_bonus_unit_basis",
+    "RUSHIL": "split_or_bonus_unit_basis",
+    "SADHNANIQ": "split_or_bonus_unit_basis",
+    "SAKUMA": "split_or_bonus_unit_basis",
+    "SARVESHWAR": "split_or_bonus_unit_basis",
+    "SBGLP": "split_or_bonus_unit_basis",
+    "SIGACHI": "split_or_bonus_unit_basis",
+    "SILVERADD": "split_or_bonus_unit_basis",
+    "STEELXIND": "split_or_bonus_unit_basis",
+    "SUMIT": "split_or_bonus_unit_basis",
+    "TCC": "split_or_bonus_unit_basis",
+    "TTL": "split_or_bonus_unit_basis",
+    "UNITEDPOLY": "split_or_bonus_unit_basis",
+    "VAISHALI": "split_or_bonus_unit_basis",
+    "VINNY": "split_or_bonus_unit_basis",
+    "WEWIN": "split_or_bonus_unit_basis"
+  },
+  "nse_basis_checks": {
+    "ARTNIRMAN": {
+      "ratio": 0.9999999740717262,
+      "nse_close": 58.85,
+      "yahoo_close": 58.849998474121094
+    },
+    "ASHOKAMET": {
+      "ratio": 1.000000023879169,
+      "nse_close": 31.95,
+      "yahoo_close": 31.950000762939453
+    },
+    "ATL": {
+      "ratio": 1.0,
+      "nse_close": 53.25,
+      "yahoo_close": 53.25
+    },
+    "COFFEEDAY": {
+      "ratio": 0.9999999880417014,
+      "nse_close": 63.8,
+      "yahoo_close": 63.79999923706055
+    },
+    "DHANBANK": {
+      "ratio": 1.0000000240674907,
+      "nse_close": 31.7,
+      "yahoo_close": 31.700000762939453
+    },
+    "DWARKESH": {
+      "ratio": 0.9999999824812985,
+      "nse_close": 87.1,
+      "yahoo_close": 87.0999984741211
+    },
+    "ESAFSFB": {
+      "ratio": 1.000000043878617,
+      "nse_close": 69.55,
+      "yahoo_close": 69.55000305175781
+    },
+    "GFLLIMITED": {
+      "ratio": 0.9999999843659949,
+      "nse_close": 97.6,
+      "yahoo_close": 97.5999984741211
+    },
+    "GLFL": {
+      "ratio": 0.9999999614677043,
+      "nse_close": 4.95,
+      "yahoo_close": 4.949999809265137
+    },
+    "HCC": {
+      "ratio": 0.9999999735090468,
+      "nse_close": 28.8,
+      "yahoo_close": 28.799999237060547
+    },
+    "HTMEDIA": {
+      "ratio": 0.9999999732770769,
+      "nse_close": 28.55,
+      "yahoo_close": 28.549999237060547
+    },
+    "IDEA": {
+      "ratio": 0.9999999524648315,
+      "nse_close": 16.05,
+      "yahoo_close": 16.049999237060547
+    },
+    "JHS": {
+      "ratio": 0.999999970712497,
+      "nse_close": 26.05,
+      "yahoo_close": 26.049999237060547
+    },
+    "JISLJALEQS": {
+      "ratio": 1.0000000122168047,
+      "nse_close": 62.45,
+      "yahoo_close": 62.45000076293945
+    },
+    "KESORAMIND": {
+      "ratio": 0.9999999646991578,
+      "nse_close": 172.9,
+      "yahoo_close": 172.89999389648438
+    },
+    "KHANDSE": {
+      "ratio": 1.0000000146156982,
+      "nse_close": 26.1,
+      "yahoo_close": 26.100000381469727
+    },
+    "KMSUGAR": {
+      "ratio": 1.0000000121680932,
+      "nse_close": 31.35,
+      "yahoo_close": 31.350000381469727
+    },
+    "KREBSBIO": {
+      "ratio": 1.0000000191572995,
+      "nse_close": 79.65,
+      "yahoo_close": 79.6500015258789
+    },
+    "KRIDHANINF": {
+      "ratio": 1.0000000128874906,
+      "nse_close": 3.7,
+      "yahoo_close": 3.700000047683716
+    },
+    "LCCINFOTEC": {
+      "ratio": 1.00000003973643,
+      "nse_close": 2.4,
+      "yahoo_close": 2.4000000953674316
+    },
+    "MANAKALUCO": {
+      "ratio": 1.00000002968636,
+      "nse_close": 25.7,
+      "yahoo_close": 25.700000762939453
+    },
+    "MANGALAM": {
+      "ratio": 1.0,
+      "nse_close": 98.5,
+      "yahoo_close": 98.5
+    },
+    "MOL": {
+      "ratio": 0.999999983204415,
+      "nse_close": 90.85,
+      "yahoo_close": 90.8499984741211
+    },
+    "NGIL": {
+      "ratio": 1.0,
+      "nse_close": 47.0,
+      "yahoo_close": 47.0
+    },
+    "ONMOBILE": {
+      "ratio": 0.9999999857859441,
+      "nse_close": 107.35,
+      "yahoo_close": 107.3499984741211
+    },
+    "OSWALAGRO": {
+      "ratio": 0.9999999580225886,
+      "nse_close": 36.35,
+      "yahoo_close": 36.349998474121094
+    },
+    "PALREDTEC": {
+      "ratio": 1.0,
+      "nse_close": 188.5,
+      "yahoo_close": 188.5
+    },
+    "PATINTLOG": {
+      "ratio": 0.9999999641812463,
+      "nse_close": 21.3,
+      "yahoo_close": 21.299999237060547
+    },
+    "PEARLPOLY": {
+      "ratio": 0.9999999756249376,
+      "nse_close": 31.3,
+      "yahoo_close": 31.299999237060547
+    },
+    "PRITIKAUTO": {
+      "ratio": 1.0,
+      "nse_close": 33.0,
+      "yahoo_close": 33.0
+    },
+    "ROML": {
+      "ratio": 0.999999983870202,
+      "nse_close": 47.3,
+      "yahoo_close": 47.29999923706055
+    },
+    "SHYAMTEL": {
+      "ratio": 1.000000020509125,
+      "nse_close": 9.3,
+      "yahoo_close": 9.300000190734863
+    },
+    "SOUTHBANK": {
+      "ratio": 0.9999999717952143,
+      "nse_close": 27.05,
+      "yahoo_close": 27.049999237060547
+    },
+    "SPENCERS": {
+      "ratio": 0.9999999859171306,
+      "nse_close": 108.35,
+      "yahoo_close": 108.3499984741211
+    },
+    "SPLIL": {
+      "ratio": 0.9999999565276665,
+      "nse_close": 70.2,
+      "yahoo_close": 70.19999694824219
+    },
+    "SUBEXLTD": {
+      "ratio": 1.0000000446816664,
+      "nse_close": 34.15,
+      "yahoo_close": 34.150001525878906
+    },
+    "SYNCOMF": {
+      "ratio": 0.9999999880417014,
+      "nse_close": 15.95,
+      "yahoo_close": 15.949999809265137
+    },
+    "TAKE": {
+      "ratio": 0.999999983697875,
+      "nse_close": 23.4,
+      "yahoo_close": 23.399999618530273
+    },
+    "TEXMOPIPES": {
+      "ratio": 0.9999999791972883,
+      "nse_close": 73.35,
+      "yahoo_close": 73.3499984741211
+    },
+    "TNTELE": {
+      "ratio": 0.9999999798164166,
+      "nse_close": 9.45,
+      "yahoo_close": 9.449999809265137
+    },
+    "TREEHOUSE": {
+      "ratio": 0.9999999641812463,
+      "nse_close": 21.3,
+      "yahoo_close": 21.299999237060547
+    },
+    "TREL": {
+      "ratio": 1.0000000171639922,
+      "nse_close": 44.45,
+      "yahoo_close": 44.45000076293945
+    },
+    "TRIGYN": {
+      "ratio": 1.0,
+      "nse_close": 131.75,
+      "yahoo_close": 131.75
+    },
+    "VAKRANGEE": {
+      "ratio": 1.00000003973643,
+      "nse_close": 19.2,
+      "yahoo_close": 19.200000762939453
+    },
+    "VARDHACRLC": {
+      "ratio": 0.9999999875540057,
+      "nse_close": 61.3,
+      "yahoo_close": 61.29999923706055
+    },
+    "VIPCLOTHNG": {
+      "ratio": 1.0000000155068993,
+      "nse_close": 49.2,
+      "yahoo_close": 49.20000076293945
+    },
+    "YESBANK": {
+      "ratio": 1.0000000328853214,
+      "nse_close": 23.2,
+      "yahoo_close": 23.200000762939453
+    },
+    "NIFTYBEES": {
+      "ratio": 1.0000000280668333,
+      "nse_close": 239.21,
+      "yahoo_close": 239.2100067138672
+    }
+  },
+  "known_limit": "static surviving universe; native no-split cohort only; not an all-Penny historical universe",
+  "parent_rounds": "exploratory; not valid full nominal-price-band proof",
+  "reserved_exam": "not read"
+}
