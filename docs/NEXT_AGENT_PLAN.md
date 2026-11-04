@@ -1,3 +1,12 @@
+## November 4 - Overnight enrichment: freeze-older-check-and-finalists (Dev only)
+
+Study/status: `docs/research/penny/2026-11-04-overnight-enrichment/STATUS.md`.
+Current plan: `docs/research/penny/2026-11-04-overnight-enrichment/PLAN.md`.
+Fixed Rs25k; immutable round/exam freezes, full failures and coverage.
+Preserve V2/book/old shadows, owner changes and reserved history.
+Daily fill assumptions are not executed orders. Zero Breeze/order calls;
+Production read-only; no push/deployment or capital change.
+
 ## November 4 — Overnight v2 enrichment: freeze-refined-second-round (Dev only)
 
 Owner authorizes creative portfolio/execution improvements beyond ON_V2.

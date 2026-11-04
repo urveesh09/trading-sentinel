@@ -1,0 +1,1238 @@
+[
+  {
+    "file": "r2_kite_V2_NATIVE_36_5_0.5.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ],
+    "summary": {
+      "n": 368,
+      "net": 11300.23,
+      "ex_best": 9392.63,
+      "dd": 2866.28,
+      "dd_pct_peak": 9.62,
+      "pf": 1.38,
+      "win": 44.3,
+      "mean_pct": 0.311,
+      "median_pct": -0.191,
+      "final": 36300.23,
+      "by_year": {
+        "2025": 2398.5,
+        "2026": 8901.73
+      },
+      "dd_pct_initial": 11.465
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_WINNER_NONFILL": 165,
+      "NO_POSITION_AFTER_NONFILL": 165,
+      "POSTCLOSE_FILLED_ASSUMPTION": 368,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_kite_V2_NATIVE_36_5_0.75.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ],
+    "summary": {
+      "n": 447,
+      "net": 32902.95,
+      "ex_best": 30684.39,
+      "dd": 2213.52,
+      "dd_pct_peak": 5.72,
+      "pf": 2.105,
+      "win": 53.9,
+      "mean_pct": 0.679,
+      "median_pct": 0.12,
+      "final": 57902.95,
+      "by_year": {
+        "2025": 11444.49,
+        "2026": 21458.46
+      },
+      "dd_pct_initial": 8.854
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_WINNER_NONFILL": 86,
+      "NO_POSITION_AFTER_NONFILL": 86,
+      "POSTCLOSE_FILLED_ASSUMPTION": 447,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_kite_V2_NATIVE_36_5_1.0.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ],
+    "summary": {
+      "n": 533,
+      "net": 51834.8,
+      "ex_best": 49616.25,
+      "dd": 1532.14,
+      "dd_pct_peak": 3.75,
+      "pf": 2.741,
+      "win": 61.0,
+      "mean_pct": 0.898,
+      "median_pct": 0.484,
+      "final": 76834.8,
+      "by_year": {
+        "2025": 17772.46,
+        "2026": 34062.34
+      },
+      "dd_pct_initial": 6.129
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_FILLED_ASSUMPTION": 533,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_kite_V2_NATIVE_60_20_0.75.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ],
+    "summary": {
+      "n": 454,
+      "net": 25415.35,
+      "ex_best": 23218.89,
+      "dd": 2531.98,
+      "dd_pct_peak": 7.17,
+      "pf": 1.76,
+      "win": 48.9,
+      "mean_pct": 0.518,
+      "median_pct": -0.042,
+      "final": 50415.35,
+      "by_year": {
+        "2025": 8205.61,
+        "2026": 17209.74
+      },
+      "dd_pct_initial": 10.128
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_WINNER_NONFILL": 79,
+      "NO_POSITION_AFTER_NONFILL": 79,
+      "POSTCLOSE_FILLED_ASSUMPTION": 454,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_kite_V3_ANCHOR_36_5_0.5.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ],
+    "summary": {
+      "n": 328,
+      "net": 8329.21,
+      "ex_best": 6421.62,
+      "dd": 2765.27,
+      "dd_pct_peak": 9.84,
+      "pf": 1.286,
+      "win": 41.8,
+      "mean_pct": 0.222,
+      "median_pct": -0.287,
+      "final": 33329.21,
+      "by_year": {
+        "2025": 1851.23,
+        "2026": 6477.98
+      },
+      "dd_pct_initial": 11.061
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 21,
+      "FUNDED_INTENT": 486,
+      "POSTCLOSE_WINNER_NONFILL": 157,
+      "NO_POSITION_AFTER_NONFILL": 157,
+      "POSTCLOSE_FILLED_ASSUMPTION": 328,
+      "RANK": 47,
+      "ANCHOR_RETAINED_PAIR": 182,
+      "DOWNSIDE_PAIR": 59,
+      "LIQUIDITY_OR_DUST": 179
+    }
+  },
+  {
+    "file": "r2_kite_V3_ANCHOR_36_5_0.75.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ],
+    "summary": {
+      "n": 404,
+      "net": 30833.71,
+      "ex_best": 28615.16,
+      "dd": 2210.77,
+      "dd_pct_peak": 5.78,
+      "pf": 2.057,
+      "win": 52.7,
+      "mean_pct": 0.641,
+      "median_pct": 0.083,
+      "final": 55833.71,
+      "by_year": {
+        "2025": 11041.44,
+        "2026": 19792.28
+      },
+      "dd_pct_initial": 8.843
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 21,
+      "FUNDED_INTENT": 486,
+      "POSTCLOSE_WINNER_NONFILL": 81,
+      "NO_POSITION_AFTER_NONFILL": 81,
+      "POSTCLOSE_FILLED_ASSUMPTION": 404,
+      "RANK": 47,
+      "ANCHOR_RETAINED_PAIR": 182,
+      "DOWNSIDE_PAIR": 59,
+      "LIQUIDITY_OR_DUST": 179
+    }
+  },
+  {
+    "file": "r2_kite_V3_ANCHOR_36_5_1.0.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ],
+    "summary": {
+      "n": 485,
+      "net": 51145.96,
+      "ex_best": 48927.4,
+      "dd": 1441.96,
+      "dd_pct_peak": 3.74,
+      "pf": 2.754,
+      "win": 60.6,
+      "mean_pct": 0.878,
+      "median_pct": 0.46,
+      "final": 76145.96,
+      "by_year": {
+        "2025": 17590.75,
+        "2026": 33555.21
+      },
+      "dd_pct_initial": 5.768
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 21,
+      "FUNDED_INTENT": 486,
+      "POSTCLOSE_FILLED_ASSUMPTION": 485,
+      "RANK": 47,
+      "ANCHOR_RETAINED_PAIR": 182,
+      "DOWNSIDE_PAIR": 59,
+      "LIQUIDITY_OR_DUST": 179
+    }
+  },
+  {
+    "file": "r2_kite_V3_ANCHOR_60_20_0.75.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ],
+    "summary": {
+      "n": 410,
+      "net": 23401.63,
+      "ex_best": 21205.16,
+      "dd": 2529.01,
+      "dd_pct_peak": 7.25,
+      "pf": 1.712,
+      "win": 47.8,
+      "mean_pct": 0.482,
+      "median_pct": -0.068,
+      "final": 48401.63,
+      "by_year": {
+        "2025": 7822.97,
+        "2026": 15578.66
+      },
+      "dd_pct_initial": 10.116
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 21,
+      "FUNDED_INTENT": 486,
+      "POSTCLOSE_WINNER_NONFILL": 75,
+      "NO_POSITION_AFTER_NONFILL": 75,
+      "POSTCLOSE_FILLED_ASSUMPTION": 410,
+      "RANK": 47,
+      "ANCHOR_RETAINED_PAIR": 182,
+      "DOWNSIDE_PAIR": 59,
+      "LIQUIDITY_OR_DUST": 179
+    }
+  },
+  {
+    "file": "r2_kite_V3_COST_ROUTE_36_5_0.5.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ],
+    "summary": {
+      "n": 396,
+      "net": 15042.63,
+      "ex_best": 13135.03,
+      "dd": 2795.48,
+      "dd_pct_peak": 9.22,
+      "pf": 1.5,
+      "win": 47.7,
+      "mean_pct": 0.468,
+      "median_pct": -0.056,
+      "final": 40042.63,
+      "by_year": {
+        "2025": 3569.56,
+        "2026": 11473.06
+      },
+      "dd_pct_initial": 11.182
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_WINNER_NONFILL": 165,
+      "NO_POSITION_AFTER_NONFILL": 137,
+      "POSTCLOSE_FILLED_ASSUMPTION": 368,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_kite_V3_COST_ROUTE_36_5_0.75.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ],
+    "summary": {
+      "n": 463,
+      "net": 33454.31,
+      "ex_best": 31235.75,
+      "dd": 2240.98,
+      "dd_pct_peak": 5.8,
+      "pf": 2.111,
+      "win": 55.1,
+      "mean_pct": 0.699,
+      "median_pct": 0.19,
+      "final": 58454.31,
+      "by_year": {
+        "2025": 11429.49,
+        "2026": 22024.81
+      },
+      "dd_pct_initial": 8.964
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_WINNER_NONFILL": 86,
+      "NO_POSITION_AFTER_NONFILL": 70,
+      "POSTCLOSE_FILLED_ASSUMPTION": 447,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_kite_V3_COST_ROUTE_36_5_1.0.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ],
+    "summary": {
+      "n": 533,
+      "net": 50386.84,
+      "ex_best": 48168.28,
+      "dd": 1554.55,
+      "dd_pct_peak": 3.91,
+      "pf": 2.673,
+      "win": 60.6,
+      "mean_pct": 0.874,
+      "median_pct": 0.467,
+      "final": 75386.84,
+      "by_year": {
+        "2025": 17201.78,
+        "2026": 33185.05
+      },
+      "dd_pct_initial": 6.218
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_FILLED_ASSUMPTION": 533,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_kite_V3_COST_ROUTE_60_20_0.75.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ],
+    "summary": {
+      "n": 456,
+      "net": 25440.83,
+      "ex_best": 23244.37,
+      "dd": 2531.98,
+      "dd_pct_peak": 7.17,
+      "pf": 1.76,
+      "win": 49.1,
+      "mean_pct": 0.518,
+      "median_pct": -0.037,
+      "final": 50440.83,
+      "by_year": {
+        "2025": 8205.61,
+        "2026": 17235.23
+      },
+      "dd_pct_initial": 10.128
+    },
+    "open_at_end": 1,
+    "outcomes": {
+      "RANK": 309,
+      "FUNDED_INTENT": 534,
+      "POSTCLOSE_WINNER_NONFILL": 79,
+      "NO_POSITION_AFTER_NONFILL": 77,
+      "POSTCLOSE_FILLED_ASSUMPTION": 454,
+      "LIQUIDITY_OR_DUST": 24
+    }
+  },
+  {
+    "file": "r2_yahoo_V2_NATIVE_36_5_0.5.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ],
+    "summary": {
+      "n": 1097,
+      "net": 81310.49,
+      "ex_best": 79202.58,
+      "dd": 3395.85,
+      "dd_pct_peak": 11.19,
+      "pf": 1.98,
+      "win": 48.4,
+      "mean_pct": 0.604,
+      "median_pct": -0.04,
+      "final": 106310.49,
+      "by_year": {
+        "2023": 35261.47,
+        "2024": 24243.62,
+        "2025": 7874.71,
+        "2026": 13930.69
+      },
+      "dd_pct_initial": 13.583
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1097,
+      "POSTCLOSE_WINNER_NONFILL": 509,
+      "NO_POSITION_AFTER_NONFILL": 509,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  },
+  {
+    "file": "r2_yahoo_V2_NATIVE_36_5_0.75.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ],
+    "summary": {
+      "n": 1359,
+      "net": 161774.62,
+      "ex_best": 159556.06,
+      "dd": 2948.05,
+      "dd_pct_peak": 10.67,
+      "pf": 2.947,
+      "win": 58.4,
+      "mean_pct": 0.973,
+      "median_pct": 0.477,
+      "final": 186774.62,
+      "by_year": {
+        "2023": 55873.97,
+        "2024": 46973.54,
+        "2025": 26194.18,
+        "2026": 32732.92
+      },
+      "dd_pct_initial": 11.792
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1359,
+      "POSTCLOSE_WINNER_NONFILL": 247,
+      "NO_POSITION_AFTER_NONFILL": 247,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  },
+  {
+    "file": "r2_yahoo_V2_NATIVE_36_5_1.0.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ],
+    "summary": {
+      "n": 1606,
+      "net": 227941.77,
+      "ex_best": 225723.22,
+      "dd": 2458.53,
+      "dd_pct_peak": 8.43,
+      "pf": 3.744,
+      "win": 64.8,
+      "mean_pct": 1.159,
+      "median_pct": 0.707,
+      "final": 252941.77,
+      "by_year": {
+        "2023": 73209.62,
+        "2024": 64610.56,
+        "2025": 40133.0,
+        "2026": 49988.6
+      },
+      "dd_pct_initial": 9.834
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1606,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  },
+  {
+    "file": "r2_yahoo_V2_NATIVE_60_20_0.75.json",
+    "policy": {
+      "name": "V2_NATIVE",
+      "portfolio": "rank",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ],
+    "summary": {
+      "n": 1372,
+      "net": 136307.8,
+      "ex_best": 134111.34,
+      "dd": 3246.04,
+      "dd_pct_peak": 11.99,
+      "pf": 2.453,
+      "win": 55.2,
+      "mean_pct": 0.812,
+      "median_pct": 0.299,
+      "final": 161307.8,
+      "by_year": {
+        "2023": 48906.69,
+        "2024": 40797.72,
+        "2025": 19747.5,
+        "2026": 26855.89
+      },
+      "dd_pct_initial": 12.984
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1372,
+      "POSTCLOSE_WINNER_NONFILL": 234,
+      "NO_POSITION_AFTER_NONFILL": 234,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_ANCHOR_36_5_0.5.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ],
+    "summary": {
+      "n": 1089,
+      "net": 76480.35,
+      "ex_best": 74376.27,
+      "dd": 3073.28,
+      "dd_pct_peak": 10.44,
+      "pf": 1.924,
+      "win": 47.5,
+      "mean_pct": 0.573,
+      "median_pct": -0.055,
+      "final": 101480.35,
+      "by_year": {
+        "2023": 34597.54,
+        "2024": 21561.04,
+        "2025": 6431.77,
+        "2026": 13889.99
+      },
+      "dd_pct_initial": 12.293
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "DOWNSIDE_PAIR": 89,
+      "FUNDED_INTENT": 1604,
+      "POSTCLOSE_WINNER_NONFILL": 515,
+      "NO_POSITION_AFTER_NONFILL": 515,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1089,
+      "RANK": 194,
+      "ANCHOR_RETAINED_PAIR": 658,
+      "LIQUIDITY_OR_DUST": 33,
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 2
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_ANCHOR_36_5_0.75.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ],
+    "summary": {
+      "n": 1358,
+      "net": 158102.41,
+      "ex_best": 155883.85,
+      "dd": 2717.97,
+      "dd_pct_peak": 9.85,
+      "pf": 2.907,
+      "win": 57.8,
+      "mean_pct": 0.952,
+      "median_pct": 0.45,
+      "final": 183102.41,
+      "by_year": {
+        "2023": 56678.93,
+        "2024": 44331.81,
+        "2025": 24418.86,
+        "2026": 32672.81
+      },
+      "dd_pct_initial": 10.872
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "DOWNSIDE_PAIR": 89,
+      "FUNDED_INTENT": 1604,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1358,
+      "RANK": 194,
+      "ANCHOR_RETAINED_PAIR": 658,
+      "POSTCLOSE_WINNER_NONFILL": 246,
+      "NO_POSITION_AFTER_NONFILL": 246,
+      "LIQUIDITY_OR_DUST": 33,
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 2
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_ANCHOR_36_5_1.0.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ],
+    "summary": {
+      "n": 1604,
+      "net": 222558.53,
+      "ex_best": 220339.98,
+      "dd": 2577.43,
+      "dd_pct_peak": 7.65,
+      "pf": 3.685,
+      "win": 64.3,
+      "mean_pct": 1.134,
+      "median_pct": 0.68,
+      "final": 247558.53,
+      "by_year": {
+        "2023": 74691.85,
+        "2024": 59601.05,
+        "2025": 37779.09,
+        "2026": 50486.55
+      },
+      "dd_pct_initial": 10.31
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "DOWNSIDE_PAIR": 89,
+      "FUNDED_INTENT": 1604,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1604,
+      "RANK": 194,
+      "ANCHOR_RETAINED_PAIR": 658,
+      "LIQUIDITY_OR_DUST": 33,
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 2
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_ANCHOR_60_20_0.75.json",
+    "policy": {
+      "name": "V3_ANCHOR",
+      "portfolio": "downside",
+      "regular_fraction": 0.0,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": true,
+      "min_risk_improvement": 0.2,
+      "route_rule": "constant"
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ],
+    "summary": {
+      "n": 1371,
+      "net": 132670.37,
+      "ex_best": 130473.91,
+      "dd": 3020.03,
+      "dd_pct_peak": 11.16,
+      "pf": 2.415,
+      "win": 54.7,
+      "mean_pct": 0.792,
+      "median_pct": 0.268,
+      "final": 157670.37,
+      "by_year": {
+        "2023": 49730.16,
+        "2024": 38146.89,
+        "2025": 17930.75,
+        "2026": 26862.57
+      },
+      "dd_pct_initial": 12.08
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "DOWNSIDE_PAIR": 89,
+      "FUNDED_INTENT": 1604,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1371,
+      "RANK": 194,
+      "ANCHOR_RETAINED_PAIR": 658,
+      "POSTCLOSE_WINNER_NONFILL": 233,
+      "NO_POSITION_AFTER_NONFILL": 233,
+      "LIQUIDITY_OR_DUST": 33,
+      "RISK_HISTORY_UNAVAILABLE_FALLBACK": 2
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_COST_ROUTE_36_5_0.5.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      36,
+      5,
+      0.5
+    ],
+    "summary": {
+      "n": 1212,
+      "net": 96061.73,
+      "ex_best": 93980.09,
+      "dd": 3047.29,
+      "dd_pct_peak": 11.22,
+      "pf": 2.122,
+      "win": 52.4,
+      "mean_pct": 0.781,
+      "median_pct": 0.132,
+      "final": 121061.73,
+      "by_year": {
+        "2023": 39921.13,
+        "2024": 29716.3,
+        "2025": 9485.23,
+        "2026": 16939.07
+      },
+      "dd_pct_initial": 12.189
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1097,
+      "POSTCLOSE_WINNER_NONFILL": 509,
+      "NO_POSITION_AFTER_NONFILL": 394,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_COST_ROUTE_36_5_0.75.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      36,
+      5,
+      0.75
+    ],
+    "summary": {
+      "n": 1420,
+      "net": 163707.44,
+      "ex_best": 161488.88,
+      "dd": 3016.56,
+      "dd_pct_peak": 10.97,
+      "pf": 2.911,
+      "win": 59.4,
+      "mean_pct": 0.991,
+      "median_pct": 0.497,
+      "final": 188707.44,
+      "by_year": {
+        "2023": 56154.61,
+        "2024": 48173.24,
+        "2025": 25952.21,
+        "2026": 33427.39
+      },
+      "dd_pct_initial": 12.066
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1359,
+      "POSTCLOSE_WINNER_NONFILL": 247,
+      "NO_POSITION_AFTER_NONFILL": 186,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_COST_ROUTE_36_5_1.0.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      36,
+      5,
+      1.0
+    ],
+    "summary": {
+      "n": 1606,
+      "net": 219879.7,
+      "ex_best": 217661.14,
+      "dd": 2705.68,
+      "dd_pct_peak": 9.37,
+      "pf": 3.568,
+      "win": 64.4,
+      "mean_pct": 1.118,
+      "median_pct": 0.667,
+      "final": 244879.7,
+      "by_year": {
+        "2023": 70351.88,
+        "2024": 62412.68,
+        "2025": 38337.73,
+        "2026": 48777.41
+      },
+      "dd_pct_initial": 10.823
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1606,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  },
+  {
+    "file": "r2_yahoo_V3_COST_ROUTE_60_20_0.75.json",
+    "policy": {
+      "name": "V3_COST_ROUTE",
+      "portfolio": "rank",
+      "regular_fraction": 0.5,
+      "slots": 2,
+      "night_min": 0.001,
+      "depth": 10,
+      "inverse_risk_weights": false,
+      "covariance_prior": 0.015,
+      "min_overlap": 20,
+      "max_weight": 0.65,
+      "screen_before_depth": false,
+      "anchor_first": false,
+      "min_risk_improvement": 0.2,
+      "route_rule": "positive_net"
+    },
+    "model": [
+      60,
+      20,
+      0.75
+    ],
+    "summary": {
+      "n": 1381,
+      "net": 136522.83,
+      "ex_best": 134326.36,
+      "dd": 3282.31,
+      "dd_pct_peak": 12.1,
+      "pf": 2.443,
+      "win": 55.3,
+      "mean_pct": 0.818,
+      "median_pct": 0.309,
+      "final": 161522.83,
+      "by_year": {
+        "2023": 49581.36,
+        "2024": 40537.11,
+        "2025": 19597.49,
+        "2026": 26806.86
+      },
+      "dd_pct_initial": 13.129
+    },
+    "open_at_end": 0,
+    "outcomes": {
+      "RANK": 943,
+      "FUNDED_INTENT": 1606,
+      "POSTCLOSE_FILLED_ASSUMPTION": 1372,
+      "POSTCLOSE_WINNER_NONFILL": 234,
+      "NO_POSITION_AFTER_NONFILL": 225,
+      "LIQUIDITY_OR_DUST": 35
+    }
+  }
+]

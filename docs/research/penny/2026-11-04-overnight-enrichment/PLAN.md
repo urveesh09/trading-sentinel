@@ -94,3 +94,25 @@ modeled roundtrip costs; otherwise all post-close. No new learned predictor.
 Older public acquisition: 874 requested, 443 returned, 710167 rows; no outcome
 inspection or strategy score. Fresh check still sealed. Timing: use dated
 broker's 15:50-16:00, not stale generic 15:40 start.
+
+## Finalist decision before older outcomes
+
+Round2 frozen commit a8976d1, nine unit tests passed. Anchoring preserved
+more profit but failed improvement thresholds; reject both diversification
+arms. Cost-aware routing preserved 96.5% ideal Yahoo net and raised net at
+50% winner fills from 81310 to 96062, with lower DD. Half-regular remained
+the best minimum-net development arm across four declared models, albeit
+with much lower ideal profit. Freeze BOTH unchanged finalists now.
+
+Separate predeclared robustness acceptance for older history: all four
+models positive net/ex-best, >=100 closes, no open exposure; minimum net
+across four models at least 10% above V2 minimum; maximum DD <=1.5x V2
+maximum. This objective follows development diagnostics and is frozen
+before older outcomes. Original same-model thresholds remain reported,
+especially full-fill dominance. A robustness pass is not a full-fill pass.
+No arm modification or new candidate after the older opening.
+
+New script prepares public raw prices with validation and no repair, uses
+original future split restrictions plus older split events, and builds
+current shipped candidates. Universe survivorship and future split cuts
+limit this check. Scoring cash/trade identities are assertions.
