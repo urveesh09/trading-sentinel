@@ -1,3 +1,16 @@
+## November 4 — Penny research round-3-frozen (Dev only, not deployed)
+
+Initial source/data freeze `ca3b748`; original baseline evidence preserved.
+Both three-day daily candidates lose before fees; the current multi-day
+EDGE proxy loses while the existing overnight proxy is positive. Next
+frozen round tests causal stock-specific overnight persistence against
+that stronger incumbent, using the existing own-cash book and costs.
+Plan and all failures: `docs/research/penny/2026-11-04-strategy-search/`.
+23 focused mechanics/Smart/profit-lock checks pass; additional night
+prefix/cash checks are recorded with the round. Validation stays sealed.
+No runtime/source-binding/flag/schema/capital/Production change; no
+Breeze/broker calls. Owner working bytes remain outside these commits.
+
 ## November 4 — Penny research basis-and-smart-round2-frozen (Dev only, not deployed)
 
 Initial source/data freeze `ca3b748`; original baseline evidence preserved.

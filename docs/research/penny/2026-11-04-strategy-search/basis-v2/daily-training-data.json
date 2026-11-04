@@ -1,0 +1,208 @@
+{
+  "invalid": {
+    "DCMFINSERV": {
+      "ohlc_bounds_violated": 3
+    },
+    "GLFL": {
+      "ohlc_bounds_violated": 1
+    },
+    "NAGREEKCAP": {
+      "ohlc_bounds_violated": 4
+    },
+    "TCIFINANCE": {
+      "ohlc_bounds_violated": 7
+    }
+  },
+  "manifest": {
+    "contract_version": "sentinel_bar_data_contract_v1",
+    "interval": "day",
+    "requested": {
+      "before": "2023-02-01",
+      "tickers": [
+        "ACEVECTOR",
+        "ARTNIRMAN",
+        "ASHOKAMET",
+        "ATL",
+        "ATLANTAA",
+        "ATLPP-E1",
+        "COFFEEDAY",
+        "COUNCODOS",
+        "DCMFINSERV",
+        "DEVX",
+        "DHANBANK",
+        "DOLLEX",
+        "DSFCL",
+        "DWARKESH",
+        "ELGIRUBCO",
+        "ESAFSFB",
+        "GAYAHWS",
+        "GAYAPROJ",
+        "GFLLIMITED",
+        "GLFL",
+        "GRANDOAK",
+        "GROWWSLVR",
+        "HCC",
+        "HTMEDIA",
+        "IBULLSLTD",
+        "IDEA",
+        "IWP",
+        "JHS",
+        "JISLJALEQS",
+        "JYOTISTRUC",
+        "KESORAMIND",
+        "KHANDSE",
+        "KMSUGAR",
+        "KOHINOOR",
+        "KREBSBIO",
+        "KRIDHANINF",
+        "KWIL",
+        "LCCINFOTEC",
+        "LEXUS",
+        "MANAKALUCO",
+        "MANGALAM",
+        "MANIKA",
+        "MCLEODRUSS",
+        "METAL",
+        "MMWL",
+        "MOL",
+        "MONEYVIEW",
+        "MUKTAARTS",
+        "NAGREEKCAP",
+        "NECCLTD",
+        "NGIL",
+        "NIFTYBEES",
+        "OLAELEC",
+        "ONIDA",
+        "ONMOBILE",
+        "OPTIFIN",
+        "OSWALAGRO",
+        "PALREDTEC",
+        "PATINTLOG",
+        "PEARLPOLY",
+        "PERFECT-SZ",
+        "PHOENXINTL",
+        "PLAZACABLE",
+        "PRAXIS",
+        "PRIMO",
+        "PRITIKAUTO",
+        "PVP",
+        "RETAIL",
+        "RHETAN",
+        "ROML",
+        "SETCO",
+        "SHIVAMAUTO",
+        "SHYAMTEL",
+        "SIL",
+        "SILVER1",
+        "SILVERCASE",
+        "SOUTHBANK",
+        "SPENCERS",
+        "SPLIL",
+        "STLNETWORK",
+        "STLSTRINF",
+        "SUBEXLTD",
+        "SUPERSPIN",
+        "SUZLON",
+        "SVPGLOB",
+        "SYNCOMF",
+        "TAKE",
+        "TATAGOLD",
+        "TATSILV",
+        "TCIFINANCE",
+        "TEXMOPIPES",
+        "TIGERLOGS",
+        "TNTELE",
+        "TREEHOUSE",
+        "TREL",
+        "TRIGYN",
+        "VAKRANGEE",
+        "VARDHACRLC",
+        "VEDAVAAG",
+        "VEDPOWER",
+        "VIPCLOTHNG",
+        "VISACHROME",
+        "VISL",
+        "VITAL",
+        "VIVOBIOT",
+        "VMSTMT",
+        "WELSPLSOL",
+        "YESBANK",
+        "ZEELEARN"
+      ]
+    },
+    "kind": "daily",
+    "source": "sqlite:ohlcv_cache(read-only)",
+    "point_in_time_rule": "bar dated D informs decisions only after D",
+    "adjustment_basis": "UNKNOWN_AS_CACHED",
+    "corporate_action_rule": "abs move > 40% reported as suspected, never repaired",
+    "accepted_rows": 63282,
+    "zero_volume_days": 5228,
+    "invalid": {
+      "DCMFINSERV": {
+        "ohlc_bounds_violated": 3
+      },
+      "GLFL": {
+        "ohlc_bounds_violated": 1
+      },
+      "NAGREEKCAP": {
+        "ohlc_bounds_violated": 4
+      },
+      "TCIFINANCE": {
+        "ohlc_bounds_violated": 7
+      }
+    },
+    "suspected_corporate_actions": {
+      "COFFEEDAY": [
+        "2021-04-26"
+      ],
+      "LCCINFOTEC": [
+        "2021-03-31"
+      ],
+      "NIFTYBEES": [
+        "2019-12-19",
+        "2019-12-23"
+      ],
+      "PVP": [
+        "2021-07-22"
+      ],
+      "ROML": [
+        "2020-10-08"
+      ],
+      "YESBANK": [
+        "2020-03-06",
+        "2020-03-16",
+        "2020-03-17"
+      ]
+    },
+    "off_calendar_dates": {},
+    "calendar": {
+      "source": "market_calendar.NSE_HOLIDAYS_STATIC",
+      "valid_from": "2026-01-01",
+      "valid_through": "2026-12-31",
+      "holidays": [
+        "2026-01-15",
+        "2026-01-26",
+        "2026-02-15",
+        "2026-03-03",
+        "2026-03-21",
+        "2026-03-26",
+        "2026-03-31",
+        "2026-04-03",
+        "2026-04-14",
+        "2026-05-01",
+        "2026-05-28",
+        "2026-06-26",
+        "2026-08-15",
+        "2026-09-14",
+        "2026-10-02",
+        "2026-10-20",
+        "2026-11-08",
+        "2026-11-10",
+        "2026-11-24",
+        "2026-12-25"
+      ]
+    },
+    "dataset_sha256": "sha256:799741213ab4a0c7cf9da3e61402a19c82eacf968a751b5c4bc9fb5f570796f0"
+  },
+  "features": 28874
+}
