@@ -1,3 +1,27 @@
+## November 4 - N06: the Sentinel's way of trading, as advice to the partner (Dev only)
+
+Owner's order: the partner lost Rs 51,869 on Nov 4 with every watch message on time; make the advice the
+Sentinel's own, "only advice". Study and design: `docs/PARTNER_SENTINEL_ADVICE_N06.md`; scripts and read-only
+Production outputs: `docs/research/partner/2026-11-04-n06/`.
+
+- `partner_sentinel.py` (new):
+  - `size_advice`/`size_line`: the Sentinel's rule, at most `FNO_MAX_RISK_PCT` (2%) of the day's cash lost at the
+    plan stop.
+  - `records`: the partner's own record from `partner_watch_score`'s frozen rule, said only while SUPPORTED.
+  - `events`: the F&O paper main book's buys and sales, and the E03.2 expiry main ticket.
+  - `open_line`: what the Sentinel holds now.
+- `partner_watch.py` (switch `PARTNER_SENTINEL_ADVICE_ENABLED`, default true): new kinds SENTINEL and
+  SENTINEL_EXIT (fixed text, never muted; a buy while 5 min fresh, a sale only after its buy was sent).
+  - PLAN and check: the Sentinel's size line. On a supported warning, the partner's record and the after-loss rule.
+  - Check: the chased-spike warning is left out while its verdict is NOT_SUPPORTED, plus what the Sentinel holds.
+  - ADDED under the first buy: the add rule. DAY: the after-loss rule.
+  - Watch-on: the records and today's expiries.
+- Messages only; no order path. The frozen score: oversized buys 57 trades -Rs 38,024, usual-size 175 -Rs 2,130,
+  after-loss 143 -Rs 31,721, chased spike 96 +Rs 49,703 (NOT_SUPPORTED). In-sample what-if: Sentinel's size
+  -Rs 11,942 vs actual -Rs 40,154. The Sentinel's own trades at 1 lot: -Rs 7,706 on those days. Not a profit; a
+  smaller loss.
+- Tests set the switch false in conftest; `tests/test_partner_sentinel.py` switches it on.
+
 ## November 3 — expiry-v5: E03.2 is the main expiry paper ticket, NIFTY and SENSEX (commit `71857c0`, Dev, pushed, release PR #130 open and clean; NOT deployed: the merge was blocked by the permission system, awaiting the owner)
 
 Owner order (Nov 3, 22:50 IST): make E03.2 the main expiry strategy, run it on SENSEX this Thursday on paper, deploy now.

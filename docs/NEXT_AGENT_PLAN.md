@@ -1,3 +1,39 @@
+## November 4 - N06: the Sentinel's way of trading, as advice to the partner (Dev only)
+
+**Problem.** Nov 4: 29 trades, -Rs 51,869 after charges, with all 74 watch messages delivered in about a second.
+- The frozen score (Oct 27 - Nov 4) puts nearly the whole loss on oversized buys (57, -Rs 38,024) and buys right
+  after a loss (143, -Rs 31,721).
+- Usual-size buys are about even (175, -Rs 2,130).
+- The chased-spike warning is wrong for this partner (96, +Rs 49,703).
+
+The owner wants the partner to follow the Sentinel's trades, advice only.
+
+**Files and contracts.**
+- `python-engine/partner_sentinel.py` (new), `python-engine/partner_watch.py`, `python-engine/config.py`
+  (`PARTNER_SENTINEL_ADVICE_ENABLED`), `python-engine/tests/conftest.py` (switch off for the old texts).
+- `python-engine/tests/test_partner_sentinel.py`, `docs/PARTNER_SENTINEL_ADVICE_N06.md`,
+  `docs/research/partner/2026-11-04-n06/`.
+- Outbox keys `sentinel:<day>:fno:<id>:buy|sell` and `sentinel:<day>:exp:<id>:buy|sell:<i>`.
+- No table or migration.
+
+**Acceptance.**
+- `tests/test_partner_sentinel.py`: 11 passed.
+- Partner tests: 252 passed.
+- The partner-watch tests with the switch on: only the two DAY wording assertions differ.
+- Whole suite: 3,309 + 2,905 passed, 4 skipped, `pytest_exit=0` each.
+- Real Nov 4 rows rendered in Dev (`preview.py`).
+- Not acceptance: whether the partner follows it, or whether it makes money.
+
+**Rollout and rollback.**
+- Dev only until the owner says merge and deploy.
+- Production would get it from the engine image. No `.env` change is needed: the default is on.
+- Rollback: `PARTNER_SENTINEL_ADVICE_ENABLED=false` and recreate the engine, or revert the commit.
+
+**Remaining.**
+- A forward score of buys at or under the Sentinel's size against bigger ones, on the frozen rule.
+- The evening review's own chased-spike lesson (a stricter rule, unscored): the owner's call.
+- The partner's reaction after a week.
+
 ## November 3 — expiry-v5 E03.2 main, NIFTY + SENSEX (commit `71857c0`, Dev, pushed, release PR #130 open and clean; NOT deployed: the merge was blocked by the permission system, awaiting the owner)
 
 - Done: E03.2 main paper ticket with owner notices, summary and owner-rule tally; A/B/C shadows; SENSEX support.

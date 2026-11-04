@@ -1489,6 +1489,11 @@ class Settings(BaseSettings):
     # has checked it.
     PARTNER_WATCH_STREAM_ENABLED:  bool  = False
     PARTNER_KITE_WS_URL:           str   = "wss://ws.kite.trade"
+    # [N06 2026-11-04] Owner's order: the Sentinel's own way of trading as advice to the partner
+    # (partner_sentinel.py): its size rule on every plan and check, its rules after a loss and on adding, the
+    # partner's own record on the warnings the frozen score supports, and the Sentinel's main F&O and expiry
+    # paper trades sent as they happen. Messages only. False: the watch as before N06.
+    PARTNER_SENTINEL_ADVICE_ENABLED: bool = True
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True
