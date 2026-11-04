@@ -1,0 +1,453 @@
+{
+ "model": "PC",
+ "folds": {
+  "A": [
+   "2023-07-03",
+   "2024-12-31"
+  ],
+  "B": [
+   "2025-01-01",
+   "2026-10-30"
+  ]
+ },
+ "pool": {
+  "slots": [
+   1,
+   2,
+   3
+  ],
+  "sizing": [
+   "equal",
+   "risk"
+  ],
+  "night": [
+   null,
+   0.0,
+   0.001,
+   0.002
+  ],
+  "clv": [
+   0.0,
+   0.5,
+   0.7
+  ],
+  "kinds": [
+   "noMRmid",
+   "all",
+   "MOonly",
+   "MRonly"
+  ],
+  "depth": [
+   5,
+   10,
+   20
+  ],
+  "from_high": [
+   null,
+   -0.003
+  ],
+  "rvol": [
+   0.0,
+   2.0,
+   5.0
+  ],
+  "price_max": [
+   null,
+   35.0
+  ]
+ },
+ "runs": [
+  {
+   "train": "A",
+   "test": "B",
+   "label": "REAL",
+   "best": {
+    "slots": 1,
+    "sizing": "equal",
+    "night": 0.002,
+    "clv": 0.5,
+    "kinds": "all",
+    "depth": 5,
+    "from_high": null,
+    "rvol": 0.0,
+    "price_max": null
+   },
+   "train_summary": {
+    "n": 359,
+    "net": 150331.51,
+    "ex_best": 145974.85,
+    "dd": 3390.39,
+    "dd_pct_peak": 2.31,
+    "pf": 6.968,
+    "win": 74.7,
+    "mean_pct": 1.696,
+    "median_pct": 1.173,
+    "final": 175331.51,
+    "by_year": {
+     "2023": 61332.47,
+     "2024": 88999.05
+    }
+   },
+   "test_summary": {
+    "n": 449,
+    "net": 89885.54,
+    "ex_best": 84991.58,
+    "dd": 3035.81,
+    "dd_pct_peak": 6.92,
+    "pf": 2.725,
+    "win": 59.2,
+    "mean_pct": 0.825,
+    "median_pct": 0.475,
+    "final": 114885.54,
+    "by_year": {
+     "2025": 44813.22,
+     "2026": 45072.33
+    }
+   },
+   "ship2_test": {
+    "n": 797,
+    "net": 86539.8,
+    "ex_best": 84321.25,
+    "dd": 1748.83,
+    "dd_pct_peak": 5.27,
+    "pf": 2.725,
+    "win": 60.6,
+    "mean_pct": 0.886,
+    "median_pct": 0.538,
+    "final": 111539.8,
+    "by_year": {
+     "2025": 39654.87,
+     "2026": 46884.93
+    }
+   },
+   "kite_best": {
+    "n": 238,
+    "net": 39889.59,
+    "ex_best": 36059.05,
+    "dd": 3119.12,
+    "dd_pct_peak": 5.7,
+    "pf": 2.258,
+    "win": 58.8,
+    "mean_pct": 0.657,
+    "median_pct": 0.336,
+    "final": 64889.59,
+    "by_year": {
+     "2025": 20742.74,
+     "2026": 19146.85
+    }
+   },
+   "kite_ship2": {
+    "n": 550,
+    "net": 52791.52,
+    "ex_best": 50572.97,
+    "dd": 1532.14,
+    "dd_pct_peak": 4.09,
+    "pf": 2.603,
+    "win": 61.5,
+    "mean_pct": 0.867,
+    "median_pct": 0.485,
+    "final": 77791.52,
+    "by_year": {
+     "2025": 20147.77,
+     "2026": 32643.75
+    }
+   },
+   "spearman_top20": -0.316,
+   "evaluated": 60
+  },
+  {
+   "train": "A",
+   "test": "B",
+   "label": "NULL",
+   "best": {
+    "slots": 1,
+    "sizing": "equal",
+    "night": 0.001,
+    "clv": 0.7,
+    "kinds": "noMRmid",
+    "depth": 5,
+    "from_high": -0.003,
+    "rvol": 5.0,
+    "price_max": null
+   },
+   "train_summary": {
+    "n": 273,
+    "net": 112518.83,
+    "ex_best": 108648.5,
+    "dd": 1549.51,
+    "dd_pct_peak": 2.08,
+    "pf": 7.35,
+    "win": 75.5,
+    "mean_pct": 1.653,
+    "median_pct": 1.081,
+    "final": 137518.83,
+    "by_year": {
+     "2023": 42220.69,
+     "2024": 70298.15
+    }
+   },
+   "test_summary": {
+    "n": 326,
+    "net": 81081.17,
+    "ex_best": 76187.2,
+    "dd": 3083.72,
+    "dd_pct_peak": 6.34,
+    "pf": 3.192,
+    "win": 62.0,
+    "mean_pct": 1.012,
+    "median_pct": 0.545,
+    "final": 106081.17,
+    "by_year": {
+     "2025": 31134.28,
+     "2026": 49946.89
+    }
+   },
+   "ship2_test": {
+    "n": 729,
+    "net": 69043.72,
+    "ex_best": 66600.52,
+    "dd": 1630.55,
+    "dd_pct_peak": 4.99,
+    "pf": 2.577,
+    "win": 59.7,
+    "mean_pct": 0.767,
+    "median_pct": 0.448,
+    "final": 94043.72,
+    "by_year": {
+     "2025": 32867.59,
+     "2026": 36176.13
+    }
+   },
+   "kite_best": {
+    "n": 187,
+    "net": 32042.64,
+    "ex_best": 27148.68,
+    "dd": 2937.19,
+    "dd_pct_peak": 8.65,
+    "pf": 2.201,
+    "win": 57.8,
+    "mean_pct": 0.67,
+    "median_pct": 0.286,
+    "final": 57042.64,
+    "by_year": {
+     "2025": 15935.28,
+     "2026": 16107.37
+    }
+   },
+   "kite_ship2": {
+    "n": 433,
+    "net": 22610.96,
+    "ex_best": 20171.65,
+    "dd": 2321.02,
+    "dd_pct_peak": 6.1,
+    "pf": 1.87,
+    "win": 55.4,
+    "mean_pct": 0.465,
+    "median_pct": 0.216,
+    "final": 47610.96,
+    "by_year": {
+     "2025": 11415.06,
+     "2026": 11195.9
+    }
+   },
+   "spearman_top20": 0.28,
+   "evaluated": 60
+  },
+  {
+   "train": "B",
+   "test": "A",
+   "label": "REAL",
+   "best": {
+    "slots": 1,
+    "sizing": "equal",
+    "night": 0.001,
+    "clv": 0.0,
+    "kinds": "noMRmid",
+    "depth": 20,
+    "from_high": null,
+    "rvol": 5.0,
+    "price_max": 35.0
+   },
+   "train_summary": {
+    "n": 358,
+    "net": 108046.41,
+    "ex_best": 104215.87,
+    "dd": 3671.73,
+    "dd_pct_peak": 7.08,
+    "pf": 3.689,
+    "win": 62.6,
+    "mean_pct": 1.247,
+    "median_pct": 0.614,
+    "final": 133046.41,
+    "by_year": {
+     "2025": 45285.41,
+     "2026": 62760.99
+    }
+   },
+   "test_summary": {
+    "n": 262,
+    "net": 94530.47,
+    "ex_best": 90320.11,
+    "dd": 4716.44,
+    "dd_pct_peak": 3.91,
+    "pf": 5.193,
+    "win": 71.8,
+    "mean_pct": 1.441,
+    "median_pct": 1.041,
+    "final": 119530.47,
+    "by_year": {
+     "2023": 46225.27,
+     "2024": 48305.19
+    }
+   },
+   "ship2_test": {
+    "n": 619,
+    "net": 117745.87,
+    "ex_best": 115579.27,
+    "dd": 1997.21,
+    "dd_pct_peak": 1.42,
+    "pf": 5.892,
+    "win": 72.1,
+    "mean_pct": 1.549,
+    "median_pct": 1.017,
+    "final": 142745.87,
+    "by_year": {
+     "2023": 51955.05,
+     "2024": 65790.82
+    }
+   },
+   "kite_best": {
+    "n": 261,
+    "net": 74855.61,
+    "ex_best": 71025.07,
+    "dd": 3574.78,
+    "dd_pct_peak": 10.14,
+    "pf": 3.307,
+    "win": 64.4,
+    "mean_pct": 1.184,
+    "median_pct": 0.599,
+    "final": 99855.61,
+    "by_year": {
+     "2025": 19552.34,
+     "2026": 55303.27
+    }
+   },
+   "kite_ship2": {
+    "n": 550,
+    "net": 52791.52,
+    "ex_best": 50572.97,
+    "dd": 1532.14,
+    "dd_pct_peak": 4.09,
+    "pf": 2.603,
+    "win": 61.5,
+    "mean_pct": 0.867,
+    "median_pct": 0.485,
+    "final": 77791.52,
+    "by_year": {
+     "2025": 20147.77,
+     "2026": 32643.75
+    }
+   },
+   "spearman_top20": -0.708,
+   "evaluated": 60
+  },
+  {
+   "train": "B",
+   "test": "A",
+   "label": "NULL",
+   "best": {
+    "slots": 1,
+    "sizing": "equal",
+    "night": 0.001,
+    "clv": 0.5,
+    "kinds": "noMRmid",
+    "depth": 20,
+    "from_high": null,
+    "rvol": 5.0,
+    "price_max": 35.0
+   },
+   "train_summary": {
+    "n": 339,
+    "net": 98463.52,
+    "ex_best": 93569.56,
+    "dd": 4157.27,
+    "dd_pct_peak": 5.34,
+    "pf": 3.617,
+    "win": 65.5,
+    "mean_pct": 1.218,
+    "median_pct": 0.801,
+    "final": 123463.52,
+    "by_year": {
+     "2025": 51326.62,
+     "2026": 47136.91
+    }
+   },
+   "test_summary": {
+    "n": 258,
+    "net": 91251.31,
+    "ex_best": 87661.04,
+    "dd": 1645.68,
+    "dd_pct_peak": 2.09,
+    "pf": 6.421,
+    "win": 72.1,
+    "mean_pct": 1.428,
+    "median_pct": 1.042,
+    "final": 116251.31,
+    "by_year": {
+     "2023": 44757.21,
+     "2024": 46494.11
+    }
+   },
+   "ship2_test": {
+    "n": 577,
+    "net": 81146.66,
+    "ex_best": 79038.76,
+    "dd": 1082.25,
+    "dd_pct_peak": 1.44,
+    "pf": 4.666,
+    "win": 71.8,
+    "mean_pct": 1.149,
+    "median_pct": 0.797,
+    "final": 106146.66,
+    "by_year": {
+     "2023": 35242.42,
+     "2024": 45904.24
+    }
+   },
+   "kite_best": {
+    "n": 254,
+    "net": 62837.44,
+    "ex_best": 57943.48,
+    "dd": 3647.27,
+    "dd_pct_peak": 8.2,
+    "pf": 2.98,
+    "win": 64.2,
+    "mean_pct": 0.99,
+    "median_pct": 0.547,
+    "final": 87837.44,
+    "by_year": {
+     "2025": 22137.82,
+     "2026": 40699.62
+    }
+   },
+   "kite_ship2": {
+    "n": 433,
+    "net": 22610.96,
+    "ex_best": 20171.65,
+    "dd": 2321.02,
+    "dd_pct_peak": 6.1,
+    "pf": 1.87,
+    "win": 55.4,
+    "mean_pct": 0.465,
+    "median_pct": 0.216,
+    "final": 47610.96,
+    "by_year": {
+     "2025": 11415.06,
+     "2026": 11195.9
+    }
+   },
+   "spearman_top20": -0.238,
+   "evaluated": 60
+  }
+ ]
+}

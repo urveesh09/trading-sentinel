@@ -1,3 +1,33 @@
+## November 4 — Penny overnight v2: ON_V2 shadow and post-close probe (actual behavior, Dev only, not pushed or deployed)
+
+Report: `docs/research/penny/2026-11-04-overnight-v2/REPORT.md` (plan frozen `6532f15`, exam frozen `f11a16a`).
+- Finding: penny-band stocks drift up overnight (+0.45–0.50% close to open) and down by day (−0.50%);
+  EDGE picks +1.3% overnight, then −1.0 to −1.2% the next day. EDGE daytime and Smart V1/V2 trade against
+  that intraday drift; the overnight book is on the right side but pays the 15:20 ask (~0.36%) and three
+  small DP-charged tickets.
+- `edge_overnight_paper.OvernightShadow` gains `night_min` (default None) and `entry_basis` (default
+  "fill"); ON_TWO_LARGER and ON_TIGHT_SPREAD behave exactly as before.
+- New shadow **ON_V2** (`OVERNIGHT_V2_DECLARED = "2026-11-04"`): 2 slots, equal halves, picks need
+  `night_means(...) >= 0.001` (shrunk mean of the last 60 nights clipped to ±5%, the last night ending
+  at today's `ohlc.open`, read from cached bars dated before today; refused picks don't use a slot);
+  P&L priced from the entry day's official close (`entry_basis="official_close"`), proven from the exit
+  quote's `ohlc.close` only when the entry day is the prior session, else the 15:20 fill
+  (`fill_fallback`). New shadow columns `pnl_entry_price`, `entry_basis`, `night_mean`.
+- New read-only **post-close probe**: jobs `edge_overnight_probe_close` (15:32) and
+  `edge_overnight_probe_post` (16:03) quote the day's ranked picks (`run_postclose_probe`, windows
+  15:31–15:39 and 16:01–16:30, once per phase) into `edge_overnight_postclose_probe`;
+  `postclose_probe_summary` gives pairs, traded share, median post-close ₹ value and the share covering
+  a half-book ticket. No order is placed. Setting `EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED=True`.
+- `overnight_shadow_comparison` adds `postclose_probe` and, per shadow, `since`, `book_same_nights` and
+  `entry_basis_counts`.
+- Research (daily-bar replays, fixed ₹25k, not fills): today's book at +0.36% entry vs v2 with post-close
+  entry: Kite Jul 2025–Sep 2026 +23.2k vs +52.7k; Yahoo 2023–Oct 2026 +116.0k vs +231.0k; Yahoo 2019–22
+  +100.2k vs +188.7k. Under the frozen exam rule all finalists FAILED (random picks from the EDGE top-10
+  matched the ranking; compounding as the primary metric was a planning mistake). The EV model (thin-name
+  bounce) and the genome search (fails walk-forward) were rejected. Post-close fill availability is unknown.
+- Tests: `tests/test_overnight_v2.py` (6); oct21 shadow config expectation and scheduler goldens updated
+  (two probe jobs). Rollback: `EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED=false`, `EDGE_OVERNIGHT_SHADOWS_ENABLED=false`.
+
 ## November 4 — Penny iterative research complete (evidence-complete, Dev only)
 
 Report: `docs/research/penny/2026-11-04-strategy-search/REPORT.md`. Three

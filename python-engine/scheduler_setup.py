@@ -987,6 +987,50 @@ def register_penny_scheduler_jobs(scheduler):
         coalesce=True,
     )
 
+    # [OV2 2026-11-04] Read-only post-close liquidity probe for the ON_V2
+    # shadow: quote the day's ranked picks after the 15:30 close and after the
+    # 16:00 end of the post-close session. Never places an order.
+    async def _run_edge_overnight_probe_safe(phase: str):
+        import edge_overnight_paper as eop
+        if not (settings.EDGE_OVERNIGHT_PAPER_ENABLED and eop.postclose_probe_enabled()):
+            return
+        if not _main.kite.access_token:
+            logger.warning("edge_overnight_probe_skip phase=%s reason=no_access_token", phase)
+            return
+        try:
+            await eop.run_postclose_probe(_main.kite, phase)
+        except Exception as exc:
+            logger.error("edge_overnight_probe_failed phase=%s err=%s", phase, type(exc).__name__, exc_info=True)
+
+    async def _run_edge_overnight_probe_close_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_edge_overnight_probe_safe("CLOSE")
+
+    async def _run_edge_overnight_probe_post_safe():
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        await _run_edge_overnight_probe_safe("POST")
+
+    scheduler.add_job(
+        _run_edge_overnight_probe_close_safe, "cron",
+        day_of_week="mon-fri", hour=15, minute=32,
+        id="edge_overnight_probe_close",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=300,
+    )
+    scheduler.add_job(
+        _run_edge_overnight_probe_post_safe, "cron",
+        day_of_week="mon-fri", hour=16, minute=3,
+        id="edge_overnight_probe_post",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=1200,
+    )
+
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
     # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today

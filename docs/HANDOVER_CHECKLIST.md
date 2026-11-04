@@ -1,3 +1,16 @@
+## November 4 — Penny overnight v2: ON_V2 shadow and post-close probe (Dev only)
+
+- [x] Plan frozen before scoring (`6532f15`); exam finalists frozen (`f11a16a`); exam opened once.
+- [x] Lab parity with the shipped overnight replay: 175 closes, 0 mismatches.
+- [x] Runtime `night_means` parity with the research feature: 400 cases, 0 mismatches.
+- [x] Focused tests: `tests/test_overnight_v2.py`, overnight paper, oct21 shadows, scheduler goldens.
+- [ ] Full suite result and commit identity: see the commit that records them.
+- [ ] Push branch; owner opens the PR and deploys (paper only).
+- [ ] Forward: 20+ ON_V2 closes; read `GET /experiments/edge-overnight` (`book_same_nights`,
+      `postclose_probe.covers_ticket_share`, `entry_basis_counts`).
+- Limits: daily-bar replays, not fills; post-close fill availability unknown; the exam FAILED its frozen rule;
+  2019–2026 daily data is now seen for these rules; Production paper records not read (permission refused).
+
 ## November 4 — Penny iterative research complete (evidence-complete, Dev only)
 
 Report: `docs/research/penny/2026-11-04-strategy-search/REPORT.md`. Three

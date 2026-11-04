@@ -35,6 +35,16 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_edge_overnight_probe_close_safe",
+    "id": "'edge_overnight_probe_close'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_edge_overnight_probe_post_safe",
+    "id": "'edge_overnight_probe_post'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_expiry_paper_flush_safe",
     "id": "'expiry_paper_flush'",
     "trigger": "'cron'"

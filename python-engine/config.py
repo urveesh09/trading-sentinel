@@ -1492,6 +1492,10 @@ class Settings(BaseSettings):
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True
+    # [OV2 2026-11-04] Read-only quotes of the day's ranked overnight picks at
+    # 15:32 and 16:03: did the post-close session trade enough to fill ON_V2?
+    # No order is placed. Rollback: false (no probe jobs do anything).
+    EDGE_OVERNIGHT_POSTCLOSE_PROBE_ENABLED: bool = True
 
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings
