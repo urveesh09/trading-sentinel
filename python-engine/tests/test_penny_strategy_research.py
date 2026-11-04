@@ -56,3 +56,29 @@ def test_trail_changes_future_stop_without_invented_same_bar_fill():
     policy=DailyThesisPolicy(DailyGenome('test'))
     assert policy.at_close(p,{'close':22},'2025-01-02',0) is None
     assert p.stop==pytest.approx(21.4)
+
+
+def test_classic_gap_cannot_release_future_cash():
+    from penny_strategy_research import CurrentClassicReplay
+    r=object.__new__(CurrentClassicReplay)
+    class MissingCurrent:
+        def bar_at(self,minute):return None,None
+        def first_traded_from(self,minute):raise AssertionError('future fill inspected')
+    trade={'status':'OPEN'}
+    r._exit_via_market(trade,MissingCurrent(),900,'DEADLINE',None)
+    assert trade['status']=='UNRESOLVED'
+    assert r._admit()=='UNRESOLVED_EXPOSURE_BLOCK'
+
+
+def test_cash_and_fee_identity_of_shared_daily_book():
+    from daily_portfolio import BookConfig,DailySignal,run_daily_book
+    bars={'X':{f'2025-01-0{i}':{'open':20,'high':20.1,'low':19.9,'close':20,'volume':10000} for i in range(1,6)}}
+    policy=DailyThesisPolicy(DailyGenome('test',hold=1))
+    result=run_daily_book(bars,list(bars['X']),end='2025-01-03',
+        signals_after_close=lambda d,e:[DailySignal('X',d,20,19,23,20,'PULLBACK',context={'atr':.2,'anchor':19})],
+        policy=policy,costs=lambda *a:5,
+        config=BookConfig(1000,max_open_positions=1,max_entries_per_day=1))
+    closed=[t for t in result['trades'] if t['status']=='CLOSED']
+    assert closed
+    assert result['equity_curve'][-1][1]==pytest.approx(1000+sum(t['net_pnl'] for t in closed),abs=.001)
+    for t in closed: assert t['gross_pnl']-t['costs']==pytest.approx(t['net_pnl'])
