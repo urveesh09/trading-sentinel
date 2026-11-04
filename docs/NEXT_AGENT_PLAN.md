@@ -25,7 +25,7 @@ The owner wants the partner to follow the Sentinel's trades, advice only.
 - Not acceptance: whether the partner follows it, or whether it makes money.
 
 **Rollout and rollback.**
-- Dev only until the owner says merge and deploy.
+- Dev only until the owner says merge and deploy. Commit identity: Dev `01671c3`; release branch `codex/n06-partner-advice` `52ef015` (Production `5e30ce0` plus N06 only). Both pushed. Whole suite on the release branch: 3,249 + 2,891 passed, 4 skipped, `pytest_exit=0` each. The PR was not opened (the agent's permission check refused it); not merged, not deployed.
 - Production would get it from the engine image. No `.env` change is needed: the default is on.
 - Rollback: `PARTNER_SENTINEL_ADVICE_ENABLED=false` and recreate the engine, or revert the commit.
 

@@ -1,4 +1,6 @@
-## November 4 - N06 partner advice (Dev only, not deployed)
+## November 4 - N06 partner advice (pushed, not deployed)
+
+Commit identity: Dev `01671c3`; release branch `codex/n06-partner-advice` `52ef015` (Production `5e30ce0` plus N06 only). Both pushed. Whole suite on the release branch: 3,249 + 2,891 passed, 4 skipped, `pytest_exit=0` each. The PR was not opened (the agent's permission check refused it); not merged, not deployed.
 
 - [ ] On the owner's merge and deploy: Production engine image carries `partner_sentinel.py`; `PARTNER_SENTINEL_ADVICE_ENABLED` true by default.
 - [ ] First live day, read-only: the watch-on message carries the partner's two records and the expiry line on an expiry day; PLAN messages carry "📏 The Sentinel's size"; any SENTINEL / SENTINEL_EXIT rows in `partner_watch_messages` were sent, with no `partner_sentinel_*_failed` in the engine log.

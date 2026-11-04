@@ -21,6 +21,7 @@ Production outputs: `docs/research/partner/2026-11-04-n06/`.
   -Rs 11,942 vs actual -Rs 40,154. The Sentinel's own trades at 1 lot: -Rs 7,706 on those days. Not a profit; a
   smaller loss.
 - Tests set the switch false in conftest; `tests/test_partner_sentinel.py` switches it on.
+- Commit identity: Dev `01671c3`; release branch `codex/n06-partner-advice` `52ef015` (Production `5e30ce0` plus N06 only). Both pushed. Whole suite on the release branch: 3,249 + 2,891 passed, 4 skipped, `pytest_exit=0` each. The PR was not opened (the agent's permission check refused it); not merged, not deployed.
 
 ## November 4 - Smart/Classic enrichment: freeze-nse-identity-correction-and-final-cross-name-check (Dev only)
 
