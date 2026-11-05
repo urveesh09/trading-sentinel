@@ -1,0 +1,31 @@
+{
+  "n11t_all": {
+    "count": 29,
+    "losses_removed_oracle": 24221.15,
+    "net": 95040.33,
+    "positive_only": 119261.48,
+    "winners": 15
+  },
+  "n11t_at_or_above_vol_line": {
+    "count": 29,
+    "losses_removed_oracle": 24221.15,
+    "net": 95040.33,
+    "positive_only": 119261.48,
+    "winners": 15
+  },
+  "n11t_below_or_unknown_vol_line": {
+    "count": 0,
+    "losses_removed_oracle": 0,
+    "net": 0,
+    "positive_only": 0,
+    "winners": 0
+  },
+  "scope": "Fixed outcomes and sizing, no reallocation, counterfactual or incremental account replay",
+  "shadow_entries_with_native_stand_aside_reading": {
+    "count": 0,
+    "losses_removed_oracle": 0,
+    "net": 0,
+    "positive_only": 0,
+    "winners": 0
+  }
+}

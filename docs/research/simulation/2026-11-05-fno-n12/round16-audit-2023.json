@@ -1,0 +1,159 @@
+{
+  "refusals": [
+    {
+      "at": "2023-03-21T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2023-03-23",
+      "full_reserve": 13596.89083191074,
+      "opening_width": 77.14999999999782,
+      "pair_ask": 201.10000000000002,
+      "strike": 17100,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-05-02T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2023-05-04",
+      "full_reserve": 9150.12305827619,
+      "opening_width": 65.20000000000073,
+      "pair_ask": 132.85,
+      "strike": 18250,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-05-10T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2023-05-11",
+      "full_reserve": 8241.223271577259,
+      "opening_width": 100.0,
+      "pair_ask": 118.9,
+      "strike": 18300,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-06-13T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2023-06-15",
+      "full_reserve": 8254.25409289194,
+      "opening_width": 52.45000000000073,
+      "pair_ask": 119.1,
+      "strike": 18750,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-06-26T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2023-06-28",
+      "full_reserve": 9951.51856912901,
+      "opening_width": 63.70000000000073,
+      "pair_ask": 145.14999999999998,
+      "strike": 18700,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-07-04T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2023-07-06",
+      "full_reserve": 9726.73690145078,
+      "opening_width": 96.5,
+      "pair_ask": 141.7,
+      "strike": 19400,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-07-05T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2023-07-06",
+      "full_reserve": 9299.97750339501,
+      "opening_width": 84.0,
+      "pair_ask": 135.15,
+      "strike": 19450,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-08-23T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2023-08-24",
+      "full_reserve": 7055.418531941381,
+      "opening_width": 45.25,
+      "pair_ask": 100.69999999999999,
+      "strike": 19400,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-09-12T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2023-09-14",
+      "full_reserve": 10997.24197963208,
+      "opening_width": 155.20000000000073,
+      "pair_ask": 161.2,
+      "strike": 20050,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-09-27T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2023-09-28",
+      "full_reserve": 7768.855998920109,
+      "opening_width": 98.44999999999709,
+      "pair_ask": 111.65,
+      "strike": 19600,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-10-03T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2023-10-05",
+      "full_reserve": 10306.60844995404,
+      "opening_width": 110.0,
+      "pair_ask": 150.6,
+      "strike": 19550,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-11-01T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2023-11-02",
+      "full_reserve": 8993.75320250003,
+      "opening_width": 83.40000000000146,
+      "pair_ask": 130.45,
+      "strike": 19100,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-11-15T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2023-11-16",
+      "full_reserve": 7289.97331560562,
+      "opening_width": 74.39999999999782,
+      "pair_ask": 104.3,
+      "strike": 19700,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2023-11-22T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2023-11-23",
+      "full_reserve": 7257.39626231892,
+      "opening_width": 53.54999999999927,
+      "pair_ask": 103.80000000000001,
+      "strike": 19850,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    }
+  ],
+  "source_receipt_sha256": "9b1adc5c6e74389a6707353713f042dcf34b1c6913463733ae0443f9aaed2f0b"
+}

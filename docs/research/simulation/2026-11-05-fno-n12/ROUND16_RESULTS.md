@@ -13,4 +13,6 @@ The [cash and execution rules](ROUND16.md) were frozen at `1ec5f90`. Use the ori
 
 **Rejected for economics at admission.** The 39 available two-leg pairs failed the opening-range price bound, the cash reserve bound or both. The frozen receipt records the combined refusal. There were no staged purchases or unresolved positions. Each year's book metrics remained equal to N11T, totaling ₹264,142.37 over separate yearly accounts. The comparison cannot estimate profit from buying those rejected pairs. On November 5 the recorded singles had already entered before 11:00 and the nearest NIFTY option expiry was November 9. Either gate removes the proposed trade. [Dated expiry and paper reference](round9-nov5.json).
 
+The separate `round16_audit.py` reproduced every frozen yearly metric and split the 39 refusals. Eight failed only the price bound, two failed only the cash bound, and 29 failed both. The median ask was 1.71 times the opening range and the median full cash reserve was ₹11,287. A larger wallet cap alone would address only two cases at the declared price criterion. No new return scenario was scored.
+
 Run `round16.py` with `N12_YEAR` from 2022 through 2026. No runtime, live order, allocation or expiry changes. Retire this hypothesis at the declared bounds.
