@@ -1,0 +1,350 @@
+{
+  "coverage": {
+    "fno_dr_positions:29": {
+      "archived_events_on_day": 34819,
+      "date": "2026-10-07",
+      "joint_receipts_after_entry": 26
+    },
+    "fno_dr_positions:30": {
+      "archived_events_on_day": 34968,
+      "date": "2026-10-08",
+      "joint_receipts_after_entry": 28
+    },
+    "fno_dr_positions:31": {
+      "archived_events_on_day": 34927,
+      "date": "2026-10-09",
+      "joint_receipts_after_entry": 347
+    },
+    "fno_dr_positions:33": {
+      "archived_events_on_day": 33239,
+      "date": "2026-10-15",
+      "joint_receipts_after_entry": 26
+    },
+    "fno_dr_positions:36": {
+      "archived_events_on_day": 34950,
+      "date": "2026-10-28",
+      "joint_receipts_after_entry": 296
+    }
+  },
+  "report": {
+    "authorization_effect": "NONE",
+    "development": {
+      "baseline": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "candidate": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "paired": {
+        "complete_pairs": 0
+      },
+      "pairs": 5,
+      "reconciled_usable": 0
+    },
+    "experiment_id": "N012-round11-ordinary-defined-risk",
+    "holdout": {
+      "baseline": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "candidate": {
+        "complete": 0,
+        "unresolved": 0
+      },
+      "paired": {
+        "complete_pairs": 0
+      },
+      "pairs": 0,
+      "reconciled_usable": 0
+    },
+    "manifest": {
+      "baseline_policy": "defined_risk_current_target_stop_flat_v1",
+      "candidate_parameters": {
+        "description": "hold a target hit; exit when the mid mark gives back a fraction of max profit from its peak",
+        "floor": "target_level",
+        "stop_and_squareoff": "unchanged_live_rules",
+        "trail_giveback_fraction_of_max_profit": 0.5
+      },
+      "candidate_policy": "defined_risk_target_hold_trail_v1",
+      "cost_multipliers": [
+        1.0,
+        1.5,
+        2.0
+      ],
+      "cost_schedule": {
+        "effective_date": "2026-04-01",
+        "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+        "rates": {
+          "brokerage_flat_per_order": 20.0,
+          "exchange_pct": 0.0003553,
+          "gst_pct": 0.18,
+          "ipft_pct": 1e-09,
+          "sebi_pct": 1e-06,
+          "stamp_duty_buy_pct": 3e-05,
+          "stt_sell_pct": 0.0015
+        },
+        "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01"
+      },
+      "experiment_id": "N012-round11-ordinary-defined-risk",
+      "frozen_at": "2026-11-05T21:29:25.615347+05:30",
+      "holdout_rule": "only entries strictly after frozen_at are HOLDOUT",
+      "live_settings": {
+        "FNO_DR_SQUAREOFF_MIN": 910,
+        "FNO_DR_STOP_FRAC": 0.6,
+        "FNO_DR_TARGET_FRAC": 0.5
+      },
+      "max_gap_seconds": 180,
+      "reconciliation_tolerance_rs": 1.0,
+      "schema": "fno_dr_exit_experiment_manifest_v2",
+      "source_fingerprint": "sha256:b6ba40a57716058ed830266931aecdb74e31ce221f161739272a1671d72194ef"
+    },
+    "manifest_fingerprint": "sha256:634f60e8d47b7a630dccdc45907076870b87b7e59c22e9324b3713d5037ff7da",
+    "pairs": [
+      {
+        "baseline": {
+          "policy": "defined_risk_current_target_stop_flat_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "candidate": {
+          "policy": "defined_risk_target_hold_trail_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "excluded_observations": {},
+        "kind": "DEBIT_SPREAD",
+        "position_ref": "fno_dr_positions:29",
+        "reconciliation": {
+          "state": "BASELINE_NOT_CLOSED",
+          "usable": false
+        },
+        "sample_class": "DEVELOPMENT",
+        "source_ref": "sha256:55b1b827737a5273cbe9562a3191a4abcb839e3e36e11b25ee368699e0aba6b5"
+      },
+      {
+        "baseline": {
+          "policy": "defined_risk_current_target_stop_flat_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "candidate": {
+          "policy": "defined_risk_target_hold_trail_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "excluded_observations": {},
+        "kind": "DEBIT_SPREAD",
+        "position_ref": "fno_dr_positions:30",
+        "reconciliation": {
+          "state": "BASELINE_NOT_CLOSED",
+          "usable": false
+        },
+        "sample_class": "DEVELOPMENT",
+        "source_ref": "sha256:ddc628d221fb74d607774aedd5216773debbe7bb8b0a9ce919174aa6d7031f56"
+      },
+      {
+        "baseline": {
+          "policy": "defined_risk_current_target_stop_flat_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "candidate": {
+          "policy": "defined_risk_target_hold_trail_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "excluded_observations": {},
+        "kind": "DEBIT_SPREAD",
+        "position_ref": "fno_dr_positions:31",
+        "reconciliation": {
+          "state": "BASELINE_NOT_CLOSED",
+          "usable": false
+        },
+        "sample_class": "DEVELOPMENT",
+        "source_ref": "sha256:aa1ea0a1533a75eedd8790733a0be65635c7081675e11c0b7fe84d6e86af1383"
+      },
+      {
+        "baseline": {
+          "policy": "defined_risk_current_target_stop_flat_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "candidate": {
+          "policy": "defined_risk_target_hold_trail_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "excluded_observations": {},
+        "kind": "DEBIT_SPREAD",
+        "position_ref": "fno_dr_positions:33",
+        "reconciliation": {
+          "state": "BASELINE_NOT_CLOSED",
+          "usable": false
+        },
+        "sample_class": "DEVELOPMENT",
+        "source_ref": "sha256:50fd9eaad1837f6725e1cb1b8b5e29f1e416be7438de155ebe60e7250a9602cb"
+      },
+      {
+        "baseline": {
+          "policy": "defined_risk_current_target_stop_flat_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "candidate": {
+          "policy": "defined_risk_target_hold_trail_v1",
+          "reason": "observation_gap_exceeds_declared_maximum",
+          "status": "INSUFFICIENT_EVIDENCE"
+        },
+        "excluded_observations": {},
+        "kind": "DEBIT_SPREAD",
+        "position_ref": "fno_dr_positions:36",
+        "reconciliation": {
+          "state": "BASELINE_NOT_CLOSED",
+          "usable": false
+        },
+        "sample_class": "DEVELOPMENT",
+        "source_ref": "sha256:65fd90a8a6988e88a8eb3aecdafc4ac9d675db2f0dc60cda6a06095caa0f9379"
+      }
+    ],
+    "qualification": "NOT_ASSESSED",
+    "report_fingerprint": "sha256:f6220916f734b63a03e3756b12525234c80b37254e457886e4eb0f1b4c7a696d",
+    "schema": "fno_dr_exit_experiment_report_v2",
+    "unavailable_entries": [
+      {
+        "position_ref": "fno_dr_positions:1",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:2",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:3",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:4",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:5",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:6",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:7",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:8",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:9",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:10",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:11",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:12",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:13",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:14",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:15",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:16",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:17",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:18",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:19",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:20",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:21",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:22",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:23",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:24",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:25",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:26",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:27",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:28",
+        "reason": "no_exact_bound_legs"
+      },
+      {
+        "position_ref": "fno_dr_positions:32",
+        "reason": "outside_regular_scope"
+      },
+      {
+        "position_ref": "fno_dr_positions:34",
+        "reason": "outside_regular_scope"
+      },
+      {
+        "position_ref": "fno_dr_positions:35",
+        "reason": "outside_regular_scope"
+      },
+      {
+        "position_ref": "fno_dr_positions:37",
+        "reason": "outside_regular_scope"
+      },
+      {
+        "position_ref": "fno_dr_positions:38",
+        "reason": "entry_cost_rs does not reproduce from the bound legs and cost schedule"
+      }
+    ],
+    "warning": "Paired deltas use only entries whose baseline replay reconciles to persisted settlement and ledger cash. Paper research is not authority to alter DR exits."
+  }
+}

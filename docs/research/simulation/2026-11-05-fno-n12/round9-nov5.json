@@ -1,0 +1,21 @@
+{
+  "additional_sleeve_orders": 0,
+  "before_session_exchange_report_date": "2026-11-04",
+  "calendar_sleeve_eligible": false,
+  "day": "2026-11-05",
+  "recorded_nifty_single_net": 4821.18,
+  "scope": "Fixed observed opening state and date eligibility. Historical strategy cash carries not substituted.",
+  "separate_recorded_defined_risk_net": 2545.91,
+  "sources": {
+    "BSE": {
+      "front_future_expiry": "2026-11-26",
+      "front_option_expiry": "2026-11-05",
+      "sha256": "696e3e39a716378d4b6d5a9f6a1150916e80c6dc11f41acee806abaac73eba3e"
+    },
+    "NSE": {
+      "front_future_expiry": null,
+      "front_option_expiry": "2026-11-09",
+      "sha256": "d6b839d45cc135d59caa76082f170355c28390f36c0221c5768c3d005f28fafa"
+    }
+  }
+}
