@@ -83,7 +83,7 @@ def main():
               "only_vix": [d.isoformat() for d in sorted(data["vix"].keys() - data["nifty"].keys())],
               "closes": {d.isoformat(): {name: series.get(d) for name, series in data.items()}
                          for d in sorted(set().union(*(x.keys() for x in data.values())))}}
-    with (HERE / "india-vol-closes.json").open("x", encoding="utf-8") as handle:
+    with (RAW.parent / "india-vol-closes.json").open("x", encoding="utf-8") as handle:
         json.dump(output, handle, indent=2, sort_keys=True)
         handle.write("\n")
     print("NSE coverage", {name: len(values) for name, values in data.items()},
