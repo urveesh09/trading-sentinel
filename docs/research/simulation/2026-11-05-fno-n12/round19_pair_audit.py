@@ -41,7 +41,12 @@ def main():
         result = engine.run(*study.r.WINDOW)
     for row in result["trades"]:
         row.setdefault("status", "CLOSED" if row.get("net_pnl") is not None else "UNRESOLVED")
-    assert study.r.metrics(result) == source[study.PAIR]
+    observed, reference = study.r.metrics(result), source[study.PAIR]
+    # The original pair ran after the trail in the same process and shared its
+    # signal memo. This standalone audit starts with a different memo state.
+    for metrics in (observed, reference):
+        metrics["notes"].pop("named_memo_miss", None)
+    assert observed == reference, [name for name in observed if observed[name] != reference[name]]
     assert json.loads(json.dumps(study.r.money(result))) == source["economic_tuples"][study.PAIR]
     cases = engine.debits
     assert len(cases) == source[study.PAIR]["notes"]["vol_pair_cash_refused"]
