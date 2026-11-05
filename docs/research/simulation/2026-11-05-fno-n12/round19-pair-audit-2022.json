@@ -1,0 +1,82 @@
+{
+  "cases": [
+    {
+      "day": "2022-11-01",
+      "required_reserve": 12772.69138375723,
+      "worst_scenario_net": -2166.597377188328
+    },
+    {
+      "day": "2022-11-02",
+      "required_reserve": 11453.32072564588,
+      "worst_scenario_net": -1805.4649143782995
+    },
+    {
+      "day": "2022-11-09",
+      "required_reserve": 10146.98088884921,
+      "worst_scenario_net": -2656.997019304678
+    },
+    {
+      "day": "2022-11-15",
+      "required_reserve": 11108.00396080686,
+      "worst_scenario_net": -1875.6149126043192
+    },
+    {
+      "day": "2022-11-22",
+      "required_reserve": 10091.599898261818,
+      "worst_scenario_net": -1455.9728395704253
+    },
+    {
+      "day": "2022-11-29",
+      "required_reserve": 11674.844687995439,
+      "worst_scenario_net": -2993.344955828496
+    },
+    {
+      "day": "2022-11-30",
+      "required_reserve": 10280.546807324681,
+      "worst_scenario_net": -3256.338908610646
+    },
+    {
+      "day": "2022-12-06",
+      "required_reserve": 13023.53469406482,
+      "worst_scenario_net": -2717.5974883632084
+    },
+    {
+      "day": "2022-12-07",
+      "required_reserve": 11124.29248745021,
+      "worst_scenario_net": -2852.8493749837608
+    },
+    {
+      "day": "2022-12-13",
+      "required_reserve": 11893.11094501633,
+      "worst_scenario_net": -2395.8750416028743
+    },
+    {
+      "day": "2022-12-14",
+      "required_reserve": 9163.15387959087,
+      "worst_scenario_net": -2412.1304365849737
+    },
+    {
+      "day": "2022-12-20",
+      "required_reserve": 12078.80014875052,
+      "worst_scenario_net": -1690.266100164458
+    },
+    {
+      "day": "2022-12-21",
+      "required_reserve": 9365.13160996841,
+      "worst_scenario_net": -1358.8798017662557
+    },
+    {
+      "day": "2022-12-27",
+      "required_reserve": 12938.8343555194,
+      "worst_scenario_net": -1075.9208589319119
+    },
+    {
+      "day": "2022-12-28",
+      "required_reserve": 9322.7814406957,
+      "worst_scenario_net": -1339.6291867686996
+    }
+  ],
+  "cash_rejections": 15,
+  "pricing_hurdle_passes": 0,
+  "pricing_hurdle_passes_at_15000_full_reserve": 0
+}

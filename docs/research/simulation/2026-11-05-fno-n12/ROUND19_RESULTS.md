@@ -15,6 +15,8 @@ The two independent arms were [frozen](ROUND19.md) at `31fbfaf`. Both reference 
 
 The option pair produced no approved staged entry. At 326 forecast-covered clocks, 273 exceeded the complete debit reserve, 51 missed the repricing hurdle, and two lacked the exact pair. No cash-risk change or incremental P&L is justified by these refusals. There were no unresolved positions. Neither arm reached doubled stress.
 
+`round19_pair_audit.py` reevaluated the same 273 rejected pairs against the frozen price hurdle without creating new admissions. None would clear it, including at a ₹15,000 full-debit reserve in the paper book. The audit reproduced the native economics and decision funnel. Its standalone cold memo changed only `named_memo_miss` telemetry, which was isolated before the comparison. The cash cap alone did not hide a qualifying pair.
+
 ## November 5 observed comparison
 
 Six prior NSE derivatives reports bind dated contracts. The forecast added October 29, November 2 and November 4 futures observations to training. October 30 was missing the full clock and November 3 was NIFTY option expiry. November 5 remained outside training. Forecast annualized intraday volatility was 9.21% with realized data only, 7.89% with India VIX, and the recorded figure was 7.82%.
