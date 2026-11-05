@@ -1,6 +1,7 @@
 """E03: E02's signal with up to three lots and a free runner after the 2x sale; separate, disabled."""
 from datetime import timedelta
 from types import SimpleNamespace
+from fno_models import Contract
 import json,sqlite3
 import expiry_e02 as X
 import expiry_paper as EP
@@ -44,7 +45,7 @@ def test_e03_buys_up_to_three_lots_inside_the_same_ticket_reserve():
 
 def test_e03_never_picks_beyond_four_strikes():
     reading=X.Reading(1,10018.,30.,791,.9);now=stamp(13,11)
-    far=SimpleNamespace(underlying='NIFTY',expiry=now.date(),lot_size=65,instrument_type='CE',strike=10250.,tradingsymbol='X',token=1)
+    far=Contract(name='NIFTY',expiry=now.date(),lot_size=65,instrument_type='CE',strike=10250.,tradingsymbol='X',token=1)
     book=SimpleNamespace(by_symbol={'X':far})
     assert X.plan(reading,{'X':quote(8.,now)},book,now,1250,25000) is not None           # E02's 400-point allowance
     assert X.plan(reading,{'X':quote(8.,now)},book,now,1250,25000,X.E03) is None

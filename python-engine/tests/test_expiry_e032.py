@@ -1,6 +1,7 @@
 """E03.2: E03.1 with put tickets at twice the reserve, an 8% buy limit and every leg sold from 15:14; disabled."""
 from datetime import date,time,timedelta
 from types import SimpleNamespace
+from fno_models import Contract
 import json,sqlite3
 import expiry_e02 as X
 import expiry_paper as EP
@@ -8,7 +9,7 @@ from tests.test_expiry_e02 import add,bars,contract,quote,source,stamp
 
 
 def put_contract(strike=9975.):
-    return SimpleNamespace(underlying='NIFTY',expiry=date(2026,11,3),lot_size=65,instrument_type='PE',strike=strike,tradingsymbol='P',token=2)
+    return Contract(name='NIFTY',expiry=date(2026,11,3),lot_size=65,instrument_type='PE',strike=strike,tradingsymbol='P',token=2)
 
 
 def put_reading():return X.Reading(-1,10000.,5.,791,-.9)

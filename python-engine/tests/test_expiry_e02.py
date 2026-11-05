@@ -1,6 +1,7 @@
 """E02 is an isolated disabled research shadow; no broker execution path."""
 from datetime import date,datetime,timedelta
 from types import SimpleNamespace
+from fno_models import Contract
 import json,sqlite3
 import pytest
 import expiry_e02 as X
@@ -21,7 +22,7 @@ def quote(price,now,qty=650):
 
 
 def contract(expiry=date(2026,11,3),lot=65):
-    return SimpleNamespace(underlying='NIFTY',expiry=expiry,lot_size=lot,instrument_type='CE',strike=10025.,tradingsymbol='X',token=1)
+    return Contract(name='NIFTY',expiry=expiry,lot_size=lot,instrument_type='CE',strike=10025.,tradingsymbol='X',token=1)
 
 
 def source(tmp_path):
