@@ -1,0 +1,405 @@
+{
+  "2022": {
+    "lot": 65,
+    "paper": {
+      "regular_sessions": 115,
+      "active_days": 20,
+      "peak_open_premium": 24420.5,
+      "median_active_day_peak": 11137.75,
+      "peak_share_of_opening_cash_pct": 9.77,
+      "peak_share_of_nominal_premium_cap_pct": 65.12,
+      "market_clock_with_exposure_pct": 4.37,
+      "time_weighted_open_premium": 499.93,
+      "time_weighted_open_premium_if_active": 11440.01
+    },
+    "trial": {
+      "12500-standard": {
+        "start": 12500,
+        "end": 7443.97,
+        "low_equity": 7216.05,
+        "net": -5056.03,
+        "closed_drawdown_pct": 42.27,
+        "closed": 8,
+        "wins": 2,
+        "worst_day": -2993.84,
+        "worst_trade": -1925.21,
+        "best_day": 707.03,
+        "rejects": {
+          "cash": 18,
+          "position_open": 2
+        }
+      },
+      "12500-adverse": {
+        "start": 12500,
+        "end": 7385.54,
+        "low_equity": 7385.54,
+        "net": -5114.46,
+        "closed_drawdown_pct": 40.92,
+        "closed": 9,
+        "wins": 2,
+        "worst_day": -3772.53,
+        "worst_trade": -2310.74,
+        "best_day": 2758.89,
+        "rejects": {
+          "cash": 17,
+          "position_open": 2
+        }
+      },
+      "15000-standard": {
+        "start": 15000,
+        "end": 7292.02,
+        "low_equity": 7064.1,
+        "net": -7707.98,
+        "closed_drawdown_pct": 53.51,
+        "closed": 14,
+        "wins": 4,
+        "worst_day": -2993.84,
+        "worst_trade": -1971.27,
+        "best_day": 2571.85,
+        "rejects": {
+          "position_open": 4,
+          "cash": 10
+        }
+      },
+      "15000-adverse": {
+        "start": 15000,
+        "end": 7475.78,
+        "low_equity": 7475.78,
+        "net": -7524.22,
+        "closed_drawdown_pct": 50.16,
+        "closed": 12,
+        "wins": 3,
+        "worst_day": -3772.53,
+        "worst_trade": -2310.74,
+        "best_day": 2758.89,
+        "rejects": {
+          "cash": 14,
+          "position_open": 2
+        }
+      }
+    }
+  },
+  "2023": {
+    "lot": 65,
+    "paper": {
+      "regular_sessions": 193,
+      "active_days": 22,
+      "peak_open_premium": 20585.5,
+      "median_active_day_peak": 8861.12,
+      "peak_share_of_opening_cash_pct": 8.23,
+      "peak_share_of_nominal_premium_cap_pct": 54.89,
+      "market_clock_with_exposure_pct": 2.71,
+      "time_weighted_open_premium": 234.75,
+      "time_weighted_open_premium_if_active": 8670.28
+    },
+    "trial": {
+      "12500-standard": {
+        "start": 12500,
+        "end": 6263.35,
+        "low_equity": 6263.35,
+        "net": -6236.65,
+        "closed_drawdown_pct": 59.45,
+        "closed": 23,
+        "wins": 6,
+        "worst_day": -3116.29,
+        "worst_trade": -1700.45,
+        "best_day": 7457.47,
+        "rejects": {
+          "position_open": 2,
+          "cash": 2,
+          "floor": 1
+        }
+      },
+      "12500-adverse": {
+        "start": 12500,
+        "end": 6692.89,
+        "low_equity": 6692.89,
+        "net": -5807.11,
+        "closed_drawdown_pct": 46.46,
+        "closed": 7,
+        "wins": 0,
+        "worst_day": -2034.36,
+        "worst_trade": -1629.74,
+        "best_day": 0.0,
+        "rejects": {
+          "position_open": 1,
+          "cash": 5,
+          "floor": 15
+        }
+      },
+      "15000-standard": {
+        "start": 15000,
+        "end": 14766.48,
+        "low_equity": 9006.76,
+        "net": -233.52,
+        "closed_drawdown_pct": 50.48,
+        "closed": 24,
+        "wins": 7,
+        "worst_day": -3116.29,
+        "worst_trade": -1700.45,
+        "best_day": 7457.47,
+        "rejects": {
+          "position_open": 3,
+          "cash": 1
+        }
+      },
+      "15000-adverse": {
+        "start": 15000,
+        "end": 5863.5,
+        "low_equity": 5863.5,
+        "net": -9136.5,
+        "closed_drawdown_pct": 60.91,
+        "closed": 19,
+        "wins": 2,
+        "worst_day": -2034.36,
+        "worst_trade": -2024.37,
+        "best_day": 7021.84,
+        "rejects": {
+          "position_open": 2,
+          "cash": 5,
+          "floor": 2
+        }
+      }
+    }
+  },
+  "2024": {
+    "lot": 65,
+    "paper": {
+      "regular_sessions": 196,
+      "active_days": 25,
+      "peak_open_premium": 41622.75,
+      "median_active_day_peak": 16185.0,
+      "peak_share_of_opening_cash_pct": 16.65,
+      "peak_share_of_nominal_premium_cap_pct": 110.99,
+      "market_clock_with_exposure_pct": 3.19,
+      "time_weighted_open_premium": 625.28,
+      "time_weighted_open_premium_if_active": 19614.77
+    },
+    "trial": {
+      "12500-standard": {
+        "start": 12500,
+        "end": 45154.52,
+        "low_equity": 12500.0,
+        "net": 32654.52,
+        "closed_drawdown_pct": 20.28,
+        "closed": 20,
+        "wins": 12,
+        "worst_day": -1739.76,
+        "worst_trade": -1739.76,
+        "best_day": 12711.3,
+        "rejects": {
+          "cash": 7,
+          "position_open": 2
+        }
+      },
+      "12500-adverse": {
+        "start": 12500,
+        "end": 36943.19,
+        "low_equity": 12059.78,
+        "net": 24443.19,
+        "closed_drawdown_pct": 28.66,
+        "closed": 20,
+        "wins": 8,
+        "worst_day": -2174.94,
+        "worst_trade": -2174.94,
+        "best_day": 12132.09,
+        "rejects": {
+          "cash": 7,
+          "position_open": 2
+        }
+      },
+      "15000-standard": {
+        "start": 15000,
+        "end": 49774.25,
+        "low_equity": 15000.0,
+        "net": 34774.25,
+        "closed_drawdown_pct": 17.63,
+        "closed": 22,
+        "wins": 14,
+        "worst_day": -1739.76,
+        "worst_trade": -1739.76,
+        "best_day": 12711.3,
+        "rejects": {
+          "cash": 5,
+          "position_open": 2
+        }
+      },
+      "15000-adverse": {
+        "start": 15000,
+        "end": 40555.44,
+        "low_equity": 14559.78,
+        "net": 25555.44,
+        "closed_drawdown_pct": 24.11,
+        "closed": 22,
+        "wins": 10,
+        "worst_day": -2174.94,
+        "worst_trade": -2174.94,
+        "best_day": 12132.09,
+        "rejects": {
+          "cash": 5,
+          "position_open": 2
+        }
+      }
+    }
+  },
+  "2025": {
+    "lot": 65,
+    "paper": {
+      "regular_sessions": 195,
+      "active_days": 47,
+      "peak_open_premium": 41879.5,
+      "median_active_day_peak": 15002.0,
+      "peak_share_of_opening_cash_pct": 16.75,
+      "peak_share_of_nominal_premium_cap_pct": 111.68,
+      "market_clock_with_exposure_pct": 6.88,
+      "time_weighted_open_premium": 1138.3,
+      "time_weighted_open_premium_if_active": 16546.55
+    },
+    "trial": {
+      "12500-standard": {
+        "start": 12500,
+        "end": 28700.13,
+        "low_equity": 7061.76,
+        "net": 16200.13,
+        "closed_drawdown_pct": 43.51,
+        "closed": 26,
+        "wins": 14,
+        "worst_day": -2119.92,
+        "worst_trade": -2119.92,
+        "best_day": 4660.51,
+        "rejects": {
+          "cash": 41,
+          "position_open": 6
+        }
+      },
+      "12500-adverse": {
+        "start": 12500,
+        "end": 6111.71,
+        "low_equity": 6111.71,
+        "net": -6388.29,
+        "closed_drawdown_pct": 51.11,
+        "closed": 5,
+        "wins": 0,
+        "worst_day": -2439.59,
+        "worst_trade": -2439.59,
+        "best_day": 0.0,
+        "rejects": {
+          "cash": 22,
+          "floor": 46
+        }
+      },
+      "15000-standard": {
+        "start": 15000,
+        "end": 29533.03,
+        "low_equity": 7669.51,
+        "net": 14533.03,
+        "closed_drawdown_pct": 48.87,
+        "closed": 29,
+        "wins": 15,
+        "worst_day": -2119.92,
+        "worst_trade": -2119.92,
+        "best_day": 4660.51,
+        "rejects": {
+          "cash": 36,
+          "position_open": 8
+        }
+      },
+      "15000-adverse": {
+        "start": 15000,
+        "end": 6229.03,
+        "low_equity": 6229.03,
+        "net": -8770.97,
+        "closed_drawdown_pct": 58.47,
+        "closed": 6,
+        "wins": 0,
+        "worst_day": -2439.59,
+        "worst_trade": -2439.59,
+        "best_day": 0.0,
+        "rejects": {
+          "cash": 21,
+          "floor": 46
+        }
+      }
+    }
+  },
+  "2026": {
+    "lot": 65,
+    "paper": {
+      "regular_sessions": 160,
+      "active_days": 35,
+      "peak_open_premium": 43868.5,
+      "median_active_day_peak": 22181.25,
+      "peak_share_of_opening_cash_pct": 17.55,
+      "peak_share_of_nominal_premium_cap_pct": 116.98,
+      "market_clock_with_exposure_pct": 7.54,
+      "time_weighted_open_premium": 1752.12,
+      "time_weighted_open_premium_if_active": 23234.85
+    },
+    "trial": {
+      "12500-standard": {
+        "start": 12500,
+        "end": 50499.58,
+        "low_equity": 10699.29,
+        "net": 37999.58,
+        "closed_drawdown_pct": 16.64,
+        "closed": 23,
+        "wins": 12,
+        "worst_day": -2333.25,
+        "worst_trade": -2333.25,
+        "best_day": 9204.32,
+        "rejects": {
+          "cash": 25,
+          "position_open": 3
+        }
+      },
+      "12500-adverse": {
+        "start": 12500,
+        "end": 40814.69,
+        "low_equity": 10350.91,
+        "net": 28314.69,
+        "closed_drawdown_pct": 27.68,
+        "closed": 23,
+        "wins": 12,
+        "worst_day": -2762.01,
+        "worst_trade": -2762.01,
+        "best_day": 8654.92,
+        "rejects": {
+          "cash": 25,
+          "position_open": 3
+        }
+      },
+      "15000-standard": {
+        "start": 15000,
+        "end": 64321.0,
+        "low_equity": 13199.29,
+        "net": 49321.0,
+        "closed_drawdown_pct": 12.3,
+        "closed": 30,
+        "wins": 16,
+        "worst_day": -2562.74,
+        "worst_trade": -2562.74,
+        "best_day": 11246.2,
+        "rejects": {
+          "position_open": 7,
+          "cash": 14
+        }
+      },
+      "15000-adverse": {
+        "start": 15000,
+        "end": 51474.35,
+        "low_equity": 12850.91,
+        "net": 36474.35,
+        "closed_drawdown_pct": 22.56,
+        "closed": 29,
+        "wins": 16,
+        "worst_day": -3039.15,
+        "worst_trade": -3039.15,
+        "best_day": 10662.75,
+        "rejects": {
+          "position_open": 7,
+          "cash": 15
+        }
+      }
+    }
+  }
+}
