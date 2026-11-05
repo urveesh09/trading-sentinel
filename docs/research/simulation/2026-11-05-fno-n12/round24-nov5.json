@@ -1,0 +1,44 @@
+{
+  "day": "2026-11-05",
+  "eligible_logged_fallback_refusals": 0,
+  "export_manifest_sha256": "8411f16cd034ad7ab5cde936a92c46148ce7ad70effd71bcb2428880d887bfe3",
+  "forecast": [
+    -4.769737662543603,
+    -5.080055088276237
+  ],
+  "forecast_supports_invalidation": true,
+  "held": [
+    {
+      "adverse_edge": 24375.29620381805,
+      "age_eligible": 150,
+      "below_entry_bid": 74,
+      "id": 57,
+      "missing_required_observation": 0,
+      "possible_invalidation": 0,
+      "total_held_looks": 447
+    },
+    {
+      "adverse_edge": 24380.29576728853,
+      "age_eligible": 150,
+      "below_entry_bid": 0,
+      "id": 58,
+      "missing_required_observation": 0,
+      "possible_invalidation": 0,
+      "total_held_looks": 433
+    },
+    {
+      "adverse_edge": 24407.72474864384,
+      "age_eligible": 151,
+      "below_entry_bid": 105,
+      "id": 59,
+      "missing_required_observation": 0,
+      "possible_invalidation": 0,
+      "total_held_looks": 1021
+    }
+  ],
+  "observed_single_net": 4821.18,
+  "recorded_paper_refusals": {
+    "trades_per_day": 3
+  },
+  "scope": "recorded FNO_PAPER refusals and necessary exit conditions on observed held paths"
+}
