@@ -1,5 +1,6 @@
 """November 5 regular F&O check on the production paper receipts."""
 from datetime import date
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -14,14 +15,17 @@ def read(path):
 
 
 def write(path, value):
-    with path.open("x", encoding="utf-8") as handle:
+    mode = "x"
+    if path.parent.name == "modules":
+        assert read(path)["status"] == "NOT_RUN"
+        mode = "w"
+    with path.open(mode, encoding="utf-8") as handle:
         json.dump(value, handle, indent=2, sort_keys=True)
         handle.write("\n")
 
 
 def main(folder):
     sealed = read(folder / "inputs.json")["files_sha256"]
-    import hashlib
     for path, expected in sealed.items():
         assert hashlib.sha256((folder / path).read_bytes()).hexdigest() == expected
     live = read(folder / "_local/regular.json")
