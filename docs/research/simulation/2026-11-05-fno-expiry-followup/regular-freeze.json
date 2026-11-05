@@ -1,0 +1,16 @@
+{
+  "markets": "NIFTY only, normalized lot 65",
+  "window": "2023\u20132026 previously studied; 2022 excluded from challengers",
+  "arms": [
+    "N11T unchanged",
+    "TREND on completed consecutive five-minute observed closes",
+    "BANK one lot at first native target arm",
+    "ADD confirmed one-lot continuation under existing N11 earned-lot checks"
+  ],
+  "qualification": "Positive incremental net in every year, worst day and closed drawdown no worse, delta stays positive after removing best incremental day; otherwise reject or paper research only.",
+  "notes": "No fitting on the November 5 session or 2022; selection among in-sample arms does not imply qualification.",
+  "files": {
+    "regular_rules.py": "6b9fbf5a4dc271e5d3cf3d8e21ffc02ec1661a3afb02fa772974efcf55a06fb0",
+    "regular_annual.py": "56b78b01c966e1702514b9be3711cd6de709651abfbf85eeed784538c7389eb0"
+  }
+}
