@@ -1,0 +1,51 @@
+{
+  "quote_manifest_sha256": "8411f16cd034ad7ab5cde936a92c46148ce7ad70effd71bcb2428880d887bfe3",
+  "policy": {
+    "schema": "fno_dr_exit_experiment_manifest_v2",
+    "experiment_id": "N012-round11-ordinary-defined-risk",
+    "baseline_policy": "defined_risk_current_target_stop_flat_v1",
+    "candidate_policy": "defined_risk_target_hold_trail_v1",
+    "candidate_parameters": {
+      "description": "hold a target hit; exit when the mid mark gives back a fraction of max profit from its peak",
+      "trail_giveback_fraction_of_max_profit": 0.5,
+      "floor": "target_level",
+      "stop_and_squareoff": "unchanged_live_rules"
+    },
+    "live_settings": {
+      "FNO_DR_TARGET_FRAC": 0.5,
+      "FNO_DR_STOP_FRAC": 0.6,
+      "FNO_DR_SQUAREOFF_MIN": 910
+    },
+    "cost_schedule": {
+      "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01",
+      "effective_date": "2026-04-01",
+      "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+      "rates": {
+        "brokerage_flat_per_order": 20.0,
+        "stt_sell_pct": 0.0015,
+        "exchange_pct": 0.0003553,
+        "sebi_pct": 1E-06,
+        "stamp_duty_buy_pct": 3E-05,
+        "ipft_pct": 1E-09,
+        "gst_pct": 0.18
+      }
+    },
+    "cost_multipliers": [
+      1.0,
+      1.5,
+      2.0
+    ],
+    "reconciliation_tolerance_rs": 1.0,
+    "max_gap_seconds": 180,
+    "source_fingerprint": "sha256:b6ba40a57716058ed830266931aecdb74e31ce221f161739272a1671d72194ef",
+    "frozen_at": "2026-11-05T21:29:25.615347+05:30",
+    "holdout_rule": "only entries strictly after frozen_at are HOLDOUT"
+  },
+  "position_database_sha256": "f88c4cc2de0f03ca02490d2fe44d9d3498d3e271cf070bb2af3ceecab8fecbe5",
+  "files": {
+    "ROUND11.md": "004a4b09be0a210c04f9eb1835484ff2cff5f38c9a9d828d068c22999d48275a",
+    "round11_dr.py": "ec5d5882cc5fcef28f9e999a6c7aef6e05313746bb8a404df4d9ff754874baaf",
+    "cross_index_coverage.py": "51977fb079bba9f1033369c664feb6d254103c331da35352e2d6b76ee2c5cfbc",
+    "_local/round11/ledger.json": "fb8da68e9d27e7437215815fcacedb2cfc268edc3a43beb30b0680330a4e72bc"
+  }
+}
