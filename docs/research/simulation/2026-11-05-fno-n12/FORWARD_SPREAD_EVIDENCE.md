@@ -1,0 +1,9 @@
+# Forward spread evidence for regular F&O
+
+The completed November 5 paper ledger confirms structure 38 at ₹2,545.91. The archive has no joint quote during that position's hold, so neither its native management path nor an alternative exit is available. Existing management already reads the exact persisted tokens together. Retain those responses after the native manager returns. This adds evidence without adding any provider request, scheduler job, order or settlement change.
+
+Scope and contracts. Add an off-by-default `FNO_DR_EXIT_PATH_RECORDING` switch in Dev. Append bounded management batches using the existing guarded exit-path writer in a separate `fno_dr_exit_paths` folder. Retain only fields needed for a raw quote replay, with immutable token and position references, provider receipt and management decision clocks, native settings and settlement count. Keep incomplete reads visible. The read-only F&O exporter includes finished batches and only the defined-risk ledger rows needed to verify cash, from the same database transaction as the spread positions.
+
+Add an explicit held-path mode to the existing defined-risk study. Require matching contract and parameter evidence, usable raw timestamps, sufficient visible exit-side size, chronological management looks and exact baseline exit clock with reconciled reason and cash. Preserve the existing sampled-archive research mode. A later alternate exit with no available observations remains unresolved or unavailable. Verify writer isolation, failure behavior, multi-lot size, clock, exporter and end-to-end synthetic settlement. Compare only forward observations after the source and candidate freeze when they exist. Keep November 5 recorded and unavailable for the new path.
+
+Dev only. No data migration. Roll back the evidence hook by setting the switch false or reverting the isolated change through GitHub. The next independent strategy round remains distinct from the evidence collector.
