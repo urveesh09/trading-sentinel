@@ -1,0 +1,3 @@
+# E03.2 refusal evidence plan
+
+A no-trade summary cannot tell whether a setup was absent or the entry was blocked. Add bounded per-session counts in the existing E03.2 state JSON, separated into signal checks, contract checks and pending-entry checks. Existing state loads with empty counts and a new session clears them. Keep fills, policy, alerts, scheduler and E02/E03/E03.1 outputs identical. Add no table or configuration. Counts are informational and have no authority over admission. Surface the compact funnel in the existing expiry summary when there is no ticket. Verify native strategy tests, state restoration and causal replay against November 5. Roll back by reverting the Dev code through GitHub. The extra JSON fields are safe for the previous reader.
