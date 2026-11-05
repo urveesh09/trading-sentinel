@@ -29,6 +29,6 @@ Use the next slice for independent regular-F&O entries with their own exits. Pri
 
 ## Funded range carry and exact spread decisions
 
-[Round 12](ROUND12.md) kept the frozen N11T controls and used one ₹250,000 account. Eight staged and settled short iron condors gave up ₹4,017.31 across five development windows. They cost ₹817.31 after modeled charges even before the added friction. No unresolved spread remained. Ten of the 18 qualifying range clocks had missing chains. The mechanism is rejected.
+[Round 12](ROUND12_RESULTS.md) kept the frozen N11T controls and used one ₹250,000 account. Eight staged and settled short iron condors gave up ₹4,017.31 across five development windows. They cost ₹817.31 after modeled charges even before the added friction. No unresolved spread remained. Ten of the 18 qualifying range clocks had missing chains. The mechanism is rejected.
 
 Dev `e5bb903` adds a disabled-by-default exact management recorder with read-only export and replay. It reuses the existing broker response and checks full depth, provider clocks, the native decision and ledger cash. The targeted suite passed 125 tests. The atlas indexed 304 modules. The [held manifest](round11-held-forward-freeze.json) was frozen at 2026-11-05 16:24 UTC before any held panel was scored. This is evidence instrumentation only. The actual November 5 structure still has no verified alternative spread exit. [Capture scope and verification](FORWARD_SPREAD_EVIDENCE.md).
