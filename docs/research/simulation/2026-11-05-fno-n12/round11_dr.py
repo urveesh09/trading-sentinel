@@ -18,8 +18,8 @@ import fno_dr_exit_experiment as exp
 from intraday_spread_archive_adapter import read_archived_quote_events
 
 
-def verify():
-    path = HERE / "round11-freeze.json"
+def verify(suffix):
+    path = HERE / f"round11-freeze{suffix}.json"
     spec = read(path)
     assert spec == json.loads(subprocess.check_output(
         ["git", "show", f"HEAD:{path.relative_to(ROOT).as_posix()}"], cwd=ROOT))
@@ -56,8 +56,8 @@ def positions(ledger):
     return groups, skipped
 
 
-def main():
-    policy = verify()
+def main(suffix):
+    policy = verify(suffix)
     manifest = read(ARCHIVE / "manifest.json")
     groups, skipped = positions(read(LOCAL / "ledger.json"))
     items = []
@@ -77,7 +77,7 @@ def main():
             }
     report = exp.build_report(items, policy, unavailable=skipped)
     result = {"report": report, "coverage": coverage}
-    with (HERE / "round11-dr-results.json").open("x", encoding="utf-8") as handle:
+    with (HERE / f"round11-dr-results{suffix}.json").open("x", encoding="utf-8") as handle:
         json.dump(result, handle, indent=2, sort_keys=True)
         handle.write("\n")
     print("positions", len(items) + len(skipped), "bound", len(items),
@@ -92,4 +92,5 @@ if __name__ == "__main__":
     if sys.argv[1:] == ["freeze"]:
         print(json.dumps(exp.freeze_manifest(experiment_id="N012-round11-ordinary-defined-risk")))
     else:
-        main()
+        assert sys.argv[1:] in ([], ["v2"])
+        main("-v2" if sys.argv[1:] else "")
