@@ -1,0 +1,11 @@
+{
+  "files": {
+    "ROUND8.md": "9ed4a95d40f16a27c92ab327bee685d340300c2d64f5b40983bd540856b6c5f6",
+    "round8.py": "dbb4ba48932d113c222f13efee97d8c8c7903ecc0190f8ee6cac76b2bb8e770d",
+    "round1.py": "1f22841f2585dbc96af173d2fd06be1c7145d5c8929da00daa707145f8f5960b",
+    "round1-freeze.json": "b7af179b04021e000218006ee340bd18128927455c1b4272121e1d1c965b1dad",
+    "_local/NASDAQCOM-2020-2026.csv": "b4c4660ab88c2c9c18489f4d42d6568b184aea86b5527dcdded8cf148bc2b494",
+    "_local/VIXCLS-2020-2026.csv": "8145bcc8d73058a709c759b0a3d7682abdd916df775b729eb767cf0f85d036a7"
+  },
+  "external_source": "FRED fredgraph.csv, NASDAQCOM and VIXCLS, cosd 2020-01-01 and coed 2026-11-04"
+}
