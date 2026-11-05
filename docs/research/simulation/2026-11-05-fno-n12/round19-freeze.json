@@ -1,0 +1,261 @@
+{
+  "books": {
+    "VOL_PRICE_PAIR": {
+      "cfg": {
+        "FNO_MAX_LOTS": 2,
+        "FNO_MAX_LOTS_PROVEN": 2
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "label": "N12|VOL_PRICE_PAIR",
+      "members": [
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "OR20",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "EFF",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:LOW",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "n02_contract": "v1",
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n03_context": "TPB_ONE",
+      "n03_contract": "v1",
+      "n03_sizing": "NORMAL",
+      "n03_variant": "RETEST",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n04_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n05_mode": "BASE",
+      "n07_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_last_minute": 840,
+        "low_two_lots_before": 720
+      },
+      "n09": {
+        "contract": "v1",
+        "vol_size": true
+      },
+      "n091": {
+        "contract": "v1",
+        "mode": "VOL_CLOCK"
+      },
+      "n10": {
+        "contract": "v1",
+        "eligibility": "RISK",
+        "entry": "NATIVE",
+        "flat_risk": 5000.0,
+        "max_total": 3,
+        "parent_min": 2,
+        "steps": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "vol": false
+      },
+      "n11": {
+        "add": "HONEST",
+        "contract": "v1",
+        "flat": 6250.0,
+        "k": 1.75,
+        "loss_one": true,
+        "stand": 20,
+        "stand_ratio": 0.9,
+        "true_risk": true
+      },
+      "n11t": {
+        "add": false,
+        "clamp": "SECOND_LOT",
+        "contract": "v4",
+        "limit": 6250.0,
+        "strict": true,
+        "when": [
+          "VOL",
+          "EV"
+        ]
+      },
+      "n12_vol": "VOL_PRICE_PAIR",
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE"
+    },
+    "VOL_TRAIL": {
+      "cfg": {
+        "FNO_MAX_LOTS": 2,
+        "FNO_MAX_LOTS_PROVEN": 2
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "label": "N12|VOL_TRAIL",
+      "members": [
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "OR20",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "EFF",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:LOW",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "n02_contract": "v1",
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n03_context": "TPB_ONE",
+      "n03_contract": "v1",
+      "n03_sizing": "NORMAL",
+      "n03_variant": "RETEST",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n04_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n05_mode": "BASE",
+      "n07_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_last_minute": 840,
+        "low_two_lots_before": 720
+      },
+      "n09": {
+        "contract": "v1",
+        "vol_size": true
+      },
+      "n091": {
+        "contract": "v1",
+        "mode": "VOL_CLOCK"
+      },
+      "n10": {
+        "contract": "v1",
+        "eligibility": "RISK",
+        "entry": "NATIVE",
+        "flat_risk": 5000.0,
+        "max_total": 3,
+        "parent_min": 2,
+        "steps": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "vol": false
+      },
+      "n11": {
+        "add": "HONEST",
+        "contract": "v1",
+        "flat": 6250.0,
+        "k": 1.75,
+        "loss_one": true,
+        "stand": 20,
+        "stand_ratio": 0.9,
+        "true_risk": true
+      },
+      "n11t": {
+        "add": false,
+        "clamp": "SECOND_LOT",
+        "contract": "v4",
+        "limit": 6250.0,
+        "strict": true,
+        "when": [
+          "VOL",
+          "EV"
+        ]
+      },
+      "n12_vol": "VOL_TRAIL",
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE"
+    }
+  },
+  "source": {
+    "../../../../python-engine/fno_exit_rules.py": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467",
+    "../../../../python-engine/options_math.py": "cd62879d56020aa5533c2f19c50930501f296619b460a4538f76a75de10ef105",
+    "ROUND19.md": "b21645e14a6d83dfc146d018af4966043e05e5d52af3127ba8f067b1153b0c64",
+    "round1-freeze.json": "784391a46be45b90e07a9c4ef9eaebedc529f533fc80726050c2e583a5cb2624",
+    "round12.py": "b1e09be08b971c647c44d5c3d1b2aea6c46f24d8d8a03c9633ee73ab61208324",
+    "round16.py": "6e1e4dba7848102b58450cfd360660d7b8d464cee2f7f42936e77ebf86d7922f",
+    "round18-forecasts.json": "0ca60d093972661d865095bab16a75cd88257eead5ccd3b3bc989195bb03116f",
+    "round18-freeze.json": "2390f8403bdde13ced143886de03cc67e5c927c0e0328710cd62b5751c90560c",
+    "round18.py": "98736acc9760a66cc8b54317d9fc1cc0bbf3e8fb5753fbbc65a53532a67f71e9",
+    "round19.py": "1fa5798bb1f559e380c22c3fc8d378c755cb6fbc2eb24f91231c6ed42328e47f",
+    "test_round19.py": "da1b5080a8823c363ddaee6319c237c60e53398a30e9c15739c331a36887c187"
+  }
+}

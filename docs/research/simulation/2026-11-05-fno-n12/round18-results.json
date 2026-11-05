@@ -1,0 +1,4762 @@
+{
+  "aggregate": {
+    "forecast_count": 775,
+    "implied": {
+      "log_mse": 0.42421522413531354,
+      "qlike": -4.040554060821589
+    },
+    "log_mse_improvement_pct": 17.390846427143103,
+    "realized_only": {
+      "log_mse": 0.5135208457997069,
+      "qlike": -3.9713829658692434
+    }
+  },
+  "coverage": {
+    "2022": {
+      "excluded_calendar": 30,
+      "sessions": 145
+    },
+    "2023": {
+      "excluded_calendar": 52,
+      "missing_future_clock": 1,
+      "sessions": 245
+    },
+    "2024": {
+      "excluded_calendar": 52,
+      "missing_future_clock": 2,
+      "sessions": 248
+    },
+    "2025": {
+      "excluded_calendar": 54,
+      "sessions": 248
+    },
+    "2026": {
+      "excluded_calendar": 43,
+      "sessions": 203
+    }
+  },
+  "metrics": {
+    "2022": {
+      "forecast_count": 35,
+      "implied": {
+        "log_mse": 0.34071770799793144,
+        "qlike": -4.297640892209344
+      },
+      "log_mse_improvement_pct": 13.627050400878638,
+      "realized_only": {
+        "log_mse": 0.3944727019041126,
+        "qlike": -4.307222553568271
+      }
+    },
+    "2023": {
+      "forecast_count": 192,
+      "implied": {
+        "log_mse": 0.3217917550825915,
+        "qlike": -4.389447963708214
+      },
+      "log_mse_improvement_pct": 6.977363083646281,
+      "realized_only": {
+        "log_mse": 0.3459284382272971,
+        "qlike": -4.396310339005738
+      }
+    },
+    "2024": {
+      "forecast_count": 194,
+      "implied": {
+        "log_mse": 0.6134552258154035,
+        "qlike": -3.63997828785498
+      },
+      "log_mse_improvement_pct": 14.645626301940062,
+      "realized_only": {
+        "log_mse": 0.7187156313576781,
+        "qlike": -3.4868999752299357
+      }
+    },
+    "2025": {
+      "forecast_count": 194,
+      "implied": {
+        "log_mse": 0.42692771583198935,
+        "qlike": -4.178948290845401
+      },
+      "log_mse_improvement_pct": 15.919118448685754,
+      "realized_only": {
+        "log_mse": 0.5077583725991704,
+        "qlike": -4.136253695050792
+      }
+    },
+    "2026": {
+      "forecast_count": 160,
+      "implied": {
+        "log_mse": 0.3326460704343041,
+        "qlike": -3.8835387538097095
+      },
+      "log_mse_improvement_pct": 33.318998299329316,
+      "realized_only": {
+        "log_mse": 0.49886183763037006,
+        "qlike": -3.775535075313819
+      }
+    }
+  },
+  "paired": {
+    "2022": [
+      {
+        "day": "2022-10-31",
+        "implied_log_forecast": -5.628225817775186,
+        "realized": 0.002233143485406292,
+        "realized_only_log_forecast": -4.979727472144018
+      },
+      {
+        "day": "2022-11-01",
+        "implied_log_forecast": -5.720238181368585,
+        "realized": 0.006046434789841708,
+        "realized_only_log_forecast": -4.959062825143956
+      },
+      {
+        "day": "2022-11-02",
+        "implied_log_forecast": -5.566349144289493,
+        "realized": 0.0024845993620741824,
+        "realized_only_log_forecast": -5.03702454985662
+      },
+      {
+        "day": "2022-11-04",
+        "implied_log_forecast": -5.687378025728955,
+        "realized": 0.0029035300734504468,
+        "realized_only_log_forecast": -5.388560035242445
+      },
+      {
+        "day": "2022-11-07",
+        "implied_log_forecast": -5.796870798355986,
+        "realized": 0.00495581105914019,
+        "realized_only_log_forecast": -5.393892546553035
+      },
+      {
+        "day": "2022-11-09",
+        "implied_log_forecast": -5.779384764126595,
+        "realized": 0.005036181519384826,
+        "realized_only_log_forecast": -5.335756405374594
+      },
+      {
+        "day": "2022-11-11",
+        "implied_log_forecast": -5.750320608256869,
+        "realized": 0.001800380957565942,
+        "realized_only_log_forecast": -5.464644974388076
+      },
+      {
+        "day": "2022-11-14",
+        "implied_log_forecast": -6.1424147468168755,
+        "realized": 0.0022623919352195015,
+        "realized_only_log_forecast": -5.28007902924715
+      },
+      {
+        "day": "2022-11-15",
+        "implied_log_forecast": -5.996923084850386,
+        "realized": 0.0029698461315587664,
+        "realized_only_log_forecast": -5.323349137573405
+      },
+      {
+        "day": "2022-11-16",
+        "implied_log_forecast": -6.062896606278604,
+        "realized": 0.0039029728785020274,
+        "realized_only_log_forecast": -5.421688054271499
+      },
+      {
+        "day": "2022-11-18",
+        "implied_log_forecast": -5.949436695521118,
+        "realized": 0.004165491049966544,
+        "realized_only_log_forecast": -5.570658603305247
+      },
+      {
+        "day": "2022-11-21",
+        "implied_log_forecast": -6.033036185377676,
+        "realized": 0.0025502742272279252,
+        "realized_only_log_forecast": -5.539583505914424
+      },
+      {
+        "day": "2022-11-22",
+        "implied_log_forecast": -5.910961708924093,
+        "realized": 0.00153232403983139,
+        "realized_only_log_forecast": -5.492197087807483
+      },
+      {
+        "day": "2022-11-23",
+        "implied_log_forecast": -6.248665411894072,
+        "realized": 0.002074226951135834,
+        "realized_only_log_forecast": -5.529798618479294
+      },
+      {
+        "day": "2022-11-25",
+        "implied_log_forecast": -6.345647202099571,
+        "realized": 0.003222419748833862,
+        "realized_only_log_forecast": -5.539459275856184
+      },
+      {
+        "day": "2022-11-28",
+        "implied_log_forecast": -6.278360948207636,
+        "realized": 0.0025729294139104123,
+        "realized_only_log_forecast": -5.573996312388434
+      },
+      {
+        "day": "2022-11-29",
+        "implied_log_forecast": -6.157118315109621,
+        "realized": 0.0018115967327296076,
+        "realized_only_log_forecast": -5.622911303314292
+      },
+      {
+        "day": "2022-11-30",
+        "implied_log_forecast": -6.186430301555513,
+        "realized": 0.0025451704261145007,
+        "realized_only_log_forecast": -5.877867723182967
+      },
+      {
+        "day": "2022-12-02",
+        "implied_log_forecast": -6.2248918173016285,
+        "realized": 0.0034335248236562073,
+        "realized_only_log_forecast": -5.897369265101822
+      },
+      {
+        "day": "2022-12-05",
+        "implied_log_forecast": -6.121122970744226,
+        "realized": 0.004669408017316384,
+        "realized_only_log_forecast": -5.829352054411199
+      },
+      {
+        "day": "2022-12-06",
+        "implied_log_forecast": -5.961613408888635,
+        "realized": 0.0029137903795040864,
+        "realized_only_log_forecast": -5.795237738867258
+      },
+      {
+        "day": "2022-12-07",
+        "implied_log_forecast": -5.875891810229608,
+        "realized": 0.005983707709932226,
+        "realized_only_log_forecast": -5.814373031897123
+      },
+      {
+        "day": "2022-12-09",
+        "implied_log_forecast": -5.982452527556237,
+        "realized": 0.007332943829943616,
+        "realized_only_log_forecast": -5.792511549767492
+      },
+      {
+        "day": "2022-12-12",
+        "implied_log_forecast": -5.996763911592442,
+        "realized": 0.004452688784690533,
+        "realized_only_log_forecast": -6.171856800440439
+      },
+      {
+        "day": "2022-12-13",
+        "implied_log_forecast": -5.981346704169916,
+        "realized": 0.002449264869242392,
+        "realized_only_log_forecast": -6.0939089701591165
+      },
+      {
+        "day": "2022-12-14",
+        "implied_log_forecast": -6.079378228345345,
+        "realized": 0.0020881242888092164,
+        "realized_only_log_forecast": -6.046315968539202
+      },
+      {
+        "day": "2022-12-16",
+        "implied_log_forecast": -5.801635406239819,
+        "realized": 0.008773943847484852,
+        "realized_only_log_forecast": -5.784870168873411
+      },
+      {
+        "day": "2022-12-19",
+        "implied_log_forecast": -5.683961142395104,
+        "realized": 0.004802676037377779,
+        "realized_only_log_forecast": -5.659900224149677
+      },
+      {
+        "day": "2022-12-20",
+        "implied_log_forecast": -5.8119929351271855,
+        "realized": 0.005852328516308306,
+        "realized_only_log_forecast": -5.647333984089223
+      },
+      {
+        "day": "2022-12-21",
+        "implied_log_forecast": -5.746051603758072,
+        "realized": 0.013404945060340361,
+        "realized_only_log_forecast": -5.654547922847974
+      },
+      {
+        "day": "2022-12-23",
+        "implied_log_forecast": -5.426137482235676,
+        "realized": 0.010105413130012689,
+        "realized_only_log_forecast": -5.6530011030330805
+      },
+      {
+        "day": "2022-12-26",
+        "implied_log_forecast": -5.178915340815722,
+        "realized": 0.006654424808739919,
+        "realized_only_log_forecast": -5.323135523992696
+      },
+      {
+        "day": "2022-12-27",
+        "implied_log_forecast": -5.23587162794611,
+        "realized": 0.007662605187559649,
+        "realized_only_log_forecast": -5.229524832903174
+      },
+      {
+        "day": "2022-12-28",
+        "implied_log_forecast": -5.398649060640048,
+        "realized": 0.006263916614323612,
+        "realized_only_log_forecast": -5.212242830506751
+      },
+      {
+        "day": "2022-12-30",
+        "implied_log_forecast": -5.524717291961767,
+        "realized": 0.012197324195352877,
+        "realized_only_log_forecast": -5.255242892975649
+      }
+    ],
+    "2023": [
+      {
+        "day": "2023-01-02",
+        "implied_log_forecast": -5.529899571321381,
+        "realized": 0.0052311295590749115,
+        "realized_only_log_forecast": -5.275616168416649
+      },
+      {
+        "day": "2023-01-03",
+        "implied_log_forecast": -5.572231247357959,
+        "realized": 0.003258965394016859,
+        "realized_only_log_forecast": -5.262333212019016
+      },
+      {
+        "day": "2023-01-04",
+        "implied_log_forecast": -5.650773903727314,
+        "realized": 0.006869245081311605,
+        "realized_only_log_forecast": -5.275522022213346
+      },
+      {
+        "day": "2023-01-06",
+        "implied_log_forecast": -5.507729574691186,
+        "realized": 0.00959134921707733,
+        "realized_only_log_forecast": -5.217271744493113
+      },
+      {
+        "day": "2023-01-09",
+        "implied_log_forecast": -5.500853795741655,
+        "realized": 0.004980404669170631,
+        "realized_only_log_forecast": -5.211962371188344
+      },
+      {
+        "day": "2023-01-10",
+        "implied_log_forecast": -5.544087175962705,
+        "realized": 0.008376002452065873,
+        "realized_only_log_forecast": -5.100882214412083
+      },
+      {
+        "day": "2023-01-11",
+        "implied_log_forecast": -5.360224385719086,
+        "realized": 0.008707980327074358,
+        "realized_only_log_forecast": -5.067030385676432
+      },
+      {
+        "day": "2023-01-13",
+        "implied_log_forecast": -5.429381531604075,
+        "realized": 0.006805115682009179,
+        "realized_only_log_forecast": -5.174786880953997
+      },
+      {
+        "day": "2023-01-16",
+        "implied_log_forecast": -5.56797549514451,
+        "realized": 0.0055062491656226445,
+        "realized_only_log_forecast": -5.193297504403695
+      },
+      {
+        "day": "2023-01-17",
+        "implied_log_forecast": -5.474346116826418,
+        "realized": 0.006119890717890832,
+        "realized_only_log_forecast": -5.233188953723527
+      },
+      {
+        "day": "2023-01-18",
+        "implied_log_forecast": -5.532675291133303,
+        "realized": 0.003207020177694569,
+        "realized_only_log_forecast": -5.189695497392903
+      },
+      {
+        "day": "2023-01-20",
+        "implied_log_forecast": -5.67290025785048,
+        "realized": 0.004344373498275699,
+        "realized_only_log_forecast": -5.244668085844732
+      },
+      {
+        "day": "2023-01-23",
+        "implied_log_forecast": -5.763990019550879,
+        "realized": 0.002252895983693102,
+        "realized_only_log_forecast": -5.474775546759851
+      },
+      {
+        "day": "2023-01-24",
+        "implied_log_forecast": -5.841954847787297,
+        "realized": 0.0025319104235259266,
+        "realized_only_log_forecast": -5.599138289936947
+      },
+      {
+        "day": "2023-01-27",
+        "implied_log_forecast": -5.606521157151309,
+        "realized": 0.024643876355510855,
+        "realized_only_log_forecast": -5.486306720011565
+      },
+      {
+        "day": "2023-01-30",
+        "implied_log_forecast": -5.124148747310348,
+        "realized": 0.03018247300899714,
+        "realized_only_log_forecast": -5.270216739690888
+      },
+      {
+        "day": "2023-01-31",
+        "implied_log_forecast": -5.097289653981761,
+        "realized": 0.014436997803127996,
+        "realized_only_log_forecast": -5.289072446080106
+      },
+      {
+        "day": "2023-02-01",
+        "implied_log_forecast": -5.221408771530695,
+        "realized": 0.05838965247062925,
+        "realized_only_log_forecast": -5.291610743999687
+      },
+      {
+        "day": "2023-02-03",
+        "implied_log_forecast": -5.417971792241113,
+        "realized": 0.012274748272184638,
+        "realized_only_log_forecast": -5.302614431100981
+      },
+      {
+        "day": "2023-02-06",
+        "implied_log_forecast": -5.588569154851008,
+        "realized": 0.005190011214335547,
+        "realized_only_log_forecast": -5.144207810937167
+      },
+      {
+        "day": "2023-02-07",
+        "implied_log_forecast": -5.50352021167438,
+        "realized": 0.006601672452817909,
+        "realized_only_log_forecast": -5.164961624610773
+      },
+      {
+        "day": "2023-02-08",
+        "implied_log_forecast": -5.5596291068705215,
+        "realized": 0.005428352243529791,
+        "realized_only_log_forecast": -5.2468857615211535
+      },
+      {
+        "day": "2023-02-10",
+        "implied_log_forecast": -5.726764742963376,
+        "realized": 0.002704267557158432,
+        "realized_only_log_forecast": -5.264878260197806
+      },
+      {
+        "day": "2023-02-13",
+        "implied_log_forecast": -5.801978567579519,
+        "realized": 0.0032443538292433313,
+        "realized_only_log_forecast": -5.309188570288864
+      },
+      {
+        "day": "2023-02-14",
+        "implied_log_forecast": -5.6152021000360355,
+        "realized": 0.0022858202525529734,
+        "realized_only_log_forecast": -5.338362895376786
+      },
+      {
+        "day": "2023-02-15",
+        "implied_log_forecast": -5.692087281978056,
+        "realized": 0.004146904701396243,
+        "realized_only_log_forecast": -5.332175375040417
+      },
+      {
+        "day": "2023-02-17",
+        "implied_log_forecast": -5.778718828726633,
+        "realized": 0.004682958389915684,
+        "realized_only_log_forecast": -5.400671007060737
+      },
+      {
+        "day": "2023-02-20",
+        "implied_log_forecast": -5.712233328905741,
+        "realized": 0.004724508086814761,
+        "realized_only_log_forecast": -5.385224769197149
+      },
+      {
+        "day": "2023-02-21",
+        "implied_log_forecast": -5.636948022989789,
+        "realized": 0.005727605881648291,
+        "realized_only_log_forecast": -5.3748034257888255
+      },
+      {
+        "day": "2023-02-22",
+        "implied_log_forecast": -5.50337305590712,
+        "realized": 0.004861183838523217,
+        "realized_only_log_forecast": -5.383750015263983
+      },
+      {
+        "day": "2023-02-24",
+        "implied_log_forecast": -5.330275794554634,
+        "realized": 0.005970269696514884,
+        "realized_only_log_forecast": -5.322956049197978
+      },
+      {
+        "day": "2023-02-27",
+        "implied_log_forecast": -5.440511751312301,
+        "realized": 0.0075206388134204365,
+        "realized_only_log_forecast": -5.508060826317206
+      },
+      {
+        "day": "2023-02-28",
+        "implied_log_forecast": -5.461772903542121,
+        "realized": 0.008100642422133937,
+        "realized_only_log_forecast": -5.463526821144958
+      },
+      {
+        "day": "2023-03-01",
+        "implied_log_forecast": -5.405391115411567,
+        "realized": 0.002611529776755182,
+        "realized_only_log_forecast": -5.408998651075644
+      },
+      {
+        "day": "2023-03-03",
+        "implied_log_forecast": -5.637198262739372,
+        "realized": 0.003611894599183515,
+        "realized_only_log_forecast": -5.351761129354815
+      },
+      {
+        "day": "2023-03-06",
+        "implied_log_forecast": -5.795652041806514,
+        "realized": 0.0035815297535539705,
+        "realized_only_log_forecast": -5.32030670364244
+      },
+      {
+        "day": "2023-03-08",
+        "implied_log_forecast": -5.77565477513877,
+        "realized": 0.0025866031609779977,
+        "realized_only_log_forecast": -5.306200339755383
+      },
+      {
+        "day": "2023-03-10",
+        "implied_log_forecast": -5.702471479926993,
+        "realized": 0.00584754581944556,
+        "realized_only_log_forecast": -5.300099608520711
+      },
+      {
+        "day": "2023-03-13",
+        "implied_log_forecast": -5.585303904930589,
+        "realized": 0.01269914320533037,
+        "realized_only_log_forecast": -5.20590150267492
+      },
+      {
+        "day": "2023-03-14",
+        "implied_log_forecast": -5.147552025613724,
+        "realized": 0.016364523763329718,
+        "realized_only_log_forecast": -5.076432148100212
+      },
+      {
+        "day": "2023-03-15",
+        "implied_log_forecast": -5.129971246203841,
+        "realized": 0.007088589919139684,
+        "realized_only_log_forecast": -5.060630469247747
+      },
+      {
+        "day": "2023-03-17",
+        "implied_log_forecast": -5.126246704905679,
+        "realized": 0.014198220481277057,
+        "realized_only_log_forecast": -5.102545881619048
+      },
+      {
+        "day": "2023-03-20",
+        "implied_log_forecast": -5.313184060172836,
+        "realized": 0.011185588387847606,
+        "realized_only_log_forecast": -5.079647207374368
+      },
+      {
+        "day": "2023-03-21",
+        "implied_log_forecast": -5.140759703917277,
+        "realized": 0.005539866280781413,
+        "realized_only_log_forecast": -5.075054210137485
+      },
+      {
+        "day": "2023-03-22",
+        "implied_log_forecast": -5.260280135111793,
+        "realized": 0.0035562331678663864,
+        "realized_only_log_forecast": -5.06967593933669
+      },
+      {
+        "day": "2023-03-24",
+        "implied_log_forecast": -5.3509631009068634,
+        "realized": 0.008423735994053397,
+        "realized_only_log_forecast": -5.1928303904906485
+      },
+      {
+        "day": "2023-03-27",
+        "implied_log_forecast": -5.245023354578872,
+        "realized": 0.011096324825050543,
+        "realized_only_log_forecast": -5.162682718188316
+      },
+      {
+        "day": "2023-03-28",
+        "implied_log_forecast": -5.216146253087425,
+        "realized": 0.005443552141080065,
+        "realized_only_log_forecast": -5.165295163474834
+      },
+      {
+        "day": "2023-03-31",
+        "implied_log_forecast": -5.459978409509303,
+        "realized": 0.0037061678172020315,
+        "realized_only_log_forecast": -5.156320341001068
+      },
+      {
+        "day": "2023-04-03",
+        "implied_log_forecast": -5.560788500321933,
+        "realized": 0.002505748973218737,
+        "realized_only_log_forecast": -5.057358668689849
+      },
+      {
+        "day": "2023-04-05",
+        "implied_log_forecast": -5.641276985149577,
+        "realized": 0.0017567515586230217,
+        "realized_only_log_forecast": -5.086903063156972
+      },
+      {
+        "day": "2023-04-10",
+        "implied_log_forecast": -5.81600766874491,
+        "realized": 0.002524570779372642,
+        "realized_only_log_forecast": -5.198218168338654
+      },
+      {
+        "day": "2023-04-11",
+        "implied_log_forecast": -5.735862092478373,
+        "realized": 0.0026720659250507118,
+        "realized_only_log_forecast": -5.200932984730699
+      },
+      {
+        "day": "2023-04-12",
+        "implied_log_forecast": -5.793755238133471,
+        "realized": 0.002239604106519107,
+        "realized_only_log_forecast": -5.23413572838927
+      },
+      {
+        "day": "2023-04-17",
+        "implied_log_forecast": -5.792685355714811,
+        "realized": 0.004702916649020738,
+        "realized_only_log_forecast": -5.4581832913005695
+      },
+      {
+        "day": "2023-04-18",
+        "implied_log_forecast": -5.713025757229896,
+        "realized": 0.003357299477245692,
+        "realized_only_log_forecast": -5.45380829971434
+      },
+      {
+        "day": "2023-04-19",
+        "implied_log_forecast": -5.746740171282227,
+        "realized": 0.0025275401946534782,
+        "realized_only_log_forecast": -5.4669730960874725
+      },
+      {
+        "day": "2023-04-21",
+        "implied_log_forecast": -5.774186087006275,
+        "realized": 0.002168252775294925,
+        "realized_only_log_forecast": -5.512875491306765
+      },
+      {
+        "day": "2023-04-24",
+        "implied_log_forecast": -5.838392433813402,
+        "realized": 0.0020512914271549844,
+        "realized_only_log_forecast": -5.564228974733678
+      },
+      {
+        "day": "2023-04-25",
+        "implied_log_forecast": -5.83586409737695,
+        "realized": 0.0028567948755615176,
+        "realized_only_log_forecast": -5.568525190020582
+      },
+      {
+        "day": "2023-04-26",
+        "implied_log_forecast": -5.857589897628545,
+        "realized": 0.0021596471686546794,
+        "realized_only_log_forecast": -5.5601972230286325
+      },
+      {
+        "day": "2023-04-28",
+        "implied_log_forecast": -5.877637382747913,
+        "realized": 0.0033873151652450456,
+        "realized_only_log_forecast": -5.6115024793472275
+      },
+      {
+        "day": "2023-05-02",
+        "implied_log_forecast": -5.971921845530718,
+        "realized": 0.0018310989748817925,
+        "realized_only_log_forecast": -5.523626435782534
+      },
+      {
+        "day": "2023-05-03",
+        "implied_log_forecast": -5.7837451931737105,
+        "realized": 0.0030801313645043636,
+        "realized_only_log_forecast": -5.507886886620011
+      },
+      {
+        "day": "2023-05-05",
+        "implied_log_forecast": -5.780524633690377,
+        "realized": 0.008434241781512773,
+        "realized_only_log_forecast": -5.800842836548445
+      },
+      {
+        "day": "2023-05-08",
+        "implied_log_forecast": -5.654195850990452,
+        "realized": 0.0026423184271038764,
+        "realized_only_log_forecast": -5.630119879243892
+      },
+      {
+        "day": "2023-05-09",
+        "implied_log_forecast": -5.598591954762222,
+        "realized": 0.0022879046004995953,
+        "realized_only_log_forecast": -5.588417674082754
+      },
+      {
+        "day": "2023-05-10",
+        "implied_log_forecast": -5.596963191706433,
+        "realized": 0.003011286611039741,
+        "realized_only_log_forecast": -5.5934992056595965
+      },
+      {
+        "day": "2023-05-15",
+        "implied_log_forecast": -5.560694033801735,
+        "realized": 0.0031519893618249975,
+        "realized_only_log_forecast": -5.658690216567392
+      },
+      {
+        "day": "2023-05-16",
+        "implied_log_forecast": -5.513297094167111,
+        "realized": 0.0032614311620326585,
+        "realized_only_log_forecast": -5.635509144807807
+      },
+      {
+        "day": "2023-05-17",
+        "implied_log_forecast": -5.498827315710109,
+        "realized": 0.0037092864595025215,
+        "realized_only_log_forecast": -5.651794066740085
+      },
+      {
+        "day": "2023-05-19",
+        "implied_log_forecast": -5.599142985661436,
+        "realized": 0.007204371574014799,
+        "realized_only_log_forecast": -5.617495840168409
+      },
+      {
+        "day": "2023-05-22",
+        "implied_log_forecast": -5.6776545364576485,
+        "realized": 0.005293004294939828,
+        "realized_only_log_forecast": -5.585724298546172
+      },
+      {
+        "day": "2023-05-23",
+        "implied_log_forecast": -5.622894714974625,
+        "realized": 0.0018453838746919473,
+        "realized_only_log_forecast": -5.539379842376104
+      },
+      {
+        "day": "2023-05-24",
+        "implied_log_forecast": -5.625544103265341,
+        "realized": 0.004023328824475463,
+        "realized_only_log_forecast": -5.60576103682549
+      },
+      {
+        "day": "2023-05-26",
+        "implied_log_forecast": -5.6397400424753545,
+        "realized": 0.002168765874105794,
+        "realized_only_log_forecast": -5.593761434673255
+      },
+      {
+        "day": "2023-05-29",
+        "implied_log_forecast": -5.782465828382703,
+        "realized": 0.002724023962527931,
+        "realized_only_log_forecast": -5.535068106465489
+      },
+      {
+        "day": "2023-05-30",
+        "implied_log_forecast": -5.700808703014612,
+        "realized": 0.0027979506043358873,
+        "realized_only_log_forecast": -5.589754679059172
+      },
+      {
+        "day": "2023-05-31",
+        "implied_log_forecast": -5.759288627573042,
+        "realized": 0.0032981839993874626,
+        "realized_only_log_forecast": -5.6176383969667265
+      },
+      {
+        "day": "2023-06-02",
+        "implied_log_forecast": -5.831910538617016,
+        "realized": 0.003853667294903827,
+        "realized_only_log_forecast": -5.694724084978775
+      },
+      {
+        "day": "2023-06-05",
+        "implied_log_forecast": -5.903774797627578,
+        "realized": 0.0013732204265117622,
+        "realized_only_log_forecast": -5.836220563534693
+      },
+      {
+        "day": "2023-06-06",
+        "implied_log_forecast": -5.897266598958872,
+        "realized": 0.0019271776281860188,
+        "realized_only_log_forecast": -6.052754735012316
+      },
+      {
+        "day": "2023-06-07",
+        "implied_log_forecast": -5.861883078382799,
+        "realized": 0.0013758259401213833,
+        "realized_only_log_forecast": -6.059500946763223
+      },
+      {
+        "day": "2023-06-09",
+        "implied_log_forecast": -5.927171559394152,
+        "realized": 0.0035704094701780914,
+        "realized_only_log_forecast": -5.955509056887107
+      },
+      {
+        "day": "2023-06-12",
+        "implied_log_forecast": -5.948642311439967,
+        "realized": 0.0022255054282967674,
+        "realized_only_log_forecast": -5.921284463247519
+      },
+      {
+        "day": "2023-06-13",
+        "implied_log_forecast": -5.921479639609432,
+        "realized": 0.0007440496717899442,
+        "realized_only_log_forecast": -5.94768316917155
+      },
+      {
+        "day": "2023-06-14",
+        "implied_log_forecast": -5.9888366109763576,
+        "realized": 0.0007330840819988302,
+        "realized_only_log_forecast": -5.983342122954039
+      },
+      {
+        "day": "2023-06-16",
+        "implied_log_forecast": -6.032882318082991,
+        "realized": 0.003710922244229629,
+        "realized_only_log_forecast": -6.067045459576325
+      },
+      {
+        "day": "2023-06-19",
+        "implied_log_forecast": -6.070655580513297,
+        "realized": 0.004271822695299046,
+        "realized_only_log_forecast": -5.978036878904431
+      },
+      {
+        "day": "2023-06-20",
+        "implied_log_forecast": -5.971428418358171,
+        "realized": 0.0038412084381981584,
+        "realized_only_log_forecast": -6.0092171191040284
+      },
+      {
+        "day": "2023-06-21",
+        "implied_log_forecast": -5.979614565304604,
+        "realized": 0.00332715803447117,
+        "realized_only_log_forecast": -5.98316013758914
+      },
+      {
+        "day": "2023-06-23",
+        "implied_log_forecast": -5.886551615945548,
+        "realized": 0.0038281432198297187,
+        "realized_only_log_forecast": -5.956578749848499
+      },
+      {
+        "day": "2023-06-26",
+        "implied_log_forecast": -5.9364205490967645,
+        "realized": 0.0028653325317177228,
+        "realized_only_log_forecast": -6.064796013775906
+      },
+      {
+        "day": "2023-06-27",
+        "implied_log_forecast": -5.896637176168834,
+        "realized": 0.0017647458914950016,
+        "realized_only_log_forecast": -6.1139187146784835
+      },
+      {
+        "day": "2023-06-30",
+        "implied_log_forecast": -6.0222839147079466,
+        "realized": 0.0015374410771300578,
+        "realized_only_log_forecast": -5.952802283658459
+      },
+      {
+        "day": "2023-07-03",
+        "implied_log_forecast": -6.054293458539936,
+        "realized": 0.004052047785078431,
+        "realized_only_log_forecast": -5.756459482589267
+      },
+      {
+        "day": "2023-07-04",
+        "implied_log_forecast": -5.883840334142155,
+        "realized": 0.0026723707396440594,
+        "realized_only_log_forecast": -5.693945583234494
+      },
+      {
+        "day": "2023-07-05",
+        "implied_log_forecast": -5.8532317206711575,
+        "realized": 0.0027944589018344085,
+        "realized_only_log_forecast": -5.697562249554281
+      },
+      {
+        "day": "2023-07-07",
+        "implied_log_forecast": -5.8267427237695415,
+        "realized": 0.005862237299284459,
+        "realized_only_log_forecast": -5.730579153556983
+      },
+      {
+        "day": "2023-07-10",
+        "implied_log_forecast": -5.872096188643399,
+        "realized": 0.004551005498993488,
+        "realized_only_log_forecast": -5.655690397971996
+      },
+      {
+        "day": "2023-07-11",
+        "implied_log_forecast": -5.8748730375894755,
+        "realized": 0.0022390082994946012,
+        "realized_only_log_forecast": -5.668764340835233
+      },
+      {
+        "day": "2023-07-12",
+        "implied_log_forecast": -5.971986058887043,
+        "realized": 0.00369129953405375,
+        "realized_only_log_forecast": -5.6599704156281465
+      },
+      {
+        "day": "2023-07-14",
+        "implied_log_forecast": -5.980652232534252,
+        "realized": 0.0036385342727739602,
+        "realized_only_log_forecast": -5.704562515973341
+      },
+      {
+        "day": "2023-07-17",
+        "implied_log_forecast": -6.023758106011691,
+        "realized": 0.001514340839921441,
+        "realized_only_log_forecast": -5.64499285123886
+      },
+      {
+        "day": "2023-07-18",
+        "implied_log_forecast": -5.9054772243599345,
+        "realized": 0.005498939157782096,
+        "realized_only_log_forecast": -5.653175826926928
+      },
+      {
+        "day": "2023-07-19",
+        "implied_log_forecast": -5.818184352488559,
+        "realized": 0.0030675760128732374,
+        "realized_only_log_forecast": -5.663851973791388
+      },
+      {
+        "day": "2023-07-21",
+        "implied_log_forecast": -5.802803166779534,
+        "realized": 0.0050883305429439635,
+        "realized_only_log_forecast": -5.599193096348944
+      },
+      {
+        "day": "2023-07-24",
+        "implied_log_forecast": -5.847294279591118,
+        "realized": 0.005723473017917065,
+        "realized_only_log_forecast": -5.472071577863284
+      },
+      {
+        "day": "2023-07-25",
+        "implied_log_forecast": -5.801882792743662,
+        "realized": 0.0031044388316583695,
+        "realized_only_log_forecast": -5.489520538771408
+      },
+      {
+        "day": "2023-07-26",
+        "implied_log_forecast": -6.074918920541135,
+        "realized": 0.002125856513938691,
+        "realized_only_log_forecast": -5.49312654815965
+      },
+      {
+        "day": "2023-07-28",
+        "implied_log_forecast": -6.025756962162946,
+        "realized": 0.004385770940303601,
+        "realized_only_log_forecast": -5.554273765543446
+      },
+      {
+        "day": "2023-07-31",
+        "implied_log_forecast": -6.103591306864265,
+        "realized": 0.0028861140596744598,
+        "realized_only_log_forecast": -5.7103379624795485
+      },
+      {
+        "day": "2023-08-01",
+        "implied_log_forecast": -6.04261139422863,
+        "realized": 0.0026382116275744955,
+        "realized_only_log_forecast": -5.7354212161521465
+      },
+      {
+        "day": "2023-08-02",
+        "implied_log_forecast": -6.067826920200448,
+        "realized": 0.005186592177745444,
+        "realized_only_log_forecast": -5.752503401388765
+      },
+      {
+        "day": "2023-08-04",
+        "implied_log_forecast": -5.859502120475418,
+        "realized": 0.005914336621915788,
+        "realized_only_log_forecast": -5.574453064620832
+      },
+      {
+        "day": "2023-08-07",
+        "implied_log_forecast": -5.96823487377165,
+        "realized": 0.0026908248456475837,
+        "realized_only_log_forecast": -5.603428168681596
+      },
+      {
+        "day": "2023-08-08",
+        "implied_log_forecast": -5.866229375648856,
+        "realized": 0.002370824503242159,
+        "realized_only_log_forecast": -5.586781961805029
+      },
+      {
+        "day": "2023-08-09",
+        "implied_log_forecast": -5.833651963857061,
+        "realized": 0.0034611030029230716,
+        "realized_only_log_forecast": -5.60981663764298
+      },
+      {
+        "day": "2023-08-11",
+        "implied_log_forecast": -5.815221362070552,
+        "realized": 0.0039389451425549315,
+        "realized_only_log_forecast": -5.587561253047472
+      },
+      {
+        "day": "2023-08-14",
+        "implied_log_forecast": -5.792448997565471,
+        "realized": 0.002670513674260477,
+        "realized_only_log_forecast": -5.613932067875219
+      },
+      {
+        "day": "2023-08-16",
+        "implied_log_forecast": -5.725754497910278,
+        "realized": 0.0037089237845677587,
+        "realized_only_log_forecast": -5.683319830442043
+      },
+      {
+        "day": "2023-08-18",
+        "implied_log_forecast": -5.686464582415201,
+        "realized": 0.0034428979517801025,
+        "realized_only_log_forecast": -5.675019323091341
+      },
+      {
+        "day": "2023-08-21",
+        "implied_log_forecast": -5.712720245826881,
+        "realized": 0.0027141243340892203,
+        "realized_only_log_forecast": -5.734921106743391
+      },
+      {
+        "day": "2023-08-22",
+        "implied_log_forecast": -5.777566503786994,
+        "realized": 0.0011825608014600813,
+        "realized_only_log_forecast": -5.920635281983296
+      },
+      {
+        "day": "2023-08-23",
+        "implied_log_forecast": -5.833863101220475,
+        "realized": 0.0014126609121206594,
+        "realized_only_log_forecast": -5.957429069036866
+      },
+      {
+        "day": "2023-08-25",
+        "implied_log_forecast": -5.850780504838165,
+        "realized": 0.0036778467836146075,
+        "realized_only_log_forecast": -5.980621995052738
+      },
+      {
+        "day": "2023-08-28",
+        "implied_log_forecast": -5.785391929452439,
+        "realized": 0.0028107586138387624,
+        "realized_only_log_forecast": -5.969488779061898
+      },
+      {
+        "day": "2023-08-29",
+        "implied_log_forecast": -5.731926351503476,
+        "realized": 0.0020558062024496923,
+        "realized_only_log_forecast": -5.957727615957162
+      },
+      {
+        "day": "2023-08-30",
+        "implied_log_forecast": -5.77235476396894,
+        "realized": 0.0012234325021037466,
+        "realized_only_log_forecast": -6.006089122778657
+      },
+      {
+        "day": "2023-09-01",
+        "implied_log_forecast": -5.872270429096649,
+        "realized": 0.002928765117220307,
+        "realized_only_log_forecast": -6.213226776373262
+      },
+      {
+        "day": "2023-09-04",
+        "implied_log_forecast": -5.957874761200662,
+        "realized": 0.002687176807587366,
+        "realized_only_log_forecast": -6.127043580825184
+      },
+      {
+        "day": "2023-09-05",
+        "implied_log_forecast": -6.035808025998026,
+        "realized": 0.0018056957760567527,
+        "realized_only_log_forecast": -6.179582407254749
+      },
+      {
+        "day": "2023-09-06",
+        "implied_log_forecast": -6.073491327256974,
+        "realized": 0.0032783459823498558,
+        "realized_only_log_forecast": -6.20921592817498
+      },
+      {
+        "day": "2023-09-08",
+        "implied_log_forecast": -6.037348229370995,
+        "realized": 0.004258574407279228,
+        "realized_only_log_forecast": -6.134974532171159
+      },
+      {
+        "day": "2023-09-11",
+        "implied_log_forecast": -6.037311068042114,
+        "realized": 0.0017266521214526719,
+        "realized_only_log_forecast": -6.11695952666982
+      },
+      {
+        "day": "2023-09-12",
+        "implied_log_forecast": -5.912558789396362,
+        "realized": 0.0072675663616321474,
+        "realized_only_log_forecast": -6.022108702443032
+      },
+      {
+        "day": "2023-09-13",
+        "implied_log_forecast": -5.8521760530436495,
+        "realized": 0.0029119698427452017,
+        "realized_only_log_forecast": -6.01143672693364
+      },
+      {
+        "day": "2023-09-15",
+        "implied_log_forecast": -5.919468297424049,
+        "realized": 0.0017611070358653541,
+        "realized_only_log_forecast": -6.032544302317461
+      },
+      {
+        "day": "2023-09-18",
+        "implied_log_forecast": -5.984742246130028,
+        "realized": 0.0012723542704641648,
+        "realized_only_log_forecast": -6.0116980263187845
+      },
+      {
+        "day": "2023-09-20",
+        "implied_log_forecast": -6.005423251185375,
+        "realized": 0.0027632972175723747,
+        "realized_only_log_forecast": -6.037943739157315
+      },
+      {
+        "day": "2023-09-22",
+        "implied_log_forecast": -5.913676621278918,
+        "realized": 0.004858008298963874,
+        "realized_only_log_forecast": -5.713659389655077
+      },
+      {
+        "day": "2023-09-25",
+        "implied_log_forecast": -5.930867047437065,
+        "realized": 0.00823574442052177,
+        "realized_only_log_forecast": -5.705606108823529
+      },
+      {
+        "day": "2023-09-26",
+        "implied_log_forecast": -5.90289805918443,
+        "realized": 0.002384117500610157,
+        "realized_only_log_forecast": -5.758700760726975
+      },
+      {
+        "day": "2023-09-27",
+        "implied_log_forecast": -5.860420582944338,
+        "realized": 0.00595493888939997,
+        "realized_only_log_forecast": -5.767142199876653
+      },
+      {
+        "day": "2023-09-29",
+        "implied_log_forecast": -5.581805652697087,
+        "realized": 0.004421166386379744,
+        "realized_only_log_forecast": -5.632160873397653
+      },
+      {
+        "day": "2023-10-03",
+        "implied_log_forecast": -5.7810003490984965,
+        "realized": 0.0032218929083108706,
+        "realized_only_log_forecast": -5.622047206840564
+      },
+      {
+        "day": "2023-10-04",
+        "implied_log_forecast": -5.75409040552969,
+        "realized": 0.0036572223366280908,
+        "realized_only_log_forecast": -5.6959749000515245
+      },
+      {
+        "day": "2023-10-06",
+        "implied_log_forecast": -5.8733127009121056,
+        "realized": 0.002491624753668974,
+        "realized_only_log_forecast": -5.662566423573165
+      },
+      {
+        "day": "2023-10-09",
+        "implied_log_forecast": -5.969779144423779,
+        "realized": 0.0034484712376899036,
+        "realized_only_log_forecast": -5.631670815270835
+      },
+      {
+        "day": "2023-10-10",
+        "implied_log_forecast": -5.786974954878701,
+        "realized": 0.0020491465174811434,
+        "realized_only_log_forecast": -5.614468360007483
+      },
+      {
+        "day": "2023-10-11",
+        "implied_log_forecast": -5.78534966403594,
+        "realized": 0.0014758344807188925,
+        "realized_only_log_forecast": -5.547636572481032
+      },
+      {
+        "day": "2023-10-13",
+        "implied_log_forecast": -5.914461523652761,
+        "realized": 0.002137021446970708,
+        "realized_only_log_forecast": -5.599515004369906
+      },
+      {
+        "day": "2023-10-16",
+        "implied_log_forecast": -5.923757263948551,
+        "realized": 0.0018089757472515345,
+        "realized_only_log_forecast": -5.6160896686737205
+      },
+      {
+        "day": "2023-10-17",
+        "implied_log_forecast": -5.852213162222354,
+        "realized": 0.0017990826466279598,
+        "realized_only_log_forecast": -5.621873278195363
+      },
+      {
+        "day": "2023-10-18",
+        "implied_log_forecast": -5.917361238534739,
+        "realized": 0.004323470695635223,
+        "realized_only_log_forecast": -5.628905099052014
+      },
+      {
+        "day": "2023-10-20",
+        "implied_log_forecast": -5.9151771906128054,
+        "realized": 0.00362241401629908,
+        "realized_only_log_forecast": -5.739642544356513
+      },
+      {
+        "day": "2023-10-23",
+        "implied_log_forecast": -5.936231202377884,
+        "realized": 0.005680222255457035,
+        "realized_only_log_forecast": -5.800822007513845
+      },
+      {
+        "day": "2023-10-25",
+        "implied_log_forecast": -5.852681311306224,
+        "realized": 0.01795463487429743,
+        "realized_only_log_forecast": -5.583127292934585
+      },
+      {
+        "day": "2023-10-27",
+        "implied_log_forecast": -5.647913104456965,
+        "realized": 0.004569835568476931,
+        "realized_only_log_forecast": -5.339598442493634
+      },
+      {
+        "day": "2023-10-30",
+        "implied_log_forecast": -5.7385202521724725,
+        "realized": 0.005564422260880529,
+        "realized_only_log_forecast": -5.267751325394534
+      },
+      {
+        "day": "2023-10-31",
+        "implied_log_forecast": -5.659835414831067,
+        "realized": 0.007708280819602932,
+        "realized_only_log_forecast": -5.3241221001302
+      },
+      {
+        "day": "2023-11-01",
+        "implied_log_forecast": -5.614195740290515,
+        "realized": 0.002925374300379123,
+        "realized_only_log_forecast": -5.343563026463441
+      },
+      {
+        "day": "2023-11-03",
+        "implied_log_forecast": -5.69729359613988,
+        "realized": 0.0011766557168491005,
+        "realized_only_log_forecast": -5.319680164773629
+      },
+      {
+        "day": "2023-11-06",
+        "implied_log_forecast": -5.751238389992792,
+        "realized": 0.0014679603212075598,
+        "realized_only_log_forecast": -5.3336426127837555
+      },
+      {
+        "day": "2023-11-07",
+        "implied_log_forecast": -5.71866156376357,
+        "realized": 0.0030947227785947354,
+        "realized_only_log_forecast": -5.296792970270998
+      },
+      {
+        "day": "2023-11-08",
+        "implied_log_forecast": -5.718874355953102,
+        "realized": 0.0018966712784671473,
+        "realized_only_log_forecast": -5.340774018185066
+      },
+      {
+        "day": "2023-11-10",
+        "implied_log_forecast": -5.799939178084391,
+        "realized": 0.0017304875249389768,
+        "realized_only_log_forecast": -5.439874464057407
+      },
+      {
+        "day": "2023-11-13",
+        "implied_log_forecast": -5.7450851590020235,
+        "realized": 0.0019259930818111364,
+        "realized_only_log_forecast": -5.427113464070638
+      },
+      {
+        "day": "2023-11-15",
+        "implied_log_forecast": -5.77510329733663,
+        "realized": 0.0012523794575978182,
+        "realized_only_log_forecast": -5.419887532781985
+      },
+      {
+        "day": "2023-11-17",
+        "implied_log_forecast": -5.699019493108693,
+        "realized": 0.002729180784074617,
+        "realized_only_log_forecast": -5.361161119607115
+      },
+      {
+        "day": "2023-11-20",
+        "implied_log_forecast": -5.678933605215098,
+        "realized": 0.004014715204381818,
+        "realized_only_log_forecast": -5.369458144165999
+      },
+      {
+        "day": "2023-11-21",
+        "implied_log_forecast": -5.631146969398441,
+        "realized": 0.003140290024167994,
+        "realized_only_log_forecast": -5.382199337465211
+      },
+      {
+        "day": "2023-11-22",
+        "implied_log_forecast": -5.649909725339699,
+        "realized": 0.0036939325937742,
+        "realized_only_log_forecast": -5.506018367209283
+      },
+      {
+        "day": "2023-11-24",
+        "implied_log_forecast": -5.870192433451743,
+        "realized": 0.0010583726918527985,
+        "realized_only_log_forecast": -5.770838761638298
+      },
+      {
+        "day": "2023-11-28",
+        "implied_log_forecast": -5.910230537229443,
+        "realized": 0.0022436941022204162,
+        "realized_only_log_forecast": -5.914591708589452
+      },
+      {
+        "day": "2023-11-29",
+        "implied_log_forecast": -5.771825641045054,
+        "realized": 0.001495870830253781,
+        "realized_only_log_forecast": -5.918393470066167
+      },
+      {
+        "day": "2023-12-01",
+        "implied_log_forecast": -5.664602866248703,
+        "realized": 0.0013887970033015775,
+        "realized_only_log_forecast": -5.816193396180269
+      },
+      {
+        "day": "2023-12-04",
+        "implied_log_forecast": -5.713376404192554,
+        "realized": 0.0027812730854518274,
+        "realized_only_log_forecast": -5.838827094391936
+      },
+      {
+        "day": "2023-12-05",
+        "implied_log_forecast": -5.459759148340563,
+        "realized": 0.00679214533626992,
+        "realized_only_log_forecast": -5.436946408945626
+      },
+      {
+        "day": "2023-12-06",
+        "implied_log_forecast": -5.379919799616621,
+        "realized": 0.005045789737079406,
+        "realized_only_log_forecast": -5.437097916874184
+      },
+      {
+        "day": "2023-12-08",
+        "implied_log_forecast": -5.479489503271929,
+        "realized": 0.007319795257949268,
+        "realized_only_log_forecast": -5.406843039707275
+      },
+      {
+        "day": "2023-12-11",
+        "implied_log_forecast": -5.499938862540333,
+        "realized": 0.004199170588901936,
+        "realized_only_log_forecast": -5.398039650321081
+      },
+      {
+        "day": "2023-12-12",
+        "implied_log_forecast": -5.4563107293362085,
+        "realized": 0.0025740748709950525,
+        "realized_only_log_forecast": -5.4022464452765835
+      },
+      {
+        "day": "2023-12-13",
+        "implied_log_forecast": -5.485957289034203,
+        "realized": 0.006133592873791191,
+        "realized_only_log_forecast": -5.430837722387618
+      },
+      {
+        "day": "2023-12-15",
+        "implied_log_forecast": -5.560849941036547,
+        "realized": 0.0038805762825562845,
+        "realized_only_log_forecast": -5.436784161962827
+      },
+      {
+        "day": "2023-12-18",
+        "implied_log_forecast": -5.3970994153782,
+        "realized": 0.004645323980149462,
+        "realized_only_log_forecast": -5.331967404114022
+      },
+      {
+        "day": "2023-12-19",
+        "implied_log_forecast": -5.289464645369611,
+        "realized": 0.0041093512406065544,
+        "realized_only_log_forecast": -5.334632689223696
+      },
+      {
+        "day": "2023-12-20",
+        "implied_log_forecast": -5.305065125306888,
+        "realized": 0.01530504317814129,
+        "realized_only_log_forecast": -5.3394194594692355
+      },
+      {
+        "day": "2023-12-22",
+        "implied_log_forecast": -5.293478642392679,
+        "realized": 0.010986538530446231,
+        "realized_only_log_forecast": -5.1936745780442015
+      },
+      {
+        "day": "2023-12-26",
+        "implied_log_forecast": -5.307956291357725,
+        "realized": 0.0060827454454047015,
+        "realized_only_log_forecast": -5.175232003633294
+      },
+      {
+        "day": "2023-12-27",
+        "implied_log_forecast": -5.163829824090798,
+        "realized": 0.006001526711651311,
+        "realized_only_log_forecast": -5.167462108729027
+      },
+      {
+        "day": "2023-12-29",
+        "implied_log_forecast": -5.096524494710302,
+        "realized": 0.0054385926735495685,
+        "realized_only_log_forecast": -5.167070032770166
+      }
+    ],
+    "2024": [
+      {
+        "day": "2024-01-01",
+        "implied_log_forecast": -5.191640448292222,
+        "realized": 0.005740427444874591,
+        "realized_only_log_forecast": -5.165827676863309
+      },
+      {
+        "day": "2024-01-02",
+        "implied_log_forecast": -5.16687672225744,
+        "realized": 0.008071172844848661,
+        "realized_only_log_forecast": -5.183476728147734
+      },
+      {
+        "day": "2024-01-03",
+        "implied_log_forecast": -5.304711327944631,
+        "realized": 0.005457889999417912,
+        "realized_only_log_forecast": -5.4981697168249095
+      },
+      {
+        "day": "2024-01-05",
+        "implied_log_forecast": -5.516174330211861,
+        "realized": 0.0048010692942943994,
+        "realized_only_log_forecast": -5.490505565720644
+      },
+      {
+        "day": "2024-01-08",
+        "implied_log_forecast": -5.6475781938513405,
+        "realized": 0.009006962676025505,
+        "realized_only_log_forecast": -5.4916221905263445
+      },
+      {
+        "day": "2024-01-09",
+        "implied_log_forecast": -5.489055417592185,
+        "realized": 0.006494235474357287,
+        "realized_only_log_forecast": -5.4270001213607095
+      },
+      {
+        "day": "2024-01-10",
+        "implied_log_forecast": -5.5273060389991455,
+        "realized": 0.009065671740134127,
+        "realized_only_log_forecast": -5.422987914631232
+      },
+      {
+        "day": "2024-01-12",
+        "implied_log_forecast": -5.617375329528591,
+        "realized": 0.004637874085555418,
+        "realized_only_log_forecast": -5.42629451125492
+      },
+      {
+        "day": "2024-01-15",
+        "implied_log_forecast": -5.561629999856938,
+        "realized": 0.0039336008667765565,
+        "realized_only_log_forecast": -5.4452691474680845
+      },
+      {
+        "day": "2024-01-16",
+        "implied_log_forecast": -5.468044635858033,
+        "realized": 0.005189629811001498,
+        "realized_only_log_forecast": -5.520436527014441
+      },
+      {
+        "day": "2024-01-17",
+        "implied_log_forecast": -5.502637643294516,
+        "realized": 0.007370900853021589,
+        "realized_only_log_forecast": -5.515527128828253
+      },
+      {
+        "day": "2024-01-19",
+        "implied_log_forecast": -5.342486989833716,
+        "realized": 0.007035460173273737,
+        "realized_only_log_forecast": -5.31020100698307
+      },
+      {
+        "day": "2024-01-20",
+        "implied_log_forecast": -5.366459213353528,
+        "realized": 0.004679510178476447,
+        "realized_only_log_forecast": -5.298396699554563
+      },
+      {
+        "day": "2024-01-23",
+        "implied_log_forecast": -5.385059503478461,
+        "realized": 0.01582516706801325,
+        "realized_only_log_forecast": -5.314516265917297
+      },
+      {
+        "day": "2024-01-24",
+        "implied_log_forecast": -5.1688602943343405,
+        "realized": 0.021732487533728535,
+        "realized_only_log_forecast": -5.17408575232806
+      },
+      {
+        "day": "2024-01-29",
+        "implied_log_forecast": -5.333849748880977,
+        "realized": 0.005317675383579829,
+        "realized_only_log_forecast": -5.161671906414117
+      },
+      {
+        "day": "2024-01-30",
+        "implied_log_forecast": -4.965088063149712,
+        "realized": 0.009640683695273673,
+        "realized_only_log_forecast": -5.009632921797223
+      },
+      {
+        "day": "2024-01-31",
+        "implied_log_forecast": -4.873124081927579,
+        "realized": 0.007969964279008708,
+        "realized_only_log_forecast": -4.964814415186535
+      },
+      {
+        "day": "2024-02-02",
+        "implied_log_forecast": -5.116565264351926,
+        "realized": 0.012392690136558046,
+        "realized_only_log_forecast": -4.95974455034769
+      },
+      {
+        "day": "2024-02-05",
+        "implied_log_forecast": -5.0610601617329944,
+        "realized": 0.015792355528598322,
+        "realized_only_log_forecast": -4.943582217666895
+      },
+      {
+        "day": "2024-02-06",
+        "implied_log_forecast": -4.917824475136085,
+        "realized": 0.0077957012103816205,
+        "realized_only_log_forecast": -4.931049787371467
+      },
+      {
+        "day": "2024-02-07",
+        "implied_log_forecast": -4.875651788125386,
+        "realized": 0.010586983390663435,
+        "realized_only_log_forecast": -4.923547032726677
+      },
+      {
+        "day": "2024-02-09",
+        "implied_log_forecast": -4.8330104928576025,
+        "realized": 0.007483315113070197,
+        "realized_only_log_forecast": -4.8693342453970585
+      },
+      {
+        "day": "2024-02-12",
+        "implied_log_forecast": -4.883008813771339,
+        "realized": 0.010552602778960961,
+        "realized_only_log_forecast": -4.859107430035923
+      },
+      {
+        "day": "2024-02-13",
+        "implied_log_forecast": -4.789200179429203,
+        "realized": 0.00829528539543985,
+        "realized_only_log_forecast": -4.869652551958925
+      },
+      {
+        "day": "2024-02-14",
+        "implied_log_forecast": -4.828349422156479,
+        "realized": 0.008876495411042823,
+        "realized_only_log_forecast": -4.883053563022439
+      },
+      {
+        "day": "2024-02-16",
+        "implied_log_forecast": -5.028557165000053,
+        "realized": 0.002341131303156153,
+        "realized_only_log_forecast": -5.093408727245127
+      },
+      {
+        "day": "2024-02-19",
+        "implied_log_forecast": -5.0263501455571875,
+        "realized": 0.004948783754356426,
+        "realized_only_log_forecast": -5.096031424151372
+      },
+      {
+        "day": "2024-02-20",
+        "implied_log_forecast": -4.902074583752335,
+        "realized": 0.007640500911210856,
+        "realized_only_log_forecast": -5.108609901128809
+      },
+      {
+        "day": "2024-02-21",
+        "implied_log_forecast": -4.88051325490586,
+        "realized": 0.008661383985269885,
+        "realized_only_log_forecast": -5.093895957287449
+      },
+      {
+        "day": "2024-02-23",
+        "implied_log_forecast": -5.117645047884109,
+        "realized": 0.005293305086719438,
+        "realized_only_log_forecast": -5.272375447394912
+      },
+      {
+        "day": "2024-02-26",
+        "implied_log_forecast": -5.160468191097625,
+        "realized": 0.006089456788876605,
+        "realized_only_log_forecast": -5.29073902552357
+      },
+      {
+        "day": "2024-02-27",
+        "implied_log_forecast": -5.179592406374805,
+        "realized": 0.005332270168146066,
+        "realized_only_log_forecast": -5.573359861292785
+      },
+      {
+        "day": "2024-02-28",
+        "implied_log_forecast": -5.207588893072615,
+        "realized": 0.014659057930241541,
+        "realized_only_log_forecast": -5.666148950194674
+      },
+      {
+        "day": "2024-03-01",
+        "implied_log_forecast": -5.1505169133543305,
+        "realized": 0.003711985369808121,
+        "realized_only_log_forecast": -5.565526842768286
+      },
+      {
+        "day": "2024-03-04",
+        "implied_log_forecast": -5.094949346106834,
+        "realized": 0.0028153796236775976,
+        "realized_only_log_forecast": -5.361724182895703
+      },
+      {
+        "day": "2024-03-05",
+        "implied_log_forecast": -5.160342557319292,
+        "realized": 0.006359786319365716,
+        "realized_only_log_forecast": -5.37517064634938
+      },
+      {
+        "day": "2024-03-06",
+        "implied_log_forecast": -5.2707931018955065,
+        "realized": 0.0077702247310566025,
+        "realized_only_log_forecast": -5.414156893211399
+      },
+      {
+        "day": "2024-03-11",
+        "implied_log_forecast": -5.443121203193868,
+        "realized": 0.005970194176388513,
+        "realized_only_log_forecast": -5.468736577518545
+      },
+      {
+        "day": "2024-03-12",
+        "implied_log_forecast": -5.326377809747306,
+        "realized": 0.006195932011684256,
+        "realized_only_log_forecast": -5.424076543428859
+      },
+      {
+        "day": "2024-03-13",
+        "implied_log_forecast": -5.4135520848479235,
+        "realized": 0.01097783971892709,
+        "realized_only_log_forecast": -5.4887573221041075
+      },
+      {
+        "day": "2024-03-15",
+        "implied_log_forecast": -5.313663514744538,
+        "realized": 0.0072971604666684925,
+        "realized_only_log_forecast": -5.268138276491262
+      },
+      {
+        "day": "2024-03-18",
+        "implied_log_forecast": -5.282295753447986,
+        "realized": 0.006815394607768537,
+        "realized_only_log_forecast": -5.250870440193179
+      },
+      {
+        "day": "2024-03-19",
+        "implied_log_forecast": -5.246387704764864,
+        "realized": 0.004846627358911644,
+        "realized_only_log_forecast": -5.276106422765922
+      },
+      {
+        "day": "2024-03-20",
+        "implied_log_forecast": -5.14928949996439,
+        "realized": 0.008191725199664292,
+        "realized_only_log_forecast": -5.1985468816543525
+      },
+      {
+        "day": "2024-03-22",
+        "implied_log_forecast": -5.512037764956041,
+        "realized": 0.004936085663812401,
+        "realized_only_log_forecast": -5.188253127394057
+      },
+      {
+        "day": "2024-03-26",
+        "implied_log_forecast": -5.593037176810785,
+        "realized": 0.0029534948786139694,
+        "realized_only_log_forecast": -5.221886060835542
+      },
+      {
+        "day": "2024-03-27",
+        "implied_log_forecast": -5.441652507691072,
+        "realized": 0.002287445739890749,
+        "realized_only_log_forecast": -5.212512183479093
+      },
+      {
+        "day": "2024-04-01",
+        "implied_log_forecast": -5.408947630441117,
+        "realized": 0.0023311253923300836,
+        "realized_only_log_forecast": -5.161134406943869
+      },
+      {
+        "day": "2024-04-02",
+        "implied_log_forecast": -5.624720564761637,
+        "realized": 0.001503158413046207,
+        "realized_only_log_forecast": -5.236912316972549
+      },
+      {
+        "day": "2024-04-03",
+        "implied_log_forecast": -5.74462371122344,
+        "realized": 0.0037889742374543956,
+        "realized_only_log_forecast": -5.253022470657175
+      },
+      {
+        "day": "2024-04-05",
+        "implied_log_forecast": -5.960905683102025,
+        "realized": 0.002875021544876573,
+        "realized_only_log_forecast": -5.4729944497204635
+      },
+      {
+        "day": "2024-04-08",
+        "implied_log_forecast": -5.91443298328816,
+        "realized": 0.0031848080182385148,
+        "realized_only_log_forecast": -5.485627006308612
+      },
+      {
+        "day": "2024-04-09",
+        "implied_log_forecast": -5.823372365867648,
+        "realized": 0.0032844774752158142,
+        "realized_only_log_forecast": -5.472495374372757
+      },
+      {
+        "day": "2024-04-12",
+        "implied_log_forecast": -5.946311536238382,
+        "realized": 0.005186093118636746,
+        "realized_only_log_forecast": -5.516760978108901
+      },
+      {
+        "day": "2024-04-15",
+        "implied_log_forecast": -5.77281193493542,
+        "realized": 0.004092959575090915,
+        "realized_only_log_forecast": -5.41789623987102
+      },
+      {
+        "day": "2024-04-16",
+        "implied_log_forecast": -5.57835558739925,
+        "realized": 0.0037899383604352846,
+        "realized_only_log_forecast": -5.525425424030062
+      },
+      {
+        "day": "2024-04-19",
+        "implied_log_forecast": -5.4304932340427925,
+        "realized": 0.010704974672645598,
+        "realized_only_log_forecast": -5.5280983959337835
+      },
+      {
+        "day": "2024-04-22",
+        "implied_log_forecast": -5.313463071408738,
+        "realized": 0.003211284167609187,
+        "realized_only_log_forecast": -5.477383367051165
+      },
+      {
+        "day": "2024-04-23",
+        "implied_log_forecast": -5.50980887815247,
+        "realized": 0.0035605578147382064,
+        "realized_only_log_forecast": -5.5270641068188455
+      },
+      {
+        "day": "2024-04-24",
+        "implied_log_forecast": -6.192189996586424,
+        "realized": 0.0019323664946346284,
+        "realized_only_log_forecast": -5.533499534583987
+      },
+      {
+        "day": "2024-04-26",
+        "implied_log_forecast": -6.017418154712717,
+        "realized": 0.004745175738377636,
+        "realized_only_log_forecast": -5.570440833485499
+      },
+      {
+        "day": "2024-04-29",
+        "implied_log_forecast": -5.931567224333962,
+        "realized": 0.0028817341178749385,
+        "realized_only_log_forecast": -5.545135220532552
+      },
+      {
+        "day": "2024-04-30",
+        "implied_log_forecast": -5.5321428475034296,
+        "realized": 0.003926956679884026,
+        "realized_only_log_forecast": -5.490310938053326
+      },
+      {
+        "day": "2024-05-03",
+        "implied_log_forecast": -5.288755844400432,
+        "realized": 0.012220887425390958,
+        "realized_only_log_forecast": -5.603016520226824
+      },
+      {
+        "day": "2024-05-06",
+        "implied_log_forecast": -4.9954421161968465,
+        "realized": 0.00631977501428555,
+        "realized_only_log_forecast": -5.531493387116825
+      },
+      {
+        "day": "2024-05-07",
+        "implied_log_forecast": -4.5975931192504165,
+        "realized": 0.011377610342789578,
+        "realized_only_log_forecast": -5.526543107818785
+      },
+      {
+        "day": "2024-05-08",
+        "implied_log_forecast": -4.528269849919681,
+        "realized": 0.010987867692650024,
+        "realized_only_log_forecast": -5.484322671099447
+      },
+      {
+        "day": "2024-05-10",
+        "implied_log_forecast": -4.254860850976208,
+        "realized": 0.00559447609966018,
+        "realized_only_log_forecast": -5.305964175432488
+      },
+      {
+        "day": "2024-05-13",
+        "implied_log_forecast": -4.264671454056488,
+        "realized": 0.015973045261782285,
+        "realized_only_log_forecast": -5.286356797560828
+      },
+      {
+        "day": "2024-05-14",
+        "implied_log_forecast": -3.9581953968046957,
+        "realized": 0.006111444695779023,
+        "realized_only_log_forecast": -5.275781238040922
+      },
+      {
+        "day": "2024-05-15",
+        "implied_log_forecast": -4.141338477592976,
+        "realized": 0.009479902460834605,
+        "realized_only_log_forecast": -5.331406046580235
+      },
+      {
+        "day": "2024-05-17",
+        "implied_log_forecast": -4.250376921202797,
+        "realized": 0.0028110792194782686,
+        "realized_only_log_forecast": -5.378257727462918
+      },
+      {
+        "day": "2024-05-21",
+        "implied_log_forecast": -4.3335857437485,
+        "realized": 0.003841025372369476,
+        "realized_only_log_forecast": -5.4560461484527885
+      },
+      {
+        "day": "2024-05-22",
+        "implied_log_forecast": -4.325087209050681,
+        "realized": 0.004599831705373301,
+        "realized_only_log_forecast": -5.525431032700195
+      },
+      {
+        "day": "2024-05-24",
+        "implied_log_forecast": -4.326753704664083,
+        "realized": 0.005401520842126685,
+        "realized_only_log_forecast": -5.287399907646387
+      },
+      {
+        "day": "2024-05-27",
+        "implied_log_forecast": -4.433186567690965,
+        "realized": 0.005903575691251966,
+        "realized_only_log_forecast": -5.341611019371379
+      },
+      {
+        "day": "2024-05-28",
+        "implied_log_forecast": -4.409982202652698,
+        "realized": 0.005386522227397316,
+        "realized_only_log_forecast": -5.382008551244713
+      },
+      {
+        "day": "2024-05-29",
+        "implied_log_forecast": -4.5312022770707,
+        "realized": 0.007836171725772542,
+        "realized_only_log_forecast": -5.490687034502886
+      },
+      {
+        "day": "2024-05-31",
+        "implied_log_forecast": -4.478558247554643,
+        "realized": 0.00947330482387355,
+        "realized_only_log_forecast": -5.359314940921953
+      },
+      {
+        "day": "2024-06-03",
+        "implied_log_forecast": -4.5097186380155,
+        "realized": 0.005069740994894009,
+        "realized_only_log_forecast": -5.3959349654601025
+      },
+      {
+        "day": "2024-06-04",
+        "implied_log_forecast": -4.335218671902172,
+        "realized": 0.39690034071027236,
+        "realized_only_log_forecast": -4.8061456336518775
+      },
+      {
+        "day": "2024-06-05",
+        "implied_log_forecast": -3.3384555746940916,
+        "realized": 0.05490838058301289,
+        "realized_only_log_forecast": -3.689360834221935
+      },
+      {
+        "day": "2024-06-07",
+        "implied_log_forecast": -3.9778334544506615,
+        "realized": 0.011986318062361523,
+        "realized_only_log_forecast": -3.4500181931421934
+      },
+      {
+        "day": "2024-06-10",
+        "implied_log_forecast": -3.9823743722223273,
+        "realized": 0.008350688303810229,
+        "realized_only_log_forecast": -3.491594691407822
+      },
+      {
+        "day": "2024-06-11",
+        "implied_log_forecast": -4.107930185882702,
+        "realized": 0.0052612145453834235,
+        "realized_only_log_forecast": -3.6067222746874132
+      },
+      {
+        "day": "2024-06-12",
+        "implied_log_forecast": -4.415667008131942,
+        "realized": 0.00483405880523711,
+        "realized_only_log_forecast": -3.753435848690579
+      },
+      {
+        "day": "2024-06-14",
+        "implied_log_forecast": -4.689443353024156,
+        "realized": 0.0021220852715257165,
+        "realized_only_log_forecast": -3.8913650392362604
+      },
+      {
+        "day": "2024-06-18",
+        "implied_log_forecast": -4.946939710526226,
+        "realized": 0.002030829012428226,
+        "realized_only_log_forecast": -4.064353430820907
+      },
+      {
+        "day": "2024-06-19",
+        "implied_log_forecast": -5.058986836840868,
+        "realized": 0.013472123061323308,
+        "realized_only_log_forecast": -4.217065731062814
+      },
+      {
+        "day": "2024-06-21",
+        "implied_log_forecast": -4.932743722762921,
+        "realized": 0.010655510873868972,
+        "realized_only_log_forecast": -4.224201794491656
+      },
+      {
+        "day": "2024-06-24",
+        "implied_log_forecast": -4.951716716803262,
+        "realized": 0.00540350790094014,
+        "realized_only_log_forecast": -4.268531861736431
+      },
+      {
+        "day": "2024-06-25",
+        "implied_log_forecast": -4.845732690551409,
+        "realized": 0.003815894572395046,
+        "realized_only_log_forecast": -4.327916919319915
+      },
+      {
+        "day": "2024-06-26",
+        "implied_log_forecast": -4.860084028019288,
+        "realized": 0.004101567713436282,
+        "realized_only_log_forecast": -4.395967862941753
+      },
+      {
+        "day": "2024-06-28",
+        "implied_log_forecast": -4.917062789297561,
+        "realized": 0.004791609032866049,
+        "realized_only_log_forecast": -4.447856628721746
+      },
+      {
+        "day": "2024-07-01",
+        "implied_log_forecast": -5.004361204058162,
+        "realized": 0.0031653314486654155,
+        "realized_only_log_forecast": -4.497781312321781
+      },
+      {
+        "day": "2024-07-02",
+        "implied_log_forecast": -5.041946879166386,
+        "realized": 0.005706979939685155,
+        "realized_only_log_forecast": -4.552584020047379
+      },
+      {
+        "day": "2024-07-03",
+        "implied_log_forecast": -5.1676699411986355,
+        "realized": 0.001668958069395508,
+        "realized_only_log_forecast": -4.657930486922896
+      },
+      {
+        "day": "2024-07-05",
+        "implied_log_forecast": -6.44142677347308,
+        "realized": 0.004448076953699715,
+        "realized_only_log_forecast": -5.680783082157978
+      },
+      {
+        "day": "2024-07-08",
+        "implied_log_forecast": -6.311471234720077,
+        "realized": 0.004251961820909012,
+        "realized_only_log_forecast": -5.669651421286885
+      },
+      {
+        "day": "2024-07-09",
+        "implied_log_forecast": -6.349493950491189,
+        "realized": 0.0011129418004717092,
+        "realized_only_log_forecast": -5.981982548896042
+      },
+      {
+        "day": "2024-07-10",
+        "implied_log_forecast": -6.324513592004463,
+        "realized": 0.008803730977841883,
+        "realized_only_log_forecast": -6.1328463652222815
+      },
+      {
+        "day": "2024-07-12",
+        "implied_log_forecast": -5.7641793008802,
+        "realized": 0.006954210692506394,
+        "realized_only_log_forecast": -5.87154505268907
+      },
+      {
+        "day": "2024-07-15",
+        "implied_log_forecast": -5.648552092638546,
+        "realized": 0.0016367502731238148,
+        "realized_only_log_forecast": -5.7932544641157175
+      },
+      {
+        "day": "2024-07-16",
+        "implied_log_forecast": -5.57432915706192,
+        "realized": 0.0019366068960246165,
+        "realized_only_log_forecast": -5.807566817914827
+      },
+      {
+        "day": "2024-07-19",
+        "implied_log_forecast": -5.492522793252434,
+        "realized": 0.005030838996196834,
+        "realized_only_log_forecast": -5.779704085546574
+      },
+      {
+        "day": "2024-07-22",
+        "implied_log_forecast": -5.365987601213243,
+        "realized": 0.004188519843499769,
+        "realized_only_log_forecast": -5.685092840575917
+      },
+      {
+        "day": "2024-07-23",
+        "implied_log_forecast": -5.291942244389449,
+        "realized": 0.05436895423650375,
+        "realized_only_log_forecast": -5.691273536017391
+      },
+      {
+        "day": "2024-07-24",
+        "implied_log_forecast": -5.759433676086251,
+        "realized": 0.011247727156345994,
+        "realized_only_log_forecast": -5.646946688984208
+      },
+      {
+        "day": "2024-07-26",
+        "implied_log_forecast": -5.822788479936466,
+        "realized": 0.00497653564778518,
+        "realized_only_log_forecast": -5.681030488939749
+      },
+      {
+        "day": "2024-07-29",
+        "implied_log_forecast": -5.732054823806356,
+        "realized": 0.012889565592759106,
+        "realized_only_log_forecast": -5.531609660689796
+      },
+      {
+        "day": "2024-07-30",
+        "implied_log_forecast": -5.601011650056756,
+        "realized": 0.004841786867240362,
+        "realized_only_log_forecast": -5.515295886118511
+      },
+      {
+        "day": "2024-07-31",
+        "implied_log_forecast": -5.617432756826311,
+        "realized": 0.0029072464441667074,
+        "realized_only_log_forecast": -5.524284434823263
+      },
+      {
+        "day": "2024-08-02",
+        "implied_log_forecast": -5.62052538322855,
+        "realized": 0.004287630559051556,
+        "realized_only_log_forecast": -5.539108382124203
+      },
+      {
+        "day": "2024-08-05",
+        "implied_log_forecast": -5.355295884854462,
+        "realized": 0.026401267216901413,
+        "realized_only_log_forecast": -5.473157376052429
+      },
+      {
+        "day": "2024-08-06",
+        "implied_log_forecast": -4.465385266800993,
+        "realized": 0.013304617662746826,
+        "realized_only_log_forecast": -5.242708326916289
+      },
+      {
+        "day": "2024-08-07",
+        "implied_log_forecast": -4.639546646727728,
+        "realized": 0.008857751499590867,
+        "realized_only_log_forecast": -5.2266325715131705
+      },
+      {
+        "day": "2024-08-09",
+        "implied_log_forecast": -4.864899859995181,
+        "realized": 0.0022150027839067314,
+        "realized_only_log_forecast": -5.1860023982300865
+      },
+      {
+        "day": "2024-08-12",
+        "implied_log_forecast": -5.02514842134606,
+        "realized": 0.006886748229010423,
+        "realized_only_log_forecast": -5.1734397349756795
+      },
+      {
+        "day": "2024-08-13",
+        "implied_log_forecast": -4.965330094313585,
+        "realized": 0.006049828406649552,
+        "realized_only_log_forecast": -5.177222237592348
+      },
+      {
+        "day": "2024-08-16",
+        "implied_log_forecast": -5.01492743261149,
+        "realized": 0.0063407158949387865,
+        "realized_only_log_forecast": -5.164554360214311
+      },
+      {
+        "day": "2024-08-19",
+        "implied_log_forecast": -5.129980975202789,
+        "realized": 0.003220938012585856,
+        "realized_only_log_forecast": -5.127338106128893
+      },
+      {
+        "day": "2024-08-20",
+        "implied_log_forecast": -5.1592519763541125,
+        "realized": 0.002232096074342644,
+        "realized_only_log_forecast": -5.154335052939409
+      },
+      {
+        "day": "2024-08-21",
+        "implied_log_forecast": -5.230509778068152,
+        "realized": 0.0027586286469790185,
+        "realized_only_log_forecast": -5.161376806932095
+      },
+      {
+        "day": "2024-08-23",
+        "implied_log_forecast": -5.358618433553927,
+        "realized": 0.0011932111134013495,
+        "realized_only_log_forecast": -5.166576849138596
+      },
+      {
+        "day": "2024-08-26",
+        "implied_log_forecast": -5.2898656362023795,
+        "realized": 0.0025795595258502387,
+        "realized_only_log_forecast": -5.18191405101228
+      },
+      {
+        "day": "2024-08-27",
+        "implied_log_forecast": -5.288050256283125,
+        "realized": 0.00179725209938891,
+        "realized_only_log_forecast": -5.225356436040529
+      },
+      {
+        "day": "2024-08-28",
+        "implied_log_forecast": -5.317537105305967,
+        "realized": 0.0029445408172337757,
+        "realized_only_log_forecast": -5.234766304719355
+      },
+      {
+        "day": "2024-08-30",
+        "implied_log_forecast": -5.249827281714755,
+        "realized": 0.001215444180662226,
+        "realized_only_log_forecast": -5.283172713457157
+      },
+      {
+        "day": "2024-09-02",
+        "implied_log_forecast": -5.310541899200783,
+        "realized": 0.0019686672126491326,
+        "realized_only_log_forecast": -5.307252449388935
+      },
+      {
+        "day": "2024-09-03",
+        "implied_log_forecast": -5.232416414775821,
+        "realized": 0.0006939334091636479,
+        "realized_only_log_forecast": -5.3393012905241335
+      },
+      {
+        "day": "2024-09-04",
+        "implied_log_forecast": -5.376113853693276,
+        "realized": 0.002249913137707933,
+        "realized_only_log_forecast": -5.505306895051958
+      },
+      {
+        "day": "2024-09-06",
+        "implied_log_forecast": -5.361327896145639,
+        "realized": 0.0067539178878302415,
+        "realized_only_log_forecast": -5.5565020479494365
+      },
+      {
+        "day": "2024-09-09",
+        "implied_log_forecast": -5.207039644474488,
+        "realized": 0.003552171217441072,
+        "realized_only_log_forecast": -5.5255310407551255
+      },
+      {
+        "day": "2024-09-10",
+        "implied_log_forecast": -5.362858574500764,
+        "realized": 0.003499023777760554,
+        "realized_only_log_forecast": -5.5519557006639975
+      },
+      {
+        "day": "2024-09-11",
+        "implied_log_forecast": -5.461745850047101,
+        "realized": 0.005800380082786971,
+        "realized_only_log_forecast": -5.590731566802544
+      },
+      {
+        "day": "2024-09-13",
+        "implied_log_forecast": -5.410864589434551,
+        "realized": 0.0019477167174762253,
+        "realized_only_log_forecast": -5.527858250840719
+      },
+      {
+        "day": "2024-09-16",
+        "implied_log_forecast": -5.556724745282654,
+        "realized": 0.0017261768037126492,
+        "realized_only_log_forecast": -5.611721399039103
+      },
+      {
+        "day": "2024-09-17",
+        "implied_log_forecast": -5.574569195028587,
+        "realized": 0.0011115109170646814,
+        "realized_only_log_forecast": -5.616854888357016
+      },
+      {
+        "day": "2024-09-18",
+        "implied_log_forecast": -5.560294736887914,
+        "realized": 0.00549998846054025,
+        "realized_only_log_forecast": -5.648945780782307
+      },
+      {
+        "day": "2024-09-20",
+        "implied_log_forecast": -5.578016784339363,
+        "realized": 0.024956108726899903,
+        "realized_only_log_forecast": -5.649095305743448
+      },
+      {
+        "day": "2024-09-23",
+        "implied_log_forecast": -5.49198202072667,
+        "realized": 0.0023183215445365304,
+        "realized_only_log_forecast": -5.528361916348
+      },
+      {
+        "day": "2024-09-24",
+        "implied_log_forecast": -5.349039348909466,
+        "realized": 0.0015716535418431486,
+        "realized_only_log_forecast": -5.5374454624645875
+      },
+      {
+        "day": "2024-09-25",
+        "implied_log_forecast": -5.412118817983913,
+        "realized": 0.0023347834104001392,
+        "realized_only_log_forecast": -5.542172316685699
+      },
+      {
+        "day": "2024-09-27",
+        "implied_log_forecast": -5.623165041146702,
+        "realized": 0.002618946053300814,
+        "realized_only_log_forecast": -5.536565105521008
+      },
+      {
+        "day": "2024-09-30",
+        "implied_log_forecast": -5.633827033142251,
+        "realized": 0.003568750620865091,
+        "realized_only_log_forecast": -5.536049250825874
+      },
+      {
+        "day": "2024-10-01",
+        "implied_log_forecast": -5.474124807399464,
+        "realized": 0.005978546171355049,
+        "realized_only_log_forecast": -5.497996822793752
+      },
+      {
+        "day": "2024-10-04",
+        "implied_log_forecast": -5.372844839872633,
+        "realized": 0.01936209036422616,
+        "realized_only_log_forecast": -5.430094772026946
+      },
+      {
+        "day": "2024-10-07",
+        "implied_log_forecast": -5.2243730664955494,
+        "realized": 0.02027577240068006,
+        "realized_only_log_forecast": -5.367658468866937
+      },
+      {
+        "day": "2024-10-08",
+        "implied_log_forecast": -5.105912137545195,
+        "realized": 0.011359350208445394,
+        "realized_only_log_forecast": -5.331101420617555
+      },
+      {
+        "day": "2024-10-09",
+        "implied_log_forecast": -5.16726349494715,
+        "realized": 0.01614156295193088,
+        "realized_only_log_forecast": -5.30544108583125
+      },
+      {
+        "day": "2024-10-11",
+        "implied_log_forecast": -5.332093420582878,
+        "realized": 0.0027098386652973897,
+        "realized_only_log_forecast": -5.286148856705868
+      },
+      {
+        "day": "2024-10-14",
+        "implied_log_forecast": -5.4213700834677985,
+        "realized": 0.0031431798066252244,
+        "realized_only_log_forecast": -5.3407164749187706
+      },
+      {
+        "day": "2024-10-15",
+        "implied_log_forecast": -5.448020994648085,
+        "realized": 0.004539535629075986,
+        "realized_only_log_forecast": -5.339180702852483
+      },
+      {
+        "day": "2024-10-16",
+        "implied_log_forecast": -5.445869318772345,
+        "realized": 0.006523003611780698,
+        "realized_only_log_forecast": -5.336852331556278
+      },
+      {
+        "day": "2024-10-18",
+        "implied_log_forecast": -5.376407523679765,
+        "realized": 0.007122143940817266,
+        "realized_only_log_forecast": -5.318780811783634
+      },
+      {
+        "day": "2024-10-21",
+        "implied_log_forecast": -5.426542922577918,
+        "realized": 0.013383023037622089,
+        "realized_only_log_forecast": -5.313737282192986
+      },
+      {
+        "day": "2024-10-22",
+        "implied_log_forecast": -5.3515210645636415,
+        "realized": 0.015333693255623664,
+        "realized_only_log_forecast": -5.330407532158768
+      },
+      {
+        "day": "2024-10-23",
+        "implied_log_forecast": -5.250391416952347,
+        "realized": 0.010692926413073277,
+        "realized_only_log_forecast": -5.293720275954085
+      },
+      {
+        "day": "2024-10-25",
+        "implied_log_forecast": -5.312343852536362,
+        "realized": 0.0074924651253026765,
+        "realized_only_log_forecast": -5.2826061805391245
+      },
+      {
+        "day": "2024-10-28",
+        "implied_log_forecast": -5.218049573788825,
+        "realized": 0.014331822901150537,
+        "realized_only_log_forecast": -5.276424352938104
+      },
+      {
+        "day": "2024-10-29",
+        "implied_log_forecast": -5.246096416344701,
+        "realized": 0.012857864171417079,
+        "realized_only_log_forecast": -5.272139278897948
+      },
+      {
+        "day": "2024-10-30",
+        "implied_log_forecast": -5.240479643729284,
+        "realized": 0.005918563198019067,
+        "realized_only_log_forecast": -5.285266399114345
+      },
+      {
+        "day": "2024-11-04",
+        "implied_log_forecast": -5.149469889264078,
+        "realized": 0.01052987524528825,
+        "realized_only_log_forecast": -5.380917706252567
+      },
+      {
+        "day": "2024-11-05",
+        "implied_log_forecast": -5.031398583876232,
+        "realized": 0.014412210031843507,
+        "realized_only_log_forecast": -5.3403415066226465
+      },
+      {
+        "day": "2024-11-06",
+        "implied_log_forecast": -5.088623861756495,
+        "realized": 0.009716727335411918,
+        "realized_only_log_forecast": -5.313192812236272
+      },
+      {
+        "day": "2024-11-08",
+        "implied_log_forecast": -5.194846256656861,
+        "realized": 0.004331989962550295,
+        "realized_only_log_forecast": -5.251761798201021
+      },
+      {
+        "day": "2024-11-11",
+        "implied_log_forecast": -5.260254712882294,
+        "realized": 0.014152038255229206,
+        "realized_only_log_forecast": -5.254580169128852
+      },
+      {
+        "day": "2024-11-12",
+        "implied_log_forecast": -5.281342568181723,
+        "realized": 0.013449533826418059,
+        "realized_only_log_forecast": -5.255178048176702
+      },
+      {
+        "day": "2024-11-13",
+        "implied_log_forecast": -5.211688161825038,
+        "realized": 0.011301549968934474,
+        "realized_only_log_forecast": -5.2375678058086175
+      },
+      {
+        "day": "2024-11-18",
+        "implied_log_forecast": -5.169919278995954,
+        "realized": 0.02067882471596325,
+        "realized_only_log_forecast": -5.2192520008059695
+      },
+      {
+        "day": "2024-11-19",
+        "implied_log_forecast": -5.108684971114811,
+        "realized": 0.009562839978356977,
+        "realized_only_log_forecast": -5.205249379508436
+      },
+      {
+        "day": "2024-11-22",
+        "implied_log_forecast": -5.010111453965752,
+        "realized": 0.018089801864287703,
+        "realized_only_log_forecast": -5.206234892992759
+      },
+      {
+        "day": "2024-11-25",
+        "implied_log_forecast": -4.940831329136366,
+        "realized": 0.012095247768932461,
+        "realized_only_log_forecast": -5.125076666646831
+      },
+      {
+        "day": "2024-11-26",
+        "implied_log_forecast": -5.028297732660682,
+        "realized": 0.0093313288303763,
+        "realized_only_log_forecast": -5.098414369906652
+      },
+      {
+        "day": "2024-11-27",
+        "implied_log_forecast": -5.029965817329775,
+        "realized": 0.006494119525440162,
+        "realized_only_log_forecast": -5.097860851409456
+      },
+      {
+        "day": "2024-11-29",
+        "implied_log_forecast": -5.033167994425342,
+        "realized": 0.011189891955644517,
+        "realized_only_log_forecast": -5.085640497571001
+      },
+      {
+        "day": "2024-12-02",
+        "implied_log_forecast": -5.1346077750226184,
+        "realized": 0.007168609703827699,
+        "realized_only_log_forecast": -5.078425860242549
+      },
+      {
+        "day": "2024-12-03",
+        "implied_log_forecast": -5.092573439772663,
+        "realized": 0.004469703979239634,
+        "realized_only_log_forecast": -5.08532875958615
+      },
+      {
+        "day": "2024-12-04",
+        "implied_log_forecast": -5.139847297712745,
+        "realized": 0.012023443360623332,
+        "realized_only_log_forecast": -5.092202947093922
+      },
+      {
+        "day": "2024-12-06",
+        "implied_log_forecast": -5.120646303952966,
+        "realized": 0.012819847304657375,
+        "realized_only_log_forecast": -5.091900032130959
+      },
+      {
+        "day": "2024-12-09",
+        "implied_log_forecast": -5.179064822714173,
+        "realized": 0.0036328199272321377,
+        "realized_only_log_forecast": -5.097141053831568
+      },
+      {
+        "day": "2024-12-10",
+        "implied_log_forecast": -5.196182825714013,
+        "realized": 0.0039391569965123,
+        "realized_only_log_forecast": -5.122076136075655
+      },
+      {
+        "day": "2024-12-11",
+        "implied_log_forecast": -5.247836716680157,
+        "realized": 0.003124086444850312,
+        "realized_only_log_forecast": -5.12724690331577
+      },
+      {
+        "day": "2024-12-13",
+        "implied_log_forecast": -5.3476668667732055,
+        "realized": 0.025946898456975495,
+        "realized_only_log_forecast": -5.147608633731259
+      },
+      {
+        "day": "2024-12-16",
+        "implied_log_forecast": -5.362323171483949,
+        "realized": 0.006127332225901529,
+        "realized_only_log_forecast": -5.133299342426103
+      },
+      {
+        "day": "2024-12-17",
+        "implied_log_forecast": -5.213260760037907,
+        "realized": 0.012161156503324238,
+        "realized_only_log_forecast": -5.135643456420224
+      },
+      {
+        "day": "2024-12-18",
+        "implied_log_forecast": -5.129002836957253,
+        "realized": 0.0058234855413874615,
+        "realized_only_log_forecast": -5.107972072225564
+      },
+      {
+        "day": "2024-12-20",
+        "implied_log_forecast": -5.1206944812741275,
+        "realized": 0.016633526270622208,
+        "realized_only_log_forecast": -5.112056557261271
+      },
+      {
+        "day": "2024-12-23",
+        "implied_log_forecast": -5.058150923680643,
+        "realized": 0.011013203651530787,
+        "realized_only_log_forecast": -5.12559881405476
+      },
+      {
+        "day": "2024-12-24",
+        "implied_log_forecast": -5.282717142233949,
+        "realized": 0.004841240960203315,
+        "realized_only_log_forecast": -5.131109869634381
+      },
+      {
+        "day": "2024-12-27",
+        "implied_log_forecast": -5.208013286096316,
+        "realized": 0.0035087784380451502,
+        "realized_only_log_forecast": -5.151440321806214
+      },
+      {
+        "day": "2024-12-30",
+        "implied_log_forecast": -5.344374052571626,
+        "realized": 0.00978874152463938,
+        "realized_only_log_forecast": -5.178966127008714
+      },
+      {
+        "day": "2024-12-31",
+        "implied_log_forecast": -5.233334465812039,
+        "realized": 0.013573330973273984,
+        "realized_only_log_forecast": -5.187484462783968
+      }
+    ],
+    "2025": [
+      {
+        "day": "2025-01-01",
+        "implied_log_forecast": -5.163832004631808,
+        "realized": 0.007210322006667751,
+        "realized_only_log_forecast": -5.182370489088617
+      },
+      {
+        "day": "2025-01-03",
+        "implied_log_forecast": -5.239489667121185,
+        "realized": 0.008507305847308116,
+        "realized_only_log_forecast": -5.158397474526311
+      },
+      {
+        "day": "2025-01-06",
+        "implied_log_forecast": -5.269746948632288,
+        "realized": 0.020044620424379128,
+        "realized_only_log_forecast": -5.156761827666704
+      },
+      {
+        "day": "2025-01-07",
+        "implied_log_forecast": -4.956383233539761,
+        "realized": 0.011976273524864724,
+        "realized_only_log_forecast": -5.122866092074139
+      },
+      {
+        "day": "2025-01-08",
+        "implied_log_forecast": -5.08237221306904,
+        "realized": 0.011785853131767965,
+        "realized_only_log_forecast": -5.112021795486673
+      },
+      {
+        "day": "2025-01-10",
+        "implied_log_forecast": -5.0762596193139204,
+        "realized": 0.013956769487695798,
+        "realized_only_log_forecast": -5.097141838532779
+      },
+      {
+        "day": "2025-01-13",
+        "implied_log_forecast": -5.0368464201136005,
+        "realized": 0.00733875416570234,
+        "realized_only_log_forecast": -5.089986418054037
+      },
+      {
+        "day": "2025-01-14",
+        "implied_log_forecast": -4.892483491697263,
+        "realized": 0.004646445189264105,
+        "realized_only_log_forecast": -5.091306412941989
+      },
+      {
+        "day": "2025-01-15",
+        "implied_log_forecast": -4.95992637618529,
+        "realized": 0.004091165776435475,
+        "realized_only_log_forecast": -5.091543803394789
+      },
+      {
+        "day": "2025-01-17",
+        "implied_log_forecast": -4.971875270935547,
+        "realized": 0.009352712291007164,
+        "realized_only_log_forecast": -5.10002372681217
+      },
+      {
+        "day": "2025-01-20",
+        "implied_log_forecast": -4.934611884939655,
+        "realized": 0.004101300916184118,
+        "realized_only_log_forecast": -5.092358023070347
+      },
+      {
+        "day": "2025-01-21",
+        "implied_log_forecast": -4.870586349216104,
+        "realized": 0.038537293702364854,
+        "realized_only_log_forecast": -5.132340717718678
+      },
+      {
+        "day": "2025-01-22",
+        "implied_log_forecast": -4.763931768218447,
+        "realized": 0.007531434384304325,
+        "realized_only_log_forecast": -5.072318611105674
+      },
+      {
+        "day": "2025-01-24",
+        "implied_log_forecast": -4.808375927453509,
+        "realized": 0.01456060223737966,
+        "realized_only_log_forecast": -5.0758031152593315
+      },
+      {
+        "day": "2025-01-27",
+        "implied_log_forecast": -4.794682230032644,
+        "realized": 0.014014933026066477,
+        "realized_only_log_forecast": -5.058584431603279
+      },
+      {
+        "day": "2025-01-28",
+        "implied_log_forecast": -4.621968642828896,
+        "realized": 0.017995041180846535,
+        "realized_only_log_forecast": -5.054347107174031
+      },
+      {
+        "day": "2025-01-29",
+        "implied_log_forecast": -4.6058733658985975,
+        "realized": 0.01684895475363653,
+        "realized_only_log_forecast": -5.038010082325586
+      },
+      {
+        "day": "2025-01-31",
+        "implied_log_forecast": -4.7041748148524185,
+        "realized": 0.004424954303993767,
+        "realized_only_log_forecast": -5.0247381036528305
+      },
+      {
+        "day": "2025-02-01",
+        "implied_log_forecast": -4.851178317088305,
+        "realized": 0.024223425934235064,
+        "realized_only_log_forecast": -5.02604576359596
+      },
+      {
+        "day": "2025-02-03",
+        "implied_log_forecast": -5.139462641714471,
+        "realized": 0.005106892497263008,
+        "realized_only_log_forecast": -5.007017422925273
+      },
+      {
+        "day": "2025-02-04",
+        "implied_log_forecast": -5.105723749806458,
+        "realized": 0.009361880618306066,
+        "realized_only_log_forecast": -5.020446477885739
+      },
+      {
+        "day": "2025-02-05",
+        "implied_log_forecast": -5.137207930953697,
+        "realized": 0.002870799806601254,
+        "realized_only_log_forecast": -5.007286824905128
+      },
+      {
+        "day": "2025-02-07",
+        "implied_log_forecast": -5.124516850038831,
+        "realized": 0.016812836050610937,
+        "realized_only_log_forecast": -5.021902149553097
+      },
+      {
+        "day": "2025-02-10",
+        "implied_log_forecast": -5.19813859239197,
+        "realized": 0.006576207546059455,
+        "realized_only_log_forecast": -5.022834144038432
+      },
+      {
+        "day": "2025-02-11",
+        "implied_log_forecast": -5.084462606761881,
+        "realized": 0.016785506044407424,
+        "realized_only_log_forecast": -5.025992079728907
+      },
+      {
+        "day": "2025-02-12",
+        "implied_log_forecast": -5.005623435354663,
+        "realized": 0.018644943044355995,
+        "realized_only_log_forecast": -5.007593170088607
+      },
+      {
+        "day": "2025-02-14",
+        "implied_log_forecast": -4.983198146861912,
+        "realized": 0.021245845164770568,
+        "realized_only_log_forecast": -4.99376181280948
+      },
+      {
+        "day": "2025-02-17",
+        "implied_log_forecast": -4.95709280485504,
+        "realized": 0.011721553608664807,
+        "realized_only_log_forecast": -4.966013842150216
+      },
+      {
+        "day": "2025-02-18",
+        "implied_log_forecast": -4.851531167161191,
+        "realized": 0.007940921888907463,
+        "realized_only_log_forecast": -4.953186868424746
+      },
+      {
+        "day": "2025-02-19",
+        "implied_log_forecast": -4.862239145959949,
+        "realized": 0.00941269309319317,
+        "realized_only_log_forecast": -4.951154095736974
+      },
+      {
+        "day": "2025-02-21",
+        "implied_log_forecast": -4.998644550437612,
+        "realized": 0.006702044450778115,
+        "realized_only_log_forecast": -4.950824774370138
+      },
+      {
+        "day": "2025-02-24",
+        "implied_log_forecast": -5.021876720208956,
+        "realized": 0.0038899133033631836,
+        "realized_only_log_forecast": -4.952901944892542
+      },
+      {
+        "day": "2025-02-25",
+        "implied_log_forecast": -5.058429200267071,
+        "realized": 0.0017885719655931953,
+        "realized_only_log_forecast": -5.002115549444086
+      },
+      {
+        "day": "2025-02-28",
+        "implied_log_forecast": -5.247843621698037,
+        "realized": 0.007715600234858752,
+        "realized_only_log_forecast": -5.0303923430366915
+      },
+      {
+        "day": "2025-03-03",
+        "implied_log_forecast": -5.1438335788591125,
+        "realized": 0.013642920912990077,
+        "realized_only_log_forecast": -5.025293225838566
+      },
+      {
+        "day": "2025-03-04",
+        "implied_log_forecast": -5.156831053121346,
+        "realized": 0.004024656474862587,
+        "realized_only_log_forecast": -5.021551808996114
+      },
+      {
+        "day": "2025-03-05",
+        "implied_log_forecast": -5.155954261472368,
+        "realized": 0.00495475615554932,
+        "realized_only_log_forecast": -5.041004953888712
+      },
+      {
+        "day": "2025-03-07",
+        "implied_log_forecast": -5.177830225423309,
+        "realized": 0.0096867319152613,
+        "realized_only_log_forecast": -5.057159090290322
+      },
+      {
+        "day": "2025-03-10",
+        "implied_log_forecast": -5.2095554382707885,
+        "realized": 0.004749934560464602,
+        "realized_only_log_forecast": -5.0506036906831415
+      },
+      {
+        "day": "2025-03-11",
+        "implied_log_forecast": -5.143167667998809,
+        "realized": 0.004969892613512768,
+        "realized_only_log_forecast": -5.0698729540078125
+      },
+      {
+        "day": "2025-03-12",
+        "implied_log_forecast": -5.129257028323966,
+        "realized": 0.005611453012899149,
+        "realized_only_log_forecast": -5.068527390407481
+      },
+      {
+        "day": "2025-03-17",
+        "implied_log_forecast": -5.244551595258687,
+        "realized": 0.004926550467784894,
+        "realized_only_log_forecast": -5.07862990665518
+      },
+      {
+        "day": "2025-03-18",
+        "implied_log_forecast": -5.21459564534099,
+        "realized": 0.003656797206372137,
+        "realized_only_log_forecast": -5.068777205743221
+      },
+      {
+        "day": "2025-03-19",
+        "implied_log_forecast": -5.23701298368896,
+        "realized": 0.003971686749907327,
+        "realized_only_log_forecast": -5.068006101728503
+      },
+      {
+        "day": "2025-03-21",
+        "implied_log_forecast": -5.3188763951741835,
+        "realized": 0.007729388445257734,
+        "realized_only_log_forecast": -5.062873654300652
+      },
+      {
+        "day": "2025-03-24",
+        "implied_log_forecast": -5.3214915528347895,
+        "realized": 0.004705643706656035,
+        "realized_only_log_forecast": -5.06895348507237
+      },
+      {
+        "day": "2025-03-25",
+        "implied_log_forecast": -5.166743796087753,
+        "realized": 0.010502226431764204,
+        "realized_only_log_forecast": -5.077075273716773
+      },
+      {
+        "day": "2025-03-26",
+        "implied_log_forecast": -5.18038550390388,
+        "realized": 0.008001395197496838,
+        "realized_only_log_forecast": -5.088735043401809
+      },
+      {
+        "day": "2025-03-28",
+        "implied_log_forecast": -5.22563894683914,
+        "realized": 0.01177240758475538,
+        "realized_only_log_forecast": -5.089641357803769
+      },
+      {
+        "day": "2025-04-01",
+        "implied_log_forecast": -5.291742615771229,
+        "realized": 0.013454602874744762,
+        "realized_only_log_forecast": -5.073917857795885
+      },
+      {
+        "day": "2025-04-02",
+        "implied_log_forecast": -5.146141511434767,
+        "realized": 0.004264939612704916,
+        "realized_only_log_forecast": -5.0727617337277575
+      },
+      {
+        "day": "2025-04-04",
+        "implied_log_forecast": -5.168157804750754,
+        "realized": 0.009333651114330151,
+        "realized_only_log_forecast": -5.070387713519735
+      },
+      {
+        "day": "2025-04-07",
+        "implied_log_forecast": -5.138938151825289,
+        "realized": 0.03436343947598345,
+        "realized_only_log_forecast": -5.057721745088879
+      },
+      {
+        "day": "2025-04-08",
+        "implied_log_forecast": -4.204158977649481,
+        "realized": 0.04183846573274301,
+        "realized_only_log_forecast": -4.986342746975515
+      },
+      {
+        "day": "2025-04-11",
+        "implied_log_forecast": -4.264717859084506,
+        "realized": 0.013121659779178167,
+        "realized_only_log_forecast": -4.948264255369357
+      },
+      {
+        "day": "2025-04-15",
+        "implied_log_forecast": -4.382439330621368,
+        "realized": 0.0012455576223845356,
+        "realized_only_log_forecast": -4.934150886657123
+      },
+      {
+        "day": "2025-04-16",
+        "implied_log_forecast": -4.834827089213384,
+        "realized": 0.007386322200622588,
+        "realized_only_log_forecast": -4.954019864238955
+      },
+      {
+        "day": "2025-04-21",
+        "implied_log_forecast": -4.90551495490258,
+        "realized": 0.0068355357108007804,
+        "realized_only_log_forecast": -4.94624011885239
+      },
+      {
+        "day": "2025-04-22",
+        "implied_log_forecast": -4.900440173106897,
+        "realized": 0.002976250560587315,
+        "realized_only_log_forecast": -4.948485887614685
+      },
+      {
+        "day": "2025-04-23",
+        "implied_log_forecast": -4.953014961439571,
+        "realized": 0.009223250148655165,
+        "realized_only_log_forecast": -4.968128721523202
+      },
+      {
+        "day": "2025-04-25",
+        "implied_log_forecast": -4.837152568447343,
+        "realized": 0.02252921390538491,
+        "realized_only_log_forecast": -4.9645417913742484
+      },
+      {
+        "day": "2025-04-28",
+        "implied_log_forecast": -4.717502797581607,
+        "realized": 0.006101951718289634,
+        "realized_only_log_forecast": -4.935564987245623
+      },
+      {
+        "day": "2025-04-29",
+        "implied_log_forecast": -4.746426965144352,
+        "realized": 0.0042593449784746355,
+        "realized_only_log_forecast": -4.9346370805798525
+      },
+      {
+        "day": "2025-05-02",
+        "implied_log_forecast": -4.634577271766204,
+        "realized": 0.015857026861374402,
+        "realized_only_log_forecast": -4.9456955597084304
+      },
+      {
+        "day": "2025-05-05",
+        "implied_log_forecast": -4.616618891778301,
+        "realized": 0.004868334355146726,
+        "realized_only_log_forecast": -4.927347443925994
+      },
+      {
+        "day": "2025-05-06",
+        "implied_log_forecast": -4.624975816921479,
+        "realized": 0.0017431420084606348,
+        "realized_only_log_forecast": -4.93982750678502
+      },
+      {
+        "day": "2025-05-07",
+        "implied_log_forecast": -4.602130210331226,
+        "realized": 0.005598682333947694,
+        "realized_only_log_forecast": -4.961677384305567
+      },
+      {
+        "day": "2025-05-09",
+        "implied_log_forecast": -4.451427438746424,
+        "realized": 0.015860365775319765,
+        "realized_only_log_forecast": -4.9696526386951145
+      },
+      {
+        "day": "2025-05-12",
+        "implied_log_forecast": -4.3848265990496476,
+        "realized": 0.010701050052116272,
+        "realized_only_log_forecast": -4.977742627078491
+      },
+      {
+        "day": "2025-05-13",
+        "implied_log_forecast": -4.66400092501624,
+        "realized": 0.020420115568143306,
+        "realized_only_log_forecast": -4.949762814784847
+      },
+      {
+        "day": "2025-05-14",
+        "implied_log_forecast": -4.666013533093819,
+        "realized": 0.006826706617344102,
+        "realized_only_log_forecast": -4.929808465836876
+      },
+      {
+        "day": "2025-05-16",
+        "implied_log_forecast": -4.792350034426255,
+        "realized": 0.004367731731876132,
+        "realized_only_log_forecast": -4.941737822332807
+      },
+      {
+        "day": "2025-05-19",
+        "implied_log_forecast": -4.837048144503624,
+        "realized": 0.003407415077305009,
+        "realized_only_log_forecast": -4.951999412345311
+      },
+      {
+        "day": "2025-05-20",
+        "implied_log_forecast": -4.781509858105708,
+        "realized": 0.004460944004168696,
+        "realized_only_log_forecast": -4.9868383578226965
+      },
+      {
+        "day": "2025-05-21",
+        "implied_log_forecast": -4.803259158529116,
+        "realized": 0.013978186954007092,
+        "realized_only_log_forecast": -5.012857402983672
+      },
+      {
+        "day": "2025-05-23",
+        "implied_log_forecast": -4.811083534255728,
+        "realized": 0.010295321177284713,
+        "realized_only_log_forecast": -5.00586658729379
+      },
+      {
+        "day": "2025-05-26",
+        "implied_log_forecast": -4.803349529131134,
+        "realized": 0.0056224558852408235,
+        "realized_only_log_forecast": -4.995007819466231
+      },
+      {
+        "day": "2025-05-27",
+        "implied_log_forecast": -4.745354272231823,
+        "realized": 0.015281886838622619,
+        "realized_only_log_forecast": -5.004604849870151
+      },
+      {
+        "day": "2025-05-28",
+        "implied_log_forecast": -4.690348433978012,
+        "realized": 0.005025691498785716,
+        "realized_only_log_forecast": -4.9996484785792195
+      },
+      {
+        "day": "2025-05-30",
+        "implied_log_forecast": -4.899684420483892,
+        "realized": 0.0031318896590548893,
+        "realized_only_log_forecast": -5.002002794752911
+      },
+      {
+        "day": "2025-06-02",
+        "implied_log_forecast": -4.949539008216863,
+        "realized": 0.008593521965938223,
+        "realized_only_log_forecast": -5.01647043997559
+      },
+      {
+        "day": "2025-06-03",
+        "implied_log_forecast": -4.84999946379092,
+        "realized": 0.012890593459691993,
+        "realized_only_log_forecast": -5.024972618760219
+      },
+      {
+        "day": "2025-06-04",
+        "implied_log_forecast": -4.902010935765493,
+        "realized": 0.0017944200715994739,
+        "realized_only_log_forecast": -5.015528736206924
+      },
+      {
+        "day": "2025-06-06",
+        "implied_log_forecast": -5.073305473049779,
+        "realized": 0.01256698802344372,
+        "realized_only_log_forecast": -5.033049192359135
+      },
+      {
+        "day": "2025-06-09",
+        "implied_log_forecast": -5.117871276386756,
+        "realized": 0.0013233113959908707,
+        "realized_only_log_forecast": -5.030580715224529
+      },
+      {
+        "day": "2025-06-10",
+        "implied_log_forecast": -5.066626831013562,
+        "realized": 0.0014649691918290713,
+        "realized_only_log_forecast": -5.068808894649009
+      },
+      {
+        "day": "2025-06-11",
+        "implied_log_forecast": -5.134256427661086,
+        "realized": 0.0034728066362436495,
+        "realized_only_log_forecast": -5.0799313105948105
+      },
+      {
+        "day": "2025-06-13",
+        "implied_log_forecast": -5.125559357209815,
+        "realized": 0.003968604115169547,
+        "realized_only_log_forecast": -5.092069515627033
+      },
+      {
+        "day": "2025-06-16",
+        "implied_log_forecast": -5.0233681173309,
+        "realized": 0.0052413957896737,
+        "realized_only_log_forecast": -5.105351075468514
+      },
+      {
+        "day": "2025-06-17",
+        "implied_log_forecast": -5.060523620606857,
+        "realized": 0.002218647411140734,
+        "realized_only_log_forecast": -5.107164600953119
+      },
+      {
+        "day": "2025-06-18",
+        "implied_log_forecast": -5.124919139391766,
+        "realized": 0.004613623468677487,
+        "realized_only_log_forecast": -5.135897236855926
+      },
+      {
+        "day": "2025-06-20",
+        "implied_log_forecast": -5.134839756059539,
+        "realized": 0.007508281577780191,
+        "realized_only_log_forecast": -5.144116630260382
+      },
+      {
+        "day": "2025-06-23",
+        "implied_log_forecast": -5.2098594817305335,
+        "realized": 0.00506677457779937,
+        "realized_only_log_forecast": -5.141718340161974
+      },
+      {
+        "day": "2025-06-24",
+        "implied_log_forecast": -5.15916711805061,
+        "realized": 0.0131156760049893,
+        "realized_only_log_forecast": -5.137560052718251
+      },
+      {
+        "day": "2025-06-25",
+        "implied_log_forecast": -5.183736369791323,
+        "realized": 0.0033521790874281444,
+        "realized_only_log_forecast": -5.119874543928886
+      },
+      {
+        "day": "2025-06-27",
+        "implied_log_forecast": -5.346983871295494,
+        "realized": 0.002082704091820719,
+        "realized_only_log_forecast": -5.126352533175028
+      },
+      {
+        "day": "2025-06-30",
+        "implied_log_forecast": -5.3912653340786045,
+        "realized": 0.0023134707339695455,
+        "realized_only_log_forecast": -5.143215943312468
+      },
+      {
+        "day": "2025-07-01",
+        "implied_log_forecast": -5.350612114574992,
+        "realized": 0.0013426667726353985,
+        "realized_only_log_forecast": -5.152406384529977
+      },
+      {
+        "day": "2025-07-02",
+        "implied_log_forecast": -5.41234258406361,
+        "realized": 0.002270589732066079,
+        "realized_only_log_forecast": -5.184989661148673
+      },
+      {
+        "day": "2025-07-04",
+        "implied_log_forecast": -5.446868001414493,
+        "realized": 0.002749677372289571,
+        "realized_only_log_forecast": -5.20254306541262
+      },
+      {
+        "day": "2025-07-07",
+        "implied_log_forecast": -5.457162795551561,
+        "realized": 0.0019329820441221397,
+        "realized_only_log_forecast": -5.217241594571925
+      },
+      {
+        "day": "2025-07-08",
+        "implied_log_forecast": -5.444894031692426,
+        "realized": 0.0013039402886289191,
+        "realized_only_log_forecast": -5.241748547675613
+      },
+      {
+        "day": "2025-07-09",
+        "implied_log_forecast": -5.535331399325674,
+        "realized": 0.002472217716764608,
+        "realized_only_log_forecast": -5.281273231925216
+      },
+      {
+        "day": "2025-07-11",
+        "implied_log_forecast": -5.6173869253009,
+        "realized": 0.003100916026706304,
+        "realized_only_log_forecast": -5.298343961474982
+      },
+      {
+        "day": "2025-07-14",
+        "implied_log_forecast": -5.623141922809574,
+        "realized": 0.0028732834752262025,
+        "realized_only_log_forecast": -5.328065769557313
+      },
+      {
+        "day": "2025-07-15",
+        "implied_log_forecast": -5.587372359644608,
+        "realized": 0.0026835229488291596,
+        "realized_only_log_forecast": -5.333691123684215
+      },
+      {
+        "day": "2025-07-16",
+        "implied_log_forecast": -5.660902365654885,
+        "realized": 0.002313400679407062,
+        "realized_only_log_forecast": -5.332051248506442
+      },
+      {
+        "day": "2025-07-18",
+        "implied_log_forecast": -5.704177919945385,
+        "realized": 0.004242941335761173,
+        "realized_only_log_forecast": -5.3389464008103715
+      },
+      {
+        "day": "2025-07-21",
+        "implied_log_forecast": -5.645535934036588,
+        "realized": 0.0026597586868112953,
+        "realized_only_log_forecast": -5.342564602190735
+      },
+      {
+        "day": "2025-07-22",
+        "implied_log_forecast": -5.6868017918113045,
+        "realized": 0.0023061340969368284,
+        "realized_only_log_forecast": -5.357854671462202
+      },
+      {
+        "day": "2025-07-23",
+        "implied_log_forecast": -5.763270944941742,
+        "realized": 0.001637000509861819,
+        "realized_only_log_forecast": -5.3644579077111905
+      },
+      {
+        "day": "2025-07-25",
+        "implied_log_forecast": -5.771555895380757,
+        "realized": 0.004017343827751049,
+        "realized_only_log_forecast": -5.407571285292397
+      },
+      {
+        "day": "2025-07-28",
+        "implied_log_forecast": -5.692710599409069,
+        "realized": 0.005216627751619252,
+        "realized_only_log_forecast": -5.404796806167682
+      },
+      {
+        "day": "2025-07-29",
+        "implied_log_forecast": -5.572954370869172,
+        "realized": 0.004387330312556983,
+        "realized_only_log_forecast": -5.398702021009047
+      },
+      {
+        "day": "2025-07-30",
+        "implied_log_forecast": -5.683221978804997,
+        "realized": 0.0036645079294117255,
+        "realized_only_log_forecast": -5.424867076993762
+      },
+      {
+        "day": "2025-08-01",
+        "implied_log_forecast": -5.676835283274121,
+        "realized": 0.006703453514655439,
+        "realized_only_log_forecast": -5.423960835526357
+      },
+      {
+        "day": "2025-08-04",
+        "implied_log_forecast": -5.599859970209247,
+        "realized": 0.003829900491555006,
+        "realized_only_log_forecast": -5.397939811233645
+      },
+      {
+        "day": "2025-08-05",
+        "implied_log_forecast": -5.596041269835563,
+        "realized": 0.003668418960259028,
+        "realized_only_log_forecast": -5.385215212592072
+      },
+      {
+        "day": "2025-08-06",
+        "implied_log_forecast": -5.626225773321577,
+        "realized": 0.0030922813772501626,
+        "realized_only_log_forecast": -5.376336797517128
+      },
+      {
+        "day": "2025-08-08",
+        "implied_log_forecast": -5.620121728852904,
+        "realized": 0.004403496051870429,
+        "realized_only_log_forecast": -5.370779975339774
+      },
+      {
+        "day": "2025-08-11",
+        "implied_log_forecast": -5.571586589398079,
+        "realized": 0.0037958351637172013,
+        "realized_only_log_forecast": -5.362593221710401
+      },
+      {
+        "day": "2025-08-12",
+        "implied_log_forecast": -5.544855837888629,
+        "realized": 0.008116132586764899,
+        "realized_only_log_forecast": -5.3450289333265255
+      },
+      {
+        "day": "2025-08-13",
+        "implied_log_forecast": -5.514663837404231,
+        "realized": 0.0022605843491360434,
+        "realized_only_log_forecast": -5.314335208105628
+      },
+      {
+        "day": "2025-08-18",
+        "implied_log_forecast": -5.518678542082953,
+        "realized": 0.0031563028250470465,
+        "realized_only_log_forecast": -5.334616535995316
+      },
+      {
+        "day": "2025-08-19",
+        "implied_log_forecast": -5.532725773453315,
+        "realized": 0.0019222996255844464,
+        "realized_only_log_forecast": -5.33665611847487
+      },
+      {
+        "day": "2025-08-20",
+        "implied_log_forecast": -5.629927453531105,
+        "realized": 0.0016968161958503673,
+        "realized_only_log_forecast": -5.362091949891459
+      },
+      {
+        "day": "2025-08-22",
+        "implied_log_forecast": -5.708692172816925,
+        "realized": 0.001991862839535163,
+        "realized_only_log_forecast": -5.390190710900904
+      },
+      {
+        "day": "2025-08-25",
+        "implied_log_forecast": -5.666105784083386,
+        "realized": 0.0016301490468723491,
+        "realized_only_log_forecast": -5.400772248007439
+      },
+      {
+        "day": "2025-08-26",
+        "implied_log_forecast": -5.677670599701191,
+        "realized": 0.00213219168222546,
+        "realized_only_log_forecast": -5.4416062751822825
+      },
+      {
+        "day": "2025-08-29",
+        "implied_log_forecast": -5.635626239699126,
+        "realized": 0.004665853153601322,
+        "realized_only_log_forecast": -5.447816144079546
+      },
+      {
+        "day": "2025-09-01",
+        "implied_log_forecast": -5.689810009954313,
+        "realized": 0.0018750071919096656,
+        "realized_only_log_forecast": -5.439854116853719
+      },
+      {
+        "day": "2025-09-03",
+        "implied_log_forecast": -5.7598024540867065,
+        "realized": 0.0035730318405554407,
+        "realized_only_log_forecast": -5.447191989229482
+      },
+      {
+        "day": "2025-09-04",
+        "implied_log_forecast": -5.8485008248633035,
+        "realized": 0.0052186675950956045,
+        "realized_only_log_forecast": -5.450593399926758
+      },
+      {
+        "day": "2025-09-05",
+        "implied_log_forecast": -5.863448728740941,
+        "realized": 0.009310314163012555,
+        "realized_only_log_forecast": -5.447743470014652
+      },
+      {
+        "day": "2025-09-08",
+        "implied_log_forecast": -5.8470766137244174,
+        "realized": 0.004938546183165606,
+        "realized_only_log_forecast": -5.416857658307226
+      },
+      {
+        "day": "2025-09-10",
+        "implied_log_forecast": -5.850117376762178,
+        "realized": 0.002231613641622914,
+        "realized_only_log_forecast": -5.415837679933607
+      },
+      {
+        "day": "2025-09-11",
+        "implied_log_forecast": -5.903579886003743,
+        "realized": 0.0010107193427321187,
+        "realized_only_log_forecast": -5.447518615726156
+      },
+      {
+        "day": "2025-09-12",
+        "implied_log_forecast": -5.988756176859511,
+        "realized": 0.0009082753521135333,
+        "realized_only_log_forecast": -5.48246717320682
+      },
+      {
+        "day": "2025-09-15",
+        "implied_log_forecast": -6.09658001866809,
+        "realized": 0.00078968676714625,
+        "realized_only_log_forecast": -5.520807050309578
+      },
+      {
+        "day": "2025-09-17",
+        "implied_log_forecast": -6.113895873764331,
+        "realized": 0.000987603143734671,
+        "realized_only_log_forecast": -5.560283402789789
+      },
+      {
+        "day": "2025-09-18",
+        "implied_log_forecast": -6.100742024056676,
+        "realized": 0.0013262719915366878,
+        "realized_only_log_forecast": -5.621663376132659
+      },
+      {
+        "day": "2025-09-19",
+        "implied_log_forecast": -6.1977792960863765,
+        "realized": 0.0015994140028893968,
+        "realized_only_log_forecast": -5.634750518534973
+      },
+      {
+        "day": "2025-09-22",
+        "implied_log_forecast": -6.210687934491874,
+        "realized": 0.0023248210964194912,
+        "realized_only_log_forecast": -5.693938204712077
+      },
+      {
+        "day": "2025-09-24",
+        "implied_log_forecast": -6.0120660543389075,
+        "realized": 0.0031137203468521147,
+        "realized_only_log_forecast": -5.702858937732419
+      },
+      {
+        "day": "2025-09-25",
+        "implied_log_forecast": -5.999558861794581,
+        "realized": 0.0028627439262196375,
+        "realized_only_log_forecast": -5.715980818945528
+      },
+      {
+        "day": "2025-09-26",
+        "implied_log_forecast": -5.915740777079234,
+        "realized": 0.004154060257161587,
+        "realized_only_log_forecast": -5.724971600695023
+      },
+      {
+        "day": "2025-09-29",
+        "implied_log_forecast": -5.7949364047650125,
+        "realized": 0.005768659581644611,
+        "realized_only_log_forecast": -5.720402903633195
+      },
+      {
+        "day": "2025-10-01",
+        "implied_log_forecast": -5.8285256097743385,
+        "realized": 0.00393256165502276,
+        "realized_only_log_forecast": -5.7156623187034
+      },
+      {
+        "day": "2025-10-03",
+        "implied_log_forecast": -6.01342902013666,
+        "realized": 0.0037160546993059355,
+        "realized_only_log_forecast": -5.684578853324255
+      },
+      {
+        "day": "2025-10-06",
+        "implied_log_forecast": -6.060492250624529,
+        "realized": 0.0018786553612701728,
+        "realized_only_log_forecast": -5.671294913002112
+      },
+      {
+        "day": "2025-10-08",
+        "implied_log_forecast": -6.1033385984527495,
+        "realized": 0.0050965233452000165,
+        "realized_only_log_forecast": -5.70477197813827
+      },
+      {
+        "day": "2025-10-09",
+        "implied_log_forecast": -6.003721614438829,
+        "realized": 0.0030501227187417343,
+        "realized_only_log_forecast": -5.691360146167111
+      },
+      {
+        "day": "2025-10-10",
+        "implied_log_forecast": -6.054460852448532,
+        "realized": 0.003243653961074987,
+        "realized_only_log_forecast": -5.7101165938553216
+      },
+      {
+        "day": "2025-10-13",
+        "implied_log_forecast": -6.065313087125607,
+        "realized": 0.0030767270347847884,
+        "realized_only_log_forecast": -5.7366796862727245
+      },
+      {
+        "day": "2025-10-15",
+        "implied_log_forecast": -5.832343337108998,
+        "realized": 0.002354192072927334,
+        "realized_only_log_forecast": -5.8137856275281115
+      },
+      {
+        "day": "2025-10-16",
+        "implied_log_forecast": -5.9903626313386,
+        "realized": 0.002541065720795294,
+        "realized_only_log_forecast": -5.85559390231051
+      },
+      {
+        "day": "2025-10-17",
+        "implied_log_forecast": -5.950304715253383,
+        "realized": 0.0054893704840278555,
+        "realized_only_log_forecast": -5.86250500538419
+      },
+      {
+        "day": "2025-10-23",
+        "implied_log_forecast": -5.835129124893526,
+        "realized": 0.003937357569822692,
+        "realized_only_log_forecast": -5.821717817641552
+      },
+      {
+        "day": "2025-10-24",
+        "implied_log_forecast": -5.742382380333103,
+        "realized": 0.005575450650313734,
+        "realized_only_log_forecast": -5.802112350025608
+      },
+      {
+        "day": "2025-10-27",
+        "implied_log_forecast": -5.760037555243826,
+        "realized": 0.0040414066436473065,
+        "realized_only_log_forecast": -5.7733107131118455
+      },
+      {
+        "day": "2025-10-29",
+        "implied_log_forecast": -5.629482861834295,
+        "realized": 0.003245085151136754,
+        "realized_only_log_forecast": -5.734363906121413
+      },
+      {
+        "day": "2025-10-30",
+        "implied_log_forecast": -5.623795096602249,
+        "realized": 0.005167845120111691,
+        "realized_only_log_forecast": -5.7151457714872755
+      },
+      {
+        "day": "2025-10-31",
+        "implied_log_forecast": -5.587231893217782,
+        "realized": 0.004736004871529985,
+        "realized_only_log_forecast": -5.664940959191063
+      },
+      {
+        "day": "2025-11-03",
+        "implied_log_forecast": -5.50131672947448,
+        "realized": 0.003373624639947769,
+        "realized_only_log_forecast": -5.619575140017178
+      },
+      {
+        "day": "2025-11-06",
+        "implied_log_forecast": -5.386954717033705,
+        "realized": 0.0051628568826876855,
+        "realized_only_log_forecast": -5.616631288024067
+      },
+      {
+        "day": "2025-11-07",
+        "implied_log_forecast": -5.415163794432377,
+        "realized": 0.005023194858276388,
+        "realized_only_log_forecast": -5.590364213636791
+      },
+      {
+        "day": "2025-11-10",
+        "implied_log_forecast": -5.417950841802395,
+        "realized": 0.0026765674928670813,
+        "realized_only_log_forecast": -5.604084462898642
+      },
+      {
+        "day": "2025-11-12",
+        "implied_log_forecast": -5.4543987161002,
+        "realized": 0.0017135583173614256,
+        "realized_only_log_forecast": -5.644132908007736
+      },
+      {
+        "day": "2025-11-13",
+        "implied_log_forecast": -5.574494835914496,
+        "realized": 0.004216247754675259,
+        "realized_only_log_forecast": -5.676718722609094
+      },
+      {
+        "day": "2025-11-14",
+        "implied_log_forecast": -5.558944070166643,
+        "realized": 0.01003813552899123,
+        "realized_only_log_forecast": -5.673874833784289
+      },
+      {
+        "day": "2025-11-17",
+        "implied_log_forecast": -5.503600443225491,
+        "realized": 0.0019899466592890997,
+        "realized_only_log_forecast": -5.577219461611887
+      },
+      {
+        "day": "2025-11-19",
+        "implied_log_forecast": -5.416990006746232,
+        "realized": 0.0023822791149351757,
+        "realized_only_log_forecast": -5.596698316971412
+      },
+      {
+        "day": "2025-11-20",
+        "implied_log_forecast": -5.4572262998058685,
+        "realized": 0.001998168806807799,
+        "realized_only_log_forecast": -5.607668102831797
+      },
+      {
+        "day": "2025-11-21",
+        "implied_log_forecast": -5.491275128684756,
+        "realized": 0.0035024247730680884,
+        "realized_only_log_forecast": -5.648638910876657
+      },
+      {
+        "day": "2025-11-24",
+        "implied_log_forecast": -5.274981267388004,
+        "realized": 0.003979734854626922,
+        "realized_only_log_forecast": -5.645445954138113
+      },
+      {
+        "day": "2025-11-26",
+        "implied_log_forecast": -5.464504267118196,
+        "realized": 0.0018656362478963173,
+        "realized_only_log_forecast": -5.626936003131642
+      },
+      {
+        "day": "2025-11-27",
+        "implied_log_forecast": -5.6105875023509855,
+        "realized": 0.003958776638772068,
+        "realized_only_log_forecast": -5.646240931818114
+      },
+      {
+        "day": "2025-11-28",
+        "implied_log_forecast": -5.640001599288725,
+        "realized": 0.0022454924709006036,
+        "realized_only_log_forecast": -5.659776861447241
+      },
+      {
+        "day": "2025-12-01",
+        "implied_log_forecast": -5.660984062424296,
+        "realized": 0.004473423422028778,
+        "realized_only_log_forecast": -5.680596306716787
+      },
+      {
+        "day": "2025-12-03",
+        "implied_log_forecast": -5.730517179936214,
+        "realized": 0.00317550007344111,
+        "realized_only_log_forecast": -5.6886887831262865
+      },
+      {
+        "day": "2025-12-04",
+        "implied_log_forecast": -5.719313335685267,
+        "realized": 0.0029680915331048796,
+        "realized_only_log_forecast": -5.700280970821508
+      },
+      {
+        "day": "2025-12-05",
+        "implied_log_forecast": -5.7888992277402815,
+        "realized": 0.006475620858051471,
+        "realized_only_log_forecast": -5.707400153090595
+      },
+      {
+        "day": "2025-12-08",
+        "implied_log_forecast": -5.8770358655380734,
+        "realized": 0.0034331899437083026,
+        "realized_only_log_forecast": -5.686607217715645
+      },
+      {
+        "day": "2025-12-10",
+        "implied_log_forecast": -5.793109684112832,
+        "realized": 0.004660281181185915,
+        "realized_only_log_forecast": -5.698448240702151
+      },
+      {
+        "day": "2025-12-11",
+        "implied_log_forecast": -5.768711961000149,
+        "realized": 0.0063047488444092446,
+        "realized_only_log_forecast": -5.68646819834989
+      },
+      {
+        "day": "2025-12-12",
+        "implied_log_forecast": -5.83425210684923,
+        "realized": 0.003574807595036353,
+        "realized_only_log_forecast": -5.666938777452311
+      },
+      {
+        "day": "2025-12-15",
+        "implied_log_forecast": -5.888177640913027,
+        "realized": 0.0028269499460187187,
+        "realized_only_log_forecast": -5.6779695258119345
+      },
+      {
+        "day": "2025-12-17",
+        "implied_log_forecast": -5.887700697975677,
+        "realized": 0.002198326381961395,
+        "realized_only_log_forecast": -5.674314406729527
+      },
+      {
+        "day": "2025-12-18",
+        "implied_log_forecast": -5.908180619047188,
+        "realized": 0.0036915510569562036,
+        "realized_only_log_forecast": -5.675845625065214
+      },
+      {
+        "day": "2025-12-19",
+        "implied_log_forecast": -5.913760723016762,
+        "realized": 0.0021148862867860245,
+        "realized_only_log_forecast": -5.683284649948642
+      },
+      {
+        "day": "2025-12-22",
+        "implied_log_forecast": -6.005393917574266,
+        "realized": 0.0006422457505005746,
+        "realized_only_log_forecast": -5.756393370602558
+      },
+      {
+        "day": "2025-12-24",
+        "implied_log_forecast": -6.077704482367455,
+        "realized": 0.0010587155047176763,
+        "realized_only_log_forecast": -5.779455943472744
+      },
+      {
+        "day": "2025-12-26",
+        "implied_log_forecast": -6.117045642027195,
+        "realized": 0.0005835707690485434,
+        "realized_only_log_forecast": -5.845530817943034
+      },
+      {
+        "day": "2025-12-29",
+        "implied_log_forecast": -6.177772460283011,
+        "realized": 0.00152783204492957,
+        "realized_only_log_forecast": -5.874942854782324
+      }
+    ],
+    "2026": [
+      {
+        "day": "2026-01-01",
+        "implied_log_forecast": -6.143324701803733,
+        "realized": 0.001628183095201384,
+        "realized_only_log_forecast": -5.89554913293739
+      },
+      {
+        "day": "2026-01-02",
+        "implied_log_forecast": -6.222980733295996,
+        "realized": 0.0007602658935715603,
+        "realized_only_log_forecast": -5.925452285384167
+      },
+      {
+        "day": "2026-01-05",
+        "implied_log_forecast": -6.207699513955735,
+        "realized": 0.004556734232499802,
+        "realized_only_log_forecast": -5.9315489606546095
+      },
+      {
+        "day": "2026-01-07",
+        "implied_log_forecast": -6.036097962547798,
+        "realized": 0.0027749568672469273,
+        "realized_only_log_forecast": -5.944934581371436
+      },
+      {
+        "day": "2026-01-08",
+        "implied_log_forecast": -6.041613004381951,
+        "realized": 0.003542359609677388,
+        "realized_only_log_forecast": -5.9531607686546355
+      },
+      {
+        "day": "2026-01-09",
+        "implied_log_forecast": -5.964268537098224,
+        "realized": 0.003665385404343018,
+        "realized_only_log_forecast": -5.94754848366215
+      },
+      {
+        "day": "2026-01-12",
+        "implied_log_forecast": -5.900720659740197,
+        "realized": 0.009515904964669804,
+        "realized_only_log_forecast": -5.9253017170466915
+      },
+      {
+        "day": "2026-01-14",
+        "implied_log_forecast": -5.783790387397706,
+        "realized": 0.004793384845410914,
+        "realized_only_log_forecast": -5.833646390764316
+      },
+      {
+        "day": "2026-01-16",
+        "implied_log_forecast": -5.752748957398774,
+        "realized": 0.0062265905735204435,
+        "realized_only_log_forecast": -5.855727441360598
+      },
+      {
+        "day": "2026-01-19",
+        "implied_log_forecast": -5.718388082347509,
+        "realized": 0.004310385267369477,
+        "realized_only_log_forecast": -5.817077125451433
+      },
+      {
+        "day": "2026-01-21",
+        "implied_log_forecast": -5.526932977847715,
+        "realized": 0.018166455288047483,
+        "realized_only_log_forecast": -5.761511083131211
+      },
+      {
+        "day": "2026-01-22",
+        "implied_log_forecast": -5.270098256887579,
+        "realized": 0.011146516634993936,
+        "realized_only_log_forecast": -5.655565303160743
+      },
+      {
+        "day": "2026-01-23",
+        "implied_log_forecast": -5.302784710661642,
+        "realized": 0.008242503097524797,
+        "realized_only_log_forecast": -5.584374655461998
+      },
+      {
+        "day": "2026-01-28",
+        "implied_log_forecast": -5.13535522926803,
+        "realized": 0.007671651452152198,
+        "realized_only_log_forecast": -5.52555644852653
+      },
+      {
+        "day": "2026-01-29",
+        "implied_log_forecast": -5.270813743420654,
+        "realized": 0.00728714668831447,
+        "realized_only_log_forecast": -5.479035374980163
+      },
+      {
+        "day": "2026-01-30",
+        "implied_log_forecast": -5.28700312113484,
+        "realized": 0.007526652388808834,
+        "realized_only_log_forecast": -5.451777064237812
+      },
+      {
+        "day": "2026-02-01",
+        "implied_log_forecast": -5.20526680819288,
+        "realized": 0.058777859520822186,
+        "realized_only_log_forecast": -5.410049101984905
+      },
+      {
+        "day": "2026-02-02",
+        "implied_log_forecast": -4.889950901396436,
+        "realized": 0.017640952769067436,
+        "realized_only_log_forecast": -5.040870903213021
+      },
+      {
+        "day": "2026-02-04",
+        "implied_log_forecast": -5.357694792401502,
+        "realized": 0.0034806106501007864,
+        "realized_only_log_forecast": -4.93851464193429
+      },
+      {
+        "day": "2026-02-05",
+        "implied_log_forecast": -5.488180087147986,
+        "realized": 0.0035111984290503886,
+        "realized_only_log_forecast": -4.933284516003029
+      },
+      {
+        "day": "2026-02-06",
+        "implied_log_forecast": -5.515374797973124,
+        "realized": 0.005081380178646177,
+        "realized_only_log_forecast": -4.931936245311665
+      },
+      {
+        "day": "2026-02-09",
+        "implied_log_forecast": -5.548561441723837,
+        "realized": 0.0016291838239868908,
+        "realized_only_log_forecast": -4.92743649205281
+      },
+      {
+        "day": "2026-02-11",
+        "implied_log_forecast": -5.644801334899469,
+        "realized": 0.002308910637210771,
+        "realized_only_log_forecast": -4.940385900419635
+      },
+      {
+        "day": "2026-02-12",
+        "implied_log_forecast": -5.6976002598965385,
+        "realized": 0.0026380603777771123,
+        "realized_only_log_forecast": -4.961111988146913
+      },
+      {
+        "day": "2026-02-13",
+        "implied_log_forecast": -5.674537247132483,
+        "realized": 0.0031164325248114297,
+        "realized_only_log_forecast": -4.969615815313112
+      },
+      {
+        "day": "2026-02-16",
+        "implied_log_forecast": -5.379852412639758,
+        "realized": 0.0035689805565801663,
+        "realized_only_log_forecast": -4.982774035017813
+      },
+      {
+        "day": "2026-02-18",
+        "implied_log_forecast": -5.492922947333924,
+        "realized": 0.0025495410428917854,
+        "realized_only_log_forecast": -4.992394474000624
+      },
+      {
+        "day": "2026-02-19",
+        "implied_log_forecast": -5.617118297625808,
+        "realized": 0.006268040330208751,
+        "realized_only_log_forecast": -5.028904855505509
+      },
+      {
+        "day": "2026-02-20",
+        "implied_log_forecast": -5.371281604251247,
+        "realized": 0.008878866182958625,
+        "realized_only_log_forecast": -5.024629569004893
+      },
+      {
+        "day": "2026-02-23",
+        "implied_log_forecast": -5.167826667764744,
+        "realized": 0.0057844744000860124,
+        "realized_only_log_forecast": -5.01092001948375
+      },
+      {
+        "day": "2026-02-25",
+        "implied_log_forecast": -5.220577843521026,
+        "realized": 0.005284301598868049,
+        "realized_only_log_forecast": -5.006062786413681
+      },
+      {
+        "day": "2026-02-26",
+        "implied_log_forecast": -5.373299068832392,
+        "realized": 0.005178041282272208,
+        "realized_only_log_forecast": -5.060626071439863
+      },
+      {
+        "day": "2026-02-27",
+        "implied_log_forecast": -5.468550164682352,
+        "realized": 0.007466691037022869,
+        "realized_only_log_forecast": -5.089411680823346
+      },
+      {
+        "day": "2026-03-04",
+        "implied_log_forecast": -4.710576154986333,
+        "realized": 0.011497871817084516,
+        "realized_only_log_forecast": -5.092812125668985
+      },
+      {
+        "day": "2026-03-05",
+        "implied_log_forecast": -4.06211130563579,
+        "realized": 0.019202293380093317,
+        "realized_only_log_forecast": -5.080656470253034
+      },
+      {
+        "day": "2026-03-06",
+        "implied_log_forecast": -4.520549655943549,
+        "realized": 0.00823204593414886,
+        "realized_only_log_forecast": -5.030401966201255
+      },
+      {
+        "day": "2026-03-09",
+        "implied_log_forecast": -4.2714921284178695,
+        "realized": 0.017604455829359954,
+        "realized_only_log_forecast": -5.024594154332488
+      },
+      {
+        "day": "2026-03-11",
+        "implied_log_forecast": -4.537815706211603,
+        "realized": 0.01447537558601823,
+        "realized_only_log_forecast": -5.184181737431133
+      },
+      {
+        "day": "2026-03-12",
+        "implied_log_forecast": -4.28524934026427,
+        "realized": 0.016187000621123486,
+        "realized_only_log_forecast": -5.176575155540064
+      },
+      {
+        "day": "2026-03-13",
+        "implied_log_forecast": -4.205621246920374,
+        "realized": 0.0161524858081768,
+        "realized_only_log_forecast": -5.0956298208517925
+      },
+      {
+        "day": "2026-03-16",
+        "implied_log_forecast": -4.088081991447829,
+        "realized": 0.02872533308442862,
+        "realized_only_log_forecast": -5.007189118983339
+      },
+      {
+        "day": "2026-03-18",
+        "implied_log_forecast": -4.3892647736098755,
+        "realized": 0.007655779895917964,
+        "realized_only_log_forecast": -4.90216424241297
+      },
+      {
+        "day": "2026-03-19",
+        "implied_log_forecast": -4.554974502237532,
+        "realized": 0.01984128814125978,
+        "realized_only_log_forecast": -4.878386119526519
+      },
+      {
+        "day": "2026-03-20",
+        "implied_log_forecast": -4.069984081600163,
+        "realized": 0.015640825625492728,
+        "realized_only_log_forecast": -4.74714013263398
+      },
+      {
+        "day": "2026-03-23",
+        "implied_log_forecast": -4.046401765842477,
+        "realized": 0.02104568062532689,
+        "realized_only_log_forecast": -4.711361875239688
+      },
+      {
+        "day": "2026-03-25",
+        "implied_log_forecast": -3.863365714091527,
+        "realized": 0.011830354536012975,
+        "realized_only_log_forecast": -4.605611036225349
+      },
+      {
+        "day": "2026-03-27",
+        "implied_log_forecast": -3.9068463186233013,
+        "realized": 0.00898116436433442,
+        "realized_only_log_forecast": -4.567556871119271
+      },
+      {
+        "day": "2026-04-01",
+        "implied_log_forecast": -3.6598151855175036,
+        "realized": 0.01986311567746887,
+        "realized_only_log_forecast": -4.516606257853182
+      },
+      {
+        "day": "2026-04-02",
+        "implied_log_forecast": -3.956541956456107,
+        "realized": 0.01817198952501815,
+        "realized_only_log_forecast": -4.455279633693882
+      },
+      {
+        "day": "2026-04-06",
+        "implied_log_forecast": -3.8831680664708244,
+        "realized": 0.02344307668800568,
+        "realized_only_log_forecast": -4.43645160931284
+      },
+      {
+        "day": "2026-04-08",
+        "implied_log_forecast": -3.937819701165959,
+        "realized": 0.006092219275695405,
+        "realized_only_log_forecast": -4.390705838195133
+      },
+      {
+        "day": "2026-04-09",
+        "implied_log_forecast": -4.658189007887387,
+        "realized": 0.007522478643857022,
+        "realized_only_log_forecast": -4.3638615086729144
+      },
+      {
+        "day": "2026-04-10",
+        "implied_log_forecast": -4.555193751348829,
+        "realized": 0.005818547689229809,
+        "realized_only_log_forecast": -4.384279542775779
+      },
+      {
+        "day": "2026-04-15",
+        "implied_log_forecast": -4.569754775961583,
+        "realized": 0.0045863349305237016,
+        "realized_only_log_forecast": -4.424610846344586
+      },
+      {
+        "day": "2026-04-16",
+        "implied_log_forecast": -4.872164381969212,
+        "realized": 0.007205738774083163,
+        "realized_only_log_forecast": -4.463790143990938
+      },
+      {
+        "day": "2026-04-17",
+        "implied_log_forecast": -4.945869484789172,
+        "realized": 0.003054004236570124,
+        "realized_only_log_forecast": -4.514411446246582
+      },
+      {
+        "day": "2026-04-20",
+        "implied_log_forecast": -5.113182504685449,
+        "realized": 0.006256649520360539,
+        "realized_only_log_forecast": -4.563519212796284
+      },
+      {
+        "day": "2026-04-22",
+        "implied_log_forecast": -5.069174688380774,
+        "realized": 0.005942045267713588,
+        "realized_only_log_forecast": -4.602903430825643
+      },
+      {
+        "day": "2026-04-23",
+        "implied_log_forecast": -4.881480167466599,
+        "realized": 0.005734619768792723,
+        "realized_only_log_forecast": -4.662625029446078
+      },
+      {
+        "day": "2026-04-24",
+        "implied_log_forecast": -4.8575565212217615,
+        "realized": 0.007051424165279477,
+        "realized_only_log_forecast": -4.695776891450834
+      },
+      {
+        "day": "2026-04-27",
+        "implied_log_forecast": -4.656644150835303,
+        "realized": 0.006910667317628226,
+        "realized_only_log_forecast": -4.740798177772875
+      },
+      {
+        "day": "2026-04-29",
+        "implied_log_forecast": -4.886781442467431,
+        "realized": 0.007219367466360448,
+        "realized_only_log_forecast": -4.820301881864594
+      },
+      {
+        "day": "2026-04-30",
+        "implied_log_forecast": -4.945974869691068,
+        "realized": 0.010058190693654698,
+        "realized_only_log_forecast": -4.8412980312832685
+      },
+      {
+        "day": "2026-05-04",
+        "implied_log_forecast": -4.741319973499277,
+        "realized": 0.015255464708036974,
+        "realized_only_log_forecast": -4.885521580654775
+      },
+      {
+        "day": "2026-05-06",
+        "implied_log_forecast": -4.799058394412203,
+        "realized": 0.01806624667218781,
+        "realized_only_log_forecast": -4.893397330861841
+      },
+      {
+        "day": "2026-05-07",
+        "implied_log_forecast": -5.00446915847881,
+        "realized": 0.012039683198239162,
+        "realized_only_log_forecast": -4.891153783210271
+      },
+      {
+        "day": "2026-05-08",
+        "implied_log_forecast": -5.000105715889064,
+        "realized": 0.006935585453534157,
+        "realized_only_log_forecast": -4.8863400818794425
+      },
+      {
+        "day": "2026-05-11",
+        "implied_log_forecast": -4.7133989899264455,
+        "realized": 0.009073179661760931,
+        "realized_only_log_forecast": -5.002621933201906
+      },
+      {
+        "day": "2026-05-13",
+        "implied_log_forecast": -4.416481124266608,
+        "realized": 0.01804095287087584,
+        "realized_only_log_forecast": -4.99502979711378
+      },
+      {
+        "day": "2026-05-14",
+        "implied_log_forecast": -4.365708423194842,
+        "realized": 0.01348119584120946,
+        "realized_only_log_forecast": -4.992614106799355
+      },
+      {
+        "day": "2026-05-15",
+        "implied_log_forecast": -4.490111871531803,
+        "realized": 0.010489507255140546,
+        "realized_only_log_forecast": -5.043027317632323
+      },
+      {
+        "day": "2026-05-18",
+        "implied_log_forecast": -4.456724808269665,
+        "realized": 0.015808386359952836,
+        "realized_only_log_forecast": -5.027566725658261
+      },
+      {
+        "day": "2026-05-20",
+        "implied_log_forecast": -4.45803303821803,
+        "realized": 0.012953847382112957,
+        "realized_only_log_forecast": -5.0095311769120565
+      },
+      {
+        "day": "2026-05-21",
+        "implied_log_forecast": -4.476805213074362,
+        "realized": 0.009935072336382888,
+        "realized_only_log_forecast": -5.0014006807255935
+      },
+      {
+        "day": "2026-05-22",
+        "implied_log_forecast": -4.5661725767351315,
+        "realized": 0.006028618139944989,
+        "realized_only_log_forecast": -5.003287159765858
+      },
+      {
+        "day": "2026-05-25",
+        "implied_log_forecast": -4.5546699717667485,
+        "realized": 0.002968054582273609,
+        "realized_only_log_forecast": -5.0270724951992705
+      },
+      {
+        "day": "2026-05-27",
+        "implied_log_forecast": -4.8529818776808,
+        "realized": 0.006279820205566983,
+        "realized_only_log_forecast": -5.029392071671452
+      },
+      {
+        "day": "2026-05-29",
+        "implied_log_forecast": -5.074179868444573,
+        "realized": 0.014247855945791088,
+        "realized_only_log_forecast": -5.051187901263637
+      },
+      {
+        "day": "2026-06-01",
+        "implied_log_forecast": -4.8807697937624805,
+        "realized": 0.008242978904365426,
+        "realized_only_log_forecast": -4.990528066832656
+      },
+      {
+        "day": "2026-06-03",
+        "implied_log_forecast": -5.028822276094296,
+        "realized": 0.014477000911365886,
+        "realized_only_log_forecast": -4.990268997149057
+      },
+      {
+        "day": "2026-06-04",
+        "implied_log_forecast": -4.843597908426796,
+        "realized": 0.009788391287831936,
+        "realized_only_log_forecast": -4.948717437767257
+      },
+      {
+        "day": "2026-06-05",
+        "implied_log_forecast": -4.8911490347046085,
+        "realized": 0.014255104946315437,
+        "realized_only_log_forecast": -4.975033054569829
+      },
+      {
+        "day": "2026-06-08",
+        "implied_log_forecast": -4.899428585533653,
+        "realized": 0.006783425004637182,
+        "realized_only_log_forecast": -4.944591709740512
+      },
+      {
+        "day": "2026-06-10",
+        "implied_log_forecast": -4.933066491783176,
+        "realized": 0.007086896285743178,
+        "realized_only_log_forecast": -4.994254461893419
+      },
+      {
+        "day": "2026-06-11",
+        "implied_log_forecast": -4.857381768959784,
+        "realized": 0.006917251950529301,
+        "realized_only_log_forecast": -5.11003136851292
+      },
+      {
+        "day": "2026-06-12",
+        "implied_log_forecast": -4.900357322341968,
+        "realized": 0.008436091435946235,
+        "realized_only_log_forecast": -5.1585468337275575
+      },
+      {
+        "day": "2026-06-15",
+        "implied_log_forecast": -5.143266993448437,
+        "realized": 0.005219981893651888,
+        "realized_only_log_forecast": -5.103981021584063
+      },
+      {
+        "day": "2026-06-17",
+        "implied_log_forecast": -5.448351144130069,
+        "realized": 0.0037032408222621304,
+        "realized_only_log_forecast": -5.087420509345976
+      },
+      {
+        "day": "2026-06-18",
+        "implied_log_forecast": -5.496042747925615,
+        "realized": 0.004324787436728837,
+        "realized_only_log_forecast": -5.1109417104049815
+      },
+      {
+        "day": "2026-06-19",
+        "implied_log_forecast": -5.6099387465639134,
+        "realized": 0.008749371877393722,
+        "realized_only_log_forecast": -5.140517027797422
+      },
+      {
+        "day": "2026-06-22",
+        "implied_log_forecast": -5.525972519216173,
+        "realized": 0.0018570152392997003,
+        "realized_only_log_forecast": -5.127060860545363
+      },
+      {
+        "day": "2026-06-24",
+        "implied_log_forecast": -5.306318024056001,
+        "realized": 0.006250620639756294,
+        "realized_only_log_forecast": -5.142558746949845
+      },
+      {
+        "day": "2026-06-25",
+        "implied_log_forecast": -5.435380886913868,
+        "realized": 0.004262487040288712,
+        "realized_only_log_forecast": -5.162018362110938
+      },
+      {
+        "day": "2026-06-29",
+        "implied_log_forecast": -5.5199298568304895,
+        "realized": 0.006608222701068149,
+        "realized_only_log_forecast": -5.193550362395069
+      },
+      {
+        "day": "2026-07-01",
+        "implied_log_forecast": -5.3465689358878254,
+        "realized": 0.006729569756484204,
+        "realized_only_log_forecast": -5.250681594991386
+      },
+      {
+        "day": "2026-07-02",
+        "implied_log_forecast": -5.423593935588943,
+        "realized": 0.0033269346959219777,
+        "realized_only_log_forecast": -5.240403257855993
+      },
+      {
+        "day": "2026-07-03",
+        "implied_log_forecast": -5.656025944341871,
+        "realized": 0.002176908449752565,
+        "realized_only_log_forecast": -5.2400808871671165
+      },
+      {
+        "day": "2026-07-06",
+        "implied_log_forecast": -5.780441529540712,
+        "realized": 0.002331502393983118,
+        "realized_only_log_forecast": -5.250818541963523
+      },
+      {
+        "day": "2026-07-08",
+        "implied_log_forecast": -5.800024344760414,
+        "realized": 0.01359908083262259,
+        "realized_only_log_forecast": -5.304222798538112
+      },
+      {
+        "day": "2026-07-09",
+        "implied_log_forecast": -5.2056670754328485,
+        "realized": 0.009898127053314469,
+        "realized_only_log_forecast": -5.194240679490791
+      },
+      {
+        "day": "2026-07-10",
+        "implied_log_forecast": -5.467258510207256,
+        "realized": 0.0035675960782709055,
+        "realized_only_log_forecast": -5.202780407883584
+      },
+      {
+        "day": "2026-07-13",
+        "implied_log_forecast": -5.7236918877560665,
+        "realized": 0.005665016741277332,
+        "realized_only_log_forecast": -5.209458437153253
+      },
+      {
+        "day": "2026-07-15",
+        "implied_log_forecast": -5.321427442925758,
+        "realized": 0.008851835319668332,
+        "realized_only_log_forecast": -5.316554506534911
+      },
+      {
+        "day": "2026-07-16",
+        "implied_log_forecast": -5.417331784122354,
+        "realized": 0.0036424004876970156,
+        "realized_only_log_forecast": -5.314592358344905
+      },
+      {
+        "day": "2026-07-17",
+        "implied_log_forecast": -5.49847396463059,
+        "realized": 0.005598557178337907,
+        "realized_only_log_forecast": -5.33063249975527
+      },
+      {
+        "day": "2026-07-20",
+        "implied_log_forecast": -5.459335444594309,
+        "realized": 0.004273911498064406,
+        "realized_only_log_forecast": -5.314923798849046
+      },
+      {
+        "day": "2026-07-22",
+        "implied_log_forecast": -5.5744354078676,
+        "realized": 0.0036433411529867422,
+        "realized_only_log_forecast": -5.339624968891668
+      },
+      {
+        "day": "2026-07-23",
+        "implied_log_forecast": -5.413047128936931,
+        "realized": 0.0051846005025574385,
+        "realized_only_log_forecast": -5.365639420393962
+      },
+      {
+        "day": "2026-07-24",
+        "implied_log_forecast": -5.370139778296064,
+        "realized": 0.006535889476679377,
+        "realized_only_log_forecast": -5.37213484545668
+      },
+      {
+        "day": "2026-07-27",
+        "implied_log_forecast": -5.2571967704005385,
+        "realized": 0.003944484609461076,
+        "realized_only_log_forecast": -5.358094963221557
+      },
+      {
+        "day": "2026-07-29",
+        "implied_log_forecast": -5.591590224255191,
+        "realized": 0.0020951832999736904,
+        "realized_only_log_forecast": -5.366331814567074
+      },
+      {
+        "day": "2026-07-30",
+        "implied_log_forecast": -5.75556735341717,
+        "realized": 0.003748904031513558,
+        "realized_only_log_forecast": -5.359386089464514
+      },
+      {
+        "day": "2026-07-31",
+        "implied_log_forecast": -5.702534574997868,
+        "realized": 0.0014981640724093033,
+        "realized_only_log_forecast": -5.388961179526305
+      },
+      {
+        "day": "2026-08-03",
+        "implied_log_forecast": -5.803477972354629,
+        "realized": 0.0012991153847904426,
+        "realized_only_log_forecast": -5.411564866994558
+      },
+      {
+        "day": "2026-08-05",
+        "implied_log_forecast": -5.744597609468238,
+        "realized": 0.004823882948717935,
+        "realized_only_log_forecast": -5.3954861260580405
+      },
+      {
+        "day": "2026-08-06",
+        "implied_log_forecast": -5.680102016564498,
+        "realized": 0.0025695479218045326,
+        "realized_only_log_forecast": -5.483258561260011
+      },
+      {
+        "day": "2026-08-07",
+        "implied_log_forecast": -5.656026151854718,
+        "realized": 0.003060924127492106,
+        "realized_only_log_forecast": -5.491322956551867
+      },
+      {
+        "day": "2026-08-10",
+        "implied_log_forecast": -5.629223395886431,
+        "realized": 0.002068389639137697,
+        "realized_only_log_forecast": -5.507629768508966
+      },
+      {
+        "day": "2026-08-12",
+        "implied_log_forecast": -5.70484441593611,
+        "realized": 0.004174398797171723,
+        "realized_only_log_forecast": -5.518296900485932
+      },
+      {
+        "day": "2026-08-13",
+        "implied_log_forecast": -5.745387769733024,
+        "realized": 0.0023036670376585795,
+        "realized_only_log_forecast": -5.569339979414776
+      },
+      {
+        "day": "2026-08-14",
+        "implied_log_forecast": -5.812927937530783,
+        "realized": 0.0024417709473094915,
+        "realized_only_log_forecast": -5.614941845645061
+      },
+      {
+        "day": "2026-08-17",
+        "implied_log_forecast": -5.799085153655879,
+        "realized": 0.0018197505775598788,
+        "realized_only_log_forecast": -5.653672276632952
+      },
+      {
+        "day": "2026-08-19",
+        "implied_log_forecast": -5.787270351146633,
+        "realized": 0.0022621496917904008,
+        "realized_only_log_forecast": -5.679269986974073
+      },
+      {
+        "day": "2026-08-20",
+        "implied_log_forecast": -5.7796435093136305,
+        "realized": 0.0013611705313262138,
+        "realized_only_log_forecast": -5.7435870138819665
+      },
+      {
+        "day": "2026-08-21",
+        "implied_log_forecast": -5.949557212680269,
+        "realized": 0.001039876460317141,
+        "realized_only_log_forecast": -5.766983600415891
+      },
+      {
+        "day": "2026-08-24",
+        "implied_log_forecast": -5.827114300255008,
+        "realized": 0.0021347435531304105,
+        "realized_only_log_forecast": -5.826338728937358
+      },
+      {
+        "day": "2026-08-26",
+        "implied_log_forecast": -5.832688347293979,
+        "realized": 0.002398695340938561,
+        "realized_only_log_forecast": -5.870545095016954
+      },
+      {
+        "day": "2026-08-27",
+        "implied_log_forecast": -5.931921356149785,
+        "realized": 0.0032457492767035286,
+        "realized_only_log_forecast": -5.912247125748203
+      },
+      {
+        "day": "2026-08-28",
+        "implied_log_forecast": -5.791749784435816,
+        "realized": 0.002463182201075533,
+        "realized_only_log_forecast": -5.921891982782043
+      },
+      {
+        "day": "2026-08-31",
+        "implied_log_forecast": -5.910354453045595,
+        "realized": 0.0033984191907134973,
+        "realized_only_log_forecast": -5.964426530682411
+      },
+      {
+        "day": "2026-09-02",
+        "implied_log_forecast": -5.433588692857299,
+        "realized": 0.0035271012729274362,
+        "realized_only_log_forecast": -6.100650730411655
+      },
+      {
+        "day": "2026-09-03",
+        "implied_log_forecast": -5.462256928498043,
+        "realized": 0.00286427014944616,
+        "realized_only_log_forecast": -6.058658828402774
+      },
+      {
+        "day": "2026-09-04",
+        "implied_log_forecast": -5.54493197969648,
+        "realized": 0.002080546401573664,
+        "realized_only_log_forecast": -6.06579143468643
+      },
+      {
+        "day": "2026-09-07",
+        "implied_log_forecast": -5.734257231509977,
+        "realized": 0.0014591045600927893,
+        "realized_only_log_forecast": -6.06083502141024
+      },
+      {
+        "day": "2026-09-09",
+        "implied_log_forecast": -5.636595870069224,
+        "realized": 0.0049429170208723176,
+        "realized_only_log_forecast": -6.0421786986332275
+      },
+      {
+        "day": "2026-09-10",
+        "implied_log_forecast": -5.511189659207901,
+        "realized": 0.003653991182969995,
+        "realized_only_log_forecast": -5.99976715733753
+      },
+      {
+        "day": "2026-09-11",
+        "implied_log_forecast": -5.545779061506887,
+        "realized": 0.007021215235206457,
+        "realized_only_log_forecast": -5.982155305220772
+      },
+      {
+        "day": "2026-09-16",
+        "implied_log_forecast": -5.230334025161658,
+        "realized": 0.0048536622464047064,
+        "realized_only_log_forecast": -5.883607209370766
+      },
+      {
+        "day": "2026-09-17",
+        "implied_log_forecast": -5.285288960265358,
+        "realized": 0.0067222121060470374,
+        "realized_only_log_forecast": -5.853011232392987
+      },
+      {
+        "day": "2026-09-18",
+        "implied_log_forecast": -5.488794535541556,
+        "realized": 0.0026842062807937014,
+        "realized_only_log_forecast": -5.823966033819883
+      },
+      {
+        "day": "2026-09-21",
+        "implied_log_forecast": -5.7097357608676775,
+        "realized": 0.001565905400112047,
+        "realized_only_log_forecast": -5.832092740464299
+      },
+      {
+        "day": "2026-09-23",
+        "implied_log_forecast": -5.832231451895218,
+        "realized": 0.002182981937227929,
+        "realized_only_log_forecast": -5.837141327300959
+      },
+      {
+        "day": "2026-09-24",
+        "implied_log_forecast": -6.024349493607243,
+        "realized": 0.005084535316962805,
+        "realized_only_log_forecast": -5.836681304156642
+      },
+      {
+        "day": "2026-09-25",
+        "implied_log_forecast": -5.5034081621606035,
+        "realized": 0.009705306683389968,
+        "realized_only_log_forecast": -5.7321274891207254
+      },
+      {
+        "day": "2026-09-28",
+        "implied_log_forecast": -5.619350376155826,
+        "realized": 0.003218543312781837,
+        "realized_only_log_forecast": -5.6636637424499785
+      },
+      {
+        "day": "2026-09-30",
+        "implied_log_forecast": -5.4004649204657555,
+        "realized": 0.01023403674465306,
+        "realized_only_log_forecast": -5.603906556814626
+      },
+      {
+        "day": "2026-10-01",
+        "implied_log_forecast": -5.375849325688307,
+        "realized": 0.01848068434929006,
+        "realized_only_log_forecast": -5.5360899865664015
+      },
+      {
+        "day": "2026-10-05",
+        "implied_log_forecast": -5.160335244661987,
+        "realized": 0.0129498650806766,
+        "realized_only_log_forecast": -5.426284802097822
+      },
+      {
+        "day": "2026-10-07",
+        "implied_log_forecast": -5.373171583437518,
+        "realized": 0.011977547629940197,
+        "realized_only_log_forecast": -5.350744957781825
+      },
+      {
+        "day": "2026-10-08",
+        "implied_log_forecast": -5.311399181759203,
+        "realized": 0.011169313244864523,
+        "realized_only_log_forecast": -5.299175220433842
+      },
+      {
+        "day": "2026-10-09",
+        "implied_log_forecast": -5.061581277764054,
+        "realized": 0.009345262786579309,
+        "realized_only_log_forecast": -5.2261410805875474
+      },
+      {
+        "day": "2026-10-12",
+        "implied_log_forecast": -5.265750753769711,
+        "realized": 0.006658016127094249,
+        "realized_only_log_forecast": -5.187723239059197
+      },
+      {
+        "day": "2026-10-14",
+        "implied_log_forecast": -5.366391289057542,
+        "realized": 0.009168888801594045,
+        "realized_only_log_forecast": -5.131795416225618
+      },
+      {
+        "day": "2026-10-15",
+        "implied_log_forecast": -5.232658187546641,
+        "realized": 0.006384778858908316,
+        "realized_only_log_forecast": -5.124412499007996
+      },
+      {
+        "day": "2026-10-16",
+        "implied_log_forecast": -5.395139883956058,
+        "realized": 0.007932468588437871,
+        "realized_only_log_forecast": -5.072905053219379
+      },
+      {
+        "day": "2026-10-21",
+        "implied_log_forecast": -5.2480567468806925,
+        "realized": 0.013451036200779913,
+        "realized_only_log_forecast": -5.04209944168983
+      },
+      {
+        "day": "2026-10-22",
+        "implied_log_forecast": -5.051475291624989,
+        "realized": 0.02702275510308069,
+        "realized_only_log_forecast": -5.001471595588432
+      },
+      {
+        "day": "2026-10-23",
+        "implied_log_forecast": -5.02155967208407,
+        "realized": 0.025520520498162155,
+        "realized_only_log_forecast": -4.930850871963602
+      },
+      {
+        "day": "2026-10-26",
+        "implied_log_forecast": -4.802711755585078,
+        "realized": 0.014642716155097,
+        "realized_only_log_forecast": -4.8695722776543064
+      },
+      {
+        "day": "2026-10-28",
+        "implied_log_forecast": -4.848378259581765,
+        "realized": 0.010685902672608561,
+        "realized_only_log_forecast": -4.8718623286975085
+      }
+    ]
+  }
+}
