@@ -46,12 +46,16 @@ def e032(ticks, book, day, work):
     target.unlink(missing_ok=True)
     with closing(sqlite3.connect(source)) as c:
         c.execute("create table expiry_paper_ticks(day text,underlying text,ts text,spot real,fut real,quotes text, primary key(day,underlying,ts))")
-        c.executemany("insert into expiry_paper_ticks values(?,?,?,?,?,?)", [tuple(r) for r in ticks])
         c.commit()
     result = {}
-    for row in ticks:
-        now = datetime.fromisoformat(row["ts"])
-        result = e.run_tick(base, enabled=True, now=now, book=book, variant=e.E032)
+    with closing(sqlite3.connect(source)) as c:
+        for row in ticks:
+            # Production sees only rows received by this tick, not the finished day.
+            c.execute("insert into expiry_paper_ticks values(?,?,?,?,?,?)", tuple(row))
+            c.commit()
+            now = datetime.fromisoformat(row["ts"])
+            result = e.run_tick(base, enabled=True, now=now, book=book, variant=e.E032)
+            assert result["status"] in ("OBSERVING", "OPEN"), result
     return e.positions(base,e.E032), result.get("decision_counts",{}), result.get("day",{})
 
 
@@ -181,6 +185,10 @@ def main():
               counts.get("signal",{}),flush=True)
     current=out[TODAY]
     assert current["E032"]["closed"]==current["E032"]["unresolved"]==0
+    assert sum(current["E032"]["checks"]["signal"].values()) > 100
+    actual=json.loads((LOCAL/"expiry-baseline.json").read_bytes())
+    assert not actual["positions"]
+    assert current["E032"]["risk"]==json.loads(actual["state"][0]["payload"])["day"]
     a=current["A_NATIVE"]
     recorded=current["recorded_A"]
     assert a["closed"]==len(recorded)==1 and a["trades"][0]["symbol"]==recorded[0]["symbol"]

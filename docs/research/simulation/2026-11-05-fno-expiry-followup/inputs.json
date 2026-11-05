@@ -1,0 +1,15 @@
+{
+  "sealed_at": "2026-11-05T17:40:09.507366+05:30",
+  "files_sha256": {
+    "configuration.json": "e8ed73300c38b1b0077bb18c666f67a5cbb41faf99d64d023a9f418edb9756a5",
+    "expiry_study.py": "02401db65b2bdee461a24f6b02f64973d0372f4f5a182d09e355ed2a7f9d70d3",
+    "EXPIRY_CLOCK_CORRECTION.md": "9fc7aa44f1ea6ef016d7a1c0df95b34c3b24495d48dbbce7d3b76807f526d24d",
+    "preflight/expiry.json": "913e7c386c6354f00d7a6cb1ca76b6ca470a175d5e5ca354dd19d06e5291a914",
+    "_local/expiry-input.sqlite": "674cb06e6487c8d62c90fcd9381b18a1c34e6cdbaa0d2a90c1775d8db1a4597b",
+    "_local/expiry-masters.json": "c95f998b375e526d2097edb9020b0f70b5ee13eba0340b580c7e3d3d0a32ca5d",
+    "_local/expiry-baseline.json": "a4e4315e99343d93b5ac611fa7bf5c9c63c631979815170f7e7d8f57bc98d94c",
+    "_local/regular.json": "b4708ba7c33e31ea00688b008d0f18bd9477c8338721f8c78db03ac6d880b429",
+    "_local/exit-paths.jsonl": "788a9ee8c74f41232331a2ab9747a1972002b00deba6fa3a63bb27834dc53e83",
+    "_local/nifty-quote-tail.jsonl": "89c3c9b9cce5e810208ab1923f2dbc1cfcd6b50eb6433b9c834004bccd3dc7c8"
+  }
+}

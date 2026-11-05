@@ -1,0 +1,3 @@
+# Expiry replay clock correction
+
+The first pass preloaded the full session into the replay source. Native E03.2 correctly rejected future-dated latest packets, leaving only one completed-bar check per date. Its zero-trade rows are invalid and remain in expiry-results-invalid-v1.json. This was a replay wiring error. The corrected feed exposes one packet at a time, checks every tick returns OBSERVING or OPEN, and verifies November 5's completed-bar count and final reserve state. The strategy, same-day masters, recorded packets, admission limits and matched-risk challenger are unchanged. No prices or outcomes informed the fix.
