@@ -149,7 +149,8 @@ def verify_entry(envelope: bytes, settlement: Mapping[str, Any] | None = None) -
         if abs(stored - derived) > _TOLERANCE_RS:
             raise DrStudyError(f"{field} does not reproduce from the bound legs")
     entry_cost = _finite(value.get("entry_cost_rs"), "entry_cost_rs")
-    derived_cost = round(sum(calc_fno_costs(leg.premium, leg.premium, lot_size) for leg in legs), 2)
+    derived_cost = round(sum(calc_fno_costs(leg.premium, leg.premium, abs(leg.quantity) * lot_size)
+                             for leg in legs), 2)
     if abs(entry_cost - derived_cost) > _TOLERANCE_RS:
         raise DrStudyError("entry_cost_rs does not reproduce from the bound legs and cost schedule")
     max_profit, max_loss = _finite(value["max_profit_rs"], "max_profit_rs", positive=True), \

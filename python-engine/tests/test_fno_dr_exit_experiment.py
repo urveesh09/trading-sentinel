@@ -28,14 +28,14 @@ SYMBOLS = {LONG_TOKEN: "NIFTY26OCT25000CE", SHORT_TOKEN: "NIFTY26OCT25100CE"}
 EARLY, LATE = datetime(2026, 9, 1, tzinfo=timezone.utc), datetime(2026, 10, 5, tzinfo=timezone.utc)
 
 
-def _structure():
+def _structure(lots=1):
     prices = {25000.0: 120.0, 25100.0: 60.0}
     return build_debit_spread(FnoDirection.LONG, 25000.0, 50.0, 2,
-                              lambda _opt, strike: prices.get(float(strike)), 65)
+                              lambda _opt, strike: prices.get(float(strike)), 65, lots=lots)
 
 
-def _row(**changes):
-    s = _structure()
+def _row(*, lots=1, **changes):
+    s = _structure(lots)
     legs = []
     for leg, token in zip(s.legs, (LONG_TOKEN, SHORT_TOKEN)):
         legs.append({"opt_type": leg.opt_type.value, "strike": leg.strike, "quantity": leg.quantity,
@@ -43,7 +43,7 @@ def _row(**changes):
                          "underlying": "NIFTY", "expiry": "2026-10-08", "exchange": "NFO", "token": token,
                          "tradingsymbol": SYMBOLS[token], "lot_size": 65, "instrument_type": "CE"}})
     row = {"id": 7, "source": "FNO_PAPER", "kind": "DEBIT_SPREAD",
-           "legs_json": json.dumps(legs, separators=(",", ":"), sort_keys=True), "lot_size": 65, "lots": 1,
+           "legs_json": json.dumps(legs, separators=(",", ":"), sort_keys=True), "lot_size": 65, "lots": lots,
            "net_premium_rs": round(s.net_premium * 65, 2), "max_profit_rs": s.max_profit_rs,
            "max_loss_rs": s.max_loss_rs, "entry_cost_rs": structure_round_trip_cost(s),
            "opened_at": OPENED.isoformat()}
@@ -91,6 +91,17 @@ def test_entry_economics_rederive_from_bound_legs():
                             ({"net_premium_rs": -1.0}, "net_premium_rs"), ({"entry_cost_rs": 1.0}, "entry_cost_rs")):
         with pytest.raises(dr.DrStudyError, match=message):
             _entry(**change)
+
+
+def test_entry_cost_uses_every_unit_in_each_bound_leg():
+    row = _row(lots=3)
+    entry = dr.verify_entry(dr.entry_envelope(row))
+    assert entry.entry_cost == structure_round_trip_cost(_structure(lots=3))
+    assert entry.entry_cost > structure_round_trip_cost(_structure())
+
+    row["entry_cost_rs"] = structure_round_trip_cost(_structure())
+    with pytest.raises(dr.DrStudyError, match="entry_cost_rs"):
+        dr.verify_entry(dr.entry_envelope(row))
 
 
 def test_single_leg_duplicate_token_and_non_finite_rows_are_rejected():
