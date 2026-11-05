@@ -1,0 +1,285 @@
+{
+  "held_exit_parity": 3,
+  "mirrors": {
+    "12500-adverse": {
+      "best_day": 3299.48,
+      "closed": 2,
+      "closed_drawdown_pct": 6.41,
+      "decisions": [
+        {
+          "at": "2026-11-05T09:45:24.000601+05:30",
+          "equity": 12500.0,
+          "limit": 143.3,
+          "reason": "admitted",
+          "reserve": 9365.89557848411,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "at": "2026-11-05T10:51:28.081144+05:30",
+          "equity": 12500.0,
+          "limit": 155.65,
+          "reason": "position_open",
+          "reserve": 10169.007165324854,
+          "symbol": "NIFTY26N0924350CE"
+        },
+        {
+          "at": "2026-11-05T11:30:27.756350+05:30",
+          "equity": 11699.222071992494,
+          "limit": 154.6,
+          "reason": "admitted",
+          "reserve": 10100.72642312382,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "end": 15799.48,
+      "low_equity": 11699.22,
+      "net": 3299.48,
+      "rejects": {
+        "position_open": 1
+      },
+      "start": 12500,
+      "trades": [
+        {
+          "entry": 143.3,
+          "entry_at": "2026-11-05T09:45:24.000601+05:30",
+          "exit": 135.1845,
+          "exit_at": "2026-11-05T11:00:33.143581+05:30",
+          "extra": 205.0,
+          "fees": 68.27042800750615,
+          "gross": -527.5074999999998,
+          "net": -800.777928007506,
+          "quantity": 65,
+          "reserve": 9365.89557848411,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "entry": 154.6,
+          "entry_at": "2026-11-05T11:30:27.756350+05:30",
+          "exit": 222.05700000000002,
+          "exit_at": "2026-11-05T14:20:43.232655+05:30",
+          "extra": 205.0,
+          "fees": 79.4454179835619,
+          "gross": 4384.705000000002,
+          "net": 4100.25958201644,
+          "quantity": 65,
+          "reserve": 10100.72642312382,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "wins": 1,
+      "worst_day": 0.0,
+      "worst_trade": -800.78
+    },
+    "12500-standard": {
+      "best_day": 4151.68,
+      "closed": 2,
+      "closed_drawdown_pct": 3.25,
+      "decisions": [
+        {
+          "at": "2026-11-05T09:45:24.000601+05:30",
+          "equity": 12500.0,
+          "limit": 141.85,
+          "reason": "admitted",
+          "reserve": 9271.603124968395,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "at": "2026-11-05T10:51:28.081144+05:30",
+          "equity": 12500.0,
+          "limit": 154.1,
+          "reason": "position_open",
+          "reserve": 10068.21178398047,
+          "symbol": "NIFTY26N0924350CE"
+        },
+        {
+          "at": "2026-11-05T11:30:27.756350+05:30",
+          "equity": 12093.60450031139,
+          "limit": 153.05,
+          "reason": "admitted",
+          "reserve": 9999.931041779435,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "end": 16651.68,
+      "low_equity": 12093.6,
+      "net": 4151.68,
+      "rejects": {
+        "position_open": 1
+      },
+      "start": 12500,
+      "trades": [
+        {
+          "entry": 141.75,
+          "entry_at": "2026-11-05T09:45:24.000601+05:30",
+          "exit": 136.55,
+          "exit_at": "2026-11-05T11:00:33.143581+05:30",
+          "extra": 0.0,
+          "fees": 68.39549968861002,
+          "gross": -337.99999999999926,
+          "net": -406.3954996886093,
+          "quantity": 65,
+          "reserve": 9271.603124968395,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "entry": 152.95,
+          "entry_at": "2026-11-05T11:30:27.756350+05:30",
+          "exit": 224.3,
+          "exit_at": "2026-11-05T14:20:43.232655+05:30",
+          "extra": 0.0,
+          "fees": 79.677098657575,
+          "gross": 4637.750000000002,
+          "net": 4558.072901342427,
+          "quantity": 65,
+          "reserve": 9999.931041779435,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "wins": 1,
+      "worst_day": 0.0,
+      "worst_trade": -406.4
+    },
+    "15000-adverse": {
+      "best_day": 3299.48,
+      "closed": 2,
+      "closed_drawdown_pct": 5.34,
+      "decisions": [
+        {
+          "at": "2026-11-05T09:45:24.000601+05:30",
+          "equity": 15000.0,
+          "limit": 143.3,
+          "reason": "admitted",
+          "reserve": 9365.89557848411,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "at": "2026-11-05T10:51:28.081144+05:30",
+          "equity": 15000.0,
+          "limit": 155.65,
+          "reason": "position_open",
+          "reserve": 10169.007165324854,
+          "symbol": "NIFTY26N0924350CE"
+        },
+        {
+          "at": "2026-11-05T11:30:27.756350+05:30",
+          "equity": 14199.222071992494,
+          "limit": 154.6,
+          "reason": "admitted",
+          "reserve": 10100.72642312382,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "end": 18299.48,
+      "low_equity": 14199.22,
+      "net": 3299.48,
+      "rejects": {
+        "position_open": 1
+      },
+      "start": 15000,
+      "trades": [
+        {
+          "entry": 143.3,
+          "entry_at": "2026-11-05T09:45:24.000601+05:30",
+          "exit": 135.1845,
+          "exit_at": "2026-11-05T11:00:33.143581+05:30",
+          "extra": 205.0,
+          "fees": 68.27042800750615,
+          "gross": -527.5074999999998,
+          "net": -800.777928007506,
+          "quantity": 65,
+          "reserve": 9365.89557848411,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "entry": 154.6,
+          "entry_at": "2026-11-05T11:30:27.756350+05:30",
+          "exit": 222.05700000000002,
+          "exit_at": "2026-11-05T14:20:43.232655+05:30",
+          "extra": 205.0,
+          "fees": 79.4454179835619,
+          "gross": 4384.705000000002,
+          "net": 4100.25958201644,
+          "quantity": 65,
+          "reserve": 10100.72642312382,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "wins": 1,
+      "worst_day": 0.0,
+      "worst_trade": -800.78
+    },
+    "15000-standard": {
+      "best_day": 4151.68,
+      "closed": 2,
+      "closed_drawdown_pct": 2.71,
+      "decisions": [
+        {
+          "at": "2026-11-05T09:45:24.000601+05:30",
+          "equity": 15000.0,
+          "limit": 141.85,
+          "reason": "admitted",
+          "reserve": 9271.603124968395,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "at": "2026-11-05T10:51:28.081144+05:30",
+          "equity": 15000.0,
+          "limit": 154.1,
+          "reason": "position_open",
+          "reserve": 10068.21178398047,
+          "symbol": "NIFTY26N0924350CE"
+        },
+        {
+          "at": "2026-11-05T11:30:27.756350+05:30",
+          "equity": 14593.60450031139,
+          "limit": 153.05,
+          "reason": "admitted",
+          "reserve": 9999.931041779435,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "end": 19151.68,
+      "low_equity": 14593.6,
+      "net": 4151.68,
+      "rejects": {
+        "position_open": 1
+      },
+      "start": 15000,
+      "trades": [
+        {
+          "entry": 141.75,
+          "entry_at": "2026-11-05T09:45:24.000601+05:30",
+          "exit": 136.55,
+          "exit_at": "2026-11-05T11:00:33.143581+05:30",
+          "extra": 0.0,
+          "fees": 68.39549968861002,
+          "gross": -337.99999999999926,
+          "net": -406.3954996886093,
+          "quantity": 65,
+          "reserve": 9271.603124968395,
+          "symbol": "NIFTY26N0924400CE"
+        },
+        {
+          "entry": 152.95,
+          "entry_at": "2026-11-05T11:30:27.756350+05:30",
+          "exit": 224.3,
+          "exit_at": "2026-11-05T14:20:43.232655+05:30",
+          "extra": 0.0,
+          "fees": 79.677098657575,
+          "gross": 4637.750000000002,
+          "net": 4558.072901342427,
+          "quantity": 65,
+          "reserve": 9999.931041779435,
+          "symbol": "NIFTY26N0924400CE"
+        }
+      ],
+      "wins": 1,
+      "worst_day": 0.0,
+      "worst_trade": -406.4
+    }
+  },
+  "notes": "Conditional reprice of recorded parent admissions and exits.",
+  "paper_defined_risk_recorded": 2545.91,
+  "paper_regular_total_recorded": 7367.09,
+  "paper_singles": 4821.18
+}

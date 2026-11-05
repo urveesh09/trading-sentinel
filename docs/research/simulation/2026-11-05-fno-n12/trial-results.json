@@ -1,0 +1,517 @@
+{
+  "2022": {
+    "adverse": {
+      "CASH_BUFFER": {
+        "best_day": 2758.89,
+        "closed": 10,
+        "closed_drawdown_pct": 45.35,
+        "end": 8197.64,
+        "low_equity": 8197.64,
+        "net": -6802.36,
+        "rejects": {
+          "cash": 5,
+          "position_open": 2
+        },
+        "screened_before_wallet": 11,
+        "start": 15000,
+        "wins": 2,
+        "worst_day": -3772.53,
+        "worst_trade": -2310.74
+      },
+      "CONTROL": {
+        "best_day": 2758.89,
+        "closed": 12,
+        "closed_drawdown_pct": 50.16,
+        "end": 7475.78,
+        "low_equity": 7475.78,
+        "net": -7524.22,
+        "rejects": {
+          "cash": 14,
+          "position_open": 2
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 3,
+        "worst_day": -3772.53,
+        "worst_trade": -2310.74
+      },
+      "STOP_BUDGET": {
+        "best_day": 0.0,
+        "closed": 4,
+        "closed_drawdown_pct": 30.52,
+        "end": 10421.52,
+        "low_equity": 10421.52,
+        "net": -4578.48,
+        "rejects": {
+          "cash": 1
+        },
+        "screened_before_wallet": 23,
+        "start": 15000,
+        "wins": 0,
+        "worst_day": -1482.18,
+        "worst_trade": -1482.18
+      }
+    },
+    "standard": {
+      "CASH_BUFFER": {
+        "best_day": 3164.47,
+        "closed": 13,
+        "closed_drawdown_pct": 51.42,
+        "end": 7515.19,
+        "low_equity": 7287.27,
+        "net": -7484.81,
+        "rejects": {
+          "cash": 2,
+          "position_open": 2
+        },
+        "screened_before_wallet": 11,
+        "start": 15000,
+        "wins": 3,
+        "worst_day": -2993.84,
+        "worst_trade": -1925.21
+      },
+      "CONTROL": {
+        "best_day": 2571.85,
+        "closed": 14,
+        "closed_drawdown_pct": 53.51,
+        "end": 7292.02,
+        "low_equity": 7064.1,
+        "net": -7707.98,
+        "rejects": {
+          "cash": 10,
+          "position_open": 4
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 4,
+        "worst_day": -2993.84,
+        "worst_trade": -1971.27
+      },
+      "STOP_BUDGET": {
+        "best_day": 5426.96,
+        "closed": 5,
+        "closed_drawdown_pct": 21.19,
+        "end": 17261.9,
+        "low_equity": 11821.81,
+        "net": 2261.9,
+        "rejects": {},
+        "screened_before_wallet": 23,
+        "start": 15000,
+        "wins": 2,
+        "worst_day": -1114.45,
+        "worst_trade": -1114.45
+      }
+    }
+  },
+  "2023": {
+    "adverse": {
+      "CASH_BUFFER": {
+        "best_day": 7021.84,
+        "closed": 17,
+        "closed_drawdown_pct": 66.11,
+        "end": 6121.6,
+        "low_equity": 6121.6,
+        "net": -8878.4,
+        "rejects": {
+          "floor": 2,
+          "position_open": 2
+        },
+        "screened_before_wallet": 7,
+        "start": 15000,
+        "wins": 2,
+        "worst_day": -3800.51,
+        "worst_trade": -2065.68
+      },
+      "CONTROL": {
+        "best_day": 7021.84,
+        "closed": 19,
+        "closed_drawdown_pct": 60.91,
+        "end": 5863.5,
+        "low_equity": 5863.5,
+        "net": -9136.5,
+        "rejects": {
+          "cash": 5,
+          "floor": 2,
+          "position_open": 2
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 2,
+        "worst_day": -2034.36,
+        "worst_trade": -2024.37
+      },
+      "STOP_BUDGET": {
+        "best_day": 0.0,
+        "closed": 5,
+        "closed_drawdown_pct": 30.71,
+        "end": 10392.95,
+        "low_equity": 10392.95,
+        "net": -4607.05,
+        "rejects": {
+          "position_open": 1
+        },
+        "screened_before_wallet": 22,
+        "start": 15000,
+        "wins": 0,
+        "worst_day": -1256.3,
+        "worst_trade": -1256.3
+      }
+    },
+    "standard": {
+      "CASH_BUFFER": {
+        "best_day": 7457.47,
+        "closed": 19,
+        "closed_drawdown_pct": 46.61,
+        "end": 16547.4,
+        "low_equity": 10787.68,
+        "net": 1547.4,
+        "rejects": {
+          "position_open": 2
+        },
+        "screened_before_wallet": 7,
+        "start": 15000,
+        "wins": 5,
+        "worst_day": -3116.29,
+        "worst_trade": -1700.45
+      },
+      "CONTROL": {
+        "best_day": 7457.47,
+        "closed": 24,
+        "closed_drawdown_pct": 50.48,
+        "end": 14766.48,
+        "low_equity": 9006.76,
+        "net": -233.52,
+        "rejects": {
+          "cash": 1,
+          "position_open": 3
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 7,
+        "worst_day": -3116.29,
+        "worst_trade": -1700.45
+      },
+      "STOP_BUDGET": {
+        "best_day": 0.0,
+        "closed": 5,
+        "closed_drawdown_pct": 19.86,
+        "end": 12021.08,
+        "low_equity": 12021.08,
+        "net": -2978.92,
+        "rejects": {
+          "position_open": 1
+        },
+        "screened_before_wallet": 22,
+        "start": 15000,
+        "wins": 0,
+        "worst_day": -910.7,
+        "worst_trade": -910.7
+      }
+    }
+  },
+  "2024": {
+    "adverse": {
+      "CASH_BUFFER": {
+        "best_day": 7842.45,
+        "closed": 9,
+        "closed_drawdown_pct": 16.0,
+        "end": 28065.64,
+        "low_equity": 15000.0,
+        "net": 13065.64,
+        "rejects": {
+          "position_open": 1
+        },
+        "screened_before_wallet": 19,
+        "start": 15000,
+        "wins": 4,
+        "worst_day": -1759.12,
+        "worst_trade": -1759.12
+      },
+      "CONTROL": {
+        "best_day": 12132.09,
+        "closed": 22,
+        "closed_drawdown_pct": 24.11,
+        "end": 40555.44,
+        "low_equity": 14559.78,
+        "net": 25555.44,
+        "rejects": {
+          "cash": 5,
+          "position_open": 2
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 10,
+        "worst_day": -2174.94,
+        "worst_trade": -2174.94
+      },
+      "STOP_BUDGET": {
+        "best_day": 3763.92,
+        "closed": 3,
+        "closed_drawdown_pct": 0.74,
+        "end": 21157.45,
+        "low_equity": 15000.0,
+        "net": 6157.45,
+        "rejects": {},
+        "screened_before_wallet": 26,
+        "start": 15000,
+        "wins": 2,
+        "worst_day": -157.15,
+        "worst_trade": -157.15
+      }
+    },
+    "standard": {
+      "CASH_BUFFER": {
+        "best_day": 8325.49,
+        "closed": 9,
+        "closed_drawdown_pct": 11.03,
+        "end": 31381.04,
+        "low_equity": 15000.0,
+        "net": 16381.04,
+        "rejects": {
+          "position_open": 1
+        },
+        "screened_before_wallet": 19,
+        "start": 15000,
+        "wins": 6,
+        "worst_day": -1387.68,
+        "worst_trade": -1387.68
+      },
+      "CONTROL": {
+        "best_day": 12711.3,
+        "closed": 22,
+        "closed_drawdown_pct": 17.63,
+        "end": 49774.25,
+        "low_equity": 15000.0,
+        "net": 34774.25,
+        "rejects": {
+          "cash": 5,
+          "position_open": 2
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 14,
+        "worst_day": -1739.76,
+        "worst_trade": -1739.76
+      },
+      "STOP_BUDGET": {
+        "best_day": 4107.19,
+        "closed": 3,
+        "closed_drawdown_pct": 0.0,
+        "end": 22088.51,
+        "low_equity": 15000.0,
+        "net": 7088.51,
+        "rejects": {},
+        "screened_before_wallet": 26,
+        "start": 15000,
+        "wins": 3,
+        "worst_day": 0.0,
+        "worst_trade": 0.0
+      }
+    }
+  },
+  "2025": {
+    "adverse": {
+      "CASH_BUFFER": {
+        "best_day": 4246.05,
+        "closed": 24,
+        "closed_drawdown_pct": 50.32,
+        "end": 18636.73,
+        "low_equity": 7451.34,
+        "net": 3636.73,
+        "rejects": {
+          "cash": 1,
+          "position_open": 5
+        },
+        "screened_before_wallet": 43,
+        "start": 15000,
+        "wins": 11,
+        "worst_day": -2477.21,
+        "worst_trade": -2477.21
+      },
+      "CONTROL": {
+        "best_day": 0.0,
+        "closed": 6,
+        "closed_drawdown_pct": 58.47,
+        "end": 6229.03,
+        "low_equity": 6229.03,
+        "net": -8770.97,
+        "rejects": {
+          "cash": 21,
+          "floor": 46
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 0,
+        "worst_day": -2439.59,
+        "worst_trade": -2439.59
+      },
+      "STOP_BUDGET": {
+        "best_day": 366.38,
+        "closed": 6,
+        "closed_drawdown_pct": 10.52,
+        "end": 13883.59,
+        "low_equity": 13883.59,
+        "net": -1116.41,
+        "rejects": {
+          "cash": 1
+        },
+        "screened_before_wallet": 66,
+        "start": 15000,
+        "wins": 3,
+        "worst_day": -776.33,
+        "worst_trade": -1329.68
+      }
+    },
+    "standard": {
+      "CASH_BUFFER": {
+        "best_day": 4660.51,
+        "closed": 25,
+        "closed_drawdown_pct": 36.25,
+        "end": 27449.12,
+        "low_equity": 9561.76,
+        "net": 12449.12,
+        "rejects": {
+          "position_open": 5
+        },
+        "screened_before_wallet": 43,
+        "start": 15000,
+        "wins": 13,
+        "worst_day": -2119.92,
+        "worst_trade": -2119.92
+      },
+      "CONTROL": {
+        "best_day": 4660.51,
+        "closed": 29,
+        "closed_drawdown_pct": 48.87,
+        "end": 29533.03,
+        "low_equity": 7669.51,
+        "net": 14533.03,
+        "rejects": {
+          "cash": 36,
+          "position_open": 8
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 15,
+        "worst_day": -2119.92,
+        "worst_trade": -2119.92
+      },
+      "STOP_BUDGET": {
+        "best_day": 649.16,
+        "closed": 6,
+        "closed_drawdown_pct": 6.46,
+        "end": 15638.09,
+        "low_equity": 15000.0,
+        "net": 638.09,
+        "rejects": {
+          "cash": 1
+        },
+        "screened_before_wallet": 66,
+        "start": 15000,
+        "wins": 4,
+        "worst_day": -485.25,
+        "worst_trade": -1040.12
+      }
+    }
+  },
+  "2026": {
+    "adverse": {
+      "CASH_BUFFER": {
+        "best_day": 5823.98,
+        "closed": 12,
+        "closed_drawdown_pct": 14.33,
+        "end": 30748.15,
+        "low_equity": 12850.91,
+        "net": 15748.15,
+        "rejects": {
+          "position_open": 1
+        },
+        "screened_before_wallet": 38,
+        "start": 15000,
+        "wins": 7,
+        "worst_day": -2149.09,
+        "worst_trade": -2149.09
+      },
+      "CONTROL": {
+        "best_day": 10662.75,
+        "closed": 29,
+        "closed_drawdown_pct": 22.56,
+        "end": 51474.35,
+        "low_equity": 12850.91,
+        "net": 36474.35,
+        "rejects": {
+          "cash": 15,
+          "position_open": 7
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 16,
+        "worst_day": -3039.15,
+        "worst_trade": -3039.15
+      },
+      "STOP_BUDGET": {
+        "best_day": 0.0,
+        "closed": 2,
+        "closed_drawdown_pct": 14.42,
+        "end": 12837.71,
+        "low_equity": 12837.71,
+        "net": -2162.29,
+        "rejects": {},
+        "screened_before_wallet": 49,
+        "start": 15000,
+        "wins": 0,
+        "worst_day": -1292.75,
+        "worst_trade": -1292.75
+      }
+    },
+    "standard": {
+      "CASH_BUFFER": {
+        "best_day": 6265.18,
+        "closed": 12,
+        "closed_drawdown_pct": 12.0,
+        "end": 35415.3,
+        "low_equity": 13199.29,
+        "net": 20415.3,
+        "rejects": {
+          "position_open": 1
+        },
+        "screened_before_wallet": 38,
+        "start": 15000,
+        "wins": 7,
+        "worst_day": -1800.71,
+        "worst_trade": -1800.71
+      },
+      "CONTROL": {
+        "best_day": 11246.2,
+        "closed": 30,
+        "closed_drawdown_pct": 12.3,
+        "end": 64321.0,
+        "low_equity": 13199.29,
+        "net": 49321.0,
+        "rejects": {
+          "cash": 14,
+          "position_open": 7
+        },
+        "screened_before_wallet": 0,
+        "start": 15000,
+        "wins": 16,
+        "worst_day": -2562.74,
+        "worst_trade": -2562.74
+      },
+      "STOP_BUDGET": {
+        "best_day": 0.0,
+        "closed": 2,
+        "closed_drawdown_pct": 9.61,
+        "end": 13558.37,
+        "low_equity": 13558.37,
+        "net": -1441.63,
+        "rejects": {},
+        "screened_before_wallet": 49,
+        "start": 15000,
+        "wins": 0,
+        "worst_day": -960.98,
+        "worst_trade": -960.98
+      }
+    }
+  }
+}
