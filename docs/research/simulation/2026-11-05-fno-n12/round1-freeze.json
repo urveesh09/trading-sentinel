@@ -1,0 +1,34 @@
+{
+  "runner_sha256": "1f22841f2585dbc96af173d2fd06be1c7145d5c8929da00daa707145f8f5960b",
+  "data_manifest_sha256": {
+    "2022": "41bd03dadaa1b297ff67955ec88b435a1f0df911aae90850f02382014baf033f",
+    "2023": "e40fef86b46b17f07d31ba4f214e9c776eac1d4fee3cfc52f7cdfb43c5cc8a45",
+    "2024": "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+    "2025": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+    "2026": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555"
+  },
+  "controls_sha256": {
+    "2022": {
+      "N11": "e132083a78dbec3caeaeca7f4e101a735ac9edb3edd639afbe26e991c99b2fd3",
+      "N11T": "503be69fc24881da59bc972116452ac519196b3ee848e0a865391774da43d9d3"
+    },
+    "2023": {
+      "N11": "eb93fd0d2564129c23a4793b84e4d694cb141d60c06df45aa4fdf2f02ffc5021",
+      "N11T": "57e10ab2c3ba0b47bab98ea334d82ec5a00901a1c2eb5478dd2d2145b1470097"
+    },
+    "2024": {
+      "N11": "1c92b6bd7a7daad01a1d6a4954192c4eb91442fe486cd500df01af7eac831c67",
+      "N11T": "0253b9742747845a1cf54d072cead99cd0369d9a93d477427f0f4e8b9f48bdd6"
+    },
+    "2025": {
+      "N11": "923ad95ed37b448632c3f65b810e257c740da57e75b666b95e556fb2f54b17ef",
+      "N11T": "a13220d52ec3c5dff6a4960f9b9b656105d6288ad65ec3eeeb0fac077e794701"
+    },
+    "2026": {
+      "N11": "86ebf0d3e4a7552bbb5c9b8382842ae066bb720346778f71a9ad6bce942cd838",
+      "N11T": "bbe3a6fe7e47ddc3e0fd59ee60762ccdf53221a3c9332d253952d412a0ac8d8d"
+    }
+  },
+  "plan_sha256": "7998e71b3a09156a6609a3d55451931bcb1be0d75deac6160c8b1032f982f948",
+  "model": "previous year replay costs, new entry/evaluation arms as specified in ROUND1.md"
+}
