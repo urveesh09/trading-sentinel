@@ -1,0 +1,11 @@
+{
+  "source_sha256": "e0fc4596771932e4c6a10af2146a2236912f3afba70c1948be7372fa1665847d",
+  "original_daily_sha256": "42bce0927ce989bf381b12f8a5675f0bd5bdb6381ca315f5b3d54103f19994ca",
+  "alternate_daily_sha256": "72bace0cb6aa706453f61d167135a371bb9e0379f265477360ef4ef29f00433d",
+  "source_code_sha256": "0a74ff730c023c8e803c6d37fc0572b21ec65f4df8008bb703067fa94d4ce82f",
+  "controls": [
+    "N11",
+    "N11T"
+  ],
+  "design": "Replay on identical derivative data with independently sourced daily 2022 OHLC only. Rebuild the causal one-lot evidence."
+}
