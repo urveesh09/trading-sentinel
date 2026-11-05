@@ -1,0 +1,3377 @@
+{
+  "all_priced_gross": 312916.5,
+  "annual": {
+    "2022": {
+      "baseline": -10602.289700000001,
+      "missing": [],
+      "pairs": [
+        {
+          "eligible_proxies": [
+            0.1,
+            0.13,
+            0.16
+          ],
+          "entry_mark": 16408.75,
+          "entry_time": "2022-06-07T12:10:59+05:30",
+          "exit_mark": 16429.0,
+          "exit_time": "2022-06-07T12:22:59+05:30",
+          "future_gross": -1316.25,
+          "future_net": [
+            -2226.6397247024997,
+            -2486.5773247025
+          ],
+          "modeled_stop_loss": 2303.7128589738636,
+          "option_net": -1273.6308,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 16401.5,
+          "entry_time": "2022-06-07T12:51:59+05:30",
+          "exit_mark": 16445.0,
+          "exit_time": "2022-06-07T14:28:59+05:30",
+          "future_gross": -2827.5,
+          "future_net": [
+            -3737.6878524149997,
+            -3997.625452415
+          ],
+          "modeled_stop_loss": 3393.8311635589475,
+          "option_net": -2130.2065,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 16253.0,
+          "entry_time": "2022-06-10T11:30:59+05:30",
+          "exit_mark": 16240.0,
+          "exit_time": "2022-06-10T13:45:59+05:30",
+          "future_gross": 845.0,
+          "future_net": [
+            -59.57181283,
+            -319.50941283
+          ],
+          "modeled_stop_loss": 2915.9312055884884,
+          "option_net": 411.2511,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 15786.7,
+          "entry_time": "2022-06-13T11:36:59+05:30",
+          "exit_mark": 15723.0,
+          "exit_time": "2022-06-13T14:31:59+05:30",
+          "future_gross": 4140.500000000047,
+          "future_net": [
+            3253.2106259930474,
+            2993.273025993047
+          ],
+          "modeled_stop_loss": 3316.4600182247677,
+          "option_net": 2366.8522,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 15770.0,
+          "entry_time": "2022-06-13T12:30:59+05:30",
+          "exit_mark": 15723.0,
+          "exit_time": "2022-06-13T14:31:59+05:30",
+          "future_gross": 3055.0,
+          "future_net": [
+            2168.27809717,
+            1908.3404971700002
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 1705.0332,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 15460.0,
+          "entry_time": "2022-06-22T11:45:59+05:30",
+          "exit_mark": 15447.15,
+          "exit_time": "2022-06-22T14:51:59+05:30",
+          "future_gross": 835.2500000000236,
+          "future_net": [
+            -40.171058216476354,
+            -300.10865821647633
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -719.5369,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 15566.65,
+          "entry_time": "2022-07-01T11:52:59+05:30",
+          "exit_mark": 15617.0,
+          "exit_time": "2022-07-01T11:59:59+05:30",
+          "future_gross": -3272.7500000000236,
+          "future_net": [
+            -4152.267293931523,
+            -4412.204893931524
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1960.6453,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 15598.45,
+          "entry_time": "2022-07-01T11:36:59+05:30",
+          "exit_mark": 15645.0,
+          "exit_time": "2022-07-01T12:57:59+05:30",
+          "future_gross": -3025.7499999999527,
+          "future_net": [
+            -3906.4257164694527,
+            -4166.363316469453
+          ],
+          "modeled_stop_loss": 3688.51864179908,
+          "option_net": -2176.2745,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 16197.05,
+          "entry_time": "2022-07-08T11:51:59+05:30",
+          "exit_mark": 16223.65,
+          "exit_time": "2022-07-08T13:37:59+05:30",
+          "future_gross": -1729.0000000000236,
+          "future_net": [
+            -2631.6251564170234,
+            -2891.5627564170236
+          ],
+          "modeled_stop_loss": 2829.9949385284353,
+          "option_net": -1465.9528,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 15963.15,
+          "entry_time": "2022-07-15T12:06:59+05:30",
+          "exit_mark": 15994.0,
+          "exit_time": "2022-07-15T13:00:59+05:30",
+          "future_gross": -2005.2500000000236,
+          "future_net": [
+            -2899.288663716524,
+            -3159.2262637165236
+          ],
+          "modeled_stop_loss": 2889.7413099807186,
+          "option_net": -1313.5268,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 16601.45,
+          "entry_time": "2022-07-25T13:30:59+05:30",
+          "exit_mark": 16634.65,
+          "exit_time": "2022-07-25T14:05:59+05:30",
+          "future_gross": -2158.0000000000473,
+          "future_net": [
+            -3075.509501191047,
+            -3335.4471011910473
+          ],
+          "modeled_stop_loss": 3272.10317221103,
+          "option_net": -1518.5846,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17821.0,
+          "entry_time": "2022-08-19T13:25:59+05:30",
+          "exit_mark": 17769.5,
+          "exit_time": "2022-08-19T13:39:59+05:30",
+          "future_gross": -3347.5,
+          "future_net": [
+            -4307.998623055,
+            -4567.936223055
+          ],
+          "modeled_stop_loss": 4350.300057093595,
+          "option_net": -1704.2956,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17565.0,
+          "entry_time": "2022-08-22T12:45:59+05:30",
+          "exit_mark": 17487.95,
+          "exit_time": "2022-08-22T15:10:59+05:30",
+          "future_gross": 5008.249999999953,
+          "future_net": [
+            4055.6263325854525,
+            3795.6887325854527
+          ],
+          "modeled_stop_loss": 3363.460232369958,
+          "option_net": 2959.4666,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17502.5,
+          "entry_time": "2022-08-23T11:36:59+05:30",
+          "exit_mark": 17468.0,
+          "exit_time": "2022-08-23T12:06:59+05:30",
+          "future_gross": -2242.5,
+          "future_net": [
+            -3191.868030855,
+            -3451.8056308550003
+          ],
+          "modeled_stop_loss": 6397.643669902784,
+          "option_net": -1503.8604,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17543.4,
+          "entry_time": "2022-08-23T12:55:59+05:30",
+          "exit_mark": 17562.0,
+          "exit_time": "2022-08-23T13:51:59+05:30",
+          "future_gross": 1208.9999999999054,
+          "future_net": [
+            256.3241053259054,
+            -3.613494674094568
+          ],
+          "modeled_stop_loss": 3611.922876307301,
+          "option_net": 502.0306,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17569.75,
+          "entry_time": "2022-08-23T13:18:59+05:30",
+          "exit_mark": 17575.0,
+          "exit_time": "2022-08-23T14:00:59+05:30",
+          "future_gross": 341.25,
+          "future_net": [
+            -611.9408998725,
+            -871.8784998725
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -177.032,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17600.0,
+          "entry_time": "2022-08-24T12:36:59+05:30",
+          "exit_mark": 17561.65,
+          "exit_time": "2022-08-24T12:50:59+05:30",
+          "future_gross": -2492.7499999999054,
+          "future_net": [
+            -3445.5713671114054,
+            -3705.5089671114056
+          ],
+          "modeled_stop_loss": 3234.680174903625,
+          "option_net": -1200.1101,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17719.05,
+          "entry_time": "2022-08-26T12:10:59+05:30",
+          "exit_mark": 17703.55,
+          "exit_time": "2022-08-26T12:40:59+05:30",
+          "future_gross": -1007.5,
+          "future_net": [
+            -1965.474169006,
+            -2225.411769006
+          ],
+          "modeled_stop_loss": 3957.86713196238,
+          "option_net": -720.0804,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17652.4,
+          "entry_time": "2022-08-26T13:25:59+05:30",
+          "exit_mark": 17660.05,
+          "exit_time": "2022-08-26T13:55:59+05:30",
+          "future_gross": -497.2499999998581,
+          "future_net": [
+            -1453.3220378593583,
+            -1713.259637859358
+          ],
+          "modeled_stop_loss": 5438.803027855261,
+          "option_net": -856.8815,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17029.4,
+          "entry_time": "2022-09-27T12:45:59+05:30",
+          "exit_mark": 17077.9,
+          "exit_time": "2022-09-27T12:54:59+05:30",
+          "future_gross": -3152.5,
+          "future_net": [
+            -4085.783747263,
+            -4345.721347263
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1885.6378,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17038.0,
+          "entry_time": "2022-09-27T12:21:59+05:30",
+          "exit_mark": 17099.9,
+          "exit_time": "2022-09-27T12:56:59+05:30",
+          "future_gross": -4023.5000000000946,
+          "future_net": [
+            -4957.137144749095,
+            -5217.074744749095
+          ],
+          "modeled_stop_loss": 4658.2738016554795,
+          "option_net": -2524.828,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17261.3,
+          "entry_time": "2022-10-07T11:55:59+05:30",
+          "exit_mark": 17298.55,
+          "exit_time": "2022-10-07T12:43:59+05:30",
+          "future_gross": -2421.25,
+          "future_net": [
+            -3363.0272565534997,
+            -3622.9648565535
+          ],
+          "modeled_stop_loss": 3519.356686626733,
+          "option_net": -1543.541,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17102.2,
+          "entry_time": "2022-10-11T13:15:59+05:30",
+          "exit_mark": 17008.2,
+          "exit_time": "2022-10-11T15:10:59+05:30",
+          "future_gross": 6110.0,
+          "future_net": [
+            5174.436273776,
+            4914.498673776
+          ],
+          "modeled_stop_loss": 3639.6218561899827,
+          "option_net": 3659.1784,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [
+            0.1,
+            0.13,
+            0.16
+          ],
+          "entry_mark": 18361.05,
+          "entry_time": "2022-11-15T11:51:59+05:30",
+          "exit_mark": 18382.5,
+          "exit_time": "2022-11-15T12:26:59+05:30",
+          "future_gross": -1394.2500000000473,
+          "future_net": [
+            -2376.4108195005474,
+            -2636.3484195005476
+          ],
+          "modeled_stop_loss": 2475.8824004791254,
+          "option_net": -1319.4516,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18307.1,
+          "entry_time": "2022-11-18T13:36:59+05:30",
+          "exit_mark": 18328.7,
+          "exit_time": "2022-11-18T14:51:59+05:30",
+          "future_gross": -1404.0000000001419,
+          "future_net": [
+            -2384.178001098142,
+            -2644.115601098142
+          ],
+          "modeled_stop_loss": 2504.2345981845224,
+          "option_net": -1265.032,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18196.0,
+          "entry_time": "2022-11-21T11:40:59+05:30",
+          "exit_mark": 18189.15,
+          "exit_time": "2022-11-21T13:40:59+05:30",
+          "future_gross": 445.2499999999054,
+          "future_net": [
+            -530.7647963965946,
+            -790.7023963965946
+          ],
+          "modeled_stop_loss": 2788.862254514945,
+          "option_net": 22.9177,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18199.9,
+          "entry_time": "2022-11-21T11:52:59+05:30",
+          "exit_mark": 18197.7,
+          "exit_time": "2022-11-21T14:00:59+05:30",
+          "future_gross": 143.0000000000473,
+          "future_net": [
+            -833.1710912559527,
+            -1093.1086912559526
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -191.8717,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [
+            0.1,
+            0.13,
+            0.16
+          ],
+          "entry_mark": 18303.5,
+          "entry_time": "2022-12-30T13:00:59+05:30",
+          "exit_mark": 18200.0,
+          "exit_time": "2022-12-30T15:10:59+05:30",
+          "future_gross": 6727.5,
+          "future_net": [
+            5747.8021539149995,
+            5487.864553915
+          ],
+          "modeled_stop_loss": 2424.6785355815464,
+          "option_net": 5221.9608,
+          "side": -1
+        }
+      ]
+    },
+    "2023": {
+      "baseline": -11536.976099999998,
+      "missing": [],
+      "pairs": [
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18004.85,
+          "entry_time": "2023-01-10T12:40:59+05:30",
+          "exit_mark": 17991.25,
+          "exit_time": "2023-01-10T15:09:59+05:30",
+          "future_gross": 883.9999999999054,
+          "future_net": [
+            -84.96923679109454,
+            -344.90683679109463
+          ],
+          "modeled_stop_loss": 3468.8069867105914,
+          "option_net": 150.4023,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18000.05,
+          "entry_time": "2023-01-16T09:54:59+05:30",
+          "exit_mark": 18015.15,
+          "exit_time": "2023-01-16T11:09:59+05:30",
+          "future_gross": -981.5000000001419,
+          "future_net": [
+            -1950.3725807121418,
+            -2210.310180712142
+          ],
+          "modeled_stop_loss": 3848.648303972755,
+          "option_net": -1235.3684,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18038.5,
+          "entry_time": "2023-01-17T09:51:59+05:30",
+          "exit_mark": 18045.85,
+          "exit_time": "2023-01-17T10:10:59+05:30",
+          "future_gross": 477.7499999999054,
+          "future_net": [
+            -492.7437991485946,
+            -752.6813991485947
+          ],
+          "modeled_stop_loss": 3632.1609537731474,
+          "option_net": -282.1112,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18048.95,
+          "entry_time": "2023-01-17T11:36:59+05:30",
+          "exit_mark": 18021.35,
+          "exit_time": "2023-01-17T12:32:59+05:30",
+          "future_gross": -1794.0000000001419,
+          "future_net": [
+            -2763.690335793142,
+            -3023.6279357931417
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1001.2622,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 18042.5,
+          "entry_time": "2023-01-17T11:30:59+05:30",
+          "exit_mark": 18002.75,
+          "exit_time": "2023-01-17T12:55:59+05:30",
+          "future_gross": -2583.75,
+          "future_net": [
+            -3552.7903690274998,
+            -3812.7279690275
+          ],
+          "modeled_stop_loss": 3476.5549568475117,
+          "option_net": -1526.7975,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17907.75,
+          "entry_time": "2023-02-01T10:45:59+05:30",
+          "exit_mark": 17902.6,
+          "exit_time": "2023-02-01T11:15:59+05:30",
+          "future_gross": -334.7500000000946,
+          "future_net": [
+            -1300.0125942085947,
+            -1559.9501942085947
+          ],
+          "modeled_stop_loss": 3677.8424361025,
+          "option_net": -785.803,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17771.75,
+          "entry_time": "2023-02-06T11:40:59+05:30",
+          "exit_mark": 17809.5,
+          "exit_time": "2023-02-06T12:07:59+05:30",
+          "future_gross": -2453.75,
+          "future_net": [
+            -3414.2931051875003,
+            -3674.2307051875
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1793.1253,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17786.55,
+          "entry_time": "2023-02-06T11:36:59+05:30",
+          "exit_mark": 17812.0,
+          "exit_time": "2023-02-06T13:36:59+05:30",
+          "future_gross": -1654.2500000000473,
+          "future_net": [
+            -2615.3029645505476,
+            -2875.2405645505473
+          ],
+          "modeled_stop_loss": 3291.0362841255155,
+          "option_net": -1549.7126,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17791.05,
+          "entry_time": "2023-02-13T11:30:59+05:30",
+          "exit_mark": 17804.0,
+          "exit_time": "2023-02-13T13:30:59+05:30",
+          "future_gross": -841.7500000000473,
+          "future_net": [
+            -1802.9336334655472,
+            -2062.8712334655474
+          ],
+          "modeled_stop_loss": 3029.2100535296586,
+          "option_net": -832.3868,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17433.3,
+          "entry_time": "2023-02-27T11:30:59+05:30",
+          "exit_mark": 17479.0,
+          "exit_time": "2023-02-27T11:38:59+05:30",
+          "future_gross": -2970.5000000000473,
+          "future_net": [
+            -3918.6235768130473,
+            -4178.5611768130475
+          ],
+          "modeled_stop_loss": 3981.0717099642925,
+          "option_net": -2398.4063,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17174.4,
+          "entry_time": "2023-03-15T12:06:59+05:30",
+          "exit_mark": 17036.95,
+          "exit_time": "2023-03-15T15:10:59+05:30",
+          "future_gross": 8934.250000000047,
+          "future_net": [
+            7996.152961481547,
+            7736.215361481547
+          ],
+          "modeled_stop_loss": 3611.260567487252,
+          "option_net": 7252.4695,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 16963.95,
+          "entry_time": "2023-03-20T11:30:59+05:30",
+          "exit_mark": 16953.0,
+          "exit_time": "2023-03-20T14:24:59+05:30",
+          "future_gross": 711.7500000000473,
+          "future_net": [
+            -218.96247525445267,
+            -478.90007525445276
+          ],
+          "modeled_stop_loss": 3719.449445317273,
+          "option_net": 152.0742,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17185.0,
+          "entry_time": "2023-03-22T11:55:59+05:30",
+          "exit_mark": 17176.9,
+          "exit_time": "2023-03-22T14:03:59+05:30",
+          "future_gross": 526.4999999999054,
+          "future_net": [
+            -412.3463341890946,
+            -672.2839341890947
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1967.2558,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 16998.5,
+          "entry_time": "2023-03-28T11:36:59+05:30",
+          "exit_mark": 16992.0,
+          "exit_time": "2023-03-28T12:06:59+05:30",
+          "future_gross": -422.5,
+          "future_net": [
+            -1354.292127055,
+            -1614.229727055
+          ],
+          "modeled_stop_loss": 3173.414199615,
+          "option_net": -567.6465,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17001.1,
+          "entry_time": "2023-03-28T12:00:59+05:30",
+          "exit_mark": 16963.85,
+          "exit_time": "2023-03-28T14:32:59+05:30",
+          "future_gross": 2421.25,
+          "future_net": [
+            1489.2449898655,
+            1229.3073898655
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 492.947,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 17345.05,
+          "entry_time": "2023-03-31T10:51:59+05:30",
+          "exit_mark": 17343.5,
+          "exit_time": "2023-03-31T11:21:59+05:30",
+          "future_gross": 100.7499999999527,
+          "future_net": [
+            -843.9980824505474,
+            -1103.9356824505471
+          ],
+          "modeled_stop_loss": 2787.5076924796417,
+          "option_net": -387.3993,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [
+            0.1,
+            0.13,
+            0.16
+          ],
+          "entry_mark": 18629.05,
+          "entry_time": "2023-06-06T13:10:59+05:30",
+          "exit_mark": 18646.0,
+          "exit_time": "2023-06-06T15:01:59+05:30",
+          "future_gross": -1101.7500000000473,
+          "future_net": [
+            -2093.7501542655473,
+            -2353.6877542655475
+          ],
+          "modeled_stop_loss": 2284.5097540855145,
+          "option_net": -1115.6957,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [
+            0.1,
+            0.13,
+            0.16
+          ],
+          "entry_mark": 18684.9,
+          "entry_time": "2023-06-09T11:40:59+05:30",
+          "exit_mark": 18699.85,
+          "exit_time": "2023-06-09T11:48:59+05:30",
+          "future_gross": -971.7499999998108,
+          "future_net": [
+            -1965.7976742723108,
+            -2225.7352742723106
+          ],
+          "modeled_stop_loss": 2196.1798729141756,
+          "option_net": -1035.6727,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 19135.4,
+          "entry_time": "2023-10-31T13:25:59+05:30",
+          "exit_mark": 19171.85,
+          "exit_time": "2023-10-31T13:29:59+05:30",
+          "future_gross": -2369.249999999811,
+          "future_net": [
+            -3379.918110247311,
+            -3639.8557102473105
+          ],
+          "modeled_stop_loss": 3314.269626056602,
+          "option_net": -1700.0268,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 19115.05,
+          "entry_time": "2023-11-01T12:36:59+05:30",
+          "exit_mark": 19083.4,
+          "exit_time": "2023-11-01T13:32:59+05:30",
+          "future_gross": 2057.249999999858,
+          "future_net": [
+            1047.519307480358,
+            787.5817074803581
+          ],
+          "modeled_stop_loss": 3074.510715993033,
+          "option_net": 1723.1477,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21410.0,
+          "entry_time": "2023-12-15T12:21:59+05:30",
+          "exit_mark": 21416.0,
+          "exit_time": "2023-12-15T12:56:59+05:30",
+          "future_gross": 390.0,
+          "future_net": [
+            -704.38635606,
+            -964.32395606
+          ],
+          "modeled_stop_loss": 2909.3230856285445,
+          "option_net": -126.5572,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21505.0,
+          "entry_time": "2023-12-18T12:10:59+05:30",
+          "exit_mark": 21486.65,
+          "exit_time": "2023-12-18T13:16:59+05:30",
+          "future_gross": 1192.7499999999054,
+          "future_net": [
+            95.12628558840538,
+            -164.8113144115946
+          ],
+          "modeled_stop_loss": 3766.8123252702585,
+          "option_net": 214.4914,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21470.35,
+          "entry_time": "2023-12-19T11:21:59+05:30",
+          "exit_mark": 21505.8,
+          "exit_time": "2023-12-19T11:42:59+05:30",
+          "future_gross": -2304.2500000000473,
+          "future_net": [
+            -3400.7495396065474,
+            -3660.687139606547
+          ],
+          "modeled_stop_loss": 2743.0851432519084,
+          "option_net": -1817.0643,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21416.95,
+          "entry_time": "2023-12-22T13:06:59+05:30",
+          "exit_mark": 21372.3,
+          "exit_time": "2023-12-22T13:39:59+05:30",
+          "future_gross": -2902.2500000000946,
+          "future_net": [
+            -3995.1707396675947,
+            -4255.108339667595
+          ],
+          "modeled_stop_loss": 3120.8994054596883,
+          "option_net": -1889.367,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21491.95,
+          "entry_time": "2023-12-26T11:55:59+05:30",
+          "exit_mark": 21462.65,
+          "exit_time": "2023-12-26T13:02:59+05:30",
+          "future_gross": -1904.4999999999527,
+          "future_net": [
+            -3000.6993839259526,
+            -3260.636983925953
+          ],
+          "modeled_stop_loss": 3140.789827492366,
+          "option_net": -1620.8438,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21514.0,
+          "entry_time": "2023-12-26T14:21:59+05:30",
+          "exit_mark": 21465.0,
+          "exit_time": "2023-12-26T14:52:59+05:30",
+          "future_gross": -3185.0,
+          "future_net": [
+            -4281.34054349,
+            -4541.27814349
+          ],
+          "modeled_stop_loss": 4562.938941174584,
+          "option_net": -1905.4468,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21562.0,
+          "entry_time": "2023-12-27T12:40:59+05:30",
+          "exit_mark": 21532.3,
+          "exit_time": "2023-12-27T13:37:59+05:30",
+          "future_gross": -1930.5000000000473,
+          "future_net": [
+            -3029.2608732330473,
+            -3289.1984732330475
+          ],
+          "modeled_stop_loss": 3066.8785920346095,
+          "option_net": -1539.2794,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21574.4,
+          "entry_time": "2023-12-27T14:00:59+05:30",
+          "exit_mark": 21694.45,
+          "exit_time": "2023-12-27T15:10:59+05:30",
+          "future_gross": 7803.249999999953,
+          "future_net": [
+            6698.944743656452,
+            6439.007143656453
+          ],
+          "modeled_stop_loss": 3263.3116415548293,
+          "option_net": 5554.7204,
+          "side": 1
+        }
+      ]
+    },
+    "2024": {
+      "baseline": 95040.3342,
+      "missing": [],
+      "pairs": [
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21868.35,
+          "entry_time": "2024-01-01T12:36:59+05:30",
+          "exit_mark": 21990.0,
+          "exit_time": "2024-01-01T15:01:59+05:30",
+          "future_gross": 7907.250000000095,
+          "future_net": [
+            6792.084590911594,
+            6532.146990911595
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 11324.3348,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21745.45,
+          "entry_time": "2024-01-02T12:51:59+05:30",
+          "exit_mark": 21779.05,
+          "exit_time": "2024-01-02T14:10:59+05:30",
+          "future_gross": -2183.9999999999054,
+          "future_net": [
+            -3290.6072425949055,
+            -3550.5448425949053
+          ],
+          "modeled_stop_loss": 3021.392763811309,
+          "option_net": -1944.7579,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21655.9,
+          "entry_time": "2024-01-03T10:25:59+05:30",
+          "exit_mark": 21686.0,
+          "exit_time": "2024-01-03T10:36:59+05:30",
+          "future_gross": -1956.4999999999054,
+          "future_net": [
+            -3059.8055979889054,
+            -3319.743197988905
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -3629.197,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21642.0,
+          "entry_time": "2024-01-03T14:19:59+05:30",
+          "exit_mark": 21594.2,
+          "exit_time": "2024-01-03T15:10:59+05:30",
+          "future_gross": 3106.9999999999527,
+          "future_net": [
+            2004.4219607779528,
+            1744.4843607779526
+          ],
+          "modeled_stop_loss": 4099.934916572067,
+          "option_net": 2293.7946,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21769.7,
+          "entry_time": "2024-01-05T12:15:59+05:30",
+          "exit_mark": 21760.15,
+          "exit_time": "2024-01-05T13:00:59+05:30",
+          "future_gross": 620.7499999999527,
+          "future_net": [
+            -486.6287172535473,
+            -746.5663172535474
+          ],
+          "modeled_stop_loss": 2700.15337350492,
+          "option_net": 118.7967,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21753.5,
+          "entry_time": "2024-01-05T13:36:59+05:30",
+          "exit_mark": 21712.0,
+          "exit_time": "2024-01-05T14:33:59+05:30",
+          "future_gross": 2697.5,
+          "future_net": [
+            1590.805635695,
+            1330.868035695
+          ],
+          "modeled_stop_loss": 2844.409560010022,
+          "option_net": 1580.3141,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21742.9,
+          "entry_time": "2024-01-09T14:10:59+05:30",
+          "exit_mark": 21669.7,
+          "exit_time": "2024-01-09T14:32:59+05:30",
+          "future_gross": 4758.000000000047,
+          "future_net": [
+            3651.783434094047,
+            3391.845834094047
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 9132.7071,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21590.0,
+          "entry_time": "2024-01-10T14:10:59+05:30",
+          "exit_mark": 21686.0,
+          "exit_time": "2024-01-10T15:07:59+05:30",
+          "future_gross": 6240.0,
+          "future_net": [
+            5135.93850444,
+            4876.00090444
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 6591.5299,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21870.0,
+          "entry_time": "2024-01-12T12:10:59+05:30",
+          "exit_mark": 21868.0,
+          "exit_time": "2024-01-12T12:41:59+05:30",
+          "future_gross": 130.0,
+          "future_net": [
+            -981.08679878,
+            -1241.02439878
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -522.6472,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22099.3,
+          "entry_time": "2024-01-16T11:55:59+05:30",
+          "exit_mark": 22009.95,
+          "exit_time": "2024-01-16T13:44:59+05:30",
+          "future_gross": 5807.749999999905,
+          "future_net": [
+            4688.4768511324055,
+            4428.539251132405
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 8905.329,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21684.55,
+          "entry_time": "2024-01-20T11:51:59+05:30",
+          "exit_mark": 21676.1,
+          "exit_time": "2024-01-20T13:57:59+05:30",
+          "future_gross": 549.2500000000473,
+          "future_net": [
+            -555.0016088014527,
+            -814.9392088014528
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -121.5769,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21818.8,
+          "entry_time": "2024-01-30T12:10:59+05:30",
+          "exit_mark": 21612.95,
+          "exit_time": "2024-01-30T15:10:59+05:30",
+          "future_gross": 13380.249999999905,
+          "future_net": [
+            12271.612111157405,
+            12011.674511157406
+          ],
+          "modeled_stop_loss": 3131.2043069581487,
+          "option_net": 9599.6474,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 21778.25,
+          "entry_time": "2024-02-12T11:40:59+05:30",
+          "exit_mark": 21770.0,
+          "exit_time": "2024-02-12T14:13:59+05:30",
+          "future_gross": 536.25,
+          "future_net": [
+            -571.4466349575,
+            -831.3842349575
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 1634.7673,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22062.15,
+          "entry_time": "2024-03-15T13:21:59+05:30",
+          "exit_mark": 22090.0,
+          "exit_time": "2024-03-15T13:35:59+05:30",
+          "future_gross": -1810.2499999999054,
+          "future_net": [
+            -2928.4833441664055,
+            -3188.420944166405
+          ],
+          "modeled_stop_loss": 3108.383923015394,
+          "option_net": -1518.3774,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22628.15,
+          "entry_time": "2024-04-26T11:55:59+05:30",
+          "exit_mark": 22582.05,
+          "exit_time": "2024-04-26T14:15:59+05:30",
+          "future_gross": 2996.500000000142,
+          "future_net": [
+            1857.665748838142,
+            1597.7281488381418
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 1859.1027,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22784.9,
+          "entry_time": "2024-05-29T13:00:59+05:30",
+          "exit_mark": 22820.4,
+          "exit_time": "2024-05-29T13:18:59+05:30",
+          "future_gross": -2307.5,
+          "future_net": [
+            -3452.323351643,
+            -3712.260951643
+          ],
+          "modeled_stop_loss": 3441.071328796346,
+          "option_net": -1423.0668,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24308.9,
+          "entry_time": "2024-07-10T12:15:59+05:30",
+          "exit_mark": 24292.4,
+          "exit_time": "2024-07-10T14:19:59+05:30",
+          "future_gross": 1072.5,
+          "future_net": [
+            -128.20196040299993,
+            -388.139560403
+          ],
+          "modeled_stop_loss": 3785.757252152015,
+          "option_net": -406.6072,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24289.0,
+          "entry_time": "2024-07-10T13:49:59+05:30",
+          "exit_mark": 24330.0,
+          "exit_time": "2024-07-10T14:35:59+05:30",
+          "future_gross": -2665.0,
+          "future_net": [
+            -3865.13029189,
+            -4125.06789189
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -2042.6555,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24430.85,
+          "entry_time": "2024-07-23T11:55:59+05:30",
+          "exit_mark": 24278.0,
+          "exit_time": "2024-07-23T12:34:59+05:30",
+          "future_gross": 9935.249999999905,
+          "future_net": [
+            8730.444177256406,
+            8470.506577256405
+          ],
+          "modeled_stop_loss": 5714.320978673691,
+          "option_net": 4180.4749,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24605.0,
+          "entry_time": "2024-08-19T12:06:59+05:30",
+          "exit_mark": 24605.95,
+          "exit_time": "2024-08-19T14:06:59+05:30",
+          "future_gross": -61.750000000047294,
+          "future_net": [
+            -1273.3852963945474,
+            -1533.3228963945473
+          ],
+          "modeled_stop_loss": 3452.570183036167,
+          "option_net": -434.6994,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24796.1,
+          "entry_time": "2024-10-21T13:30:59+05:30",
+          "exit_mark": 24833.0,
+          "exit_time": "2024-10-21T13:52:59+05:30",
+          "future_gross": -2398.5000000000946,
+          "future_net": [
+            -3617.2602030210946,
+            -3877.197803021095
+          ],
+          "modeled_stop_loss": 3834.9173657862084,
+          "option_net": -1856.4213,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24217.0,
+          "entry_time": "2024-10-29T11:36:59+05:30",
+          "exit_mark": 24258.75,
+          "exit_time": "2024-10-29T11:40:59+05:30",
+          "future_gross": -2713.75,
+          "future_net": [
+            -3911.2356124825,
+            -4171.1732124825
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -3148.1649,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24141.2,
+          "entry_time": "2024-11-04T09:51:59+05:30",
+          "exit_mark": 23937.0,
+          "exit_time": "2024-11-04T11:20:59+05:30",
+          "future_gross": 13273.000000000047,
+          "future_net": [
+            12078.984659758047,
+            11819.047059758048
+          ],
+          "modeled_stop_loss": 4160.952827027409,
+          "option_net": 10092.9908,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24042.0,
+          "entry_time": "2024-11-05T13:10:59+05:30",
+          "exit_mark": 24098.0,
+          "exit_time": "2024-11-05T13:24:59+05:30",
+          "future_gross": -3640.0,
+          "future_net": [
+            -4831.0921234,
+            -5091.0297234
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -2850.4688,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24043.1,
+          "entry_time": "2024-11-05T13:06:59+05:30",
+          "exit_mark": 24305.8,
+          "exit_time": "2024-11-05T15:10:59+05:30",
+          "future_gross": 17075.500000000047,
+          "future_net": [
+            15875.596509841047,
+            15615.658909841048
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 19940.9031,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24464.4,
+          "entry_time": "2024-11-06T11:10:59+05:30",
+          "exit_mark": 24505.95,
+          "exit_time": "2024-11-06T12:23:59+05:30",
+          "future_gross": 2700.7499999999527,
+          "future_net": [
+            1492.8740061914527,
+            1232.9364061914525
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1817.2717,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24199.1,
+          "entry_time": "2024-11-12T11:45:59+05:30",
+          "exit_mark": 23952.55,
+          "exit_time": "2024-11-12T15:10:59+05:30",
+          "future_gross": 16025.749999999953,
+          "future_net": [
+            14829.723965988453,
+            14569.786365988453
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 31859.5418,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24222.0,
+          "entry_time": "2024-11-26T11:51:59+05:30",
+          "exit_mark": 24204.9,
+          "exit_time": "2024-11-26T13:55:59+05:30",
+          "future_gross": 1111.4999999999054,
+          "future_net": [
+            -86.00579433909456,
+            -345.94339433909465
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 147.2472,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24716.5,
+          "entry_time": "2024-12-16T13:25:59+05:30",
+          "exit_mark": 24759.9,
+          "exit_time": "2024-12-16T14:09:59+05:30",
+          "future_gross": -2821.0000000000946,
+          "future_net": [
+            -4036.8521296840945,
+            -4296.789729684095
+          ],
+          "modeled_stop_loss": 4168.207674269691,
+          "option_net": -2505.2352,
+          "side": -1
+        }
+      ]
+    },
+    "2025": {
+      "baseline": 63478.5696,
+      "missing": [],
+      "pairs": [
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23733.95,
+          "entry_time": "2025-01-01T10:06:59+05:30",
+          "exit_mark": 23787.05,
+          "exit_time": "2025-01-01T10:12:59+05:30",
+          "future_gross": -3451.4999999999054,
+          "future_net": [
+            -4631.2599515099055,
+            -4891.197551509906
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -4157.2914,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24162.5,
+          "entry_time": "2025-01-03T09:45:59+05:30",
+          "exit_mark": 24150.9,
+          "exit_time": "2025-01-03T11:14:59+05:30",
+          "future_gross": 753.9999999999054,
+          "future_net": [
+            -441.3338291540947,
+            -701.2714291540947
+          ],
+          "modeled_stop_loss": 3682.4152335644776,
+          "option_net": -633.6716,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24113.5,
+          "entry_time": "2025-01-06T10:10:59+05:30",
+          "exit_mark": 24045.1,
+          "exit_time": "2025-01-06T10:31:59+05:30",
+          "future_gross": -4446.000000000095,
+          "future_net": [
+            -5637.240557166095,
+            -5897.178157166095
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -4558.6681,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24029.7,
+          "entry_time": "2025-01-06T10:36:59+05:30",
+          "exit_mark": 23802.85,
+          "exit_time": "2025-01-06T12:05:59+05:30",
+          "future_gross": 14745.250000000142,
+          "future_net": [
+            13555.396442909641,
+            13295.458842909642
+          ],
+          "modeled_stop_loss": 5261.1673231048735,
+          "option_net": 12008.5888,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23768.0,
+          "entry_time": "2025-01-07T10:00:59+05:30",
+          "exit_mark": 23848.4,
+          "exit_time": "2025-01-07T10:14:59+05:30",
+          "future_gross": -5226.000000000095,
+          "future_net": [
+            -6407.087553084095,
+            -6667.025153084094
+          ],
+          "modeled_stop_loss": 8204.42871749589,
+          "option_net": -4520.7574,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23850.1,
+          "entry_time": "2025-01-07T10:30:59+05:30",
+          "exit_mark": 23848.4,
+          "exit_time": "2025-01-07T11:00:59+05:30",
+          "future_gross": -110.49999999981083,
+          "future_net": [
+            -1294.3242965348109,
+            -1554.2618965348108
+          ],
+          "modeled_stop_loss": 7932.123712836006,
+          "option_net": -821.7157,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23496.8,
+          "entry_time": "2025-01-10T09:52:59+05:30",
+          "exit_mark": 23472.8,
+          "exit_time": "2025-01-10T10:15:59+05:30",
+          "future_gross": 1560.0,
+          "future_net": [
+            389.17219142399995,
+            129.23459142399997
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 1858.4397,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23566.6,
+          "entry_time": "2025-01-10T13:42:59+05:30",
+          "exit_mark": 23497.35,
+          "exit_time": "2025-01-10T15:10:59+05:30",
+          "future_gross": 4501.25,
+          "future_net": [
+            3327.9821091755,
+            3068.0445091755
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 4304.3107,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23205.0,
+          "entry_time": "2025-01-17T11:45:59+05:30",
+          "exit_mark": 23263.7,
+          "exit_time": "2025-01-17T12:27:59+05:30",
+          "future_gross": 3815.5000000000473,
+          "future_net": [
+            2653.3375687030475,
+            2393.3999687030473
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 5894.2925,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23247.65,
+          "entry_time": "2025-01-17T13:21:59+05:30",
+          "exit_mark": 23254.0,
+          "exit_time": "2025-01-17T13:51:59+05:30",
+          "future_gross": -412.7499999999054,
+          "future_net": [
+            -1574.5032825114054,
+            -1834.4408825114056
+          ],
+          "modeled_stop_loss": 5994.6188223514055,
+          "option_net": -1079.8613,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23363.1,
+          "entry_time": "2025-01-21T12:10:59+05:30",
+          "exit_mark": 23245.05,
+          "exit_time": "2025-01-21T12:56:59+05:30",
+          "future_gross": 7673.249999999953,
+          "future_net": [
+            6507.598574473453,
+            6247.660974473452
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 10446.4649,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23272.55,
+          "entry_time": "2025-01-21T13:55:59+05:30",
+          "exit_mark": 23099.85,
+          "exit_time": "2025-01-21T15:10:59+05:30",
+          "future_gross": 11225.500000000047,
+          "future_net": [
+            10063.329192556048,
+            9803.391592556047
+          ],
+          "modeled_stop_loss": 5516.311768846834,
+          "option_net": 6067.526,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22893.6,
+          "entry_time": "2025-01-27T12:15:59+05:30",
+          "exit_mark": 22943.85,
+          "exit_time": "2025-01-27T12:29:59+05:30",
+          "future_gross": -3266.25,
+          "future_net": [
+            -4415.1102406095,
+            -4675.0478406095
+          ],
+          "modeled_stop_loss": 4470.281489680203,
+          "option_net": -2099.1486,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23091.0,
+          "entry_time": "2025-01-29T11:36:59+05:30",
+          "exit_mark": 23093.15,
+          "exit_time": "2025-01-29T12:07:59+05:30",
+          "future_gross": 139.7500000000946,
+          "future_net": [
+            -1016.3001340864055,
+            -1276.2377340864055
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 850.7647,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23124.05,
+          "entry_time": "2025-01-29T13:10:59+05:30",
+          "exit_mark": 23146.75,
+          "exit_time": "2025-01-29T15:10:59+05:30",
+          "future_gross": 1475.5000000000473,
+          "future_net": [
+            317.53663205204725,
+            57.59903205204728
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 864.8493,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23486.65,
+          "entry_time": "2025-01-31T10:15:59+05:30",
+          "exit_mark": 23579.0,
+          "exit_time": "2025-01-31T14:00:59+05:30",
+          "future_gross": 6002.749999999905,
+          "future_net": [
+            4829.090502648405,
+            4569.152902648406
+          ],
+          "modeled_stop_loss": 4568.7649588205395,
+          "option_net": 1058.607,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23570.0,
+          "entry_time": "2025-02-01T14:00:59+05:30",
+          "exit_mark": 23569.9,
+          "exit_time": "2025-02-01T14:32:59+05:30",
+          "future_gross": -6.4999999999054126,
+          "future_net": [
+            -1180.0820153689056,
+            -1440.0196153689053
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1900.4045,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23808.0,
+          "entry_time": "2025-02-05T12:51:59+05:30",
+          "exit_mark": 23828.8,
+          "exit_time": "2025-02-05T13:13:59+05:30",
+          "future_gross": -1351.9999999999527,
+          "future_net": [
+            -2534.3922714079526,
+            -2794.329871407953
+          ],
+          "modeled_stop_loss": 2772.903262532063,
+          "option_net": -1640.4531,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23325.05,
+          "entry_time": "2025-02-11T11:30:59+05:30",
+          "exit_mark": 23137.35,
+          "exit_time": "2025-02-11T13:15:59+05:30",
+          "future_gross": 12200.500000000047,
+          "future_net": [
+            11036.440964656047,
+            10776.503364656048
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 27597.5447,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22872.45,
+          "entry_time": "2025-02-18T12:04:59+05:30",
+          "exit_mark": 22920.4,
+          "exit_time": "2025-02-18T12:29:59+05:30",
+          "future_gross": -3116.7500000000473,
+          "future_net": [
+            -4264.826358783547,
+            -4524.763958783547
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -2291.9708,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22898.0,
+          "entry_time": "2025-02-18T11:55:59+05:30",
+          "exit_mark": 22941.0,
+          "exit_time": "2025-02-18T12:32:59+05:30",
+          "future_gross": -2795.0,
+          "future_net": [
+            -3944.00183009,
+            -4203.93943009
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -3348.878,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22849.95,
+          "entry_time": "2025-02-21T11:51:59+05:30",
+          "exit_mark": 22838.0,
+          "exit_time": "2025-02-21T14:43:59+05:30",
+          "future_gross": 776.7500000000473,
+          "future_net": [
+            -370.3327042644528,
+            -630.2703042644528
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1229.9873,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22810.0,
+          "entry_time": "2025-02-21T13:00:59+05:30",
+          "exit_mark": 22819.7,
+          "exit_time": "2025-02-21T15:00:59+05:30",
+          "future_gross": -630.5000000000473,
+          "future_net": [
+            -1776.1743112070471,
+            -2036.1119112070473
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1674.3316,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22617.35,
+          "entry_time": "2025-02-24T12:06:59+05:30",
+          "exit_mark": 22599.0,
+          "exit_time": "2025-02-24T14:07:59+05:30",
+          "future_gross": 1192.7499999999054,
+          "future_net": [
+            54.235609931405406,
+            -205.70199006859468
+          ],
+          "modeled_stop_loss": 3840.5179760887668,
+          "option_net": -268.8822,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22244.6,
+          "entry_time": "2025-03-03T13:00:59+05:30",
+          "exit_mark": 22290.0,
+          "exit_time": "2025-03-03T13:14:59+05:30",
+          "future_gross": -2951.0000000000946,
+          "future_net": [
+            -4075.9891137260947,
+            -4335.926713726095
+          ],
+          "modeled_stop_loss": 4086.922428925481,
+          "option_net": -2194.9127,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22343.0,
+          "entry_time": "2025-03-05T09:45:59+05:30",
+          "exit_mark": 22347.1,
+          "exit_time": "2025-03-05T09:52:59+05:30",
+          "future_gross": 266.4999999999054,
+          "future_net": [
+            -862.1194519310947,
+            -1122.0570519310945
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -142.64,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22458.0,
+          "entry_time": "2025-03-12T13:36:59+05:30",
+          "exit_mark": 22505.0,
+          "exit_time": "2025-03-12T14:16:59+05:30",
+          "future_gross": -3055.0,
+          "future_net": [
+            -4187.83827853,
+            -4447.77587853
+          ],
+          "modeled_stop_loss": 3783.101128749637,
+          "option_net": -2220.9853,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23645.0,
+          "entry_time": "2025-03-26T13:00:59+05:30",
+          "exit_mark": 23544.8,
+          "exit_time": "2025-03-26T15:10:59+05:30",
+          "future_gross": 6513.000000000047,
+          "future_net": [
+            5336.936127162047,
+            5076.998527162047
+          ],
+          "modeled_stop_loss": 3250.741483381863,
+          "option_net": 3188.1866,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23031.0,
+          "entry_time": "2025-04-04T11:40:59+05:30",
+          "exit_mark": 22957.4,
+          "exit_time": "2025-04-04T15:10:59+05:30",
+          "future_gross": 4783.999999999905,
+          "future_net": [
+            3630.4331915959056,
+            3370.4955915959054
+          ],
+          "modeled_stop_loss": 4875.425224597377,
+          "option_net": 2189.416,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24214.8,
+          "entry_time": "2025-04-23T12:10:59+05:30",
+          "exit_mark": 24251.5,
+          "exit_time": "2025-04-23T12:58:59+05:30",
+          "future_gross": -2385.5000000000473,
+          "future_net": [
+            -3582.8906985530475,
+            -3842.8282985530473
+          ],
+          "modeled_stop_loss": 4581.943312715441,
+          "option_net": -1682.9988,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24157.3,
+          "entry_time": "2025-04-25T13:30:59+05:30",
+          "exit_mark": 24207.7,
+          "exit_time": "2025-04-25T13:36:59+05:30",
+          "future_gross": -3276.0000000000946,
+          "future_net": [
+            -4471.315053150094,
+            -4731.252653150094
+          ],
+          "modeled_stop_loss": 4536.937490325694,
+          "option_net": -2324.6946,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24451.1,
+          "entry_time": "2025-04-29T13:45:59+05:30",
+          "exit_mark": 24418.0,
+          "exit_time": "2025-04-29T15:10:59+05:30",
+          "future_gross": 2151.4999999999054,
+          "future_net": [
+            945.6168325789054,
+            685.6792325789054
+          ],
+          "modeled_stop_loss": 3271.9657450253258,
+          "option_net": 868.4053,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24805.2,
+          "entry_time": "2025-05-13T11:40:59+05:30",
+          "exit_mark": 24625.0,
+          "exit_time": "2025-05-13T15:10:59+05:30",
+          "future_gross": 11713.000000000047,
+          "future_net": [
+            10494.508880638048,
+            10234.571280638047
+          ],
+          "modeled_stop_loss": 6914.489338820458,
+          "option_net": 5936.4573,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24793.4,
+          "entry_time": "2025-05-13T12:27:59+05:30",
+          "exit_mark": 24625.0,
+          "exit_time": "2025-05-13T15:10:59+05:30",
+          "future_gross": 10946.000000000095,
+          "future_net": [
+            9727.909848296094,
+            9467.972248296095
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 5582.156,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25025.1,
+          "entry_time": "2025-05-16T11:55:59+05:30",
+          "exit_mark": 25084.8,
+          "exit_time": "2025-05-16T12:45:59+05:30",
+          "future_gross": -3880.5000000000473,
+          "future_net": [
+            -5107.741776069048,
+            -5367.679376069047
+          ],
+          "modeled_stop_loss": 4659.305306334259,
+          "option_net": -2950.1155,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24875.0,
+          "entry_time": "2025-05-30T11:40:59+05:30",
+          "exit_mark": 24903.0,
+          "exit_time": "2025-05-30T13:40:59+05:30",
+          "future_gross": -1820.0,
+          "future_net": [
+            -3041.6358711800003,
+            -3301.57347118
+          ],
+          "modeled_stop_loss": 4167.948470118783,
+          "option_net": -1021.374,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24882.2,
+          "entry_time": "2025-05-30T13:51:59+05:30",
+          "exit_mark": 24921.5,
+          "exit_time": "2025-05-30T13:56:59+05:30",
+          "future_gross": -2554.4999999999527,
+          "future_net": [
+            -3776.4319651469527,
+            -4036.3695651469525
+          ],
+          "modeled_stop_loss": 3509.010722125796,
+          "option_net": -1801.4405,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24720.1,
+          "entry_time": "2025-06-03T11:40:59+05:30",
+          "exit_mark": 24704.9,
+          "exit_time": "2025-06-03T13:40:59+05:30",
+          "future_gross": 987.9999999998108,
+          "future_net": [
+            -227.82154175018923,
+            -487.7591417501892
+          ],
+          "modeled_stop_loss": 6523.764803317757,
+          "option_net": -1859.8819,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24733.5,
+          "entry_time": "2025-06-03T11:48:59+05:30",
+          "exit_mark": 24707.0,
+          "exit_time": "2025-06-03T14:00:59+05:30",
+          "future_gross": 1722.5,
+          "future_net": [
+            506.2172834449999,
+            246.27968344500005
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -2474.1314,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24910.0,
+          "entry_time": "2025-06-17T11:55:59+05:30",
+          "exit_mark": 24900.0,
+          "exit_time": "2025-06-17T14:10:59+05:30",
+          "future_gross": 650.0,
+          "future_net": [
+            -572.8168411,
+            -832.7544411000001
+          ],
+          "modeled_stop_loss": 2837.498547346575,
+          "option_net": 163.9167,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25114.5,
+          "entry_time": "2025-07-14T13:40:59+05:30",
+          "exit_mark": 25154.6,
+          "exit_time": "2025-07-14T14:52:59+05:30",
+          "future_gross": -2606.4999999999054,
+          "future_net": [
+            -3836.9736814209055,
+            -4096.911281420906
+          ],
+          "modeled_stop_loss": 3032.3393516171627,
+          "option_net": -2468.7517,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25127.6,
+          "entry_time": "2025-07-22T13:10:59+05:30",
+          "exit_mark": 25092.0,
+          "exit_time": "2025-07-22T15:10:59+05:30",
+          "future_gross": 2313.9999999999054,
+          "future_net": [
+            1083.2552239239053,
+            823.3176239239053
+          ],
+          "modeled_stop_loss": 2848.9118485351582,
+          "option_net": 702.8125,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24685.0,
+          "entry_time": "2025-08-05T11:36:59+05:30",
+          "exit_mark": 24720.0,
+          "exit_time": "2025-08-05T12:11:59+05:30",
+          "future_gross": -2275.0,
+          "future_net": [
+            -3489.67081555,
+            -3749.6084155500002
+          ],
+          "modeled_stop_loss": 3181.938848023484,
+          "option_net": -1962.271,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24654.0,
+          "entry_time": "2025-08-05T13:25:59+05:30",
+          "exit_mark": 24688.0,
+          "exit_time": "2025-08-05T14:31:59+05:30",
+          "future_gross": -2210.0,
+          "future_net": [
+            -3423.52845602,
+            -3683.46605602
+          ],
+          "modeled_stop_loss": 3513.832778396195,
+          "option_net": -2193.2865,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24673.8,
+          "entry_time": "2025-08-06T12:40:59+05:30",
+          "exit_mark": 24637.5,
+          "exit_time": "2025-08-06T15:10:59+05:30",
+          "future_gross": 2359.4999999999527,
+          "future_net": [
+            1145.4391394969525,
+            885.5015394969527
+          ],
+          "modeled_stop_loss": 2928.3317089010243,
+          "option_net": 1392.9316,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24532.3,
+          "entry_time": "2025-08-08T13:06:59+05:30",
+          "exit_mark": 24453.0,
+          "exit_time": "2025-08-08T15:10:59+05:30",
+          "future_gross": 5154.499999999953,
+          "future_net": [
+            3945.7603205569526,
+            3685.822720556953
+          ],
+          "modeled_stop_loss": 3152.1834590159797,
+          "option_net": 3120.5984,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24505.8,
+          "entry_time": "2025-08-08T13:51:59+05:30",
+          "exit_mark": 24453.0,
+          "exit_time": "2025-08-08T15:10:59+05:30",
+          "future_gross": 3431.9999999999527,
+          "future_net": [
+            2224.1607987719526,
+            1964.2231987719529
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 2131.0364,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24502.3,
+          "entry_time": "2025-08-11T12:00:59+05:30",
+          "exit_mark": 24635.0,
+          "exit_time": "2025-08-11T15:10:59+05:30",
+          "future_gross": 8625.500000000047,
+          "future_net": [
+            7413.1334734370475,
+            7153.195873437047
+          ],
+          "modeled_stop_loss": 3467.206765048559,
+          "option_net": 4455.5097,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24523.0,
+          "entry_time": "2025-08-11T12:15:59+05:30",
+          "exit_mark": 24635.0,
+          "exit_time": "2025-08-11T15:10:59+05:30",
+          "future_gross": 7280.0,
+          "future_net": [
+            6067.57592102,
+            5807.63832102
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 3384.7768,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24706.8,
+          "entry_time": "2025-08-12T09:51:59+05:30",
+          "exit_mark": 24731.0,
+          "exit_time": "2025-08-12T10:13:59+05:30",
+          "future_gross": 1573.0000000000473,
+          "future_net": [
+            356.80279028204734,
+            96.86519028204725
+          ],
+          "modeled_stop_loss": 3448.712497411874,
+          "option_net": 781.3333,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24700.0,
+          "entry_time": "2025-08-12T12:40:59+05:30",
+          "exit_mark": 24665.0,
+          "exit_time": "2025-08-12T12:54:59+05:30",
+          "future_gross": -2275.0,
+          "future_net": [
+            -3488.93560315,
+            -3748.8732031500003
+          ],
+          "modeled_stop_loss": 3532.700237027091,
+          "option_net": -1245.122,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24675.5,
+          "entry_time": "2025-08-13T12:25:59+05:30",
+          "exit_mark": 24697.3,
+          "exit_time": "2025-08-13T13:13:59+05:30",
+          "future_gross": 1416.9999999999527,
+          "future_net": [
+            202.03495043195267,
+            -57.90264956804731
+          ],
+          "modeled_stop_loss": 3473.36263286634,
+          "option_net": 444.1598,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25067.1,
+          "entry_time": "2025-08-18T09:45:59+05:30",
+          "exit_mark": 25016.0,
+          "exit_time": "2025-08-18T10:54:59+05:30",
+          "future_gross": -3321.4999999999054,
+          "future_net": [
+            -4548.3833437609055,
+            -4808.320943760906
+          ],
+          "modeled_stop_loss": 5180.958721263543,
+          "option_net": -2324.9243,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25059.8,
+          "entry_time": "2025-08-18T10:03:59+05:30",
+          "exit_mark": 25014.0,
+          "exit_time": "2025-08-18T11:03:59+05:30",
+          "future_gross": -2976.9999999999527,
+          "future_net": [
+            -4203.795086877953,
+            -4463.732686877953
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -2572.0435,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25015.0,
+          "entry_time": "2025-08-19T13:40:59+05:30",
+          "exit_mark": 25015.0,
+          "exit_time": "2025-08-19T14:21:59+05:30",
+          "future_gross": -0.0,
+          "future_net": [
+            -1226.7045093000002,
+            -1486.6421093000001
+          ],
+          "modeled_stop_loss": 3436.7255186,
+          "option_net": -286.7189,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25015.0,
+          "entry_time": "2025-08-19T14:21:59+05:30",
+          "exit_mark": 25025.3,
+          "exit_time": "2025-08-19T15:10:59+05:30",
+          "future_gross": 669.4999999999527,
+          "future_net": [
+            -557.5545064930473,
+            -817.4921064930473
+          ],
+          "modeled_stop_loss": 3402.8180785003947,
+          "option_net": 207.8969,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24807.1,
+          "entry_time": "2025-08-26T11:45:59+05:30",
+          "exit_mark": 24812.0,
+          "exit_time": "2025-08-26T13:45:59+05:30",
+          "future_gross": -318.5000000000946,
+          "future_net": [
+            -1537.5755999210946,
+            -1797.5131999210946
+          ],
+          "modeled_stop_loss": 3425.20999265051,
+          "option_net": -623.1296,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24801.8,
+          "entry_time": "2025-08-26T11:55:59+05:30",
+          "exit_mark": 24812.0,
+          "exit_time": "2025-08-26T13:55:59+05:30",
+          "future_gross": -663.0000000000473,
+          "future_net": [
+            -1881.8955042780474,
+            -2141.8331042780474
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -690.2544,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25053.3,
+          "entry_time": "2025-09-25T11:40:59+05:30",
+          "exit_mark": 25040.0,
+          "exit_time": "2025-09-25T13:40:59+05:30",
+          "future_gross": 864.4999999999527,
+          "future_net": [
+            -363.5754629230473,
+            -623.5130629230473
+          ],
+          "modeled_stop_loss": 3389.272723341588,
+          "option_net": 176.5915,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25037.0,
+          "entry_time": "2025-09-25T13:15:59+05:30",
+          "exit_mark": 24963.6,
+          "exit_time": "2025-09-25T15:10:59+05:30",
+          "future_gross": 4771.000000000095,
+          "future_net": [
+            3543.6908318140945,
+            3283.7532318140948
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 2433.7776,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25048.1,
+          "entry_time": "2025-09-25T13:55:59+05:30",
+          "exit_mark": 24963.6,
+          "exit_time": "2025-09-25T15:10:59+05:30",
+          "future_gross": 5492.5,
+          "future_net": [
+            4264.813650373,
+            4004.876050373
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 3267.2461,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24817.6,
+          "entry_time": "2025-09-26T12:06:59+05:30",
+          "exit_mark": 24838.9,
+          "exit_time": "2025-09-26T13:03:59+05:30",
+          "future_gross": -1384.5000000001892,
+          "future_net": [
+            -2604.0071835151894,
+            -2863.944783515189
+          ],
+          "modeled_stop_loss": 2742.927065819151,
+          "option_net": -1056.1753,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24797.9,
+          "entry_time": "2025-09-26T13:15:59+05:30",
+          "exit_mark": 24697.0,
+          "exit_time": "2025-09-26T14:38:59+05:30",
+          "future_gross": 6558.500000000095,
+          "future_net": [
+            5340.0567545810945,
+            5080.119154581094
+          ],
+          "modeled_stop_loss": 3828.2587860431727,
+          "option_net": 4454.7241,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24799.0,
+          "entry_time": "2025-09-26T13:21:59+05:30",
+          "exit_mark": 24697.0,
+          "exit_time": "2025-09-26T14:38:59+05:30",
+          "future_gross": 6630.0,
+          "future_net": [
+            5411.5193762399995,
+            5151.58177624
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 4952.9606,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25266.0,
+          "entry_time": "2025-10-13T12:06:59+05:30",
+          "exit_mark": 25291.0,
+          "exit_time": "2025-10-13T12:59:59+05:30",
+          "future_gross": -1625.0,
+          "future_net": [
+            -2861.00093267,
+            -3120.93853267
+          ],
+          "modeled_stop_loss": 2790.9584414383226,
+          "option_net": -1515.1405,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25886.0,
+          "entry_time": "2025-10-24T11:55:59+05:30",
+          "exit_mark": 25796.3,
+          "exit_time": "2025-10-24T14:12:59+05:30",
+          "future_gross": 5830.500000000047,
+          "future_net": [
+            4572.026384487047,
+            4312.088784487048
+          ],
+          "modeled_stop_loss": 3737.8418997932326,
+          "option_net": 3491.2583,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25841.3,
+          "entry_time": "2025-10-24T12:55:59+05:30",
+          "exit_mark": 25796.3,
+          "exit_time": "2025-10-24T14:12:59+05:30",
+          "future_gross": 2925.0,
+          "future_net": [
+            1668.045304344,
+            1408.107704344
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 1519.3844,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 26051.0,
+          "entry_time": "2025-10-30T11:58:59+05:30",
+          "exit_mark": 26048.0,
+          "exit_time": "2025-10-30T13:58:59+05:30",
+          "future_gross": 195.0,
+          "future_net": [
+            -1069.78017069,
+            -1329.7177706900002
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -760.5475,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 26091.5,
+          "entry_time": "2025-10-30T11:36:59+05:30",
+          "exit_mark": 26019.0,
+          "exit_time": "2025-10-30T15:10:59+05:30",
+          "future_gross": 4712.5,
+          "future_net": [
+            3446.4242557449998,
+            3186.486655745
+          ],
+          "modeled_stop_loss": 4184.915113334609,
+          "option_net": 2544.1721,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25687.8,
+          "entry_time": "2025-11-06T13:10:59+05:30",
+          "exit_mark": 25616.0,
+          "exit_time": "2025-11-06T15:10:59+05:30",
+          "future_gross": 4666.999999999953,
+          "future_net": [
+            3415.762571821953,
+            3155.8249718219527
+          ],
+          "modeled_stop_loss": 3834.041273374811,
+          "option_net": 3010.2721,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25656.6,
+          "entry_time": "2025-11-06T13:45:59+05:30",
+          "exit_mark": 25616.0,
+          "exit_time": "2025-11-06T15:10:59+05:30",
+          "future_gross": 2638.9999999999054,
+          "future_net": [
+            1388.8227574939056,
+            1128.8851574939054
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 1578.8886,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 26087.7,
+          "entry_time": "2025-12-03T12:00:59+05:30",
+          "exit_mark": 26106.6,
+          "exit_time": "2025-12-03T12:11:59+05:30",
+          "future_gross": -1228.4999999998581,
+          "future_net": [
+            -2494.690174232858,
+            -2754.627774232858
+          ],
+          "modeled_stop_loss": 2660.9204788180637,
+          "option_net": -1050.76,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 26082.0,
+          "entry_time": "2025-12-03T12:40:59+05:30",
+          "exit_mark": 26112.3,
+          "exit_time": "2025-12-03T14:24:59+05:30",
+          "future_gross": -1969.4999999999527,
+          "future_net": [
+            -3235.5123342329525,
+            -3495.4499342329527
+          ],
+          "modeled_stop_loss": 3344.3814840902487,
+          "option_net": -1803.3659,
+          "side": -1
+        }
+      ]
+    },
+    "2026": {
+      "baseline": 127762.743,
+      "missing": [],
+      "pairs": [
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25565.0,
+          "entry_time": "2026-01-19T12:00:59+05:30",
+          "exit_mark": 25604.2,
+          "exit_time": "2026-01-19T12:17:59+05:30",
+          "future_gross": -2548.0000000000473,
+          "future_net": [
+            -3795.0318384520474,
+            -4054.969438452047
+          ],
+          "modeled_stop_loss": 3769.430845778924,
+          "option_net": -2005.7107,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25272.9,
+          "entry_time": "2026-01-23T11:36:59+05:30",
+          "exit_mark": 25141.1,
+          "exit_time": "2026-01-23T14:41:59+05:30",
+          "future_gross": 8567.00000000019,
+          "future_net": [
+            7331.181371660189,
+            7071.243771660189
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 8844.6372,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25700.1,
+          "entry_time": "2026-02-05T12:21:59+05:30",
+          "exit_mark": 25738.1,
+          "exit_time": "2026-02-05T13:23:59+05:30",
+          "future_gross": -2470.0,
+          "future_net": [
+            -3721.9948618420003,
+            -3981.932461842
+          ],
+          "modeled_stop_loss": 3920.4221140867767,
+          "option_net": -2116.9007,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25725.5,
+          "entry_time": "2026-02-05T13:15:59+05:30",
+          "exit_mark": 25728.0,
+          "exit_time": "2026-02-05T15:10:59+05:30",
+          "future_gross": -162.5,
+          "future_net": [
+            -1415.329880585,
+            -1675.2674805850002
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -860.3181,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 26009.9,
+          "entry_time": "2026-02-11T11:45:59+05:30",
+          "exit_mark": 26001.2,
+          "exit_time": "2026-02-11T13:45:59+05:30",
+          "future_gross": 565.5000000000473,
+          "future_net": [
+            -697.7534614409527,
+            -957.6910614409528
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -2672.1547,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25988.9,
+          "entry_time": "2026-02-11T13:55:59+05:30",
+          "exit_mark": 26014.0,
+          "exit_time": "2026-02-11T14:15:59+05:30",
+          "future_gross": -1631.4999999999054,
+          "future_net": [
+            -2894.0754628989052,
+            -3154.0130628989054
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1442.3064,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25981.0,
+          "entry_time": "2026-02-11T13:51:59+05:30",
+          "exit_mark": 25990.1,
+          "exit_time": "2026-02-11T15:10:59+05:30",
+          "future_gross": -591.4999999999054,
+          "future_net": [
+            -1853.7405690409055,
+            -2113.6781690409052
+          ],
+          "modeled_stop_loss": 3822.4274360980276,
+          "option_net": -380.7958,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25619.5,
+          "entry_time": "2026-02-13T12:51:59+05:30",
+          "exit_mark": 25523.2,
+          "exit_time": "2026-02-13T15:10:59+05:30",
+          "future_gross": 6259.499999999953,
+          "future_net": [
+            5010.841439762953,
+            4750.903839762953
+          ],
+          "modeled_stop_loss": 3388.1541976476583,
+          "option_net": 4356.1859,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 25440.0,
+          "entry_time": "2026-02-27T11:30:59+05:30",
+          "exit_mark": 25434.0,
+          "exit_time": "2026-02-27T13:30:59+05:30",
+          "future_gross": 390.0,
+          "future_net": [
+            -852.31109094,
+            -1112.24869094
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -453.8592,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23420.0,
+          "entry_time": "2026-03-13T12:01:59+05:30",
+          "exit_mark": 23234.3,
+          "exit_time": "2026-03-13T14:10:59+05:30",
+          "future_gross": 12070.500000000047,
+          "future_net": [
+            10902.944983167046,
+            10643.007383167047
+          ],
+          "modeled_stop_loss": 5104.542446825868,
+          "option_net": 8020.8148,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23152.1,
+          "entry_time": "2026-03-16T12:51:59+05:30",
+          "exit_mark": 23235.7,
+          "exit_time": "2026-03-16T13:02:59+05:30",
+          "future_gross": -5434.000000000142,
+          "future_net": [
+            -6592.455584218142,
+            -6852.393184218142
+          ],
+          "modeled_stop_loss": 5941.464955730429,
+          "option_net": -2767.7406,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23260.0,
+          "entry_time": "2026-03-19T12:25:59+05:30",
+          "exit_mark": 23023.0,
+          "exit_time": "2026-03-19T15:02:59+05:30",
+          "future_gross": 15405.0,
+          "future_net": [
+            14243.469312270001,
+            13983.53171227
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 20813.9008,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23238.0,
+          "entry_time": "2026-03-20T12:51:59+05:30",
+          "exit_mark": 23242.8,
+          "exit_time": "2026-03-20T13:45:59+05:30",
+          "future_gross": 311.9999999999527,
+          "future_net": [
+            -849.5439930480474,
+            -1109.4815930480472
+          ],
+          "modeled_stop_loss": 6814.332459524936,
+          "option_net": -387.0997,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22627.4,
+          "entry_time": "2026-03-23T09:55:59+05:30",
+          "exit_mark": 22595.0,
+          "exit_time": "2026-03-23T10:37:59+05:30",
+          "future_gross": 2106.0000000000946,
+          "future_net": [
+            967.1552290560945,
+            707.2176290560947
+          ],
+          "modeled_stop_loss": 7356.01516284116,
+          "option_net": 1182.3942,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22616.9,
+          "entry_time": "2026-03-23T14:10:59+05:30",
+          "exit_mark": 22553.0,
+          "exit_time": "2026-03-23T14:36:59+05:30",
+          "future_gross": 4153.500000000095,
+          "future_net": [
+            3015.128795331095,
+            2755.1911953310946
+          ],
+          "modeled_stop_loss": 5291.468522719273,
+          "option_net": 1313.3389,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22580.1,
+          "entry_time": "2026-03-23T14:30:59+05:30",
+          "exit_mark": 22541.6,
+          "exit_time": "2026-03-23T15:10:59+05:30",
+          "future_gross": 2502.5,
+          "future_net": [
+            1365.410966273,
+            1105.473366273
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 826.2205,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23271.2,
+          "entry_time": "2026-03-25T09:45:59+05:30",
+          "exit_mark": 23349.8,
+          "exit_time": "2026-03-25T11:39:59+05:30",
+          "future_gross": 5108.999999999905,
+          "future_net": [
+            3943.7278074899054,
+            3683.7902074899052
+          ],
+          "modeled_stop_loss": 6081.6938867538265,
+          "option_net": 2897.3942,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23355.9,
+          "entry_time": "2026-03-25T11:45:59+05:30",
+          "exit_mark": 23427.4,
+          "exit_time": "2026-03-25T12:13:59+05:30",
+          "future_gross": -4647.5,
+          "future_net": [
+            -5813.413756823,
+            -6073.351356823
+          ],
+          "modeled_stop_loss": 5573.5196763271815,
+          "option_net": -3120.3713,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22961.0,
+          "entry_time": "2026-03-27T12:45:59+05:30",
+          "exit_mark": 22949.0,
+          "exit_time": "2026-03-27T13:15:59+05:30",
+          "future_gross": -780.0,
+          "future_net": [
+            -1930.7904321,
+            -2190.7280321
+          ],
+          "modeled_stop_loss": 4479.027157449493,
+          "option_net": -1058.4882,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22935.2,
+          "entry_time": "2026-03-27T13:30:59+05:30",
+          "exit_mark": 22826.0,
+          "exit_time": "2026-03-27T15:10:59+05:30",
+          "future_gross": 7098.000000000047,
+          "future_net": [
+            5948.053838028047,
+            5688.1162380280475
+          ],
+          "modeled_stop_loss": 4902.765597970261,
+          "option_net": 3241.241,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22994.9,
+          "entry_time": "2026-04-01T12:55:59+05:30",
+          "exit_mark": 22937.4,
+          "exit_time": "2026-04-01T13:22:59+05:30",
+          "future_gross": -3737.5,
+          "future_net": [
+            -4887.990513013,
+            -5147.928113013
+          ],
+          "modeled_stop_loss": 4979.016461819095,
+          "option_net": -2699.7534,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22635.0,
+          "entry_time": "2026-04-06T11:15:59+05:30",
+          "exit_mark": 22718.8,
+          "exit_time": "2026-04-06T11:38:59+05:30",
+          "future_gross": -5446.999999999953,
+          "future_net": [
+            -6586.447223677953,
+            -6846.384823677952
+          ],
+          "modeled_stop_loss": 6561.661227269474,
+          "option_net": -3873.4698,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22800.0,
+          "entry_time": "2026-04-06T12:30:59+05:30",
+          "exit_mark": 23064.8,
+          "exit_time": "2026-04-06T15:10:59+05:30",
+          "future_gross": 17211.999999999953,
+          "future_net": [
+            16057.722277911953,
+            15797.784677911954
+          ],
+          "modeled_stop_loss": 6466.070269851095,
+          "option_net": 8922.0491,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23988.0,
+          "entry_time": "2026-04-08T10:45:59+05:30",
+          "exit_mark": 24025.0,
+          "exit_time": "2026-04-08T11:31:59+05:30",
+          "future_gross": 2405.0,
+          "future_net": [
+            1214.79137597,
+            954.85377597
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 996.3091,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23986.1,
+          "entry_time": "2026-04-08T12:00:59+05:30",
+          "exit_mark": 23984.0,
+          "exit_time": "2026-04-08T12:30:59+05:30",
+          "future_gross": 136.4999999999054,
+          "future_net": [
+            -1052.3756687310947,
+            -1312.3132687310947
+          ],
+          "modeled_stop_loss": 5472.491208571095,
+          "option_net": -312.7011,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23986.1,
+          "entry_time": "2026-04-08T12:45:59+05:30",
+          "exit_mark": 24057.0,
+          "exit_time": "2026-04-08T15:10:59+05:30",
+          "future_gross": 4608.500000000095,
+          "future_net": [
+            3417.2092886390947,
+            3157.2716886390945
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 4267.9441,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24035.0,
+          "entry_time": "2026-04-10T12:00:59+05:30",
+          "exit_mark": 24014.7,
+          "exit_time": "2026-04-10T14:15:59+05:30",
+          "future_gross": -1319.4999999999527,
+          "future_net": [
+            -2509.4893014069526,
+            -2769.4269014069528
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -3360.4503,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23695.2,
+          "entry_time": "2026-05-21T12:00:59+05:30",
+          "exit_mark": 23673.0,
+          "exit_time": "2026-05-21T14:42:59+05:30",
+          "future_gross": 1443.0000000000473,
+          "future_net": [
+            264.8738798580473,
+            4.9362798580472145
+          ],
+          "modeled_stop_loss": 4376.284218945199,
+          "option_net": 560.9338,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23636.0,
+          "entry_time": "2026-06-01T11:30:59+05:30",
+          "exit_mark": 23491.2,
+          "exit_time": "2026-06-01T15:10:59+05:30",
+          "future_gross": 9411.999999999953,
+          "future_net": [
+            8236.390974567952,
+            7976.453374567953
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 12567.9296,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23616.0,
+          "entry_time": "2026-06-01T11:36:59+05:30",
+          "exit_mark": 23491.2,
+          "exit_time": "2026-06-01T15:10:59+05:30",
+          "future_gross": 8111.999999999953,
+          "future_net": [
+            6937.070580767952,
+            6677.132980767953
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 10071.0064,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23381.0,
+          "entry_time": "2026-06-12T12:10:59+05:30",
+          "exit_mark": 23426.9,
+          "exit_time": "2026-06-12T13:28:59+05:30",
+          "future_gross": -2983.5000000000946,
+          "future_net": [
+            -4150.2652724490945,
+            -4410.202872449095
+          ],
+          "modeled_stop_loss": 4214.083995814804,
+          "option_net": -2538.2501,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23989.5,
+          "entry_time": "2026-06-19T11:55:59+05:30",
+          "exit_mark": 24013.8,
+          "exit_time": "2026-06-19T12:02:59+05:30",
+          "future_gross": -1579.4999999999527,
+          "future_net": [
+            -2768.574055022953,
+            -3028.5116550229527
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -2361.5734,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24024.0,
+          "entry_time": "2026-07-22T11:51:59+05:30",
+          "exit_mark": 23987.0,
+          "exit_time": "2026-07-22T15:10:59+05:30",
+          "future_gross": 2405.0,
+          "future_net": [
+            1214.82813659,
+            954.89053659
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 2800.3787,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24009.1,
+          "entry_time": "2026-07-22T11:55:59+05:30",
+          "exit_mark": 23987.0,
+          "exit_time": "2026-07-22T15:10:59+05:30",
+          "future_gross": 1436.4999999999054,
+          "future_net": [
+            246.83444320890533,
+            -13.103156791094648
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 839.7354,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24326.9,
+          "entry_time": "2026-08-17T12:10:59+05:30",
+          "exit_mark": 24347.0,
+          "exit_time": "2026-08-17T12:18:59+05:30",
+          "future_gross": -1306.4999999999054,
+          "future_net": [
+            -2507.9654109089056,
+            -2767.9030109089053
+          ],
+          "modeled_stop_loss": 2640.531871114482,
+          "option_net": -1165.9777,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [
+            0.1,
+            0.13
+          ],
+          "entry_mark": 24122.7,
+          "entry_time": "2026-08-19T12:06:59+05:30",
+          "exit_mark": 24122.0,
+          "exit_time": "2026-08-19T14:06:59+05:30",
+          "future_gross": 45.500000000047294,
+          "future_net": [
+            -1148.4010618569528,
+            -1408.3386618569527
+          ],
+          "modeled_stop_loss": 2445.431231090359,
+          "option_net": -685.6475,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24337.0,
+          "entry_time": "2026-08-27T13:45:59+05:30",
+          "exit_mark": 24321.0,
+          "exit_time": "2026-08-27T15:10:59+05:30",
+          "future_gross": 1040.0,
+          "future_net": [
+            -161.73632398000007,
+            -421.6739239799999
+          ],
+          "modeled_stop_loss": 3617.550417379444,
+          "option_net": 478.8459,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 24315.0,
+          "entry_time": "2026-08-27T13:52:59+05:30",
+          "exit_mark": 24321.0,
+          "exit_time": "2026-08-27T15:10:59+05:30",
+          "future_gross": -390.0,
+          "future_net": [
+            -1590.98875716,
+            -1850.92635716
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -789.9952,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23890.1,
+          "entry_time": "2026-09-07T12:21:59+05:30",
+          "exit_mark": 23915.0,
+          "exit_time": "2026-09-07T13:53:59+05:30",
+          "future_gross": -1618.5000000000946,
+          "future_net": [
+            -2803.9217175810945,
+            -3063.8593175810947
+          ],
+          "modeled_stop_loss": 2896.354509352428,
+          "option_net": -1665.2088,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 23232.0,
+          "entry_time": "2026-09-24T11:51:59+05:30",
+          "exit_mark": 23102.0,
+          "exit_time": "2026-09-24T14:02:59+05:30",
+          "future_gross": 8450.0,
+          "future_net": [
+            7289.20111646,
+            7029.26351646
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 17317.0731,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22876.5,
+          "entry_time": "2026-09-28T10:25:59+05:30",
+          "exit_mark": 22875.5,
+          "exit_time": "2026-09-28T11:10:59+05:30",
+          "future_gross": 65.0,
+          "future_net": [
+            -1083.08914312,
+            -1343.02674312
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -136.1227,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22912.6,
+          "entry_time": "2026-09-28T09:55:59+05:30",
+          "exit_mark": 22888.8,
+          "exit_time": "2026-09-28T11:30:59+05:30",
+          "future_gross": 1546.9999999999527,
+          "future_net": [
+            397.64718956595266,
+            137.70958956595268
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 1580.1567,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22881.7,
+          "entry_time": "2026-09-28T13:36:59+05:30",
+          "exit_mark": 22821.6,
+          "exit_time": "2026-09-28T14:46:59+05:30",
+          "future_gross": 3906.500000000142,
+          "future_net": [
+            2758.384017977142,
+            2498.446417977142
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 4986.4919,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22647.4,
+          "entry_time": "2026-10-05T10:15:59+05:30",
+          "exit_mark": 22609.8,
+          "exit_time": "2026-10-05T11:15:59+05:30",
+          "future_gross": 2444.000000000142,
+          "future_net": [
+            1304.434474268142,
+            1044.4968742681417
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 4187.7831,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22671.2,
+          "entry_time": "2026-10-07T10:06:59+05:30",
+          "exit_mark": 22705.6,
+          "exit_time": "2026-10-07T10:17:59+05:30",
+          "future_gross": -2235.999999999858,
+          "future_net": [
+            -3376.640610807858,
+            -3636.5782108078583
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -4029.5753,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22506.0,
+          "entry_time": "2026-10-08T10:36:59+05:30",
+          "exit_mark": 22306.3,
+          "exit_time": "2026-10-08T15:10:59+05:30",
+          "future_gross": 12980.500000000047,
+          "future_net": [
+            11846.583114187048,
+            11586.645514187047
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 22518.881,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22529.0,
+          "entry_time": "2026-10-09T12:00:59+05:30",
+          "exit_mark": 22539.0,
+          "exit_time": "2026-10-09T12:30:59+05:30",
+          "future_gross": -650.0,
+          "future_net": [
+            -1785.34541108,
+            -2045.28301108
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -1468.1611,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22562.3,
+          "entry_time": "2026-10-09T12:10:59+05:30",
+          "exit_mark": 22605.1,
+          "exit_time": "2026-10-09T15:10:59+05:30",
+          "future_gross": 2781.9999999999527,
+          "future_net": [
+            1644.0039061059526,
+            1384.0663061059527
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 514.1701,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22690.5,
+          "entry_time": "2026-10-14T13:55:59+05:30",
+          "exit_mark": 22659.0,
+          "exit_time": "2026-10-14T14:25:59+05:30",
+          "future_gross": -2047.5,
+          "future_net": [
+            -3187.684068345,
+            -3447.621668345
+          ],
+          "modeled_stop_loss": null,
+          "option_net": -3283.1857,
+          "side": 1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22993.0,
+          "entry_time": "2026-10-21T10:40:59+05:30",
+          "exit_mark": 22738.0,
+          "exit_time": "2026-10-21T15:10:59+05:30",
+          "future_gross": 16575.0,
+          "future_net": [
+            15423.33444339,
+            15163.39684339
+          ],
+          "modeled_stop_loss": null,
+          "option_net": 27958.4634,
+          "side": -1
+        },
+        {
+          "eligible_proxies": [],
+          "entry_mark": 22614.5,
+          "entry_time": "2026-10-23T13:55:59+05:30",
+          "exit_mark": 22554.0,
+          "exit_time": "2026-10-23T15:10:59+05:30",
+          "future_gross": 3932.5,
+          "future_net": [
+            2794.207567765,
+            2534.269967765
+          ],
+          "modeled_stop_loss": 3322.644744251321,
+          "option_net": 1334.2816,
+          "side": -1
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "2022": [
+      28,
+      0
+    ],
+    "2023": [
+      28,
+      0
+    ],
+    "2024": [
+      29,
+      0
+    ],
+    "2025": [
+      73,
+      0
+    ],
+    "2026": [
+      51,
+      0
+    ]
+  },
+  "summaries": {
+    "0.1": [
+      {
+        "after_best_five": -4380.9,
+        "annual_delta": {
+          "2022": -1484.13,
+          "2023": -1908.18,
+          "2024": 0.0,
+          "2025": 0.0,
+          "2026": -462.75
+        },
+        "changes": {
+          "2022": 3,
+          "2023": 2,
+          "2024": 0,
+          "2025": 0,
+          "2026": 1
+        },
+        "net_delta": -3855.06,
+        "worst_incremental_day": -1056.96
+      },
+      {
+        "after_best_five": -5680.59,
+        "annual_delta": {
+          "2022": -2263.94,
+          "2023": -2428.05,
+          "2024": 0.0,
+          "2025": 0.0,
+          "2026": -722.69
+        },
+        "changes": {
+          "2022": 3,
+          "2023": 2,
+          "2024": 0,
+          "2025": 0,
+          "2026": 1
+        },
+        "net_delta": -5414.69,
+        "worst_incremental_day": -1316.9
+      }
+    ],
+    "0.13": [
+      {
+        "after_best_five": -4380.9,
+        "annual_delta": {
+          "2022": -1484.13,
+          "2023": -1908.18,
+          "2024": 0.0,
+          "2025": 0.0,
+          "2026": -462.75
+        },
+        "changes": {
+          "2022": 3,
+          "2023": 2,
+          "2024": 0,
+          "2025": 0,
+          "2026": 1
+        },
+        "net_delta": -3855.06,
+        "worst_incremental_day": -1056.96
+      },
+      {
+        "after_best_five": -5680.59,
+        "annual_delta": {
+          "2022": -2263.94,
+          "2023": -2428.05,
+          "2024": 0.0,
+          "2025": 0.0,
+          "2026": -722.69
+        },
+        "changes": {
+          "2022": 3,
+          "2023": 2,
+          "2024": 0,
+          "2025": 0,
+          "2026": 1
+        },
+        "net_delta": -5414.69,
+        "worst_incremental_day": -1316.9
+      }
+    ],
+    "0.16": [
+      {
+        "after_best_five": -3918.15,
+        "annual_delta": {
+          "2022": -1484.13,
+          "2023": -1908.18,
+          "2024": 0.0,
+          "2025": 0.0,
+          "2026": 0.0
+        },
+        "changes": {
+          "2022": 3,
+          "2023": 2,
+          "2024": 0,
+          "2025": 0,
+          "2026": 0
+        },
+        "net_delta": -3392.31,
+        "worst_incremental_day": -1056.96
+      },
+      {
+        "after_best_five": -4957.9,
+        "annual_delta": {
+          "2022": -2263.94,
+          "2023": -2428.05,
+          "2024": 0.0,
+          "2025": 0.0,
+          "2026": 0.0
+        },
+        "changes": {
+          "2022": 3,
+          "2023": 2,
+          "2024": 0,
+          "2025": 0,
+          "2026": 0
+        },
+        "net_delta": -4691.99,
+        "worst_incremental_day": -1316.9
+      }
+    ],
+    "unrestricted": [
+      {
+        "after_best_five": -214569.4,
+        "annual_delta": {
+          "2022": -24977.87,
+          "2023": -21712.44,
+          "2024": -41114.47,
+          "2025": -34830.66,
+          "2026": -64004.67
+        },
+        "changes": {
+          "2022": 28,
+          "2023": 28,
+          "2024": 29,
+          "2025": 73,
+          "2026": 51
+        },
+        "net_delta": -186640.1,
+        "worst_incremental_day": -17029.82
+      },
+      {
+        "after_best_five": -266556.92,
+        "annual_delta": {
+          "2022": -32256.12,
+          "2023": -28990.69,
+          "2024": -48652.66,
+          "2025": -53806.1,
+          "2026": -77261.49
+        },
+        "changes": {
+          "2022": 28,
+          "2023": 28,
+          "2024": 29,
+          "2025": 73,
+          "2026": 51
+        },
+        "net_delta": -240967.06,
+        "worst_incremental_day": -17289.76
+      }
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "day": "2026-11-05",
+  "fixed_observed_single_net": 4821.18,
+  "pairs": [
+    {
+      "eligible_proxies": [],
+      "entry_mark": 24424.0,
+      "entry_time": "2026-11-05T09:45:24.000601+05:30",
+      "exit_mark": 24412.6,
+      "exit_time": "2026-11-05T11:00:33.143581+05:30",
+      "future_gross": -741.0000000000946,
+      "future_net": [
+        -1945.5916073460946,
+        -2205.5292073460946
+      ],
+      "modeled_stop_loss": null,
+      "option_net": -765.5909993772185,
+      "side": 1
+    },
+    {
+      "eligible_proxies": [],
+      "entry_mark": 24397.5,
+      "entry_time": "2026-11-05T10:51:28.081144+05:30",
+      "exit_mark": 24450.0,
+      "exit_time": "2026-11-05T12:03:23.274723+05:30",
+      "future_gross": 3412.5,
+      "future_net": [
+        2206.7112072749997,
+        1946.773607275
+      ],
+      "modeled_stop_loss": null,
+      "option_net": 1028.7017482368344,
+      "side": 1
+    },
+    {
+      "eligible_proxies": [],
+      "entry_mark": 24456.1,
+      "entry_time": "2026-11-05T11:30:27.756350+05:30",
+      "exit_mark": 24570.0,
+      "exit_time": "2026-11-05T14:20:43.232655+05:30",
+      "future_gross": 7403.500000000095,
+      "future_net": [
+        6193.470643909094,
+        5933.533043909095
+      ],
+      "modeled_stop_loss": null,
+      "option_net": 4558.072901342427,
+      "side": 1
+    }
+  ],
+  "scope": "fixed recorded clocks, published costs and modeled execution points",
+  "screened": {
+    "after_best_five": 0.0,
+    "annual_delta": {
+      "2026": 0.0
+    },
+    "changes": {
+      "2026": 0
+    },
+    "net_delta": 0.0,
+    "worst_incremental_day": 0.0
+  },
+  "unrestricted": {
+    "after_best_five": 0.0,
+    "annual_delta": {
+      "2026": 1633.41
+    },
+    "changes": {
+      "2026": 3
+    },
+    "net_delta": 1633.41,
+    "worst_incremental_day": 0.0
+  }
+}
