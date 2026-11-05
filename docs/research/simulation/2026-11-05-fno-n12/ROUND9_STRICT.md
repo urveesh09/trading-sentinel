@@ -1,0 +1,5 @@
+# Round 9 strict evidence sensitivity
+
+The tape inventory shows 19 sessions in 2025 and 34 in 2026 with a full opening and a hard-flat minute. One of these, October 19, 2026, has 128 missing futures minutes inside the required window. The original run retains its own evidence and was started before this correction. The strict comparison requires every minute from 09:15 through 15:11. It also mirrors the production entry chain's nearest ATM strike grid and ±5 strike window. Manage held contracts using the untrimmed fresh option observations. These are data-fidelity changes, with the signals, positions, account and costs fixed.
+
+Use exact original N11 and N11T controls in both years. Separate the original and strict metrics. Use P75 BSE spread and regular stress. Repeat the strict run with P90 spread and doubled fixed execution stress for all three arms if warranted. Keep all NIFTY windows and risk comparisons unchanged. Review actual P&L before deciding if further cross-index work is justified. Record November 5 separately using the exchange calendar and the observed paper opening state.
