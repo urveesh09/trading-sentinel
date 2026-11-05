@@ -1,0 +1,135 @@
+{
+  "acquired_at_utc": "2026-11-05T17:29:13.881786+00:00",
+  "common_count": 1447,
+  "common_first": "2021-01-01",
+  "common_last": "2026-11-04",
+  "equal_count": 1447,
+  "nifty_benchmark_sha256": "1e2a033f12408d664cf8863c92223fad05bc8e8911ca5af2bc59295980664004",
+  "nifty_count": 1447,
+  "normalized_sha256": "67824ad49aff1911306af66264ab9f586307c8b3a73d2386db726226af723813",
+  "only_equal": [],
+  "only_nifty": [],
+  "raw": {
+    "equal-2021-01-01.json": {
+      "count": 61,
+      "invalid_ohlc_dates": [],
+      "sha256": "9891d36d9902bd8f414130b73be0a53e8d6dcdee991afed247023f39bbbaa05e"
+    },
+    "equal-2021-04-01.json": {
+      "count": 61,
+      "invalid_ohlc_dates": [],
+      "sha256": "0b84afdef4f6b2c6420bdf663ba5e305277296c3adb622ea2b58617cf7bfb4af"
+    },
+    "equal-2021-07-01.json": {
+      "count": 63,
+      "invalid_ohlc_dates": [],
+      "sha256": "ceeb74a4fec5590ca2f8b3363c773ca6228804a4981ea06bc7926b37059776f8"
+    },
+    "equal-2021-10-01.json": {
+      "count": 63,
+      "invalid_ohlc_dates": [],
+      "sha256": "573cb33b434de29caab1da01c977fa37a7af824797a525a7230bde325c4c2497"
+    },
+    "equal-2022-01-01.json": {
+      "count": 61,
+      "invalid_ohlc_dates": [],
+      "sha256": "f360ed83f7a5f762cb60687c6be3d34048e9f35b500a4cd76e88d69676953d05"
+    },
+    "equal-2022-04-01.json": {
+      "count": 62,
+      "invalid_ohlc_dates": [],
+      "sha256": "51d6e88d2e46601a86d3361716138b69b64a4262ddae31ef974ab3a538cb723d"
+    },
+    "equal-2022-07-01.json": {
+      "count": 63,
+      "invalid_ohlc_dates": [],
+      "sha256": "d005c8830fcd17a5504e9178fcbadeac0b3ab61fc79e38fc32fe08aad6b8fde9"
+    },
+    "equal-2022-10-01.json": {
+      "count": 62,
+      "invalid_ohlc_dates": [],
+      "sha256": "5859cf552045623eda0fce9a845fae287274ef11b691c34ae3adaf4603018a31"
+    },
+    "equal-2023-01-01.json": {
+      "count": 62,
+      "invalid_ohlc_dates": [],
+      "sha256": "7e41a720013f7d8c89383220960136eadc836ba7604b39c0beeb55725652cfb5"
+    },
+    "equal-2023-04-01.json": {
+      "count": 60,
+      "invalid_ohlc_dates": [],
+      "sha256": "ba764d973968c82380fb6c91e4243b83a44a734502a4acee95b59dcdf9aec569"
+    },
+    "equal-2023-07-01.json": {
+      "count": 63,
+      "invalid_ohlc_dates": [],
+      "sha256": "20701d5f8920ba1e9d295628e6d8c894951ae5609e05c24f41f3c7018e7e839c"
+    },
+    "equal-2023-10-01.json": {
+      "count": 61,
+      "invalid_ohlc_dates": [],
+      "sha256": "7bd56ed428db7a6e8fbca86ca21681890b9f4738f2b2c08faec90317c42f7cf3"
+    },
+    "equal-2024-01-01.json": {
+      "count": 61,
+      "invalid_ohlc_dates": [],
+      "sha256": "77fc69c2c9283a793f43bd3face1b8658e1e62604292c563f0cef481f3a37f09"
+    },
+    "equal-2024-04-01.json": {
+      "count": 61,
+      "invalid_ohlc_dates": [],
+      "sha256": "eb9c2da2978ccb52a4606c7172f910ee3b8cd19fb86c37c2c365c5871fef521b"
+    },
+    "equal-2024-07-01.json": {
+      "count": 64,
+      "invalid_ohlc_dates": [],
+      "sha256": "54f25b84a5771d386134fa31ba668fe1af9457e9783f58809537a4d75c6bb9c2"
+    },
+    "equal-2024-10-01.json": {
+      "count": 62,
+      "invalid_ohlc_dates": [],
+      "sha256": "4b9bf00c7673f0f8d6013d03e0b231ff370e6fe599e952437b0de926dccdcfdc"
+    },
+    "equal-2025-01-01.json": {
+      "count": 62,
+      "invalid_ohlc_dates": [],
+      "sha256": "5de6c6dd124da86a186bbf84c9faaa46e62e6316d99587ae30aff528c5d64c37"
+    },
+    "equal-2025-04-01.json": {
+      "count": 61,
+      "invalid_ohlc_dates": [],
+      "sha256": "35e30edc670ea554b1b70ae2200a94b333281e419a4fe52b95c82a9d6852958b"
+    },
+    "equal-2025-07-01.json": {
+      "count": 64,
+      "invalid_ohlc_dates": [],
+      "sha256": "0120feb27a7266110ea454dfd4b601c4538c1e96a9d53f7e51d1a5d87fcff6fa"
+    },
+    "equal-2025-10-01.json": {
+      "count": 62,
+      "invalid_ohlc_dates": [],
+      "sha256": "bf31f3cce1bfe0b3961e21c4f4e6fd35b173d0c79dd3c9774073e6b612888bb1"
+    },
+    "equal-2026-01-01.json": {
+      "count": 60,
+      "invalid_ohlc_dates": [],
+      "sha256": "09c18c71ce92ee0653c1ed317de73a3ea8b8716391c471178a7b59be788b6375"
+    },
+    "equal-2026-04-01.json": {
+      "count": 60,
+      "invalid_ohlc_dates": [],
+      "sha256": "bcf4ce0355d6d320c0ad3566d5662d4b99d24d9c31de21451b5b3f67fb2b3b6d"
+    },
+    "equal-2026-07-01.json": {
+      "count": 65,
+      "invalid_ohlc_dates": [],
+      "sha256": "2258bcbc643b2f56ae89d224d7be176323a23c926b1095a645c4d4dc87a04154"
+    },
+    "equal-2026-10-01.json": {
+      "count": 23,
+      "invalid_ohlc_dates": [],
+      "sha256": "2d18cb2d13f481ce5c6f033d0f749a2b27517cbdecbc1f01cd1da09c57f34700"
+    }
+  },
+  "source": "NSE index price history"
+}
