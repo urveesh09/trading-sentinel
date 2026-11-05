@@ -17,3 +17,5 @@ The ₹250,000 paper book remains the strategy benchmark. Measure use of premium
 ## Continuation slice
 
 Calendar and lagged OI completed without qualification. Preserve both NIFTY controls and the dated coverage receipts. Run the next independent regular-F&O strategy comparison through actual joint quote and cash lifecycle evidence. Capture held-spread management observations without another broker request if a Dev collector is built. Reconcile the native ledger first and leave unopened test data outside selection. [Continuation evidence](CONTINUATION.md).
+
+The funded range-carry strategy failed the original P&L bar before extra friction. The held-spread capture is implemented in Dev `e5bb903`, off by default, with a separate source-bound forward freeze. The capture setting adds no schema change or order authority. Revert the change through GitHub or keep the setting false. A held replay needs an approved paper capture and native exit-clock and cash parity. The existing November 5 spread cannot supply that path. [Range carry result](ROUND12.md), [held evidence contract](FORWARD_SPREAD_EVIDENCE.md), [forward freeze](round11-held-forward-freeze.json).
