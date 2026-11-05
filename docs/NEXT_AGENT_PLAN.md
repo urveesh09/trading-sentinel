@@ -1,3 +1,19 @@
+## November 5 - N07 partner profit protection (Dev only)
+
+`docs/PARTNER_PROFIT_PROTECTION_PLAN.md` records the observed giveback,
+implementation, tests and rollout boundary. After material booked profit,
+show a suggested 90% floor and accept `protect AMOUNT` / `protect auto` for
+the current session. Include held and proposed plan losses in CHECK, and
+brief advice on PLAN/ADDED when risk threatens the floor or the relevant
+futures trend is adverse. Completed five-minute structure plus a fresh
+trade supports a directional reading. Missing evidence stays unverified.
+The active floor replaces overlapping giveback steps. Fresh full-depth
+marks can trigger it while positions are open. Existing loss alerts remain.
+Advice only. Rollback `PARTNER_WATCH_PROFIT_PROTECTION_ENABLED=false`.
+Existing watch state/outbox, no schema change or new scheduler job.
+Final partner/surface group 665 passed, exit 0. Atlas 304 modules. Production
+398d44a assessed read-only. Local Dev commit, no push or deployment.
+
 ## November 4 night - Rollout receipt (Production 398d44a, PR #132)
 
 - The owner's word: "deploy". PR #132 merged `67f42a3` (N06c), the auditor's review docs `78f0fad` and the
