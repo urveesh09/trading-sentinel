@@ -1,0 +1,517 @@
+{
+  "today": {
+    "57": {
+      "symbol": "NIFTY26N0924400CE",
+      "day": "2026-11-05",
+      "samples": 447,
+      "tail_samples": 280,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T11:00:33.143581+05:30",
+        "exit": 136.55,
+        "net": -765.591,
+        "reason": "time_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T10:06:13.088236+05:30",
+        "exit": 139.45,
+        "net": -389.315,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T11:00:33.143581+05:30",
+        "exit": 136.55,
+        "net": -765.591,
+        "reason": "time_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "ADD": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T11:00:33.143581+05:30",
+        "exit": 136.55,
+        "net": -765.591,
+        "reason": "time_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "58": {
+      "symbol": "NIFTY26N0924350CE",
+      "day": "2026-11-05",
+      "samples": 433,
+      "tail_samples": 212,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T12:03:23.274723+05:30",
+        "exit": 170.95,
+        "net": 1028.7017,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T12:00:23.181285+05:30",
+        "exit": 175.1,
+        "net": 1297.9337,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T12:03:23.274723+05:30",
+        "exit": 170.95,
+        "net": 1028.7017,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "ADD": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T12:03:23.274723+05:30",
+        "exit": 170.95,
+        "net": 1028.7017,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "59": {
+      "symbol": "NIFTY26N0924400CE",
+      "day": "2026-11-05",
+      "samples": 1021,
+      "tail_samples": 79,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T14:20:43.232655+05:30",
+        "exit": 224.3,
+        "net": 4558.0729,
+        "reason": "trail_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T14:20:13.296808+05:30",
+        "exit": 230.55,
+        "net": 4963.5427,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T14:20:43.232655+05:30",
+        "exit": 224.3,
+        "net": 4558.0729,
+        "reason": "trail_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "ADD": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-05T14:20:43.232655+05:30",
+        "exit": 224.3,
+        "net": 4235.6985,
+        "reason": "trail_stop",
+        "banked": null,
+        "add": {
+          "at": "2026-11-05T13:40:13.087607+05:30",
+          "ask": 228.0,
+          "stop": 171.0,
+          "risk": 3985.2210863933,
+          "exit": {
+            "at": "2026-11-05T14:20:43.232655+05:30",
+            "bid": 224.3
+          },
+          "net": -322.37443407440924
+        },
+        "tail": false
+      }
+    }
+  },
+  "diagnostic_held_paths": {
+    "46": {
+      "symbol": "SENSEX26OCT73400PE",
+      "day": "2026-10-27",
+      "samples": 53,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-27T14:34:49.755272+05:30",
+        "exit": 440.65,
+        "net": -1213.9395,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-27T14:34:49.755272+05:30",
+        "exit": 440.65,
+        "net": -1213.9395,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-27T14:34:49.755272+05:30",
+        "exit": 440.65,
+        "net": -1213.9395,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "47": {
+      "symbol": "SENSEX26OCT72800PE",
+      "day": "2026-10-28",
+      "samples": 184,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-28T10:52:28.098225+05:30",
+        "exit": 362.4,
+        "net": -2528.8876,
+        "reason": "premium_backstop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-28T10:52:28.098225+05:30",
+        "exit": 362.4,
+        "net": -2528.8876,
+        "reason": "premium_backstop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-28T10:52:28.098225+05:30",
+        "exit": 362.4,
+        "net": -2528.8876,
+        "reason": "premium_backstop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "48": {
+      "symbol": "SENSEX26OCT73200CE",
+      "day": "2026-10-28",
+      "samples": 27,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-28T13:37:47.458868+05:30",
+        "exit": 437.55,
+        "net": 177.7799,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-28T13:37:47.458868+05:30",
+        "exit": 437.55,
+        "net": 177.7799,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-28T13:37:47.458868+05:30",
+        "exit": 437.55,
+        "net": 177.7799,
+        "reason": "profit_lock",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "49": {
+      "symbol": "NIFTY26N0322900CE",
+      "day": "2026-10-29",
+      "samples": 360,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T11:30:30.860560+05:30",
+        "exit": 128.5,
+        "net": -1058.6992,
+        "reason": "time_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T11:30:30.860560+05:30",
+        "exit": 128.5,
+        "net": -1058.6992,
+        "reason": "time_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T11:30:30.860560+05:30",
+        "exit": 128.5,
+        "net": -1058.6992,
+        "reason": "time_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "50": {
+      "symbol": "NIFTY26N0322950PE",
+      "day": "2026-10-29",
+      "samples": 255,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T13:34:12.089201+05:30",
+        "exit": 180.4,
+        "net": -2455.0724,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T13:34:12.089201+05:30",
+        "exit": 180.4,
+        "net": -2455.0724,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T13:34:12.089201+05:30",
+        "exit": 180.4,
+        "net": -2455.0724,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "51": {
+      "symbol": "NIFTY26N0322900CE",
+      "day": "2026-10-29",
+      "samples": 772,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T15:10:01.713032+05:30",
+        "exit": 178.0,
+        "net": 3953.9328,
+        "reason": "hard_flat_1510",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T15:10:01.713032+05:30",
+        "exit": 178.0,
+        "net": 3953.9328,
+        "reason": "hard_flat_1510",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-10-29T15:10:01.713032+05:30",
+        "exit": 178.0,
+        "net": 3953.9328,
+        "reason": "hard_flat_1510",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "52": {
+      "symbol": "NIFTY26N0323400PE",
+      "day": "2026-11-02",
+      "samples": 128,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:11:58.807648+05:30",
+        "exit": 124.15,
+        "net": -2521.1876,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:11:58.807648+05:30",
+        "exit": 124.15,
+        "net": -2521.1876,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:11:58.807648+05:30",
+        "exit": 124.15,
+        "net": -2521.1876,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "53": {
+      "symbol": "NIFTY26N0323350CE",
+      "day": "2026-11-02",
+      "samples": 297,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:55:08.807111+05:30",
+        "exit": 47.3,
+        "net": -727.5423,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:55:08.807111+05:30",
+        "exit": 47.3,
+        "net": -727.5423,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:55:08.807111+05:30",
+        "exit": 47.3,
+        "net": -727.5423,
+        "reason": "underlying_stop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "54": {
+      "symbol": "NIFTY26N0323400CE",
+      "day": "2026-11-02",
+      "samples": 119,
+      "tail_samples": 0,
+      "parity": true,
+      "N11T": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:32:59.151840+05:30",
+        "exit": 44.7,
+        "net": -1049.0365,
+        "reason": "premium_backstop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "TREND": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:32:59.151840+05:30",
+        "exit": 44.7,
+        "net": -1049.0365,
+        "reason": "premium_backstop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      },
+      "BANK": {
+        "status": "CLOSED",
+        "exit_time": "2026-11-02T12:32:59.151840+05:30",
+        "exit": 44.7,
+        "net": -1049.0365,
+        "reason": "premium_backstop",
+        "banked": null,
+        "add": null,
+        "tail": false
+      }
+    },
+    "55": {
+      "symbol": "SENSEX26N0576600CE",
+      "day": "2026-11-03",
+      "samples": 177,
+      "tail_samples": 0,
+      "parity": false,
+      "N11T": {
+        "status": "UNRESOLVED",
+        "net": null,
+        "banked": null,
+        "add": null
+      }
+    },
+    "56": {
+      "symbol": "SENSEX26N0577000CE",
+      "day": "2026-11-04",
+      "samples": 185,
+      "tail_samples": 0,
+      "parity": false,
+      "N11T": {
+        "status": "UNRESOLVED",
+        "net": null,
+        "banked": null,
+        "add": null
+      }
+    }
+  },
+  "unchanged_defined_risk_net": 2545.91
+}

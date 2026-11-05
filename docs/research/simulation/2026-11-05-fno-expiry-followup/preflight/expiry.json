@@ -1,0 +1,38 @@
+{
+  "requested": [
+    "2026-11-05",
+    "2026-11-05"
+  ],
+  "source": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-05-fno-expiry-followup\\_local\\expiry-input.sqlite",
+  "provenance": {
+    "kind": "READ_ONLY_SQLITE_TRANSACTION",
+    "note": "Live DB file hash alone would omit WAL; export consistent inputs before replay"
+  },
+  "selected_packets": 966,
+  "groups": {
+    "2026-11-05:SENSEX": {
+      "packets": 966,
+      "first": "2026-11-05T12:59:01.054629+05:30",
+      "last": "2026-11-05T15:39:50.082077+05:30",
+      "invalid_clocks": 0,
+      "duplicate_timestamps": 0,
+      "index_status": {
+        "FRESH": 966
+      },
+      "future_status": {
+        "FRESH": 966
+      },
+      "leg_formats": {
+        "DEPTH_DICT": 32844
+      },
+      "option_packets": 32844,
+      "empty_bids": 680,
+      "empty_asks": 0
+    }
+  },
+  "coverage_verdict": "NOT_ESTABLISHED",
+  "limits": [
+    "Packet inventory does not prove dated expiry identity, complete windows or executable fills",
+    "A no-recording result is not a zero-trade simulation"
+  ]
+}
