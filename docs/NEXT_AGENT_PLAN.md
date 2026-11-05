@@ -1,3 +1,7 @@
+## November 5 regular F&O N012 research
+
+Continue the N012 comparison from the [research checkpoint](research/simulation/2026-11-05-fno-n12/CHECKPOINT.md). Keep the ₹250,000 NIFTY paper comparison and ₹15,000 one-lot trial diagnostic independent. The benchmark is both frozen controls at matching economics, comparable downside, and out-of-sample qualification. Round eight tests a different input, using only completed prior U.S. closes. Use its frozen receipts before revising any rule. The November 5 held-path check establishes the reference for the conditional trial prices. SENSEX shared-account research requires an adapter and independent quote coverage. All work is Dev research. Roll back by retiring an experiment, with no runtime migration.
+
 ## November 5 E03.2 dated-contract fix and refusal evidence
 
 The expiry trend book now uses the instrument master's Contract.name in contract selection and the pending fill. The old field raised AttributeError on the replay's first qualifying setup. The tests now use real Contract records for Nifty and Sensex. E03.2 stores per-session signal, contract and pending-fill counts in its existing state and reports passed signals and paper plans in its no-trade summary.

@@ -1,3 +1,7 @@
+## November 5 N012 evidence handoff
+
+Verify the [frozen N012 inputs and per-round results](research/simulation/2026-11-05-fno-n12/CHECKPOINT.md), the two wallet scopes and November 5 evidence receipt before continuing. Track rejected, incomplete and unseen windows separately. Confirm source, configuration and schema have no runtime change. Record exact Git identity and test results in the next checkpoint before choosing a forward candidate.
+
 ## November 5 E03.2 dated-contract fix and refusal evidence
 
 The expiry trend book now uses the instrument master's Contract.name in contract selection and the pending fill. The old field raised AttributeError on the replay's first qualifying setup. The tests now use real Contract records for Nifty and Sensex. E03.2 stores per-session signal, contract and pending-fill counts in its existing state and reports passed signals and paper plans in its no-trade summary.
