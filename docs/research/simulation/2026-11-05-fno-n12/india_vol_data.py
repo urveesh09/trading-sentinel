@@ -26,21 +26,23 @@ def periods():
 
 
 def read_rows(raw, index, first, last):
-    values = {}
+    values, seen, invalid = {}, set(), []
     rows = json.loads(raw)["data"]
     for row in rows:
         session = datetime.strptime(row["EOD_TIMESTAMP"], "%d-%b-%Y").date()
-        if row["EOD_INDEX_NAME"].strip().upper() != index or session in values or not first <= session <= last:
+        if row["EOD_INDEX_NAME"].strip().upper() != index or session in seen or not first <= session <= last:
             raise ValueError(f"unexpected or duplicate {index} date {session}")
-        opened, high, low, close = (float(row[f"EOD_{key}_INDEX_VAL"]) for key in ("OPEN", "HIGH", "LOW", "CLOSE"))
+        seen.add(session)
+        opened, high, low, close = (float(row[f"EOD_{key}_INDEX_VAL"] or 0) for key in ("OPEN", "HIGH", "LOW", "CLOSE"))
         if not all(math.isfinite(v) and v > 0 for v in (opened, high, low, close)) or (
             low > min(opened, close) or high < max(opened, close)
         ):
-            raise ValueError(f"invalid {index} OHLC on {session}")
+            invalid.append(session.isoformat())
+            continue
         values[session] = close
-    if not values or min(values) > first + timedelta(days=8) or max(values) < last - timedelta(days=8):
+    if not values or min(seen) > first + timedelta(days=8) or max(seen) < last - timedelta(days=8):
         raise ValueError(f"truncated {index} history for {first} through {last}")
-    return values
+    return values, invalid
 
 
 def archive(session, name, first, last):
@@ -55,12 +57,12 @@ def archive(session, name, first, last):
         response.raise_for_status()
         raw = response.content
         time.sleep(0.6)
-    values = read_rows(raw, index, first, last)
+    values, invalid = read_rows(raw, index, first, last)
     if not path.exists():
         with path.open("xb") as handle:
             handle.write(raw)
     return values, {"file": path.name, "sha256": hashlib.sha256(raw).hexdigest(), "count": len(values),
-                    "first": min(values).isoformat(), "last": max(values).isoformat()}
+                    "invalid_ohlc_dates": sorted(invalid), "first": min(values).isoformat(), "last": max(values).isoformat()}
 
 
 def main():
