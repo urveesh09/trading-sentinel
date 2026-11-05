@@ -1,0 +1,142 @@
+{
+  "book": {
+    "cfg": {
+      "FNO_MAX_LOTS": 2,
+      "FNO_MAX_LOTS_PROVEN": 2
+    },
+    "cost": [
+      200.0,
+      5.0
+    ],
+    "label": "N12|WING_SKEW",
+    "members": [
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "SHIPPED",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "OR20",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "EFF",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "TPB",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:LOW",
+        "kind": "NAMED",
+        "name": "TPB",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "TPB",
+        "vwap_exit": "OFF"
+      }
+    ],
+    "n02_contract": "v1",
+    "n02_policy": "STATIC",
+    "n02_profile": "TPB_ONE",
+    "n03_context": "TPB_ONE",
+    "n03_contract": "v1",
+    "n03_sizing": "NORMAL",
+    "n03_variant": "RETEST",
+    "n04_context": "BALANCED_RETEST",
+    "n04_contract": "v1",
+    "n04_mode": "BASE",
+    "n05_context": "BALANCED_RETEST",
+    "n05_contract": "v1",
+    "n05_mode": "BASE",
+    "n07_contract": "v1",
+    "n07_mode": "PREMIUM_STALL",
+    "n08": {
+      "contract": "v1",
+      "exits": {
+        "EFF": {
+          "FNO_TRAIL_ATR_MULT": 2.0
+        },
+        "OR20": {
+          "FNO_TRAIL_ATR_MULT": 2.0
+        }
+      },
+      "low_last_minute": 840,
+      "low_two_lots_before": 720
+    },
+    "n09": {
+      "contract": "v1",
+      "vol_size": true
+    },
+    "n091": {
+      "contract": "v1",
+      "mode": "VOL_CLOCK"
+    },
+    "n10": {
+      "contract": "v1",
+      "eligibility": "RISK",
+      "entry": "NATIVE",
+      "flat_risk": 5000.0,
+      "max_total": 3,
+      "parent_min": 2,
+      "steps": [
+        [
+          1.0,
+          0.0
+        ]
+      ],
+      "vol": false
+    },
+    "n11": {
+      "add": "HONEST",
+      "contract": "v1",
+      "flat": 6250.0,
+      "k": 1.75,
+      "loss_one": true,
+      "stand": 20,
+      "stand_ratio": 0.9,
+      "true_risk": true
+    },
+    "n11t": {
+      "add": false,
+      "clamp": "SECOND_LOT",
+      "contract": "v4",
+      "limit": 6250.0,
+      "strict": true,
+      "when": [
+        "VOL",
+        "EV"
+      ]
+    },
+    "n12_skew": "WING_SKEW",
+    "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE"
+  },
+  "source": {
+    "../../../../python-engine/fno_entry_plan.py": "7285d2d739c4b9917c23bf0b49736119240c213bc01174d8dff1ca07350bf6bf",
+    "../../../../python-engine/options_math.py": "cd62879d56020aa5533c2f19c50930501f296619b460a4538f76a75de10ef105",
+    "ROUND20.md": "f56097a41f734f736842d1b4128c81bf3f01a0c380681d378f377c5351f5713d",
+    "round1-freeze.json": "784391a46be45b90e07a9c4ef9eaebedc529f533fc80726050c2e583a5cb2624",
+    "round16.py": "6e1e4dba7848102b58450cfd360660d7b8d464cee2f7f42936e77ebf86d7922f",
+    "round18-forecasts.json": "0ca60d093972661d865095bab16a75cd88257eead5ccd3b3bc989195bb03116f",
+    "round18-freeze.json": "2390f8403bdde13ced143886de03cc67e5c927c0e0328710cd62b5751c90560c",
+    "round20.py": "8238af6a8b037e00fdf9b031380410f5547ffa593576e2d5e1dc5d9fae87394c",
+    "test_round20.py": "8d02492f363e3c0e143f485966b6c8764c8e9ca63edf8914bc03646dbf4d0e2e"
+  }
+}
