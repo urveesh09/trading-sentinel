@@ -13,3 +13,7 @@ Changes are isolated Dev research. Rollback is removal of the research arm. Prod
 ## Capital and cross-index scope added November 5
 
 The ₹250,000 paper book remains the strategy benchmark. Measure use of premium and incremental return together. Keep the independently funded ₹15,000 trial separate, with whole lots and explicit execution sensitivity. The prior ₹12,500 and ₹7,000 floor are comparison settings only. The completed NIFTY and small-wallet development tests are in [the checkpoint](CHECKPOINT.md). The next paper feasibility slice is [ordinary SENSEX in a shared account](CROSS_INDEX.md). Require dated calendar and front-contract evidence, native exchange fees, shared cash and downside, and explicit comparison with existing regular F&O. Stage and remove replay hypotheses in Dev without changing the running books.
+
+## Continuation slice
+
+Calendar and lagged OI completed without qualification. Preserve both NIFTY controls and the dated coverage receipts. Run the next independent regular-F&O strategy comparison through actual joint quote and cash lifecycle evidence. Capture held-spread management observations without another broker request if a Dev collector is built. Reconcile the native ledger first and leave unopened test data outside selection. [Continuation evidence](CONTINUATION.md).
