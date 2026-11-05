@@ -1,0 +1,22 @@
+{
+  "costs": {
+    "effective_date": "2026-04-01",
+    "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+    "rates": {
+      "brokerage_flat_per_order": 20.0,
+      "exchange_pct": 0.0003553,
+      "gst_pct": 0.18,
+      "ipft_pct": 1e-09,
+      "sebi_pct": 1e-06,
+      "stamp_duty_buy_pct": 3e-05,
+      "stt_sell_pct": 0.0015
+    },
+    "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01"
+  },
+  "files": {
+    "ROUND13.md": "92bcf8a5e9476afaff804b5f4abbd86f16674790e491de7e4c5704e8be70f2d7",
+    "round1-freeze.json": "784391a46be45b90e07a9c4ef9eaebedc529f533fc80726050c2e583a5cb2624",
+    "round13.py": "3cc393eae0c10fcf53ae74e6ef2e3eee2b78cb65b165e33b04b96a7ca1fc30cb"
+  },
+  "min_oi": 5000
+}
