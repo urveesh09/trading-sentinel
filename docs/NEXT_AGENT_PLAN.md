@@ -1,3 +1,7 @@
+## November 5 regular F&O held-spread evidence
+
+The Dev recorder and export contract are implemented and off by default. Freeze the held observation mode before scoring any future panel. Establish native paper settlement parity and usable end-to-end quote coverage first. Delayed exit outcomes can remain unavailable once native management stops collecting a closed position. The next rollout decision concerns paper evidence only. The rollback is `FNO_DR_EXIT_PATH_RECORDING=false` or the isolated GitHub revert. See [scope, commands and validation](research/simulation/2026-11-05-fno-n12/FORWARD_SPREAD_EVIDENCE.md).
+
 ## November 5 multi-lot spread replay verification
 
 The defined-risk exit research verifier now prices fees using each exact bound leg’s full quantity. The three-lot November 5 paper row exposed the mismatch with the operational cost calculation. The focused verifier, spread book and sizing suite passed 38 tests. Preserve the first study and bind a new manifest before comparing historical exits. See [research correction](research/simulation/2026-11-05-fno-n12/ROUND11_COST_FIX.md). No runtime caller, configuration, migration, authority or deployment change.

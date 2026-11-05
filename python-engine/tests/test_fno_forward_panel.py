@@ -106,6 +106,30 @@ def test_the_export_takes_the_days_own_finished_session_from_1550_ist_only_when_
     assert days("c", 10, 20, True) == (["2026-10-28"], ["2026-10-28"])           # 15:50 IST
 
 
+def test_export_held_spread_evidence_and_only_the_spread_ledger(tmp_path):
+    data = tmp_path / "data"
+    (data / "research/quotes").mkdir(parents=True)
+    held = data / "research/fno_dr_exit_paths"
+    held.mkdir()
+    (held / "2026-10-27.jsonl").write_text("{}\n")
+    (held / "2026-10-28.jsonl").write_text("{}\n")
+    with sqlite3.connect(data / "cache.db") as db:
+        db.execute("CREATE TABLE bankroll_ledger (origin_ref TEXT, pnl REAL, source TEXT, private TEXT)")
+        db.executemany("INSERT INTO bankroll_ledger VALUES (?,?,?,?)", [
+            ("fno_dr_structure:7", 123., "FNO_PAPER", "exclude"),
+            ("fno_dr_structure:9", 221., "FNO_LIVE", "exclude"),
+            ("fno_position:4", 333., "FNO_PAPER", "exclude"),
+        ])
+    before = (data / "cache.db").read_bytes()
+    out = tmp_path / "out"
+    result = exporter.export(data, out, now_utc=datetime(2026, 10, 28, 9, 0, tzinfo=timezone.utc))
+    assert "fno_dr_exit_paths/2026-10-27.jsonl" in result["files_sha256"]
+    assert "fno_dr_exit_paths/2026-10-28.jsonl" not in result["files_sha256"]
+    with sqlite3.connect(out / "fno-replay.sqlite") as db:
+        assert db.execute("SELECT * FROM bankroll_ledger").fetchall() == [("fno_dr_structure:7", 123.)]
+    assert (data / "cache.db").read_bytes() == before
+
+
 def test_the_panel_export_is_read_only_and_asks_for_the_finished_day(tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr(panel.subprocess, "run", lambda args, **kwargs: calls.append(args))

@@ -1,3 +1,7 @@
+## November 5 regular F&O held-spread evidence
+
+The regular defined-risk manager can retain the exact quote batch it already receives. `FNO_DR_EXIT_PATH_RECORDING` is false by default. Enabled recording queues a bounded batch after native management with the action clock, receipt, exact legs and exit settings. The finished-session replay exporter includes those batches and only the corresponding class of paper ledger records. The held verifier rehashes the export and checks each position against the recorded exit clock, reason and ledger cash before comparison. This Dev evidence path adds no request, scheduler, schema migration or trade authority. See the [held-spread evidence contract](research/simulation/2026-11-05-fno-n12/FORWARD_SPREAD_EVIDENCE.md).
+
 ## November 5 multi-lot spread replay verification
 
 The defined-risk exit research verifier now prices fees using each exact bound leg’s full quantity. The three-lot November 5 paper row exposed the mismatch with the operational cost calculation. The focused verifier, spread book and sizing suite passed 38 tests. Preserve the first study and bind a new manifest before comparing historical exits. See [research correction](research/simulation/2026-11-05-fno-n12/ROUND11_COST_FIX.md). No runtime caller, configuration, migration, authority or deployment change.

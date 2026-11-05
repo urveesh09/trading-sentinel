@@ -1598,6 +1598,8 @@ async def run_fno_tick(
             # next Production trace able to distinguish an exit delay from a
             # speculative-entry delay.
             if open_dr:
+                record_dr = settings.FNO_DR_EXIT_PATH_RECORDING
+                raw_quotes, received_at = {}, None
                 snapshot_started = monotonic()
                 management_cap = _read_cap(settings.FNO_DR_MANAGEMENT_READ_MAX_SEC)
                 try:
@@ -1606,6 +1608,8 @@ async def run_fno_tick(
                         raw_quotes, provider_timing = await asyncio.wait_for(
                             _management_quote(kite, exact_tokens), timeout=management_cap,
                         )
+                        if record_dr:
+                            received_at = supplied_now_ist or datetime.now(IST)
                         dr_snap = _dr.exact_leg_snapshot_from_quotes(
                             open_dr, raw_quotes, now_ist, fut_price,
                         )
@@ -1648,11 +1652,15 @@ async def run_fno_tick(
                     summary["action_clock_ist"] = now_ist.isoformat()
                 # manage_dr_structures intentionally accepts ``None`` and
                 # fail-closes a hard-flat structure even without a quote.
-                summary["dr_exits"] = summary.get("dr_exits", 0) + \
-                    await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                dr_closed = await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                summary["dr_exits"] = summary.get("dr_exits", 0) + dr_closed
                 summary["stage_durations_sec"]["defined_risk_management"] = round(
                     monotonic() - management_started, 3
                 )
+                if record_dr:
+                    fno_exit_paths.record_defined_risk(
+                        now_ist, open_dr, dr_snap, raw_quotes, received_at=received_at, closed=dr_closed,
+                    )
 
             remaining_open_dr = await _timed_database_operation(
                 summary["database_stage_timing"], "defined_risk_open_read", _dr.open_structures(db_path),

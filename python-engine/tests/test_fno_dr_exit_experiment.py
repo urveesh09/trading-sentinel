@@ -215,6 +215,58 @@ def test_entries_are_read_from_persisted_rows_and_ledger(tmp_path):
     assert unavailable[0]["position_ref"] == "fno_dr_positions:9"
 
 
+def test_held_batch_reconciles_multi_lot_using_the_management_clock(tmp_path, monkeypatch):
+    from fno_dr_book import exact_leg_snapshot_from_quotes
+    from fno_exit_paths import close, flush, record_defined_risk
+
+    monkeypatch.setattr(dr.settings, "RESEARCH_ARCHIVE_PATH", str(tmp_path))
+    row = _row(lots=3)
+    received = OPENED + timedelta(minutes=1)
+    action = received + timedelta(seconds=2)
+    raw = {token: _event(token, 1, price)["raw_packet"] for token, price in
+           ((LONG_TOKEN, 165.), (SHORT_TOKEN, 62.))}
+    snap = exact_leg_snapshot_from_quotes([row], raw, received, 25090.)
+    close()
+    try:
+        monkeypatch.setattr(dr.settings, "FNO_DR_EXIT_PATH_RECORDING", False)
+        assert not record_defined_risk(action, [row], snap, raw, received_at=received, closed=1)
+        assert not list(tmp_path.rglob("*.jsonl"))
+        monkeypatch.setattr(dr.settings, "FNO_DR_EXIT_PATH_RECORDING", True)
+        assert record_defined_risk(action, [row], snap, raw, received_at=received, closed=1)
+        assert flush()
+    finally:
+        close()
+
+    path = tmp_path / dr.DR_PATH_FOLDER / f"{OPENED.date().isoformat()}.jsonl"
+    record, = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    cash = (164.5 - 120.0 - (62.5 - 60.0)) * 195 - row["entry_cost_rs"]
+    entry = _entry({"status": "CLOSED", "settlement_state": "SETTLED", "exit_reason": "target",
+                    "position_net_pnl": cash, "ledger_net_pnl": cash,
+                    "require_exact_exit_clock": True, "closed_at": action.isoformat()}, lots=3)
+    observations = dr.observations_from_held_paths([record], entry, max_age_seconds=180)
+    baseline = dr.simulate(entry, observations, dr.BASELINE, max_gap_seconds=180)
+    assert datetime.fromisoformat(baseline["exit_at"]) == action
+    assert baseline["net_pnl"] == pytest.approx(cash)
+    assert dr.reconcile(entry, baseline)["usable"]
+    with pytest.raises(dr.DrStudyError, match="evidence mode"):
+        dr.build_report([(entry, observations, {})], dr.freeze_manifest(experiment_id="sampled"))
+    manifest = dr.freeze_manifest(experiment_id="held", held_paths=True)
+    assert dr.build_report([(entry, observations, {})], manifest)["development"]["reconciled_usable"] == 1
+    assert dr.reconcile(entry, {**baseline, "exit_at": received.isoformat()})["state"] == "HELD_EXIT_CLOCK_MISMATCH"
+    trail = dr.simulate(entry, observations, dr.TRAIL, max_gap_seconds=180)
+    assert trail["status"] == "INSUFFICIENT_EVIDENCE"
+
+    with pytest.raises(dr.DrStudyError, match="clocks"):
+        dr.observations_from_held_paths([record, record], entry, max_age_seconds=180)
+    with pytest.raises(dr.DrStudyError, match="missing exact legs"):
+        dr.observations_from_held_paths([{**record, "quotes": record["quotes"][:1]}], entry, max_age_seconds=180)
+    with pytest.raises(dr.DrStudyError, match="snapshot unavailable"):
+        dr.observations_from_held_paths([{**record, "snapshot_available": False}], entry, max_age_seconds=180)
+    record["quotes"][0]["buy_depth"][0]["quantity"] = 194
+    with pytest.raises(dr.DrStudyError, match="full exit-side size"):
+        dr.observations_from_held_paths([record], entry, max_age_seconds=180)
+
+
 def test_no_runtime_caller_and_read_only_sqlite():
     root = Path(dr.__file__).resolve().parent
     source = (root / "fno_dr_exit_experiment.py").read_text(encoding="utf-8")
@@ -232,3 +284,17 @@ def test_no_runtime_caller_and_read_only_sqlite():
         if "fno_dr_exit_experiment" in names:
             callers.append(path.name)
     assert callers == []
+
+
+def test_held_export_checks_file_binding_and_content(tmp_path):
+    from hashlib import sha256
+
+    path = tmp_path / "fno-replay.sqlite"
+    path.write_bytes(b"initial")
+    files = {path.name: sha256(b"initial").hexdigest()}
+    assert dr._check_held_export_file(tmp_path, path.name, files) == path
+    with pytest.raises(dr.DrStudyError, match="does not bind"):
+        dr._check_held_export_file(tmp_path, "different.sqlite", files)
+    path.write_bytes(b"changed")
+    with pytest.raises(dr.DrStudyError, match="file changed"):
+        dr._check_held_export_file(tmp_path, path.name, files)

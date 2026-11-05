@@ -123,6 +123,15 @@ def _squareoff_min() -> int:
     return int(getattr(settings, "FNO_DR_SQUAREOFF_MIN", 15 * 60 + 10))    # 15:10
 
 
+def exit_path_settings() -> dict:
+    """Settings that govern a recorded defined-risk management look."""
+    return {
+        "FNO_DR_TARGET_FRAC": _target_frac(),
+        "FNO_DR_STOP_FRAC": _stop_frac(),
+        "FNO_DR_SQUAREOFF_MIN": _squareoff_min(),
+    }
+
+
 def _iv_low() -> float:
     return float(getattr(settings, "FNO_DR_IV_LOW", 0.10))
 

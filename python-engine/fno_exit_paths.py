@@ -44,7 +44,10 @@ logger = structlog.get_logger()
 MAX_QUEUE = 2_000                    # looks waiting for the writer (~5 h of one position)
 DAY_MAX_BYTES = 32 * 1024 * 1024     # one session's file
 BATCH_MAX = 500
-DROP_REASONS = ("queue_full", "day_cap", "storage", "write_error")
+DROP_REASONS = ("queue_full", "day_cap", "storage", "write_error", "record_cap")
+DR_PATH_SCHEMA = "fno_dr_management_look_v1"
+DR_PATH_FOLDER = "fno_dr_exit_paths"
+DR_RECORD_MAX_BYTES = 64 * 1024
 _STOP = object()
 _lock = threading.Lock()
 _writer: Optional["_Writer"] = None
@@ -190,6 +193,59 @@ def record(now_ist: datetime, source: str, position: Any, *, bid: float, ask: fl
     return True
 
 
+def record_defined_risk(now_ist, rows, snap, raw_quotes, *, received_at, closed) -> bool:
+    """Queue the exact held-spread management input after the manager returns."""
+    if not settings.FNO_DR_EXIT_PATH_RECORDING:
+        return False
+    try:
+        from fno_dr_book import exit_path_settings
+        from research_quote_collector import normalise_quote
+
+        events = []
+        if snap is not None and received_at is not None:
+            for quote in snap.quotes.values():
+                contract = quote.contract
+                raw = raw_quotes.get(contract.token)
+                if raw is None:
+                    continue
+                packet = {key: raw[key] for key in (
+                    "instrument_token", "last_price", "timestamp", "exchange_timestamp", "last_trade_time",
+                ) if key in raw}
+                depth = raw.get("depth") or {}
+                packet["depth"] = {}
+                for side in ("buy", "sell"):
+                    levels = depth.get(side) or []
+                    packet["depth"][side] = [
+                        {key: levels[0][key] for key in ("price", "quantity", "orders") if key in levels[0]}
+                    ] if levels else []
+                events.append(normalise_quote(
+                    contract, packet, source="KITE", mode="KITE_REST_DR_MANAGEMENT",
+                    received_at=received_at, selection_reason="held_defined_risk_leg", exchange="NFO",
+                ))
+        record = {
+            "schema": DR_PATH_SCHEMA, "at": now_ist.isoformat(),
+            "position_refs": [f"fno_dr_positions:{int(row['id'])}" for row in rows],
+            "received_at": received_at.isoformat() if received_at else None,
+            "snapshot_available": snap is not None, "closed": int(closed),
+            "params": exit_path_settings(), "quotes": events,
+        }
+        line = json.dumps(record, sort_keys=True, default=str, separators=(",", ":"), allow_nan=False)
+        if len(line.encode("utf-8")) > DR_RECORD_MAX_BYTES:
+            _count("dropped_record_cap")
+            return False
+        root = Path(settings.RESEARCH_ARCHIVE_PATH)
+        path = root / DR_PATH_FOLDER / f"{now_ist.date().isoformat()}.jsonl"
+        _ensure_writer().queue.put_nowait((str(root), str(path), line))
+    except queue.Full:
+        _count("dropped_queue_full")
+        return False
+    except Exception as exc:
+        logger.warning("fno_dr_exit_path_record_skipped", error_type=type(exc).__name__)
+        return False
+    _count("queued")
+    return True
+
+
 def flush(timeout: float = 5.0) -> bool:
     """Wait until every queued look is written or dropped (tests, shutdown)."""
     writer = _writer
@@ -219,6 +275,7 @@ def stats() -> dict:
         writer = _writer
     out["pending"] = writer.queue.qsize() if writer is not None else 0
     out["recording"] = bool(settings.FNO_EXIT_PATH_RECORDING)
+    out["defined_risk_recording"] = bool(settings.FNO_DR_EXIT_PATH_RECORDING)
     return out
 
 

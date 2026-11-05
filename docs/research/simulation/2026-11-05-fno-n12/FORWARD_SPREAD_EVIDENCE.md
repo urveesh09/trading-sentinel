@@ -7,3 +7,18 @@ Scope and contracts. Add an off-by-default `FNO_DR_EXIT_PATH_RECORDING` switch i
 Add an explicit held-path mode to the existing defined-risk study. Require matching contract and parameter evidence, usable raw timestamps, sufficient visible exit-side size, chronological management looks and exact baseline exit clock with reconciled reason and cash. Preserve the existing sampled-archive research mode. A later alternate exit with no available observations remains unresolved or unavailable. Verify writer isolation, failure behavior, multi-lot size, clock, exporter and end-to-end synthetic settlement. Compare only forward observations after the source and candidate freeze when they exist. Keep November 5 recorded and unavailable for the new path.
 
 Dev only. No data migration. Roll back the evidence hook by setting the switch false or reverting the isolated change through GitHub. The next independent strategy round remains distinct from the evidence collector.
+
+## Commands for a later observation run
+
+Use the usual finished-session F&O export. Its file manifest binds the held batches and the database containing the minimal paper ledger. The held evaluator rehashes both before use. With the Dev virtual environment, freeze before opening a scored forward panel.
+
+```powershell
+python python-engine/fno_dr_exit_experiment.py freeze --held-paths --experiment-id n012-held-forward --output <fresh-manifest>
+python python-engine/fno_dr_exit_experiment.py evaluate --held-paths --db <export>/fno-replay.sqlite --archive-root <export> --manifest <fresh-manifest> --output <fresh-report>
+```
+
+Sampled and held manifests are distinct. Both bind code and settings. Older source fingerprints require their original checkout. Any held-path exit delayed beyond the native close can remain unavailable because recording follows the native open position. The synthetic regression demonstrates exact one-position settlement. It does not establish forward returns.
+
+## Verification
+
+The focused suite passed 125 tests on Python 3.11.9. The files exercised the spread book, spread verifier and sizing, the single-leg exit cadence and verifier, F&O orchestration and the forward export. The three-lot fixture reconciles the ledger and exact exit clock. Tests also exercise disabled recording, preservation of the native management order, insufficient size, missing legs, incomplete snapshots, duplicate clocks and a changed export hash. The Dev atlas was regenerated and indexed 304 Python modules. Production HEAD was `398d44ad` during this slice. The recorder remains disabled in Dev settings. No runtime production configuration, deployment or trade authority changed.

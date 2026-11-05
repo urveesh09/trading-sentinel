@@ -98,14 +98,15 @@ def export(data: Path, out: Path, *, include_finished_today: bool = False,
     # [SX-F1] The exit loop's own looks at each held option (fno_exit_paths.py),
     # for replaying exit rules at the live clock. Finished sessions only (the
     # files are named by IST date; the exit loop stops at the 15:30 close).
-    for path in sorted((data / "research" / "fno_exit_paths").glob("*.jsonl")):
-        if path.stem > ist.date().isoformat() or (path.stem == ist.date().isoformat()
-                                                   and ist.hour * 60 + ist.minute < 15 * 60 + 35):
-            continue
-        target = out / "fno_exit_paths" / path.name
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(path, target)
-        files[str(target.relative_to(out)).replace("\\", "/")] = _sha(target)
+    for folder in ("fno_exit_paths", "fno_dr_exit_paths"):
+        for path in sorted((data / "research" / folder).glob("*.jsonl")):
+            if path.stem > ist.date().isoformat() or (path.stem == ist.date().isoformat()
+                                                       and ist.hour * 60 + ist.minute < 15 * 60 + 35):
+                continue
+            target = out / folder / path.name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, target)
+            files[target.relative_to(out).as_posix()] = _sha(target)
 
     futures, option_expiries = _scan_contracts(quote_root)
     source = sqlite3.connect(f"file:{data / 'cache.db'}?mode=ro", uri=True)
@@ -113,6 +114,7 @@ def export(data: Path, out: Path, *, include_finished_today: bool = False,
     target = sqlite3.connect(replay_db)
     counts = {}
     try:
+        source.execute("BEGIN")
         target.execute("CREATE TABLE fut_candles (instrument_token INTEGER, tradingsymbol TEXT, interval TEXT,"
                        " datetime TEXT, open REAL, high REAL, low REAL, close REAL, volume REAL, oi REAL,"
                        " PRIMARY KEY (instrument_token, interval, datetime))")
@@ -130,6 +132,15 @@ def export(data: Path, out: Path, *, include_finished_today: bool = False,
             data_rows = source.execute(f"SELECT {', '.join(columns)} FROM {table}").fetchall()
             target.executemany(f"INSERT INTO {table} VALUES ({', '.join('?' * len(columns))})", data_rows)
             counts[table] = len(data_rows)
+        ledger_columns = {row[1] for row in source.execute("PRAGMA table_info(bankroll_ledger)")}
+        if {"origin_ref", "pnl", "source"} <= ledger_columns:
+            ledger = source.execute(
+                "SELECT origin_ref, pnl FROM bankroll_ledger "
+                "WHERE source='FNO_PAPER' AND origin_ref LIKE 'fno_dr_structure:%'"
+            ).fetchall()
+            target.execute("CREATE TABLE bankroll_ledger (origin_ref TEXT, pnl REAL)")
+            target.executemany("INSERT INTO bankroll_ledger VALUES (?, ?)", ledger)
+            counts["bankroll_ledger"] = len(ledger)
         target.commit()
     finally:
         source.close()
