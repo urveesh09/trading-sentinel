@@ -15,7 +15,7 @@ from fno_costs import calc_fno_costs
 from fno_engine_mom import MomSignal
 from fno_exit_rules import IST
 from fno_models import Contract, ContractQuote, FnoDirection
-from shared_control import EntryObservation, SharedControl, Tick, VenueMarks
+from shared_control import EarnedQuote, EarnedStage, EntryObservation, SharedControl, Tick, VenueMarks
 
 
 NOW = IST.localize(datetime(2026, 9, 14, 10, 0, 30))
@@ -241,3 +241,124 @@ def test_unresolved_position_blocks_transition_to_a_new_session():
     with pytest.raises(ValueError, match="previous session still has unresolved positions"):
         book.step(Tick(NOW + timedelta(days=1), 0, spread_closes=(10,)))
     assert book.equity == 250_000 and len(book.positions) == 1
+
+
+
+def earned_book(monkeypatch):
+    monkeypatch.setattr(settings, 'FNO_MAX_RISK_PCT', 0.04)
+    monkeypatch.setattr(settings, 'FNO_MAX_LOSS_PER_TRADE', 9000)
+    monkeypatch.setattr(settings, "FNO_MAX_OPEN_PREMIUM_PCT", 0.25)
+    book = SharedControl(250_000)
+    admitted, = book.step(Tick(NOW, 0, entries={
+        "SENSEX": observation("SENSEX", vol_up=True),
+    })).entries
+    assert admitted.reason == "accepted"
+    parent = book.positions[admitted.position_id]
+    assert parent.lots == 2 and parent.qty == 40
+    return book, parent
+
+
+def add_stage(at, parent, *, reserve=0, ask_quantity=20, received_at=None):
+    return EarnedStage(reserve, {
+        (parent.underlying, parent.token): EarnedQuote(
+            received_at or at, parent.entry_premium + 49, parent.entry_premium + 50, ask_quantity,
+        ),
+    })
+
+
+def favorable_mark(at, parent, *, progress=60, quantity=None):
+    return marks(at, parent, premium=parent.entry_premium + 49,
+                 future=parent.entry_underlying + progress, quantity=quantity)
+
+
+def test_earned_add_uses_old_spread_reserve_then_regular_entry_sees_the_new_cash(monkeypatch):
+    book, parent = earned_book(monkeypatch)
+    at = NOW + timedelta(minutes=5)
+    tick = Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
+                earned=add_stage(at, parent, reserve=235_000),
+                spread_closes=(400,), entries={"NIFTY": observation("NIFTY", at, short=True)})
+    out = book.step(tick)
+    assert [x.reason for x in out.earned] == ["shared_worst_case_cash_exhausted"]
+    assert out.earned[0].cash_before_rs == 0
+    assert out.entries[0].reason == "accepted"
+    assert book.equity == 250_400
+
+
+def test_earned_cash_and_premium_count_while_trade_slots_exclude_the_child(monkeypatch):
+    monkeypatch.setattr(settings, "FNO_MAX_TRADES_PER_DAY", 2)
+    book, parent = earned_book(monkeypatch)
+    at = NOW + timedelta(minutes=5)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
+                         earned=add_stage(at, parent),
+                         entries={"NIFTY": observation("NIFTY", at, short=True)}))
+    added, = out.earned
+    assert added.reason == "accepted"
+    child = book.positions[added.position_id]
+    assert child.strategy == "N11_ADD" and child.qty == 20
+    assert child.token == parent.token and child.stop_underlying == parent.entry_underlying
+    assert out.entries[0].reason == "accepted"
+    assert len(book.positions) == 3
+    assert added.cash_before_rs - out.entries[0].cash_before_rs == pytest.approx(
+        child.entry_premium * child.qty + calc_fno_costs(child.entry_premium, 0, child.qty, exchange="BFO")
+    )
+
+
+def test_child_closes_with_parent_and_shared_depth_cannot_be_reused(monkeypatch):
+    book, parent = earned_book(monkeypatch)
+    at = NOW + timedelta(minutes=5)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
+                         earned=add_stage(at, parent)))
+    child = book.positions[out.earned[0].position_id]
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent, progress=120, quantity=60)},
+                         earned=add_stage(at, parent)))
+    assert parent.trail_active and not out.earned
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent, progress=40, quantity=40)}))
+    assert [(x.position_id, x.reason) for x in out.exits] == [(parent.id, "trail_stop")]
+    assert out.missing_marks == (child.id,)
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent, progress=40, quantity=20)}))
+    closed, = out.exits
+    assert (closed.position_id, closed.reason) == (child.id, "n11_with_first")
+    assert closed.fees == calc_fno_costs(child.entry_premium, closed.premium, 20, exchange="BFO")
+    assert book.closes[-1].pnl == closed.net and not book.closes[-1].single_leg
+
+
+def test_missing_late_or_shallow_earned_quote_never_becomes_an_add(monkeypatch):
+    book, parent = earned_book(monkeypatch)
+    at = NOW + timedelta(minutes=5)
+    source = {"SENSEX": favorable_mark(at, parent)}
+    with pytest.raises(ValueError, match="earned quote must follow"):
+        book.step(Tick(at, 0, marks=source, earned=add_stage(at, parent, received_at=at + timedelta(seconds=1))))
+    out = book.step(Tick(at, 0, marks=source))
+    assert [x.reason for x in out.earned] == ["earned_stage_unavailable"]
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
+                         earned=EarnedStage(0)))
+    assert [x.reason for x in out.earned] == ["earned_quote_unavailable"]
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
+                         earned=add_stage(at, parent, ask_quantity=19)))
+    assert [x.reason for x in out.earned] == ["earned_ask_depth_unavailable"]
+    assert set(book.positions) == {parent.id} and book.equity == 250_000
+
+
+def test_closed_child_is_never_added_again_while_its_parent_is_open(monkeypatch):
+    book, parent = earned_book(monkeypatch)
+    at = NOW + timedelta(minutes=5)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
+                         earned=add_stage(at, parent)))
+    child_id = out.earned[0].position_id
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent, progress=-1, quantity=60)}))
+    assert [(x.position_id, x.reason) for x in out.exits] == [(child_id, "underlying_stop")]
+    assert book.closes[-1].pnl < 0 and not book.closes[-1].single_leg
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent, quantity=39)},
+                         earned=add_stage(at, parent)))
+    assert out.missing_marks == (parent.id,) and not out.earned
+    at += timedelta(seconds=10)
+    out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
+                         earned=add_stage(at, parent)))
+    assert not out.earned and set(book.positions) == {parent.id}
