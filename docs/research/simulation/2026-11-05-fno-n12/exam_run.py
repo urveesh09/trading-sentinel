@@ -272,13 +272,15 @@ def claim_once(work, window, request_sha, snapshot_sha, revision):
 
 def main():
     freeze, calendar, requests, snapshot = (committed(path) for path in (FREEZE, CALENDAR, REQUESTS, SNAPSHOT))
-    for path in (Path(__file__), HERE / "exam_scoring.py"):
+    for path in (Path(__file__), HERE / "exam_scoring.py", HERE / "exam_prepare.py"):
         if digest(path) != requests["sources"][path.name]:
             raise ValueError(f"Changed runner source: {path.name}")
     request_sha = digest(REQUESTS)
     dates = validate_metadata(freeze, requests, snapshot, request_sha)
-    if requests["calendar_sha256"] != digest(CALENDAR):
-        raise ValueError("Changed NSE calendar")
+    if requests["calendar_sha256"] != digest(CALENDAR) or requests["freeze_sha256"] != digest(FREEZE):
+        raise ValueError("Changed NSE calendar or strategy freeze")
+    if snapshot["coverage"] != requests["coverage"] or snapshot["coverage_sha256"] != requests["coverage_sha256"]:
+        raise ValueError("Snapshot coverage differs from the committed pre-price capture")
     validate_calendar(requests, snapshot, calendar)
     os.environ["N12_YEAR"] = "2022"
     import n012_ab as arms
