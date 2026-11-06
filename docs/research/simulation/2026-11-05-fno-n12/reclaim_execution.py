@@ -68,6 +68,9 @@ class RangeSleeve:
 
     def enter(self, signal: Signal, signal_at: datetime, chain: ChainSnapshot, regime: str, *,
               is_expiry_day: bool, is_trading_day: bool = True) -> str:
+        return self._enter(signal, signal_at, chain, regime, is_expiry_day, is_trading_day, traded=None)
+
+    def _enter(self, signal, signal_at, chain, regime, is_expiry_day, is_trading_day, traded):
         if signal_at.utcoffset() is None or chain.taken_at.utcoffset() is None:
             raise ValueError("signal and quote clocks must be aware")
         signal_at = signal_at.astimezone(IST)
@@ -114,8 +117,11 @@ class RangeSleeve:
             return plan.reject_reason
         quote = plan.quote
         qty, ask = plan.lot_size, quote.ask
-        if quote.ask_quantity < qty:
-            return "ask_depth_unavailable"
+        if traded is None:
+            if quote.ask_quantity < qty:
+                return "ask_depth_unavailable"
+        elif quote.contract.token not in traded or quote.last_trade_time != at:
+            return "selected_contract_no_trade_this_minute"
         if ask * qty + calc_fno_costs(ask, 0., qty) + self.stress > self.equity:
             return "full_cash_reserve"
         self.position = Position(at, quote.contract.tradingsymbol, quote.contract.token, direction, qty, ask,
@@ -125,11 +131,15 @@ class RangeSleeve:
 
     def manage(self, at: datetime, future: float | None, *, token: int, bid: float,
                bid_quantity: int) -> tuple[str, Settlement | None]:
+        supported = self.position is not None and bid_quantity >= self.position.qty
+        return self._manage(at, future, token, bid, supported)
+
+    def _manage(self, at, future, token, bid, supported):
         now = self._advance(at)
         p = self.position
         if p is None:
             return "flat", None
-        if token != p.token or not isfinite(bid) or bid <= 0 or bid_quantity < p.qty:
+        if token != p.token or not isfinite(bid) or bid <= 0 or not supported:
             self.coverage_gaps.append((now, "held_bid_unavailable"))
             return "held_bid_unavailable", None
         hard_flat = now.hour * 60 + now.minute >= settings.FNO_HARD_FLAT_MIN
