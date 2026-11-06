@@ -1258,6 +1258,8 @@ class Settings(BaseSettings):
     # [SX-F1] Keep every exit check of a held option (fno_exit_paths.py) so
     # exit rules can be replayed at the live clock. Research only.
     FNO_EXIT_PATH_RECORDING: bool = True
+    # Opt-in exact receipt clocks and displayed size for N11 paper exit research.
+    FNO_N012_FORWARD_EVIDENCE: bool = False
     # Reuse the defined-risk paper manager's existing held-leg quote batch.
     FNO_DR_EXIT_PATH_RECORDING: bool = False
     # [SX-P2 2026-10-21] Run PEN_SMART_V2 (penny_smart_v2.py: wider,

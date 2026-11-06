@@ -5,10 +5,12 @@ import aiosqlite
 import pytest
 
 import fno_underlyings
+import fno_exit_paths
 from config import settings
 from fno_engine_mom import evaluate_fno_mom
 from fno_instruments import FnoInstruments
 from fno_models import Contract
+from fno_orchestrator import run_fno_fast_exit
 from tests.test_fno_orchestrator import (
     FUT_EXPIRY, FUT_TOKEN, NOW, OPT_EXPIRY, TODAY, FakeKite, _breakout_bars, _quote_table, run_fno_tick,
     book,  # noqa: F401  (pytest fixture: the NIFTY book)
@@ -88,21 +90,48 @@ async def test_same_breakout_on_both_indices_is_one_bet(sensex, db_path, monkeyp
 
 
 @pytest.mark.asyncio
-async def test_each_position_is_managed_against_its_own_future(sensex, db_path, book, monkeypatch):
+@pytest.mark.parametrize("capture", [False, True])
+async def test_each_position_is_managed_against_its_own_future(sensex, db_path, book, monkeypatch, capture):
     monkeypatch.setattr(settings, "FNO_TRADING_UNDERLYINGS", "SENSEX")
     monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    monkeypatch.setattr(settings, "FNO_N012_FORWARD_EVIDENCE", capture)
     await run_fno_tick(sensex, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
     async with aiosqlite.connect(db_path) as db:
-        direction, stop_u = await (await db.execute(
-            "SELECT direction, stop_underlying FROM fno_positions WHERE status='OPEN'")).fetchone()
+        direction, stop_u, token, qty = await (await db.execute(
+            "SELECT direction, stop_underlying, token, qty FROM fno_positions WHERE status='OPEN'")).fetchone()
+        await db.execute("UPDATE fno_positions SET strategy='N11_OR20' WHERE token=?", (token,))
+        await db.commit()
     later = NOW + timedelta(minutes=10)
     table = _quote_table(book, later)
-    for token, payload in _quote_table(fno_underlyings._books["SENSEX"], later).items():
-        table[token] = payload
+    for quote_token, payload in _quote_table(fno_underlyings._books["SENSEX"], later).items():
+        table[quote_token] = payload
     # Only SENSEX breaches its stop; the NIFTY future stays where it was.
     table[SENSEX_FUT] = dict(table[FUT_TOKEN])
     table[SENSEX_FUT]["last_price"] = stop_u - 1.0 if direction == "LONG" else stop_u + 1.0
+    for key in (token, SENSEX_FUT, FUT_TOKEN):
+        table[key].update(instrument_token=key, timestamp=later.isoformat())
+    table[token]["depth"]["buy"][0]["quantity"] = qty
     sensex.quote_table = table
-    summary = await run_fno_tick(sensex, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=later)
+    quote_calls = sensex.quote_calls
+    summary = await run_fno_fast_exit(sensex, db_path=db_path, now_ist=later)
     assert [x["reason"] for x in summary["exits"]] == ["underlying_stop"]
+    assert sensex.quote_calls - quote_calls == 3  # NIFTY future, SENSEX future, held option
     assert sensex.orders_placed == []
+    assert fno_exit_paths.flush()
+    [look] = fno_exit_paths.read_day(settings.RESEARCH_ARCHIVE_PATH, TODAY.isoformat())
+    assert look["fut"] == round(table[SENSEX_FUT]["last_price"], 4)
+    if capture:
+        evidence = look["quote_evidence"]
+        assert evidence["schema"] == fno_exit_paths.N11_QUOTE_SCHEMA
+        assert (evidence["strategy"], evidence["held_qty"], evidence["held_lot_size"]) == ("N11_OR20", qty, 20)
+        assert evidence["held_expiry"] == OPT_EXPIRY.isoformat()
+        option, future = evidence["option"], evidence["future"]
+        assert (option["provider_token"], option["bid_qty"], option["ask_qty"]) == (token, qty, None)
+        assert option["bid"] == table[token]["depth"]["buy"][0]["price"]
+        assert option["received_at"] == future["received_at"] == later.isoformat()
+        assert future["provider_token"] == future["token"] == SENSEX_FUT and future["underlying"] == "SENSEX"
+        assert future["expiry"] == FUT_EXPIRY.isoformat()
+        assert future["ltp"] == table[SENSEX_FUT]["last_price"]
+        assert option["provider_at"] == future["provider_at"] and option["provider_at"].startswith(TODAY.isoformat())
+    else:
+        assert "quote_evidence" not in look

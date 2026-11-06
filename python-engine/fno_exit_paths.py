@@ -26,6 +26,7 @@ cannot delay or fail an exit. Research only.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 import hashlib
 import json
 import queue
@@ -37,6 +38,7 @@ from typing import Any, Optional
 import structlog
 
 from config import settings
+from fno_models import Contract
 from research_archive import _admit_bytes, guarded_write
 
 logger = structlog.get_logger()
@@ -46,6 +48,7 @@ DAY_MAX_BYTES = 32 * 1024 * 1024     # one session's file
 BATCH_MAX = 500
 DROP_REASONS = ("queue_full", "day_cap", "storage", "write_error", "record_cap")
 DR_PATH_SCHEMA = "fno_dr_management_look_v1"
+N11_QUOTE_SCHEMA = "fno_n11_paper_quote_look_v1"
 DR_PATH_FOLDER = "fno_dr_exit_paths"
 DR_RECORD_MAX_BYTES = 64 * 1024
 _STOP = object()
@@ -71,9 +74,64 @@ def params_digest(params: dict) -> str:
     return hashlib.sha256(json.dumps(params, sort_keys=True, default=str).encode()).hexdigest()[:16]
 
 
+@dataclass(frozen=True)
+class QuoteReceipt:
+    received_at: datetime
+    packet: dict
+    contract: Contract | None = None
+
+
+@dataclass(frozen=True)
+class DirectionalReceipts:
+    option: QuoteReceipt | None
+    future: QuoteReceipt | None
+
+
+def _receipt_fields(receipt: QuoteReceipt) -> dict:
+    from research_quote_collector import _finite_positive, _provider_timestamp
+
+    packet = receipt.packet
+    _, provider_at, provider_error = _provider_timestamp(packet.get("timestamp"))
+    _, traded_at, traded_error = _provider_timestamp(packet.get("last_trade_time"))
+    return {"received_at": receipt.received_at.isoformat(), "packet_present": bool(packet),
+            "provider_token": _finite_positive(packet.get("instrument_token"), int),
+            "provider_at": provider_at, "provider_time_error": provider_error,
+            "last_trade_at": traded_at, "last_trade_time_error": traded_error,
+            "ltp": _finite_positive(packet.get("last_price"), float)}
+
+
+def _top_level(packet: dict, side: str) -> tuple[float | None, int | None]:
+    from research_quote_collector import _finite_positive
+
+    depth = packet.get("depth")
+    levels = depth.get(side) if isinstance(depth, dict) else None
+    first = levels[0] if isinstance(levels, list) and levels else None
+    if not isinstance(first, dict):
+        return None, None
+    price = _finite_positive(first.get("price"), float)
+    return price, _finite_positive(first.get("quantity"), int) if price is not None else None
+
+
+def _directional_fields(position: Any, receipts: DirectionalReceipts) -> dict:
+    option = future = None
+    if receipts.option is not None:
+        packet = receipts.option.packet
+        bid, bid_qty = _top_level(packet, "buy")
+        ask, ask_qty = _top_level(packet, "sell")
+        option = {**_receipt_fields(receipts.option), "bid": bid, "bid_qty": bid_qty,
+                  "ask": ask, "ask_qty": ask_qty}
+    if receipts.future is not None:
+        contract = receipts.future.contract
+        future = {**_receipt_fields(receipts.future), "token": contract.token,
+                  "tradingsymbol": contract.tradingsymbol, "underlying": contract.name,
+                  "expiry": contract.expiry.isoformat()}
+    return {"schema": N11_QUOTE_SCHEMA, "held_qty": position.qty, "held_lot_size": position.lot_size,
+            "held_expiry": position.expiry, "strategy": position.strategy, "option": option, "future": future}
+
+
 def line_for(now_ist: datetime, source: str, position: Any, *, bid: float, ask: float, ltp: float,
              fut: Optional[float], decision: Any, params: Optional[dict] = None,
-             first_look: bool = False) -> str:
+             first_look: bool = False, receipts: DirectionalReceipts | None = None) -> str:
     line = {
         "at": now_ist.isoformat(), "source": source, "position_id": getattr(position, "id", None),
         "token": getattr(position, "token", None), "tradingsymbol": getattr(position, "tradingsymbol", None),
@@ -91,6 +149,8 @@ def line_for(now_ist: datetime, source: str, position: Any, *, bid: float, ask: 
         line["params_sha"] = params_digest(params)
         if first_look:
             line["params"] = params
+    if receipts is not None and source == "FNO_PAPER":
+        line["quote_evidence"] = _directional_fields(position, receipts)
     return json.dumps(line, separators=(",", ":"), sort_keys=True, default=str)
 
 
@@ -168,7 +228,8 @@ def _ensure_writer() -> "_Writer":
 
 
 def record(now_ist: datetime, source: str, position: Any, *, bid: float, ask: float, ltp: float,
-           fut: Optional[float], decision: Any, params: Optional[dict] = None) -> bool:
+           fut: Optional[float], decision: Any, params: Optional[dict] = None,
+           receipts: DirectionalReceipts | None = None) -> bool:
     """Queue one look; returns at once (True when queued) and never raises."""
     if not settings.FNO_EXIT_PATH_RECORDING:
         return False
@@ -178,7 +239,7 @@ def record(now_ist: datetime, source: str, position: Any, *, bid: float, ask: fl
             _first_looks.difference_update({seen for seen in _first_looks if seen[0] != key[0]})
         first = key not in _first_looks
         line = line_for(now_ist, source, position, bid=bid, ask=ask, ltp=ltp, fut=fut, decision=decision,
-                        params=params, first_look=first)
+                        params=params, first_look=first, receipts=receipts)
         item = (str(settings.RESEARCH_ARCHIVE_PATH), str(exit_path_file(now_ist.date())), line)
         _ensure_writer().queue.put_nowait(item)
     except queue.Full:

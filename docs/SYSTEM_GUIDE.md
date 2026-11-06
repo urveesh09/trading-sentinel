@@ -22,6 +22,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [N11 paper quote evidence extension](research/simulation/2026-11-05-fno-n12/DIRECTIONAL_QUOTE_EVIDENCE.md) optionally adds displayed size, exact futures identity and provider clocks to the existing held-path recorder. `FNO_N012_FORWARD_EVIDENCE` defaults to false.
+
 The [five-minute shock repair](research/simulation/2026-11-05-fno-n12/SHOCK_REPAIR_RESULTS.md) found 23 opportunities against a required 30 and is retired at the signal-frequency stage.
 
 The [paired reclaim cost study](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_STRESS.md) runs the same standard and doubled stress on both wallets, with stress reserved before entry and realised at settlement. It applies the support, concentration and downside gates.
