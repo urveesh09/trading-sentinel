@@ -15,6 +15,7 @@ from fno_costs import calc_fno_costs
 from fno_engine_mom import MomSignal
 from fno_exit_rules import IST
 from fno_models import Contract, ContractQuote, FnoDirection
+from control_gate import GateTape, ShadowClose, VolatilityReading
 from shared_control import EarnedQuote, EarnedStage, EntryObservation, SharedControl, Tick, VenueMarks
 
 
@@ -362,3 +363,58 @@ def test_closed_child_is_never_added_again_while_its_parent_is_open(monkeypatch)
     out = book.step(Tick(at, 0, marks={"SENSEX": favorable_mark(at, parent)},
                          earned=add_stage(at, parent)))
     assert not out.earned and set(book.positions) == {parent.id}
+
+
+
+def test_causal_gate_does_not_see_same_time_closes_or_later_volatility():
+    start = NOW.replace(hour=9, minute=15)
+    old = ShadowClose(1, NOW - timedelta(minutes=10), -100)
+    exact = ShadowClose(2, NOW, 200)
+    tape = GateTape(start, NOW + timedelta(minutes=20),
+                    [VolatilityReading(NOW + timedelta(seconds=10), 1.0, 1.0)],
+                    [exact, old], need=1, stand_ratio=.9)
+    state = tape.at(NOW)
+    assert state.stand_aside and not state.vol_up and state.paper_count == 1
+    later = tape.at(NOW + timedelta(seconds=10))
+    assert not later.stand_aside and later.vol_up and later.paper_positive
+    assert later.paper_count == 2 and later.paper_sum == 200
+
+
+def test_gate_orders_equal_close_clocks_by_native_id_and_refuses_an_uncovered_day():
+    close_at = NOW - timedelta(minutes=10)
+    tape = GateTape(NOW.replace(hour=9), NOW + timedelta(days=2),
+                    [VolatilityReading(close_at, .8, 1.0)],
+                    [ShadowClose(3, close_at, -100), ShadowClose(2, close_at, 200)],
+                    need=1, stand_ratio=.9)
+    assert tape.at(NOW).paper_sum == -100
+    assert tape.at(NOW).stand_aside
+    assert tape.at(NOW + timedelta(days=1)) is None
+
+
+def test_same_point_in_time_gate_controls_both_venues(monkeypatch):
+    monkeypatch.setattr(settings, "FNO_MAX_LOSS_PER_TRADE", 5000)
+    opens = NOW + timedelta(seconds=10)
+    tape = GateTape(NOW.replace(hour=9), NOW + timedelta(minutes=1),
+                    [VolatilityReading(opens, 1.0, 1.0)],
+                    [ShadowClose(1, NOW - timedelta(minutes=1), -100),
+                     ShadowClose(2, NOW, 200)], need=1, stand_ratio=.9)
+    book = SharedControl(250_000, gate_tape=tape)
+    out = book.step(Tick(NOW, 0, entries={"NIFTY": observation("NIFTY"), "SENSEX": observation("SENSEX")}))
+    assert [x.reason for x in out.entries] == ["n11:stand_aside"] * 2
+    out = book.step(Tick(opens, 0, entries={"NIFTY": observation("NIFTY", opens)}))
+    assert out.entries[0].reason == "accepted" and out.entries[0].tolerance_reason
+    assert book.positions[out.entries[0].position_id].lots == 2
+
+
+def test_uncovered_entry_gate_keeps_existing_exit_management_running():
+    tape = GateTape(NOW.replace(hour=9), NOW, [VolatilityReading(NOW, .8, 1.0)],
+                    [], need=20, stand_ratio=.9)
+    book = SharedControl(250_000, gate_tape=tape)
+    book.step(Tick(NOW, 0, entries={"NIFTY": observation("NIFTY")}))
+    p, = book.positions.values()
+    later = NOW + timedelta(minutes=5)
+    result = book.step(Tick(later, 0, marks={"NIFTY": marks(later, p, future=p.stop_underlying)},
+                            entries={"SENSEX": observation("SENSEX", later)}))
+    assert result.exits[0].reason == "underlying_stop"
+    assert result.entries[0].reason == "n11:gate_evidence_unavailable"
+    assert not book.positions

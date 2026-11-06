@@ -17,6 +17,7 @@ from fno_exit_rules import IST, evaluate_single_leg_exit, live_single_leg_exit_p
 from fno_positions import FnoPosition
 from fno_shared_risk import entry_halts, policy_from_settings
 from fno_underlyings import SPECS
+from control_gate import GateTape
 
 
 VENUES = ("NIFTY", "SENSEX")
@@ -29,9 +30,9 @@ class EntryObservation:
     chain: ChainSnapshot
     regime: str
     is_expiry_day: bool
-    stand_aside: bool
-    vol_up: bool
-    paper_positive: bool
+    stand_aside: bool | None = None
+    vol_up: bool | None = None
+    paper_positive: bool | None = None
     spread_preferred: bool = False
 
 
@@ -114,10 +115,11 @@ class SharedControl:
     separate clock/coverage check before scoring any result.
     """
 
-    def __init__(self, allocation: float):
+    def __init__(self, allocation: float, *, gate_tape: GateTape | None = None):
         if not isfinite(allocation) or allocation <= 0:
             raise ValueError("allocation must be positive and finite")
         self.allocation = allocation
+        self._gate_tape = gate_tape
         self.positions: dict[int, FnoPosition] = {}
         self.closes: list[Close] = []
         self._fees: dict[int, float] = {}
@@ -354,7 +356,16 @@ class SharedControl:
 
         if key in self._entries:
             return reject("bar_already_entered")
-        if obs.stand_aside:
+        if self._gate_tape is not None:
+            gate = self._gate_tape.at(now)
+            if gate is None:
+                return reject("n11:gate_evidence_unavailable")
+            stand_aside, vol_up, paper_positive = gate.stand_aside, gate.vol_up, gate.paper_positive
+        else:
+            stand_aside, vol_up, paper_positive = obs.stand_aside, obs.vol_up, obs.paper_positive
+            if stand_aside is None or vol_up is None or paper_positive is None:
+                return reject("n11:gate_evidence_unavailable")
+        if stand_aside:
             return reject("n11:stand_aside")
         if obs.spread_preferred:
             return reject("vehicle_spread_preferred")
@@ -363,7 +374,7 @@ class SharedControl:
         positions = self.positions.values()
         halts, stance = self._risk(now)
         realised = self._directional_net.get(day, 0.0)
-        ceiling = fno_n11.lot_ceiling(signal.strategy, now.hour * 60 + now.minute, obs.vol_up, realised)
+        ceiling = fno_n11.lot_ceiling(signal.strategy, now.hour * 60 + now.minute, vol_up, realised)
         state = EntryState(
             pool=self.equity, open_premium=self._open_premium(),
             open_positions=sum(p.strategy != fno_n11.ADD for p in positions),
@@ -381,7 +392,7 @@ class SharedControl:
         if venue == "NIFTY":
             second = fno_n11.second_lot(
                 first, state, stop_points=abs(chain.forward - signal.stop_underlying),
-                ceiling=ceiling, is_vol_up=obs.vol_up, is_paper_positive=obs.paper_positive,
+                ceiling=ceiling, is_vol_up=vol_up, is_paper_positive=paper_positive,
             )
 
         quote = first.quote
