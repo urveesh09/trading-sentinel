@@ -70,7 +70,7 @@ def quote_from_raw(event, contract):
                          bid_quantity=depth["buy"], ask_quantity=depth["sell"])
 
 
-def entry_liquidity(quote, at):
+def entry_liquidity(quote, at, lots=LOTS):
     if quote is None:
         return "no_selected_strike"
     age = (at - quote.last_trade_time).total_seconds() if quote.last_trade_time else float("inf")
@@ -80,15 +80,15 @@ def entry_liquidity(quote, at):
         return "open_interest_or_volume"
     if not 0 < quote.bid < quote.ask or quote.spread_pct > settings.FNO_MAX_SPREAD_PCT:
         return "spread_or_missing_book"
-    if min(quote.bid_quantity, quote.ask_quantity) < LOTS * quote.contract.lot_size:
+    if min(quote.bid_quantity, quote.ask_quantity) < lots * quote.contract.lot_size:
         return "top_level_depth"
     return None
 
 
-def batch_state(name, at, master, quotes):
+def ladder_snapshot(name, at, master, quotes):
     futures = [q for q in quotes.values() if q.contract.instrument_type == "FUT" and q.ltp > 0]
     if len(futures) != 1:
-        return "no_single_front_future", False, (), ()
+        return None, False
     future, = futures
     expiry = date.fromisoformat(master["option_expiry"])
     _, step = VENUES[name]
@@ -98,9 +98,16 @@ def batch_state(name, at, master, quotes):
                 if row[3] in ("CE", "PE") and abs(row[2] - atm) <= width}
     options = {(q.contract.strike, q.contract.instrument_type): q for token, q in quotes.items() if token in expected}
     full = bool(expected) and expected.issubset(quotes)
-    flat_bids = tuple(sorted(q.contract.token for q in options.values()
-                             if q.bid > 0 and q.bid_quantity >= LOTS * q.contract.lot_size))
     snapshot = ChainSnapshot(at, expiry, future.ltp, None, future.contract.lot_size, future, options)
+    return snapshot, full
+
+
+def batch_state(name, at, master, quotes):
+    snapshot, full = ladder_snapshot(name, at, master, quotes)
+    if snapshot is None:
+        return "no_single_front_future", False, (), ()
+    flat_bids = tuple(sorted(q.contract.token for q in snapshot.quotes.values()
+                             if q.bid > 0 and q.bid_quantity >= LOTS * q.contract.lot_size))
     selected = []
     for right in (OptionType.CE, OptionType.PE):
         picked = select_strike_by_delta(snapshot, right, at)
@@ -112,7 +119,7 @@ def batch_state(name, at, master, quotes):
     return None, full, tuple(selected), flat_bids
 
 
-def exact_batches(folder, hashes, day, master):
+def exact_batches(folder, hashes, day, master, slots=None):
     paths = [name for name in hashes if name.startswith(f"quotes/{day}/")]
     for name in paths:
         if digest(folder / name) != hashes[name]:
@@ -128,10 +135,12 @@ def exact_batches(folder, hashes, day, master):
             if not str(event["mode"]).startswith("KITE_REST"):
                 continue
             at = stamp(event["received_at_utc"])
-            if minute(at) not in CLOCKS and minute(at) != FLAT:
-                continue
             name = event["contract"]["underlying"]
             if name not in master or at < observed[name] or master[name]["option_expiry"] == day:
+                continue
+            slot = minute(at)
+            wanted = slot in CLOCKS or slot == FLAT if slots is None else slot in slots.get(name, ())
+            if not wanted:
                 continue
             contract = exact_contract(event, name, master[name])
             if contract is None:

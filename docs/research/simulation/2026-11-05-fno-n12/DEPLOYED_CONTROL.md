@@ -108,3 +108,28 @@ The 241 full-ladder pairs are 23.6% of the eligible two-venue checkpoints. Fifte
 This preflight verified intraday OI directly from the raw recorder packets when available. It did not transplant the earlier analytics snapshot or manufacture bid and ask from minute closes. The next data check is whether missing clocks coincide with fired native signals and whether their exact selected contracts remain observable until close. A full 2025–2026 shared-wallet result still needs broader usable quote evidence and chronological management.
 
 To reproduce, send [the master reader](capture_control_masters.py) to `docker exec -i --user quantuser python-engine python -B -`, gzip its stdout with `mtime=0` into `_local/deployed-control-masters.json.gz` in Dev, and run `python control_quote_coverage.py <local-export>`. A second full run reproduced the [saved report](control-quote-coverage.json), which lists source hashes and every covered clock. The first run stopped on a zero-sized depth field normalized to null. The corrected reader represents both as zero and refuses insufficient depth. The focused research suite passed 26 checks, including the clock skew, last-trade age and zero-depth cases. No new strategy score was calculated.
+
+## Native signal and held-contract coverage slice
+
+Keep the same 31 finalized dates and dated masters. Reconstruct the ordered native N11 signals on a fixed clock one second after each five-minute bar closes. Use the archived front-future bars, NIFTY participation for SENSEX and the prior-day NIFTY ADX rule at its native threshold. Use the latest same-day logged market regime already available at each clock. Report absent regime, missing five-minute bars and truncated prior front-contract history separately. The historical signal study uses neither wallet acceptance nor observed trade outcomes.
+
+At a fired signal, take the first archived same-venue batch before the next minute. Require the exact verified ladder for the native selected strike and apply the evidence gates in the signal's direction. Report one- and two-lot depth separately. For a selected contract with eligible depth, track the same option token and dated front future through the 15:10 hard-flat minute. Count usable bids and maximum receipt gaps, including an explicit 90-second diagnostic and the native ten-second comparison. A missing path is unavailable. Preserve all fired clocks, refusals and source identities. No entry or exit prices are used for a P&L result. No rollout or runtime change. Rollback is to retire this audit and retain its evidence.
+
+### Results at fired signal clocks
+
+The ordered N11 evaluator produced 39 signal checkpoints on 15 archived dates. These are representative market-signal evaluations on the declared clock. The historical strategy had a different scan phase and the audit does not apply wallet acceptance or trade deduplication. Of the 39, 31 had a complete archived front-future lookback and retest context under the audit's rules. Seven eligible venue-dates had truncated futures inputs. Forty-eight early venue checkpoints lacked any causal same-day regime observation, and four fired checkpoints had incomplete earlier retest context. The [saved audit](control-signal-coverage.json) retains the affected dates and flags.
+
+| Evidence | NIFTY | SENSEX | Total |
+|---|---:|---:|---:|
+| Fired checkpoints | 18 | 21 | 39 |
+| Usable exact-ladder entry with one-lot depth | 12 | 15 | 27 |
+| Usable entry with two-lot depth | 12 | 12 | 24 |
+| One-lot bid on the selected token in the hard-flat minute | 11 | 12 | 23 |
+| Two-lot bid on the selected token in the hard-flat minute | 11 | 8 | 19 |
+| One-lot path to hard flat with no gap over 90 seconds | 4 | 4 | 8 |
+| Two-lot path to hard flat with no gap over 90 seconds | 0 | 0 | 0 |
+| Native ten-second path to hard flat at either size | 0 | 0 | 0 |
+
+Seven fired checkpoints lacked a complete verified ladder and five lacked a recorder batch after the signal within the minute. Among the 31 checkpoints with complete signal context, 19 had usable one-lot entry evidence and 16 had two-lot evidence. Of 26 fired checkpoints on dual-eligible dates, nine coincided with the strict paired-clock result. Both venues fired on four representative clocks. The best observed one-lot path still had a 61.34-second gap. Requiring a path through hard flat gives a common coverage horizon. An actual trade can exit earlier, so the result does not determine its exit or profitability.
+
+`python control_signal_coverage.py <local-export>` verified the pre-cutoff quote hashes, dated masters and native source, with a separate hash for the scoped futures and regime rows so the export can rotate. A second run reproduced the saved results. The prior synchronized-clock report also reproduced after reusing its quote helpers. Twenty-nine focused checks passed, including synthetic tests for regime lookahead, first-batch selection and exact same-batch exit marks. This research contributes entry feasibility and explains why the archive cannot presently establish the deployed two-venue lifecycle. Keep the November 3–5 observed Production reconciliation separate. No new strategy or P&L was scored.
