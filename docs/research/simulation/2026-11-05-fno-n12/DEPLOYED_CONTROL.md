@@ -55,3 +55,31 @@ The native ordered N11 route reproduced **5 of 5** recorded direction, strategy 
 The independently scheduled quote recorder supplied each listed packet. All five option asks and all five futures marks differ from the recorded decision snapshot. Strike selection, age checks, lot sizing and reservation timing still require the actual decision chain and complete decision-time risk state. The logged selected ask times initial quantity matched structural maximum loss for each position. SENSEX's two two-lot entries were ordinary N11 sizing. The deployed N11T tolerance applies only to NIFTY paper entries. [Production entry orchestration](../../../../python-engine/fno_orchestrator.py), [recorder schedule](../../../../python-engine/scheduler_setup.py).
 
 `python deployed_entry_audit.py <local-export>` validated the export database and three quote segment hashes, checked the pure source against Production `398d44ad`, and reproduced the [saved five-row audit](deployed-entry-audit.json) on a second run. Production and Dev differ in the excluded opening-drive storage functions and two unrelated config declarations. Earlier runtime revisions are still uncertain. The first audit run exposed text tokens in the quote archive and integer tokens in the ledger. The completed audit normalizes the representation and independently checks symbol, expiry and lot size. The unchanged exit auditor reproduced five exits and ₹4,254.93. The four focused engine suites passed 89 tests and emitted an asynchronous shadow cleanup warning after completion. The full historical two-venue benchmark remains unavailable with the current SENSEX open-interest coverage.
+
+## Production risk and secondary OI evidence slice
+
+Read the existing Production database in a single read-only transaction, scoped to the five known decisions and their strictly earlier N11 reference closes. Capture the three daily ADX and volatility rows and only matching paper reserve and dispatch records. Recompute selected-contract affordability, shared single-leg premium usage, native lot ceilings, NIFTY-only tolerance and exchange-specific cash reserves using the deployed rules. Require all five lot counts and full reservation amounts to agree. Check settings only through an explicit numeric and Boolean allowlist. The selected contract remains an observed input because the original competing chain is absent.
+
+Separately inspect immutable operational SENSEX analytics exports through October 28. Verify file hashes and count dates with positive intraday OI. This secondary source establishes sampled OI availability only. Do not use it as the decision chain or infer fills from its LTP. No runtime, configuration, trading or rollout change. Rollback is to retire the research audit and retain the scoped evidence.
+
+### Observed gate and cash reconciliation
+
+Production's stored prior-day ADX confirmed HIGH on all three days, with values 31.13, 30.69 and 30.66 against the threshold of 30. The volatility ratios were 1.23, 1.22 and 1.18, so the volatility gate allowed two lots. The strictly prior 20-trade reference total was ₹19,159.13 for IDs 55–58 and ₹19,665.05 for ID 59. Those samples contained 17 and 16 research seed trades respectively. The paper reference's positive reading therefore still leaned heavily on earlier research.
+
+| ID | Native ceiling | Native and recorded lots | Held single-leg premium | Reserved cash | N11T second-lot explanation |
+|---|---:|---:|---:|---:|---|
+| 55 | 2 | 2 | ₹0.00 | ₹13,468.76 | SENSEX native sizing |
+| 56 | 2 | 2 | ₹0.00 | ₹13,874.93 | SENSEX native sizing |
+| 57 | 2 | 2 | ₹0.00 | ₹18,483.00 | Native plan already had two lots |
+| 58 | 2 | 1 | ₹18,427.50 | ₹10,061.71 | Open-premium cap refused the second lot |
+| 59 | 1 | 1 | ₹10,010.00 | ₹9,993.43 | Prior ₹765.59 loss cut the lot ceiling |
+
+For ID 58, two lots would have raised total open premium to ₹38,447.50 against a ₹37,518.60 limit. For ID 59, the earlier loss independently set the one-lot ceiling. The deployed tolerance was enabled and produced zero raised entries in these five decisions. All recorded cash reservations and dispatch states matched. The reserved amounts equal full premium plus the exchange-specific zero-premium exit fee. This replays sizing conditional on the chosen contract. The competing option ladder and original quote freshness remain unavailable for an independent strike and entry replay.
+
+The [scoped Production inputs](deployed-risk-inputs.json) were captured using `docker exec -i --user quantuser python-engine python -B -` with [the capture script](deployed_risk_capture.py) as stdin. The capture used a single SQLite read-only transaction and an allowlist of risk settings. It reproduced exactly on a second read. `python deployed_risk_audit.py <local-export>` reproduced the [five sizing results](deployed-risk-audit.json). The focused N11, entry-plan and adaptive-risk suites passed 53 tests. The atlas regenerated without changes. No Production files, runtime settings or orders were changed.
+
+### Secondary SENSEX OI coverage
+
+The 31 verified operational archives contain 2,605 SENSEX analytics snapshots across 37 dates from September 2 through October 28, 2026. Of 161,510 distinct rows, 161,329 have positive OI. Every date has positive OI. All 37 overlap the 2026 NIFTY archive, 22 overlap the dated SENSEX minute snapshots and 31 overlap the separate quote-recorder calendar. These are date-level joins. A candidate tape still needs verification of contract, clock, depth and quote freshness on each decision. The analytics archive retains time, LTP, OI and volume, and lacks bid, ask and quantities. It contributes no additional 2025 dates.
+
+BSE's direct feed documents timestamped intraday derivative OI broadcasts. Its historical-data catalogue does not establish that the historical product includes those broadcasts alongside replayable quotes. A qualifying sample would need both the intraday OI messages and the quote/depth data, plus contract identity. [BSE intraday feed specification](https://www.bseindia.com/downloads1/BSE_DIRECT_NFCAST_Manual.pdf), [BSE data catalogue](https://www.bseindia.com/downloads1/Information_Products_Pricing_Sheet.pdf).

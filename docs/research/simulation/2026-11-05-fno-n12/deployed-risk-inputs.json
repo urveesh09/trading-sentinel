@@ -1,0 +1,626 @@
+{
+  "admissions": [
+    {
+      "claimed_at": "2026-11-03T05:21:05.013271+00:00",
+      "created_at": "2026-11-03T05:21:04.984643+00:00",
+      "dispatch_state": "FILLED",
+      "outcome": "filled",
+      "planned_premium_rs": 13416.0,
+      "position_ref": "fno_position:55",
+      "reserve_state": "CONSUMED",
+      "resolved_at": "2026-11-03T05:21:05.046690+00:00",
+      "tradingsymbol": "SENSEX26N0576600CE",
+      "worst_case_cash_rs": 13468.76336271088
+    },
+    {
+      "claimed_at": "2026-11-04T07:11:15.681807+00:00",
+      "created_at": "2026-11-04T07:11:15.657923+00:00",
+      "dispatch_state": "FILLED",
+      "outcome": "filled",
+      "planned_premium_rs": 13822.0,
+      "position_ref": "fno_position:56",
+      "reserve_state": "CONSUMED",
+      "resolved_at": "2026-11-04T07:11:15.702270+00:00",
+      "tradingsymbol": "SENSEX26N0577000CE",
+      "worst_case_cash_rs": 13874.93172326996
+    },
+    {
+      "claimed_at": "2026-11-05T04:15:24.033297+00:00",
+      "created_at": "2026-11-05T04:15:24.011192+00:00",
+      "dispatch_state": "FILLED",
+      "outcome": "filled",
+      "planned_premium_rs": 18427.5,
+      "position_ref": "fno_position:57",
+      "reserve_state": "CONSUMED",
+      "resolved_at": "2026-11-05T04:15:24.055050+00:00",
+      "tradingsymbol": "NIFTY26N0924400CE",
+      "worst_case_cash_rs": 18483.00039427945
+    },
+    {
+      "claimed_at": "2026-11-05T05:21:28.132782+00:00",
+      "created_at": "2026-11-05T05:21:28.100967+00:00",
+      "dispatch_state": "FILLED",
+      "outcome": "filled",
+      "planned_premium_rs": 10010.0,
+      "position_ref": "fno_position:58",
+      "reserve_state": "CONSUMED",
+      "resolved_at": "2026-11-05T05:21:28.158750+00:00",
+      "tradingsymbol": "NIFTY26N0924350CE",
+      "worst_case_cash_rs": 10061.7088561518
+    },
+    {
+      "claimed_at": "2026-11-05T06:00:27.832982+00:00",
+      "created_at": "2026-11-05T06:00:27.770442+00:00",
+      "dispatch_state": "FILLED",
+      "outcome": "filled",
+      "planned_premium_rs": 9941.75,
+      "position_ref": "fno_position:59",
+      "reserve_state": "CONSUMED",
+      "resolved_at": "2026-11-05T06:00:27.854475+00:00",
+      "tradingsymbol": "NIFTY26N0924400CE",
+      "worst_case_cash_rs": 9993.428113950766
+    }
+  ],
+  "adx": [
+    {
+      "adx14": 31.128825645355636,
+      "bars": 285,
+      "last_bar": "2026-11-02",
+      "recorded_at": "2026-11-03T09:46:10.735173+05:30",
+      "session_date": "2026-11-03",
+      "side": "HIGH",
+      "threshold": 30.0
+    },
+    {
+      "adx14": 30.692050040753447,
+      "bars": 285,
+      "last_bar": "2026-11-03",
+      "recorded_at": "2026-11-04T09:45:37.771751+05:30",
+      "session_date": "2026-11-04",
+      "side": "HIGH",
+      "threshold": 30.0
+    },
+    {
+      "adx14": 30.66241730980517,
+      "bars": 285,
+      "last_bar": "2026-11-04",
+      "recorded_at": "2026-11-05T09:45:22.089888+05:30",
+      "session_date": "2026-11-05",
+      "side": "HIGH",
+      "threshold": 30.0
+    }
+  ],
+  "historical_oi": {
+    "dates": {
+      "2026-09-02": {
+        "first": "2026-09-02 09:22:00",
+        "last": "2026-09-02 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-03": {
+        "first": "2026-09-03 09:22:00",
+        "last": "2026-09-03 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-04": {
+        "first": "2026-09-04 09:22:00",
+        "last": "2026-09-04 15:27:00",
+        "positive_rows": 4571,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-07": {
+        "first": "2026-09-07 09:22:00",
+        "last": "2026-09-07 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-08": {
+        "first": "2026-09-08 09:22:00",
+        "last": "2026-09-08 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-09": {
+        "first": "2026-09-09 09:22:00",
+        "last": "2026-09-09 15:27:00",
+        "positive_rows": 4586,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-10": {
+        "first": "2026-09-10 09:22:00",
+        "last": "2026-09-10 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-11": {
+        "first": "2026-09-11 09:22:00",
+        "last": "2026-09-11 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-15": {
+        "first": "2026-09-15 09:32:00",
+        "last": "2026-09-15 15:27:00",
+        "positive_rows": 4464,
+        "rows": 4464,
+        "snapshots": 72
+      },
+      "2026-09-16": {
+        "first": "2026-09-16 09:27:00",
+        "last": "2026-09-16 15:27:00",
+        "positive_rows": 4526,
+        "rows": 4526,
+        "snapshots": 73
+      },
+      "2026-09-17": {
+        "first": "2026-09-17 09:22:00",
+        "last": "2026-09-17 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-21": {
+        "first": "2026-09-21 09:22:00",
+        "last": "2026-09-21 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-22": {
+        "first": "2026-09-22 09:22:00",
+        "last": "2026-09-22 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-23": {
+        "first": "2026-09-23 09:32:00",
+        "last": "2026-09-23 15:27:00",
+        "positive_rows": 4464,
+        "rows": 4464,
+        "snapshots": 72
+      },
+      "2026-09-24": {
+        "first": "2026-09-24 09:22:00",
+        "last": "2026-09-24 15:27:00",
+        "positive_rows": 4512,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-25": {
+        "first": "2026-09-25 09:42:00",
+        "last": "2026-09-25 15:27:00",
+        "positive_rows": 4340,
+        "rows": 4340,
+        "snapshots": 70
+      },
+      "2026-09-28": {
+        "first": "2026-09-28 09:22:00",
+        "last": "2026-09-28 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-29": {
+        "first": "2026-09-29 09:22:00",
+        "last": "2026-09-29 15:27:00",
+        "positive_rows": 4587,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-09-30": {
+        "first": "2026-09-30 09:22:00",
+        "last": "2026-09-30 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-10-01": {
+        "first": "2026-10-01 09:22:00",
+        "last": "2026-10-01 15:27:00",
+        "positive_rows": 4570,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-10-05": {
+        "first": "2026-10-05 09:22:00",
+        "last": "2026-10-05 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-10-06": {
+        "first": "2026-10-06 09:22:00",
+        "last": "2026-10-06 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-10-07": {
+        "first": "2026-10-07 09:22:00",
+        "last": "2026-10-07 15:27:00",
+        "positive_rows": 4588,
+        "rows": 4588,
+        "snapshots": 74
+      },
+      "2026-10-08": {
+        "first": "2026-10-08 09:22:00",
+        "last": "2026-10-08 15:27:00",
+        "positive_rows": 4645,
+        "rows": 4650,
+        "snapshots": 75
+      },
+      "2026-10-09": {
+        "first": "2026-10-09 09:22:00",
+        "last": "2026-10-09 15:27:00",
+        "positive_rows": 4650,
+        "rows": 4650,
+        "snapshots": 75
+      },
+      "2026-10-12": {
+        "first": "2026-10-12 09:22:00",
+        "last": "2026-10-12 15:27:00",
+        "positive_rows": 4650,
+        "rows": 4650,
+        "snapshots": 75
+      },
+      "2026-10-13": {
+        "first": "2026-10-13 09:22:00",
+        "last": "2026-10-13 15:27:00",
+        "positive_rows": 3472,
+        "rows": 3472,
+        "snapshots": 56
+      },
+      "2026-10-14": {
+        "first": "2026-10-14 09:22:00",
+        "last": "2026-10-14 10:47:00",
+        "positive_rows": 1178,
+        "rows": 1178,
+        "snapshots": 19
+      },
+      "2026-10-15": {
+        "first": "2026-10-15 09:22:00",
+        "last": "2026-10-15 15:27:00",
+        "positive_rows": 4365,
+        "rows": 4402,
+        "snapshots": 71
+      },
+      "2026-10-16": {
+        "first": "2026-10-16 09:22:00",
+        "last": "2026-10-16 10:07:00",
+        "positive_rows": 604,
+        "rows": 620,
+        "snapshots": 10
+      },
+      "2026-10-19": {
+        "first": "2026-10-19 09:22:00",
+        "last": "2026-10-19 15:27:00",
+        "positive_rows": 4649,
+        "rows": 4650,
+        "snapshots": 75
+      },
+      "2026-10-21": {
+        "first": "2026-10-21 09:22:00",
+        "last": "2026-10-21 15:27:00",
+        "positive_rows": 4643,
+        "rows": 4650,
+        "snapshots": 75
+      },
+      "2026-10-22": {
+        "first": "2026-10-22 09:22:00",
+        "last": "2026-10-22 15:27:00",
+        "positive_rows": 4650,
+        "rows": 4650,
+        "snapshots": 75
+      },
+      "2026-10-23": {
+        "first": "2026-10-23 09:22:00",
+        "last": "2026-10-23 15:27:00",
+        "positive_rows": 4649,
+        "rows": 4650,
+        "snapshots": 75
+      },
+      "2026-10-26": {
+        "first": "2026-10-26 09:22:00",
+        "last": "2026-10-26 15:37:00",
+        "positive_rows": 4774,
+        "rows": 4774,
+        "snapshots": 77
+      },
+      "2026-10-27": {
+        "first": "2026-10-27 09:22:00",
+        "last": "2026-10-27 15:37:00",
+        "positive_rows": 4774,
+        "rows": 4774,
+        "snapshots": 77
+      },
+      "2026-10-28": {
+        "first": "2026-10-28 09:22:00",
+        "last": "2026-10-28 15:37:00",
+        "positive_rows": 4774,
+        "rows": 4774,
+        "snapshots": 77
+      }
+    },
+    "manifests_sha256": {
+      "20260910T101001Z": "e0b5e4705d2790c12178e15b7cd56f015d7070b741e88fee018de740773affa4",
+      "20260911T101001Z": "cfe5dfcec27f3ad5a3794bcdbacf1a0c6b4fcfe4f58661607c178bde83a15d39",
+      "20260915T101001Z": "609cd376fd36f7a3db7a04239223cbd0d59ec04b86a572cfa3cd879a4c59c71a",
+      "20260916T101001Z": "07b0edc3c0653f7c6493266df00166f3fe2db4c5652c0fe0fa10f76ceced500f",
+      "20260917T101001Z": "cc480fa5b3881af9d8fa74510cd6c14cb84db5fcca2e25886a9e79a39f74c5dc",
+      "20260921T101001Z": "e985d5d2d6caef3a4ab01ad132a35ff37adee87d0e4362026d827f6305fbcec8",
+      "20260923T101001Z": "0dcf418de2f9c8ec458e8e00a5c815322c4be617b5f5e7650e9362a2b4f21ebc",
+      "20260924T101001Z": "d554c614121c23641579e6fe9d902225568878668c00fbf330a0fd413730cb94",
+      "20260925T101001Z": "71836aea6c15da417e324273e85405b1db0c4cbfbe26b8958b6a7a3cf173cfd0",
+      "20260929T101001Z": "774afa47aa00e363eab7419d9318bdb885225b6381343941aed30e5595ee02b5",
+      "20260930T101001Z": "72d56bb62fb9bc6a76d69e4cb98afbe89d1cc833e6cecd841f3ee423afac0ea4",
+      "20261001T101001Z": "0fb575e2fab2f825e267e86405464a7d5f9cb9f7181a777d28329a947869689d",
+      "20261005T101000Z": "a9f985597894b4b4a28c4042652c361bfa53b54f41d7d2122917d8be2fd8ae4f",
+      "20261006T101002Z": "0a5aed82a044d5d340a1fedc429e17d22f220e9aa573830b22c864acb0e7421d",
+      "20261007T101000Z": "4c6241c5e2c8a15aa5c2fc7dd945295c3cb635f7c221ef85c71297282c801964",
+      "20261008T101001Z": "90eca02234027d1c4379ae1927daa02ecd6ddb0c18baf79f5a6d94a8191aab50",
+      "20261009T101001Z": "00823112ad5073b86ea0e3381c2840f2ec8c293cafd1d70edbace991d7d20b42",
+      "20261013T101001Z": "d6ca07cb217072645418f9f91ff92af41f4fa22b986158825031c3d48f46ded9",
+      "20261014T101102Z": "c5d236b8325835ae8a45f445349c34e3353185c3b2b69264f87df1fc0ec0dc08",
+      "20261015T101001Z": "0bc0c5d7cf12f4d5c4a88bcc72391fd901869e7729021ed07584bd2f7746dae9",
+      "20261019T101001Z": "0cc8ab14b6a386e565731f913ffedcd87243f6ed6d3b21d1051577d6e872634d",
+      "20261021T101001Z": "44e261dc977278f05542df7a74c0fb3f9754507783f7becbdf2f1dca6660529c",
+      "20261022T101002Z": "ce47a4a30fc5b7e58688b9e5392dd105733c2f287c2ddfcc11023e9647895eb7",
+      "20261023T101002Z": "e690bb0765c2c5fe7e5d7ad77fb429f425f6dc8efb12dbf2db4a37e759177f91",
+      "20261026T102010Z": "19d5001bdd43a91251bc53a1d6dce863b48bd51ef4776d5538d20fe7bd12ff11",
+      "20261027T102010Z": "561128b708edcc9ce43cc6abf3dd009f9106c5cd2cb9946a7a6323bc2f2a31cb",
+      "20261029T102014Z": "d1b3feb61dadde2b90005cb9bd386ae1bc2a8698ec4265595afd252c0987f65d",
+      "20261102T102014Z": "c960dcf54259dc653857c2372959343b3f4d4b53184da25ca8241593151f1f4c",
+      "20261103T102013Z": "25651d12f1424c4cfe2dd04334eed49e45453b39d4a7819c8a45dcf73fd50a68",
+      "20261104T102009Z": "565d587253e5446a34fae11a872fbdb5fc3d2e5437ffd15af358fbaab1e2b6e4",
+      "20261105T102014Z": "7c84b0973654537061df65dd043e23c891d98b6ff9e20ce560022eb80f7f84aa"
+    }
+  },
+  "paper_history": [
+    {
+      "exit_time": "2026-06-01T15:10:59+05:30",
+      "id": 1,
+      "net": 5016.9,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-06-12T13:28:59+05:30",
+      "id": 2,
+      "net": -2538.25,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-06-19T12:02:59+05:30",
+      "id": 3,
+      "net": -1199.39,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-07-22T15:10:59+05:30",
+      "id": 4,
+      "net": 1381.59,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-07-22T15:10:59+05:30",
+      "id": 5,
+      "net": 839.74,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-08-17T12:18:59+05:30",
+      "id": 6,
+      "net": -1165.98,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-08-19T14:06:59+05:30",
+      "id": 7,
+      "net": -685.65,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-08-27T15:10:59+05:30",
+      "id": 8,
+      "net": 478.85,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-08-27T15:10:59+05:30",
+      "id": 9,
+      "net": -790.0,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-09-07T13:53:59+05:30",
+      "id": 10,
+      "net": -1665.21,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-09-24T14:02:59+05:30",
+      "id": 11,
+      "net": 6060.18,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-09-28T11:10:59+05:30",
+      "id": 12,
+      "net": -86.66,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-09-28T11:30:59+05:30",
+      "id": 13,
+      "net": 771.48,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-09-28T14:46:59+05:30",
+      "id": 14,
+      "net": 2126.65,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-05T11:15:59+05:30",
+      "id": 15,
+      "net": 2075.29,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-07T10:17:59+05:30",
+      "id": 16,
+      "net": -2033.39,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-08T15:10:59+05:30",
+      "id": 17,
+      "net": 8999.32,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-09T12:30:59+05:30",
+      "id": 18,
+      "net": -752.68,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-09T15:10:59+05:30",
+      "id": 19,
+      "net": 238.49,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-14T14:25:59+05:30",
+      "id": 20,
+      "net": -1660.19,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-21T15:10:59+05:30",
+      "id": 21,
+      "net": 11041.2,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-10-23T15:10:59+05:30",
+      "id": 22,
+      "net": 1334.28,
+      "source": "research_seed"
+    },
+    {
+      "exit_time": "2026-11-02T12:12:47.820539+05:30",
+      "id": 23,
+      "net": -2885.13175710812,
+      "source": "N11_PAPER"
+    },
+    {
+      "exit_time": "2026-11-02T12:33:47.813244+05:30",
+      "id": 25,
+      "net": -1468.12458827138,
+      "source": "N11_PAPER"
+    },
+    {
+      "exit_time": "2026-11-02T13:01:07.839787+05:30",
+      "id": 24,
+      "net": -773.5981004915799,
+      "source": "N11_PAPER"
+    },
+    {
+      "exit_time": "2026-11-05T11:01:02.421345+05:30",
+      "id": 92,
+      "net": -660.0518784735842,
+      "source": "N11_PAPER"
+    }
+  ],
+  "positions": [
+    {
+      "entry_time": "2026-11-03T10:51:04.968705+05:30",
+      "id": 55,
+      "risk_fee_reserve_rupees": 52.763362710879996
+    },
+    {
+      "entry_time": "2026-11-04T12:41:15.620914+05:30",
+      "id": 56,
+      "risk_fee_reserve_rupees": 52.931723269959996
+    },
+    {
+      "entry_time": "2026-11-05T09:45:24.000601+05:30",
+      "id": 57,
+      "risk_fee_reserve_rupees": 55.500394279450006
+    },
+    {
+      "entry_time": "2026-11-05T10:51:28.081144+05:30",
+      "id": 58,
+      "risk_fee_reserve_rupees": 51.7088561518
+    },
+    {
+      "entry_time": "2026-11-05T11:30:27.756350+05:30",
+      "id": 59,
+      "risk_fee_reserve_rupees": 51.678113950765
+    }
+  ],
+  "second_lots": [],
+  "settings": {
+    "FNO_ADAPTIVE_RISK_ENABLED": true,
+    "FNO_MAX_LOSS_PER_TRADE": 6250.0,
+    "FNO_MAX_LOTS": 2,
+    "FNO_MAX_LOTS_PROVEN": 3,
+    "FNO_MAX_OPEN_PREMIUM_PCT": 0.15,
+    "FNO_MAX_RISK_PCT": 0.02,
+    "FNO_N11_LOW_TWO_LOTS_BEFORE_MIN": 720,
+    "FNO_N11_STAND_NEED": 20,
+    "FNO_N11_STAND_RATIO": 0.9,
+    "FNO_N11_TOLERANCE_ENABLED": true,
+    "FNO_N11_TOLERANCE_RUPEES": 6250.0,
+    "FNO_N11_TOLERANCE_STOP_FACTOR": 1.75,
+    "FNO_PAPER_BANKROLL": 250000.0,
+    "FNO_PAPER_BOOK_START": "2026-11-03",
+    "FNO_RISK_CUT1_DRAWDOWN_PCT": 0.04,
+    "FNO_RISK_CUT2_DRAWDOWN_PCT": 0.08,
+    "FNO_RISK_NEAR_PEAK_PCT": 0.02,
+    "FNO_RISK_UP1_MIN_PF": 1.3,
+    "FNO_RISK_UP1_MIN_TRADES": 20,
+    "FNO_RISK_UP2_MIN_PF": 1.5,
+    "FNO_RISK_UP2_MIN_TRADES": 40,
+    "FNO_STOP_PREMIUM_PCT": 0.25,
+    "FNO_TWO_STRIKE_LOSSES": 2
+  },
+  "volatility": [
+    {
+      "above_line": 1,
+      "atr_pct": 1.2564764066742076,
+      "recorded_at": "2026-11-03T09:31:10.770739+05:30",
+      "session_date": "2026-11-03",
+      "usual": 1.0251240985409564,
+      "vol_up": 1
+    },
+    {
+      "above_line": 1,
+      "atr_pct": 1.2596045141371257,
+      "recorded_at": "2026-11-04T09:30:38.114383+05:30",
+      "session_date": "2026-11-04",
+      "usual": 1.0342407550002712,
+      "vol_up": 1
+    },
+    {
+      "above_line": 1,
+      "atr_pct": 1.2411575189118096,
+      "recorded_at": "2026-11-05T09:30:22.470659+05:30",
+      "session_date": "2026-11-05",
+      "usual": 1.0501067785094729,
+      "vol_up": 1
+    }
+  ]
+}
