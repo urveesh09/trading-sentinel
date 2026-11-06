@@ -1,0 +1,16 @@
+{
+  "input_manifests": {
+    "2023": "e40fef86b46b17f07d31ba4f214e9c776eac1d4fee3cfc52f7cdfb43c5cc8a45",
+    "2024": "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+    "2025": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+    "2026": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555"
+  },
+  "separate_existing_exam": "2022-01-01 through 2022-05-31, frozen A",
+  "source": {
+    "PRIOR_RANGE_RECLAIM.md": "90a49d3c2fdaafc1f3c6dee9c5bb5c7b7dd9735e8bb29be6d6efd40e1dbeecd0",
+    "anatomy.py": "b36692b00d500dc3289ec752db7316f0bf93bc22c72e7bbaf595b2c8fe6d086c",
+    "prior_range_reclaim.py": "6031c5b0f6eb606c0671b463ebf17f2d580e38652de79c993ffc3a993a62e0a2",
+    "test_prior_range_reclaim.py": "828d07846d381312fd954a447caa5358801ea8063dedaaf9142c809e1ed2c72b"
+  },
+  "untouched_candidate_window": "2021-07-01 through 2021-12-31, subject to pre-price coverage"
+}

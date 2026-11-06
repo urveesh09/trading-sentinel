@@ -22,6 +22,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [prior-session range reclaim](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_RECLAIM.md) is a frozen NIFTY strategy hypothesis in Dev research. The first pass counts independent signal opportunities without scoring trades.
+
 The [2022 data-source review](research/simulation/2026-11-05-fno-n12/EXAM_DATA_SOURCES.md) separates the guarded Breeze exam source from alternate contract-specific candle and exchange tick products. The alternate products are documented possibilities awaiting sample qualification.
 
 The [offline paired driver](research/simulation/2026-11-05-fno-n12/PAIRED_REPLAY.md) runs N11T and frozen N012-A in separate directional wallets on the same tape. It traces changed entries and withholds the comparison when either arm loses its held quote path. Supplied spread events are conditional inputs.

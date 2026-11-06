@@ -24,6 +24,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+Count the [prior-session range reclaim](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_RECLAIM.md) on the four frozen development windows. Require 30 signals before the standalone price study. Keep the original 2022 A exam and proposed 2021 challenger holdout separate.
+
 The [2022 data-source review](research/simulation/2026-11-05-fno-n12/EXAM_DATA_SOURCES.md) leaves the guarded Breeze path first. If the owner uses an alternate source, qualify contract and clock parity on a seen date and freeze one common data provenance plan before opening the exam.
 
 The [paired N11T and N012-A directional driver](research/simulation/2026-11-05-fno-n12/PAIRED_REPLAY.md) is ready for qualified tapes. The synthetic case proves that exit timing changes later SENSEX access. Real comparison still requires complete scan and held clocks and separate spread replay for a combined book. Keep the 2022 exam and forward rollout sequence in force.
