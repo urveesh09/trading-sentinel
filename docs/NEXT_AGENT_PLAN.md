@@ -24,6 +24,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+The [2021 validation runner](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_2021.md) passed synthetic replay against both native controls. Bind the August–December 2021 NIFTY archive and July futures warm-up after owner acquisition, then run the sealed comparison once. Keep the 2022 exam separate.
+
 The [standalone minute adapter](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_MINUTE.md) passed the actual historical reader on synthetic SQLite inputs. Freeze the matching N11 and N11T runs, complete calendar and provenance, and one-shot evaluation before opening the 2021 outcomes.
 
 The [prior-range standalone execution](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_EXECUTION.md) passed synthetic checks. Prepare the untouched 2021 runner with an explicit candle execution model and matched N11T before reading validation outcomes. Keep the 2022 A exam independent.
