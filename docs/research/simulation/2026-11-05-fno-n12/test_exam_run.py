@@ -65,6 +65,28 @@ def test_metadata_requires_expected_minute_and_request_coverage():
         e.validate_metadata(FREEZE, requests, snapshot, "frozen")
 
 
+def test_independent_calendar_covers_both_frozen_windows():
+    calendar = e.read(e.CALENDAR)
+    assert e.nearest(calendar["weekly_expiry_calendar"], "2022-04-12") == "2022-04-13"
+    assert e.nearest(calendar["front_future_expiries"], "2022-05-31") == "2022-06-30"
+    for window_key, expected_sessions, expected_options in (
+        ("primary_window", 101, 80), ("partial_window", 40, 32)
+    ):
+        first, last = FREEZE[window_key]
+        days = [day for day in calendar["sessions"] if first <= day <= last]
+        assert len(days) == expected_sessions
+        assert len(set(days) - set(calendar["weekly_expiry_calendar"])) == expected_options
+        requests = {"window": [first, last], "sessions": days}
+        snapshot = {"coverage": {
+            day: {"weekly_option": e.nearest(calendar["weekly_expiry_calendar"], day),
+                  "front_future": e.nearest(calendar["front_future_expiries"], day)}
+            for day in days
+        }}
+        e.validate_calendar(requests, snapshot, calendar)
+        with pytest.raises(ValueError, match="every expected NSE session"):
+            e.validate_calendar({**requests, "sessions": days[1:]}, snapshot, calendar)
+
+
 def test_snapshot_hash_and_one_shot_marker(tmp_path):
     requests, snapshot = metadata()
     dataset = tmp_path / "dataset"

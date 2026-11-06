@@ -12,7 +12,7 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
-The N012 research harness uses isolated adapters under [the research checkpoint](research/simulation/2026-11-05-fno-n12/CHECKPOINT.md). The current paper book continues to use the existing N11/N11T option lifecycle. Research candidate A is the frozen trend exit over N11T. Candidate B failed its development screen. The one-shot 2022 exam uses a fresh ₹250,000 comparator at standard and doubled costs. The research runner checks the committed request and snapshot manifests and uses one exclusive marker for either exam window. The separate ₹15,000 one-lot diagnostic relies on actual paper admissions and held-path prices, and the configured trial reference is ₹12,500. Research adapters have no runtime, broker, configuration or migration effect.
+The N012 research harness uses isolated adapters under [the research checkpoint](research/simulation/2026-11-05-fno-n12/CHECKPOINT.md). The current paper book continues to use the existing N11/N11T option lifecycle. Research candidate A is the frozen trend exit over N11T. Candidate B failed its development screen. The one-shot 2022 exam uses a fresh ₹250,000 comparator at standard and doubled costs. The research runner checks the committed exchange calendar, request and snapshot manifests and uses one exclusive marker for either exam window. The separate ₹15,000 one-lot diagnostic relies on actual paper admissions and held-path prices, and the configured trial reference is ₹12,500. Research adapters have no runtime, broker, configuration or migration effect.
 
 ## November 5 E03.2 dated-contract fix and refusal evidence
 

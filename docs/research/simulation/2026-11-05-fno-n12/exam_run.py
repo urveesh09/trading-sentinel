@@ -18,6 +18,7 @@ ROOT = HERE.parents[3]
 WORK = HERE / "_local/exam-2022-h1"
 PRIOR = HERE.parent / "2026-11-05-fno-expiry-followup"
 FREEZE = HERE / "exam-2022-h1-freeze.json"
+CALENDAR = HERE / "exam-2022-h1-calendar.json"
 REQUESTS = HERE / "exam-2022-h1-requests.json"
 SNAPSHOT = HERE / "exam-2022-h1-snapshot.json"
 INPUT_FILES = {"dataset/manifest.json", "dataset/breeze.sqlite", "daily.json"}
@@ -34,8 +35,8 @@ def read(path):
 
 
 def committed(path):
-    tracked = subprocess.check_output(["git", "show", f"HEAD:{path.relative_to(ROOT).as_posix()}"], cwd=ROOT)
     current = read(path)
+    tracked = subprocess.check_output(["git", "show", f"HEAD:{path.relative_to(ROOT).as_posix()}"], cwd=ROOT)
     if json.loads(tracked) != current:
         raise ValueError(f"Uncommitted exam input: {path.name}")
     return current
@@ -119,6 +120,22 @@ def validate_metadata(freeze, requests, snapshot, request_sha):
     return option_sessions
 
 
+def nearest(expiries, day):
+    return next((value for value in expiries if value >= day), None)
+
+
+def validate_calendar(requests, snapshot, calendar):
+    first, last = requests["window"]
+    days = [day for day in calendar["sessions"] if first <= day <= last]
+    if requests["sessions"] != days:
+        raise ValueError("Request manifest does not contain every expected NSE session")
+    for day in days:
+        row = snapshot["coverage"][day]
+        if (row["weekly_option"] != nearest(calendar["weekly_expiry_calendar"], day) or
+                row["front_future"] != nearest(calendar["front_future_expiries"], day)):
+            raise ValueError(f"Coverage differs from dated NSE calendar: {day}")
+
+
 def check_snapshot(work, requests, snapshot):
     for name, expected in snapshot["files"].items():
         if digest(work / name) != expected:
@@ -134,8 +151,7 @@ def check_snapshot(work, requests, snapshot):
             weeks != sorted(set(weeks)) or futures != sorted(set(futures))):
         raise ValueError("Wrong dataset, sessions, calendar or replay assumptions")
     for day, row in coverage.items():
-        if (next((value for value in weeks if value >= day), None) != row["weekly_option"] or
-                next((value for value in futures if value >= day), None) != row["front_future"]):
+        if nearest(weeks, day) != row["weekly_option"] or nearest(futures, day) != row["front_future"]:
             raise ValueError(f"Dated expiry mismatch: {day}")
 
 
@@ -255,12 +271,15 @@ def claim_once(work, window, request_sha, snapshot_sha, revision):
 
 
 def main():
-    freeze, requests, snapshot = (committed(path) for path in (FREEZE, REQUESTS, SNAPSHOT))
+    freeze, calendar, requests, snapshot = (committed(path) for path in (FREEZE, CALENDAR, REQUESTS, SNAPSHOT))
     for path in (Path(__file__), HERE / "exam_scoring.py"):
         if digest(path) != requests["sources"][path.name]:
             raise ValueError(f"Changed runner source: {path.name}")
     request_sha = digest(REQUESTS)
     dates = validate_metadata(freeze, requests, snapshot, request_sha)
+    if requests["calendar_sha256"] != digest(CALENDAR):
+        raise ValueError("Changed NSE calendar")
+    validate_calendar(requests, snapshot, calendar)
     os.environ["N12_YEAR"] = "2022"
     import n012_ab as arms
 
