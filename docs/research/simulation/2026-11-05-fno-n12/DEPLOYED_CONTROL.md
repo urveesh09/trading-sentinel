@@ -83,3 +83,28 @@ The [scoped Production inputs](deployed-risk-inputs.json) were captured using `d
 The 31 verified operational archives contain 2,605 SENSEX analytics snapshots across 37 dates from September 2 through October 28, 2026. Of 161,510 distinct rows, 161,329 have positive OI. Every date has positive OI. All 37 overlap the 2026 NIFTY archive, 22 overlap the dated SENSEX minute snapshots and 31 overlap the separate quote-recorder calendar. These are date-level joins. A candidate tape still needs verification of contract, clock, depth and quote freshness on each decision. The analytics archive retains time, LTP, OI and volume, and lacks bid, ask and quantities. It contributes no additional 2025 dates.
 
 BSE's direct feed documents timestamped intraday derivative OI broadcasts. Its historical-data catalogue does not establish that the historical product includes those broadcasts alongside replayable quotes. A qualifying sample would need both the intraday OI messages and the quote/depth data, plus contract identity. [BSE intraday feed specification](https://www.bseindia.com/downloads1/BSE_DIRECT_NFCAST_Manual.pdf), [BSE data catalogue](https://www.bseindia.com/downloads1/Information_Products_Pricing_Sheet.pdf).
+
+## Synchronized market evidence slice
+
+On the frozen recorder dates through October 28, qualify market inputs for the unchanged two-index control. Bind the exact dated Kite masters for NIFTY and SENSEX. Derive each venue's nearest listed option expiry and front future independently. Separate dates when both are eligible from dates when one venue's own expiry blocks regular entry. Reuse the archived provider-packet verifier and native target-delta strike selector.
+
+For each five-minute entry clock from 09:45 through 14:40, check a same-venue futures and option batch received before the next minute. Require raw provider packets, a provider timestamp no more than ten seconds before receipt, the native OI, volume, spread and last-trade-age gates, and displayed depth for two lots on the selected call and put. A two-venue clock also requires a receipt skew within ten seconds. Report each venue's clock gaps, quote availability at hard flat and contract coverage separately. These rules measure data readiness only. They do not infer actual decisions, fills, P&L or a full management path. Freeze the observed source hashes and preserve unusable clocks. Verify with synthetic clock and depth examples. No configuration, migration or rollout change. Rollback is to retire the research audit and retain its counts.
+
+### Observed clock coverage
+
+Verified the raw and normalized hashes of 62 archived dated masters and the 62 finalized recorder files covering 31 sessions from September 10 through October 28. Both venues were eligible on 17 dates. The other 14 had exactly one venue eligible because of its counterpart's own expiry. The prior daily export had rotated. The November 6 Panel D copy supplied the same six previously bound pre-cutoff files that overlap the Round 10 audit. The new report binds only the pre-cutoff files so later daily exports can reproduce it if they retain those segments.
+
+| Coverage check | Usable | Possible |
+|---|---:|---:|
+| Both venues, observed subsets and synchronized clocks | 284 | 1,020 |
+| Both venues, full verified ladders and synchronized clocks | 241 | 1,020 |
+| NIFTY, full verified ladder with usable calls and puts | 694 | 1,440 |
+| SENSEX, full verified ladder with usable calls and puts | 543 | 1,440 |
+| NIFTY selected contract-dates with a two-lot bid in the hard-flat minute | 179 | 219 |
+| SENSEX selected contract-dates with a two-lot bid in the hard-flat minute | 179 | 270 |
+
+The 241 full-ladder pairs are 23.6% of the eligible two-venue checkpoints. Fifteen of the 17 dates have at least one pair. The best day had 26 of 60 and no date was complete. Allowing a wider receipt skew would only recover four sampled pairs and no full-ladder pairs. The most common rejection was insufficient displayed depth on the native selector's chosen strike. The optional subset count allows a selected strike from a partial ladder. It does not imply that the same strike would be selected with all quotes present. The hard-flat counts identify possible marks for the same selected tokens and do not establish the intervening held path.
+
+This preflight verified intraday OI directly from the raw recorder packets when available. It did not transplant the earlier analytics snapshot or manufacture bid and ask from minute closes. The next data check is whether missing clocks coincide with fired native signals and whether their exact selected contracts remain observable until close. A full 2025–2026 shared-wallet result still needs broader usable quote evidence and chronological management.
+
+To reproduce, send [the master reader](capture_control_masters.py) to `docker exec -i --user quantuser python-engine python -B -`, gzip its stdout with `mtime=0` into `_local/deployed-control-masters.json.gz` in Dev, and run `python control_quote_coverage.py <local-export>`. A second full run reproduced the [saved report](control-quote-coverage.json), which lists source hashes and every covered clock. The first run stopped on a zero-sized depth field normalized to null. The corrected reader represents both as zero and refuses insufficient depth. The focused research suite passed 26 checks, including the clock skew, last-trade age and zero-depth cases. No new strategy score was calculated.
