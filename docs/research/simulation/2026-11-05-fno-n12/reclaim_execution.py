@@ -27,6 +27,8 @@ class Position:
     premium_stop: float
     stop: float
     target: float
+    delta: float
+    iv: float
 
 
 @dataclass(frozen=True)
@@ -70,7 +72,8 @@ class RangeSleeve:
               is_expiry_day: bool, is_trading_day: bool = True) -> str:
         return self._enter(signal, signal_at, chain, regime, is_expiry_day, is_trading_day, traded=None)
 
-    def _enter(self, signal, signal_at, chain, regime, is_expiry_day, is_trading_day, traded):
+    @staticmethod
+    def _check_signal_clock(signal, signal_at, chain):
         if signal_at.utcoffset() is None or chain.taken_at.utcoffset() is None:
             raise ValueError("signal and quote clocks must be aware")
         signal_at = signal_at.astimezone(IST)
@@ -79,6 +82,10 @@ class RangeSleeve:
             raise ValueError("entry signal clock does not match the frozen completed bar")
         if not all(isfinite(value) for value in (signal.close, signal.stop, signal.target)):
             raise ValueError("invalid frozen signal geometry")
+        return signal_at
+
+    def _enter(self, signal, signal_at, chain, regime, is_expiry_day, is_trading_day, traded, *, capital=None):
+        signal_at = self._check_signal_clock(signal, signal_at, chain)
         at = self._advance(chain.taken_at)
         if self._attempt_day == at.date():
             return "already_attempted"
@@ -103,13 +110,7 @@ class RangeSleeve:
         if not 0 < risk <= planned or reward < 1.5 * risk:
             return "reclaim_geometry_at_quote"
 
-        cash = [(close.at, close.pnl) for close in self.closes]
-        halts = entry_halts(trade_cash=cash, completed_newest_first=list(reversed(cash)),
-                            today_ist=at.date(), pool_rs=self.allocation, equity_rs=self.equity,
-                            policy=policy_from_settings()).active
-        stance = risk_stance(self.closes, allocation=self.allocation, now=at, policy=adaptive_policy())
-        state = EntryState(self.equity, 0., 0, 0, halts, frozenset(), is_trading_day,
-                           is_expiry_day, risk_multiplier=stance.multiplier, lot_ceiling=1)
+        state, available = self._own_capital(at, is_expiry_day, is_trading_day) if capital is None else capital
         sig = MomSignal(bar_ts=signal_at.isoformat(), direction=direction,
                         close=signal.close, stop_underlying=signal.stop, target_underlying=signal.target)
         plan = plan_single_leg_entry(sig, chain, regime, at, state)
@@ -122,12 +123,23 @@ class RangeSleeve:
                 return "ask_depth_unavailable"
         elif quote.contract.token not in traded or quote.last_trade_time != at:
             return "selected_contract_no_trade_this_minute"
-        if ask * qty + calc_fno_costs(ask, 0., qty) + self.stress > self.equity:
+        if ask * qty + calc_fno_costs(ask, 0., qty) + self.stress > available:
             return "full_cash_reserve"
         self.position = Position(at, quote.contract.tradingsymbol, quote.contract.token, direction, qty, ask,
                                  round(ask * (1 - settings.FNO_STOP_PREMIUM_PCT), 2),
-                                 signal.stop, signal.target)
+                                 signal.stop, signal.target, plan.delta, plan.iv)
         return "accepted"
+
+    def _own_capital(self, at, is_expiry_day, is_trading_day):
+        cash = [(close.at, close.pnl) for close in self.closes]
+        equity = self.equity
+        halts = entry_halts(trade_cash=cash, completed_newest_first=list(reversed(cash)),
+                            today_ist=at.date(), pool_rs=self.allocation, equity_rs=equity,
+                            policy=policy_from_settings()).active
+        stance = risk_stance(self.closes, allocation=self.allocation, now=at, policy=adaptive_policy())
+        state = EntryState(equity, 0., 0, 0, halts, frozenset(), is_trading_day,
+                           is_expiry_day, risk_multiplier=stance.multiplier, lot_ceiling=1)
+        return state, equity
 
     def manage(self, at: datetime, future: float | None, *, token: int, bid: float,
                bid_quantity: int) -> tuple[str, Settlement | None]:

@@ -22,6 +22,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [shared reclaim quote adapter](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_SHARED.md) lets the native decisions run first and uses the same premium, reserve, trade slots and loss history for reclaim. Synthetic tests cover occupancy and native sizing changes after a reclaim stop.
+
 The [2021 reclaim validation](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_2021.md) pairs the standalone sleeve with the native N11 and N11T controls on one sealed NIFTY archive. Separate books apply the same stress schedule and an interrupted replay withholds the verdict.
 
 The [prior-range minute adapter](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_MINUTE.md) prices the standalone candidate on observed minute closes with the existing spread model and no displayed-depth assumption. It withholds the result when a held minute cannot be qualified.
