@@ -22,6 +22,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [prior-range frequency result](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_COUNT.md) found 85 setups on four seen NIFTY windows. It measured signal frequency only.
+
 The [prior-session range reclaim](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_RECLAIM.md) is a frozen NIFTY strategy hypothesis in Dev research. The first pass counts independent signal opportunities without scoring trades.
 
 The [2022 data-source review](research/simulation/2026-11-05-fno-n12/EXAM_DATA_SOURCES.md) separates the guarded Breeze exam source from alternate contract-specific candle and exchange tick products. The alternate products are documented possibilities awaiting sample qualification.

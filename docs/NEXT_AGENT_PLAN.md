@@ -24,6 +24,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+The [prior-range frequency gate](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_COUNT.md) passed at 85 signals. Freeze the standalone entry, exit and risk contract before the separate 2021 holdout. Keep the 2022 A exam unchanged.
+
 Count the [prior-session range reclaim](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_RECLAIM.md) on the four frozen development windows. Require 30 signals before the standalone price study. Keep the original 2022 A exam and proposed 2021 challenger holdout separate.
 
 The [2022 data-source review](research/simulation/2026-11-05-fno-n12/EXAM_DATA_SOURCES.md) leaves the guarded Breeze path first. If the owner uses an alternate source, qualify contract and clock parity on a seen date and freeze one common data provenance plan before opening the exam.
