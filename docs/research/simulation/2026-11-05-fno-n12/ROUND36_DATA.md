@@ -7,3 +7,9 @@ The inventory checks timestamp coverage without reading price outcomes. Require 
 The expanded snapshot will copy selected dated option rows and front futures through 15:29 to preserve the observed closing tail. Include up to 30 calendar days of front-future warmup in a separate local SQLite file. Open the original archive in read-only mode under a consistent read transaction. The integrity report will list exclusions, used reports, SHA-256 and warmup boundaries. Reuse the earlier BFO spread calibration. Keep this data acquisition independent of trading signals and returns.
 
 The data phase earns replay only with enough ordinary sessions to make a sleeve test informative and exact quote identity. A portfolio study will freeze its own rule, NIFTY-first ordering, BFO lot and cash policy, risk limits, comparison gates and November 5 evidence separately. No Breeze calls, broker access, runtime changes, migration or rollout. Rollback is to retire the local research snapshot and keep the audit.
+
+## Completed inventory and hold
+
+Of 328 in-scope NIFTY dates, 71 were excluded by the NIFTY calendar, 74 lacked later calls and puts, and 26 lacked a complete SENSEX front-future tape. The 157 remaining dates went through the previous-session BSE report check. Ten lacked the exact dated series in the archive, one report download was unavailable, and one could not be parsed. The resulting 145 dates comprise 53 in 2025 and 92 in 2026, with 1,945,903 option rows. The snapshot is scoped to ordinary sessions. It cannot establish a complete historical two-venue control, and the lagged BSE report OI does not establish intraday option OI.
+
+Local manifest `_local/round36/manifest.json` SHA-256 `1c343e1e6a589731ab0129adaf5d2f23a610a4467b9b012b6f0e16c630d1ebb4`. Local SQLite SHA-256 `0fdd615963cbc7ea5b08b7e64924076568da4e81a8fe8585b5882b08b89bfd29`. No sleeve outcomes were calculated. Pause Round 36 at this inventory and retain it for work on the deployed control.
