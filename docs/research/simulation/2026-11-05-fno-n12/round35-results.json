@@ -1,0 +1,1462 @@
+{
+  "panels": {
+    "2022": {
+      "native_daily": {
+        "2022-06-07": -3403.8372999999997,
+        "2022-06-10": 411.2511,
+        "2022-06-13": 4071.8854,
+        "2022-06-22": -719.5369,
+        "2022-07-01": -4136.9198,
+        "2022-07-08": -1465.9528,
+        "2022-07-15": -1313.5268,
+        "2022-07-25": -1518.5846,
+        "2022-08-19": -1704.2956,
+        "2022-08-22": 2959.4666,
+        "2022-08-23": -1178.8618,
+        "2022-08-24": -1200.1101,
+        "2022-08-26": -1576.9619,
+        "2022-09-27": -4410.4658,
+        "2022-10-07": -1543.541,
+        "2022-10-11": 3659.1784,
+        "2022-11-15": -1319.4516,
+        "2022-11-18": -1265.032,
+        "2022-11-21": -168.954,
+        "2022-12-30": 5221.9608
+      },
+      "tickets": [
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-08-22 15:10:00",
+            "bid": 93.05,
+            "increment": 1098.60992534975,
+            "increment_double": 1093.60992534975,
+            "net": 4058.07655624182,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-08-22 15:10:00",
+            "bid": 93.05,
+            "increment": 1098.60992534975,
+            "increment_double": 1093.60992534975,
+            "net": 4058.07655624182,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.089206984441262e-05,
+          "entry": "2022-08-22T12:45:59+05:30",
+          "native_parent_net": 2959.46663089207,
+          "stop": 44.75,
+          "strike": 17450
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-08-23 12:06:00",
+            "bid": 43.7,
+            "increment": -15.37063325219924,
+            "increment_double": -20.37063325219924,
+            "net": -1519.2310576197992,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-08-23 12:06:00",
+            "bid": 43.7,
+            "increment": -15.37063325219924,
+            "increment_double": -20.37063325219924,
+            "net": -1519.2310576197992,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 2.4367599962715758e-05,
+          "entry": "2022-08-23T11:36:59+05:30",
+          "native_parent_net": -1503.8604243676,
+          "stop": 40.0,
+          "strike": 17600
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-08-23 13:51:00",
+            "bid": 53.0,
+            "increment": -144.78194221731917,
+            "increment_double": -149.78194221731917,
+            "net": 357.24870260059026,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-08-23 13:51:00",
+            "bid": 53.0,
+            "increment": -144.78194221731917,
+            "increment_double": -149.78194221731917,
+            "net": 357.24870260059026,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -4.4817909440553194e-05,
+          "entry": "2022-08-23T12:55:59+05:30",
+          "native_parent_net": 502.03064481790943,
+          "stop": 36.15,
+          "strike": 17650
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-08-24 12:50:00",
+            "bid": 22.1,
+            "increment": 123.23257846301522,
+            "increment_double": 118.23257846301522,
+            "net": -1076.87748912803,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-08-24 12:50:00",
+            "bid": 22.1,
+            "increment": 123.23257846301522,
+            "increment_double": 118.23257846301522,
+            "net": -1076.87748912803,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.240895489398099e-05,
+          "entry": "2022-08-24T12:36:59+05:30",
+          "native_parent_net": -1200.1100675910452,
+          "stop": 21.3,
+          "strike": 17700
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-08-26 12:40:00",
+            "bid": 48.15,
+            "increment": -78.69721868723548,
+            "increment_double": -83.69721868723548,
+            "net": -798.7776171406906,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-08-26 12:40:00",
+            "bid": 48.15,
+            "increment": -78.69721868723548,
+            "increment_double": -83.69721868723548,
+            "net": -798.7776171406906,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -1.546544922348403e-06,
+          "entry": "2022-08-26T12:10:59+05:30",
+          "native_parent_net": -720.0803984534551,
+          "stop": 39.15,
+          "strike": 17850
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-09-27 12:56:00",
+            "bid": 54.95,
+            "increment": -187.90626458604493,
+            "increment_double": -192.90626458604493,
+            "net": -2712.73424816791,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-09-27 12:56:00",
+            "bid": 54.95,
+            "increment": -187.90626458604493,
+            "increment_double": -192.90626458604493,
+            "net": -2712.73424816791,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -1.6418134691775776e-05,
+          "entry": "2022-09-27T12:21:59+05:30",
+          "native_parent_net": -2524.8279835818653,
+          "stop": 55.3,
+          "strike": 16900
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-10-11 15:10:00",
+            "bid": 101.85,
+            "increment": 1026.9698446329994,
+            "increment_double": 1021.9698446329994,
+            "net": 4686.148279930969,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-10-11 15:10:00",
+            "bid": 101.85,
+            "increment": 1026.9698446329994,
+            "increment_double": 1021.9698446329994,
+            "net": 4686.148279930969,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.529796958900988e-05,
+          "entry": "2022-10-11T13:15:59+05:30",
+          "native_parent_net": 3659.1784352979694,
+          "stop": 47.7,
+          "strike": 17000
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2022-11-15 12:26:00",
+            "bid": 42.7,
+            "increment": -192.9682959534241,
+            "increment_double": -197.9682959534241,
+            "net": -1512.4199166443295,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2022-11-15 12:26:00",
+            "bid": 42.7,
+            "increment": -192.9682959534241,
+            "increment_double": -197.9682959534241,
+            "net": -1512.4199166443295,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 2.0690905330411624e-05,
+          "entry": "2022-11-15T11:51:59+05:30",
+          "native_parent_net": -1319.4516206909054,
+          "stop": 39.2,
+          "strike": 18250
+        }
+      ]
+    },
+    "2023": {
+      "native_daily": {
+        "2023-01-10": 150.4023,
+        "2023-01-16": -1235.3684,
+        "2023-01-17": -2810.1709,
+        "2023-02-01": -785.803,
+        "2023-02-06": -3342.8379,
+        "2023-02-13": -832.3868,
+        "2023-02-27": -2398.4063,
+        "2023-03-15": 7252.4695,
+        "2023-03-20": 152.0742,
+        "2023-03-22": -1967.2558,
+        "2023-03-28": -74.69949999999994,
+        "2023-03-31": -387.3993,
+        "2023-06-06": -1115.6957,
+        "2023-06-09": -1035.6727,
+        "2023-10-31": -1700.0268,
+        "2023-11-01": 1723.1477,
+        "2023-12-15": -126.5572,
+        "2023-12-18": 214.4914,
+        "2023-12-19": -1817.0643,
+        "2023-12-22": -1889.367,
+        "2023-12-26": -3526.2906000000003,
+        "2023-12-27": 4015.4410000000003
+      },
+      "tickets": [
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-01-10 15:09:00",
+            "bid": 61.4,
+            "increment": -628.1173821387445,
+            "increment_double": -633.1173821387445,
+            "net": -477.71504990229056,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-01-10 15:09:00",
+            "bid": 61.4,
+            "increment": -628.1173821387445,
+            "increment_double": -633.1173821387445,
+            "net": -477.71504990229056,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.223645384764495e-05,
+          "entry": "2023-01-10T12:40:59+05:30",
+          "native_parent_net": 150.40233223645384,
+          "stop": 47.25,
+          "strike": 17900
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-01-17 12:55:00",
+            "bid": 27.65,
+            "increment": -150.05990757186487,
+            "increment_double": -155.05990757186487,
+            "net": -1676.8574323304101,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-01-17 12:55:00",
+            "bid": 27.65,
+            "increment": -150.05990757186487,
+            "increment_double": -155.05990757186487,
+            "net": -1676.8574323304101,
+            "reason": "premium_backstop"
+          },
+          "earned_children_held_fixed": 2.475854535077815e-05,
+          "entry": "2023-01-17T11:30:59+05:30",
+          "native_parent_net": -1526.7975247585453,
+          "stop": 28.9,
+          "strike": 18100
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-02-01 11:15:00",
+            "bid": 40.2,
+            "increment": -179.6004746329993,
+            "increment_double": -184.6004746329993,
+            "net": -965.4034461690493,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-02-01 11:12:00",
+            "bid": 40.45,
+            "increment": -147.1628887763493,
+            "increment_double": -152.1628887763493,
+            "net": -932.9658603123993,
+            "reason": "premium_backstop"
+          },
+          "earned_children_held_fixed": -2.846395000233315e-05,
+          "entry": "2023-02-01T10:45:59+05:30",
+          "native_parent_net": -785.80297153605,
+          "stop": 34.2,
+          "strike": 18050
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-02-06 13:36:00",
+            "bid": 59.8,
+            "increment": -228.09485673149993,
+            "increment_double": -233.09485673149993,
+            "net": -1777.8074746014095,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-02-06 13:36:00",
+            "bid": 59.8,
+            "increment": -228.09485673149993,
+            "increment_double": -233.09485673149993,
+            "net": -1777.8074746014095,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 1.7869909470391576e-05,
+          "entry": "2023-02-06T11:36:59+05:30",
+          "native_parent_net": -1549.7126178699095,
+          "stop": 53.55,
+          "strike": 17650
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-02-27 11:38:00",
+            "bid": 68.8,
+            "increment": -669.7547608585651,
+            "increment_double": -674.7547608585651,
+            "net": -3068.1611029992705,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-02-27 11:38:00",
+            "bid": 68.8,
+            "increment": -669.7547608585651,
+            "increment_double": -674.7547608585651,
+            "net": -3068.1611029992705,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.2140705318161054e-05,
+          "entry": "2023-02-27T11:30:59+05:30",
+          "native_parent_net": -2398.4063421407054,
+          "stop": 67.7,
+          "strike": 17350
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-03-28 12:06:00",
+            "bid": 26.65,
+            "increment": -107.45184222403054,
+            "increment_double": -112.45184222403054,
+            "net": -675.0983335684302,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-03-28 12:06:00",
+            "bid": 26.65,
+            "increment": -107.45184222403054,
+            "increment_double": -112.45184222403054,
+            "net": -675.0983335684302,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -8.655600254314777e-06,
+          "entry": "2023-03-28T11:36:59+05:30",
+          "native_parent_net": -567.6464913443997,
+          "stop": 22.35,
+          "strike": 17100
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-03-31 11:21:00",
+            "bid": 76.4,
+            "increment": -49.418448016475,
+            "increment_double": -54.418448016475,
+            "net": -436.8177523035985,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-03-31 11:21:00",
+            "bid": 76.4,
+            "increment": -49.418448016475,
+            "increment_double": -54.418448016475,
+            "net": -436.8177523035985,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.287123545054783e-06,
+          "entry": "2023-03-31T10:51:59+05:30",
+          "native_parent_net": -387.3993042871235,
+          "stop": 58.2,
+          "strike": 17200
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-06-06 15:01:00",
+            "bid": 42.45,
+            "increment": -442.1676975124549,
+            "increment_double": -447.1676975124549,
+            "net": -1557.8633581583197,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-06-06 15:01:00",
+            "bid": 42.45,
+            "increment": -442.1676975124549,
+            "increment_double": -447.1676975124549,
+            "net": -1557.8633581583197,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.9354135196845164e-05,
+          "entry": "2023-06-06T13:10:59+05:30",
+          "native_parent_net": -1115.6956606458648,
+          "stop": 39.3,
+          "strike": 18550
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-06-09 11:48:00",
+            "bid": 42.95,
+            "increment": -60.63685220677962,
+            "increment_double": -65.63685220677962,
+            "net": -1096.3095888961493,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-06-09 11:48:00",
+            "bid": 42.95,
+            "increment": -60.63685220677962,
+            "increment_double": -65.63685220677962,
+            "net": -1096.3095888961493,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 3.6689369608211564e-05,
+          "entry": "2023-06-09T11:40:59+05:30",
+          "native_parent_net": -1035.6727366893697,
+          "stop": 37.0,
+          "strike": 18550
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-11-01 13:32:00",
+            "bid": 84.05,
+            "increment": 822.5205897920657,
+            "increment_double": 817.5205897920657,
+            "net": 2545.66829048291,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-11-01 13:32:00",
+            "bid": 84.05,
+            "increment": 822.5205897920657,
+            "increment_double": 817.5205897920657,
+            "net": 2545.66829048291,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -6.908442173880758e-07,
+          "entry": "2023-11-01T12:36:59+05:30",
+          "native_parent_net": 1723.1477006908442,
+          "stop": 46.75,
+          "strike": 19050
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-12-19 11:42:00",
+            "bid": 44.5,
+            "increment": -170.62413630126161,
+            "increment_double": -175.62413630126161,
+            "net": -1987.6884318014804,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-12-19 11:42:00",
+            "bid": 44.5,
+            "increment": -170.62413630126161,
+            "increment_double": -175.62413630126161,
+            "net": -1987.6884318014804,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -4.499781198319397e-06,
+          "entry": "2023-12-19T11:21:59+05:30",
+          "native_parent_net": -1817.0642955002188,
+          "stop": 43.3,
+          "strike": 21350
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-12-26 13:02:00",
+            "bid": 39.8,
+            "increment": -98.77601171042079,
+            "increment_double": -103.77601171042079,
+            "net": -1719.6197890360506,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-12-26 13:02:00",
+            "bid": 39.8,
+            "increment": -98.77601171042079,
+            "increment_double": -103.77601171042079,
+            "net": -1719.6197890360506,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -2.2674370256936527e-05,
+          "entry": "2023-12-26T11:55:59+05:30",
+          "native_parent_net": -1620.8437773256298,
+          "stop": 38.25,
+          "strike": 21600
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-12-27 13:37:00",
+            "bid": 22.55,
+            "increment": -201.03540550210437,
+            "increment_double": -206.03540550210437,
+            "net": -1740.3148235684298,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-12-27 13:37:00",
+            "bid": 22.55,
+            "increment": -201.03540550210437,
+            "increment_double": -206.03540550210437,
+            "net": -1740.3148235684298,
+            "reason": "premium_backstop"
+          },
+          "earned_children_held_fixed": 1.8066325537802186e-05,
+          "entry": "2023-12-27T12:40:59+05:30",
+          "native_parent_net": -1539.2794180663254,
+          "stop": 25.45,
+          "strike": 21650
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2023-12-27 15:10:00",
+            "bid": 92.9,
+            "increment": 2197.06535538808,
+            "increment_double": 2192.06535538808,
+            "net": 7751.785794898401,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2023-12-27 15:10:00",
+            "bid": 92.9,
+            "increment": 2197.06535538808,
+            "increment_double": 2192.06535538808,
+            "net": 7751.785794898401,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.951032067561755e-05,
+          "entry": "2023-12-27T14:00:59+05:30",
+          "native_parent_net": 5554.720439510321,
+          "stop": 23.35,
+          "strike": 21650
+        }
+      ]
+    },
+    "2024": {
+      "native_daily": {
+        "2024-01-01": 11324.3348,
+        "2024-01-02": -1944.7579,
+        "2024-01-03": -1335.4024,
+        "2024-01-05": 1699.1108000000002,
+        "2024-01-09": 9132.7071,
+        "2024-01-10": 6591.5299,
+        "2024-01-12": -522.6472,
+        "2024-01-16": 8905.329,
+        "2024-01-20": -121.5769,
+        "2024-01-30": 9599.6474,
+        "2024-02-12": 1634.7673,
+        "2024-03-15": -1518.3774,
+        "2024-04-26": 1859.1027,
+        "2024-05-29": -1423.0668,
+        "2024-07-10": -2449.2627,
+        "2024-07-23": 4180.4749,
+        "2024-08-19": -434.6994,
+        "2024-10-21": -1856.4213,
+        "2024-10-29": -3148.1649,
+        "2024-11-04": 10092.9908,
+        "2024-11-05": 17090.4343,
+        "2024-11-06": -1817.2717,
+        "2024-11-12": 31859.5418,
+        "2024-11-26": 147.2472,
+        "2024-12-16": -2505.2352
+      },
+      "tickets": [
+        {
+          "NATIVE_CLOCK": {
+            "at": "2024-01-02 14:10:00",
+            "bid": 75.35,
+            "increment": -520.6497405193559,
+            "increment_double": -525.6497405193559,
+            "net": -2465.407611044501,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2024-01-02 14:10:00",
+            "bid": 75.35,
+            "increment": -520.6497405193559,
+            "increment_double": -525.6497405193559,
+            "net": -2465.407611044501,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -2.9474854727595812e-05,
+          "entry": "2024-01-02T12:51:59+05:30",
+          "native_parent_net": -1944.7578705251453,
+          "stop": 69.15,
+          "strike": 21650
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2024-01-03 15:10:00",
+            "bid": 88.1,
+            "increment": 270.13424437141384,
+            "increment_double": 265.13424437141384,
+            "net": 2563.928810724379,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2024-01-03 15:10:00",
+            "bid": 88.1,
+            "increment": 270.13424437141384,
+            "increment_double": 265.13424437141384,
+            "net": 2563.928810724379,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 3.364703479746822e-05,
+          "entry": "2024-01-03T14:19:59+05:30",
+          "native_parent_net": 2293.7945663529654,
+          "stop": 49.65,
+          "strike": 21550
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2024-05-29 13:18:00",
+            "bid": 37.45,
+            "increment": -3.1969530912192567,
+            "increment_double": -8.196953091219257,
+            "net": -1426.2637358509198,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2024-05-29 13:18:00",
+            "bid": 37.45,
+            "increment": -3.1969530912192567,
+            "increment_double": -8.196953091219257,
+            "net": -1426.2637358509198,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -1.7240299484910793e-05,
+          "entry": "2024-05-29T13:00:59+05:30",
+          "native_parent_net": -1423.0667827597006,
+          "stop": 34.8,
+          "strike": 22650
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2024-07-10 14:19:00",
+            "bid": 51.75,
+            "increment": -549.350241971056,
+            "increment_double": -554.350241971056,
+            "net": -955.95745235725,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2024-07-10 13:03:00",
+            "bid": 44.6,
+            "increment": -1477.065197471246,
+            "increment_double": -1482.065197471246,
+            "net": -1883.6724078574398,
+            "reason": "premium_backstop"
+          },
+          "earned_children_held_fixed": 1.0386193935119081e-05,
+          "entry": "2024-07-10T12:15:59+05:30",
+          "native_parent_net": -406.6072103861939,
+          "stop": 42.75,
+          "strike": 24200
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2024-10-21 13:52:00",
+            "bid": 68.0,
+            "increment": -275.07165865082106,
+            "increment_double": -280.07165865082106,
+            "net": -2131.49292515335,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2024-10-21 13:52:00",
+            "bid": 68.0,
+            "increment": -275.07165865082106,
+            "increment_double": -280.07165865082106,
+            "net": -2131.49292515335,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.349747112224577e-05,
+          "entry": "2024-10-21T13:30:59+05:30",
+          "native_parent_net": -1856.4212665025289,
+          "stop": 61.7,
+          "strike": 24650
+        }
+      ]
+    },
+    "2025": {
+      "native_daily": {
+        "2025-01-01": -4157.2914,
+        "2025-01-03": -633.6716,
+        "2025-01-06": 7449.9207,
+        "2025-01-07": -5342.4731,
+        "2025-01-10": 6162.7504,
+        "2025-01-17": 4814.431199999999,
+        "2025-01-21": 16513.9909,
+        "2025-01-27": -2099.1486,
+        "2025-01-29": 1715.614,
+        "2025-01-31": 1058.607,
+        "2025-02-01": -1900.4045,
+        "2025-02-05": -1640.4531,
+        "2025-02-11": 27597.5447,
+        "2025-02-18": -5640.8488,
+        "2025-02-21": -2904.3189,
+        "2025-02-24": -268.8822,
+        "2025-03-03": -2194.9127,
+        "2025-03-05": -142.64,
+        "2025-03-12": -2220.9853,
+        "2025-03-26": 3188.1866,
+        "2025-04-04": 2189.416,
+        "2025-04-23": -1682.9988,
+        "2025-04-25": -2324.6946,
+        "2025-04-29": 868.4053,
+        "2025-05-13": 11518.6133,
+        "2025-05-16": -2950.1155,
+        "2025-05-30": -2822.8145,
+        "2025-06-03": -4334.0133000000005,
+        "2025-06-17": 163.9167,
+        "2025-07-14": -2468.7517,
+        "2025-07-22": 702.8125,
+        "2025-08-05": -4155.5575,
+        "2025-08-06": 1392.9316,
+        "2025-08-08": 5251.6348,
+        "2025-08-11": 7840.2865,
+        "2025-08-12": -463.78870000000006,
+        "2025-08-13": 444.1598,
+        "2025-08-18": -4896.9678,
+        "2025-08-19": -78.82200000000003,
+        "2025-08-26": -1313.384,
+        "2025-09-25": 5877.6152,
+        "2025-09-26": 8351.5094,
+        "2025-10-13": -1515.1405,
+        "2025-10-24": 5010.6427,
+        "2025-10-30": 1783.6245999999996,
+        "2025-11-06": 4589.1607,
+        "2025-12-03": -2854.1259
+      },
+      "tickets": [
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-02-05 13:13:00",
+            "bid": 48.35,
+            "increment": -680.071272025669,
+            "increment_double": -685.071272025669,
+            "net": -2320.524371678829,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-02-05 13:13:00",
+            "bid": 48.35,
+            "increment": -680.071272025669,
+            "increment_double": -685.071272025669,
+            "net": -2320.524371678829,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.4683989724726416e-07,
+          "entry": "2025-02-05T12:51:59+05:30",
+          "native_parent_net": -1640.45309965316,
+          "stop": 48.1,
+          "strike": 23700
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-03-03 13:14:00",
+            "bid": 83.35,
+            "increment": -403.0191399530454,
+            "increment_double": -408.0191399530454,
+            "net": -2597.9318727923014,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-03-03 13:14:00",
+            "bid": 83.35,
+            "increment": -403.0191399530454,
+            "increment_double": -408.0191399530454,
+            "net": -2597.9318727923014,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 3.2839256164152175e-05,
+          "entry": "2025-03-03T13:00:59+05:30",
+          "native_parent_net": -2194.912732839256,
+          "stop": 75.9,
+          "strike": 22100
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-04-04 15:10:00",
+            "bid": 125.8,
+            "increment": -131.32936228152448,
+            "increment_double": -136.32936228152448,
+            "net": 2058.0866601110993,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-04-04 15:10:00",
+            "bid": 125.8,
+            "increment": -131.32936228152448,
+            "increment_double": -136.32936228152448,
+            "net": 2058.0866601110993,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -2.2392623577616177e-05,
+          "entry": "2025-04-04T11:40:59+05:30",
+          "native_parent_net": 2189.4160223926237,
+          "stop": 80.8,
+          "strike": 22900
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-04-23 12:58:00",
+            "bid": 27.8,
+            "increment": -507.6361795333444,
+            "increment_double": -512.6361795333444,
+            "net": -2190.63496276736,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-04-23 12:47:00",
+            "bid": 31.35,
+            "increment": -47.02246036891461,
+            "increment_double": -52.02246036891461,
+            "net": -1730.02124360293,
+            "reason": "premium_backstop"
+          },
+          "earned_children_held_fixed": -1.676598458288936e-05,
+          "entry": "2025-04-23T12:10:59+05:30",
+          "native_parent_net": -1682.9987832340155,
+          "stop": 31.95,
+          "strike": 24150
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-04-29 15:10:00",
+            "bid": 74.1,
+            "increment": -159.99885763414,
+            "increment_double": -164.99885763414,
+            "net": 708.4064357799593,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-04-29 15:10:00",
+            "bid": 74.1,
+            "increment": -159.99885763414,
+            "increment_double": -164.99885763414,
+            "net": 708.4064357799593,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 6.585900678146572e-06,
+          "entry": "2025-04-29T13:45:59+05:30",
+          "native_parent_net": 868.4052934140993,
+          "stop": 49.9,
+          "strike": 24350
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-06-17 14:10:00",
+            "bid": 77.1,
+            "increment": 413.50650018014437,
+            "increment_double": 408.50650018014437,
+            "net": 577.4232397661593,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-06-17 14:10:00",
+            "bid": 77.1,
+            "increment": 413.50650018014437,
+            "increment_double": 408.50650018014437,
+            "net": 577.4232397661593,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.958601496378833e-05,
+          "entry": "2025-06-17T11:55:59+05:30",
+          "native_parent_net": 163.91673958601496,
+          "stop": 52.9,
+          "strike": 24800
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-07-22 15:10:00",
+            "bid": 56.1,
+            "increment": 50.15930661364462,
+            "increment_double": 45.15930661364462,
+            "net": 752.9718393943798,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-07-22 15:10:00",
+            "bid": 56.1,
+            "increment": 50.15930661364462,
+            "increment_double": 45.15930661364462,
+            "net": 752.9718393943798,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -3.278073518231395e-05,
+          "entry": "2025-07-22T13:10:59+05:30",
+          "native_parent_net": 702.8125327807352,
+          "stop": 36.2,
+          "strike": 25050
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-05 12:11:00",
+            "bid": 53.55,
+            "increment": -184.27705478247617,
+            "increment_double": -189.27705478247617,
+            "net": -2146.5480286681004,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-05 12:11:00",
+            "bid": 53.55,
+            "increment": -184.27705478247617,
+            "increment_double": -189.27705478247617,
+            "net": -2146.5480286681004,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -2.611437571431452e-05,
+          "entry": "2025-08-05T11:36:59+05:30",
+          "native_parent_net": -1962.2709738856242,
+          "stop": 51.0,
+          "strike": 24550
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-05 14:31:00",
+            "bid": 56.3,
+            "increment": -467.8403743656554,
+            "increment_double": -472.8403743656554,
+            "net": -2661.126913286731,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-05 14:31:00",
+            "bid": 56.3,
+            "increment": -467.8403743656554,
+            "increment_double": -472.8403743656554,
+            "net": -2661.126913286731,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 3.89210754292435e-05,
+          "entry": "2025-08-05T13:25:59+05:30",
+          "native_parent_net": -2193.2865389210756,
+          "stop": 56.0,
+          "strike": 24550
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-06 15:10:00",
+            "bid": 57.05,
+            "increment": -81.00074239075593,
+            "increment_double": -86.00074239075593,
+            "net": 1311.9308301705396,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-06 15:10:00",
+            "bid": 57.05,
+            "increment": -81.00074239075593,
+            "increment_double": -86.00074239075593,
+            "net": 1311.9308301705396,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 2.743870436461293e-05,
+          "entry": "2025-08-06T12:40:59+05:30",
+          "native_parent_net": 1392.9315725612955,
+          "stop": 33.65,
+          "strike": 24550
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-08 15:10:00",
+            "bid": 126.2,
+            "increment": 836.2199250297062,
+            "increment_double": 831.2199250297062,
+            "net": 3956.8183008240203,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-08 15:10:00",
+            "bid": 126.2,
+            "increment": 836.2199250297062,
+            "increment_double": 831.2199250297062,
+            "net": 3956.8183008240203,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 2.420568580419058e-05,
+          "entry": "2025-08-08T13:06:59+05:30",
+          "native_parent_net": 3120.598375794314,
+          "stop": 70.15,
+          "strike": 24400
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-11 15:10:00",
+            "bid": 97.95,
+            "increment": 270.85817569758456,
+            "increment_double": 265.85817569758456,
+            "net": 4726.367878175511,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-11 15:10:00",
+            "bid": 97.95,
+            "increment": 270.85817569758456,
+            "increment_double": 265.85817569758456,
+            "net": 4726.367878175511,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -2.477926500432659e-06,
+          "entry": "2025-08-11T12:00:59+05:30",
+          "native_parent_net": 4455.509702477926,
+          "stop": 44.55,
+          "strike": 24600
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-19 14:21:00",
+            "bid": 47.05,
+            "increment": -173.56738706879537,
+            "increment_double": -178.56738706879537,
+            "net": -460.2863355883704,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-19 14:21:00",
+            "bid": 47.05,
+            "increment": -173.56738706879537,
+            "increment_double": -178.56738706879537,
+            "net": -460.2863355883704,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.851957498885895e-05,
+          "entry": "2025-08-19T13:40:59+05:30",
+          "native_parent_net": -286.718948519575,
+          "stop": 36.4,
+          "strike": 24900
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-19 15:10:00",
+            "bid": 35.65,
+            "increment": 63.658303305864706,
+            "increment_double": 58.658303305864706,
+            "net": 271.55521109618974,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-19 15:10:00",
+            "bid": 35.65,
+            "increment": 63.658303305864706,
+            "increment_double": 58.658303305864706,
+            "net": 271.55521109618974,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -7.790325042833501e-06,
+          "entry": "2025-08-19T14:21:59+05:30",
+          "native_parent_net": 207.89690779032503,
+          "stop": 23.65,
+          "strike": 25100
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-08-26 13:45:00",
+            "bid": 38.0,
+            "increment": -283.06942024146974,
+            "increment_double": -288.06942024146974,
+            "net": -906.1990267880598,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-08-26 13:45:00",
+            "bid": 38.0,
+            "increment": -283.06942024146974,
+            "increment_double": -288.06942024146974,
+            "net": -906.1990267880598,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 6.546590043399192e-06,
+          "entry": "2025-08-26T11:45:59+05:30",
+          "native_parent_net": -623.12960654659,
+          "stop": 32.2,
+          "strike": 24750
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-09-25 13:40:00",
+            "bid": 59.25,
+            "increment": -48.871554465309316,
+            "increment_double": -53.871554465309316,
+            "net": 127.71989642964013,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-09-25 13:40:00",
+            "bid": 59.25,
+            "increment": -48.871554465309316,
+            "increment_double": -53.871554465309316,
+            "net": 127.71989642964013,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.9105050550224405e-05,
+          "entry": "2025-09-25T11:40:59+05:30",
+          "native_parent_net": 176.59145089494945,
+          "stop": 42.15,
+          "strike": 24950
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-10-13 12:59:00",
+            "bid": 39.9,
+            "increment": -22.42815996070476,
+            "increment_double": -27.42815996070476,
+            "net": -1537.56863114797,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-10-13 12:59:00",
+            "bid": 39.9,
+            "increment": -22.42815996070476,
+            "increment_double": -27.42815996070476,
+            "net": -1537.56863114797,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -2.881273462662648e-05,
+          "entry": "2025-10-13T12:06:59+05:30",
+          "native_parent_net": -1515.1404711872653,
+          "stop": 37.25,
+          "strike": 25150
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-10-24 14:12:00",
+            "bid": 78.5,
+            "increment": 259.162225914145,
+            "increment_double": 254.16222591414498,
+            "net": 3750.4205217516,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-10-24 14:12:00",
+            "bid": 78.5,
+            "increment": 259.162225914145,
+            "increment_double": 254.16222591414498,
+            "net": 3750.4205217516,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.1625448830018286e-06,
+          "entry": "2025-10-24T11:55:59+05:30",
+          "native_parent_net": 3491.258295837455,
+          "stop": 35.65,
+          "strike": 25750
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-10-30 15:10:00",
+            "bid": 139.35,
+            "increment": 654.2535257569939,
+            "increment_double": 649.2535257569939,
+            "net": 3198.425669817879,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-10-30 15:10:00",
+            "bid": 139.35,
+            "increment": 654.2535257569939,
+            "increment_double": 649.2535257569939,
+            "net": 3198.425669817879,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -4.406088555697352e-05,
+          "entry": "2025-10-30T11:36:59+05:30",
+          "native_parent_net": 2544.1721440608853,
+          "stop": 84.35,
+          "strike": 25950
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-11-06 15:10:00",
+            "bid": 113.0,
+            "increment": 306.82480208509514,
+            "increment_double": 301.82480208509514,
+            "net": 3317.09685932345,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-11-06 15:10:00",
+            "bid": 113.0,
+            "increment": 306.82480208509514,
+            "increment_double": 301.82480208509514,
+            "net": 3317.09685932345,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.2761645090649836e-05,
+          "entry": "2025-11-06T13:10:59+05:30",
+          "native_parent_net": 3010.272057238355,
+          "stop": 63.95,
+          "strike": 25550
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2025-12-03 14:24:00",
+            "bid": 101.15,
+            "increment": -520.4262859879245,
+            "increment_double": -525.4262859879245,
+            "net": -2323.792170172529,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2025-12-03 14:24:00",
+            "bid": 101.15,
+            "increment": -520.4262859879245,
+            "increment_double": -525.4262859879245,
+            "net": -2323.792170172529,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -1.58153954998852e-05,
+          "entry": "2025-12-03T12:40:59+05:30",
+          "native_parent_net": -1803.3658841846045,
+          "stop": 87.6,
+          "strike": 25950
+        }
+      ]
+    },
+    "2026": {
+      "native_daily": {
+        "2026-01-19": -2005.7107,
+        "2026-01-23": 8844.6372,
+        "2026-02-05": -2977.2188,
+        "2026-02-11": -4495.2569,
+        "2026-02-13": 4356.1859,
+        "2026-02-27": -453.8592,
+        "2026-03-13": 8020.8148,
+        "2026-03-16": -2767.7406,
+        "2026-03-19": 20813.9008,
+        "2026-03-20": -387.0997,
+        "2026-03-23": 3321.9536,
+        "2026-03-25": -222.9770999999996,
+        "2026-03-27": 2182.7528,
+        "2026-04-01": -2699.7534,
+        "2026-04-06": 5048.5793,
+        "2026-04-08": 4951.5521,
+        "2026-04-10": -3360.4503,
+        "2026-05-21": 560.9338,
+        "2026-06-01": 22638.936,
+        "2026-06-12": -2538.2501,
+        "2026-06-19": -2361.5734,
+        "2026-07-22": 3640.1141000000002,
+        "2026-08-17": -1165.9777,
+        "2026-08-19": -685.6475,
+        "2026-08-27": -311.1493,
+        "2026-09-07": -1665.2088,
+        "2026-09-24": 17317.0731,
+        "2026-09-28": 6430.525900000001,
+        "2026-10-05": 4187.7831,
+        "2026-10-07": -4029.5753,
+        "2026-10-08": 22518.881,
+        "2026-10-09": -953.991,
+        "2026-10-14": -3283.1857,
+        "2026-10-21": 27958.4634,
+        "2026-10-23": 1334.2816
+      },
+      "tickets": [
+        {
+          "NATIVE_CLOCK": {
+            "at": "2026-02-13 15:10:00",
+            "bid": 114.05,
+            "increment": 1854.390265152355,
+            "increment_double": 1849.390265152355,
+            "net": 6210.57611927746,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2026-02-13 15:10:00",
+            "bid": 114.05,
+            "increment": 1854.390265152355,
+            "increment_double": 1849.390265152355,
+            "net": 6210.57611927746,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.587489547702717e-05,
+          "entry": "2026-02-13T12:51:59+05:30",
+          "native_parent_net": 4356.185854125105,
+          "stop": 48.05,
+          "strike": 25500
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2026-06-12 13:28:00",
+            "bid": 66.95,
+            "increment": -639.8905699932884,
+            "increment_double": -644.8905699932884,
+            "net": -3178.1406817650795,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2026-06-12 13:28:00",
+            "bid": 66.95,
+            "increment": -639.8905699932884,
+            "increment_double": -644.8905699932884,
+            "net": -3178.1406817650795,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 1.1771790923376102e-05,
+          "entry": "2026-06-12T12:10:59+05:30",
+          "native_parent_net": -2538.250111771791,
+          "stop": 66.95,
+          "strike": 23250
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2026-08-17 12:18:00",
+            "bid": 36.05,
+            "increment": -155.80771319087557,
+            "increment_double": -160.80771319087557,
+            "net": -1321.7853921866802,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2026-08-17 12:18:00",
+            "bid": 36.05,
+            "increment": -155.80771319087557,
+            "increment_double": -160.80771319087557,
+            "net": -1321.7853921866802,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": -2.1004195332352538e-05,
+          "entry": "2026-08-17T12:10:59+05:30",
+          "native_parent_net": -1165.9776789958046,
+          "stop": 33.15,
+          "strike": 24250
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2026-08-27 15:10:00",
+            "bid": 89.35,
+            "increment": 101.30469134343389,
+            "increment_double": 96.30469134343389,
+            "net": 580.1505565465288,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2026-08-27 15:10:00",
+            "bid": 89.35,
+            "increment": 101.30469134343389,
+            "increment_double": 96.30469134343389,
+            "net": 580.1505565465288,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 3.4796905026723834e-05,
+          "entry": "2026-08-27T13:45:59+05:30",
+          "native_parent_net": 478.84586520309495,
+          "stop": 62.05,
+          "strike": 24200
+        },
+        {
+          "NATIVE_CLOCK": {
+            "at": "2026-09-07 13:53:00",
+            "bid": 49.5,
+            "increment": -571.131912630309,
+            "increment_double": -576.131912630309,
+            "net": -2236.3407550249394,
+            "reason": "native_deadline"
+          },
+          "PREMIUM_GUARD": {
+            "at": "2026-09-07 13:53:00",
+            "bid": 49.5,
+            "increment": -571.131912630309,
+            "increment_double": -576.131912630309,
+            "net": -2236.3407550249394,
+            "reason": "native_deadline"
+          },
+          "earned_children_held_fixed": 4.2394630327180494e-05,
+          "entry": "2026-09-07T12:21:59+05:30",
+          "native_parent_net": -1665.2088423946304,
+          "stop": 48.45,
+          "strike": 23800
+        }
+      ]
+    }
+  },
+  "summary": {
+    "NATIVE_CLOCK": {
+      "advance": false,
+      "conditional_worst_day": -5640.8488,
+      "increment": {
+        "after_best_five": -6447.446361815657,
+        "annual": {
+          "2022": 1629.0879937495417,
+          "2023": 33.84816977294531,
+          "2024": -1078.1343498610383,
+          "2025": -808.8930261076359,
+          "2026": 588.8647606813158
+        },
+        "total": 364.7735482351288
+      },
+      "increment_double": {
+        "after_best_five": -6682.446361815657,
+        "annual": {
+          "2022": 1589.0879937495417,
+          "2023": -36.15183022705469,
+          "2024": -1103.1343498610383,
+          "2025": -913.8930261076359,
+          "2026": 563.8647606813158
+        },
+        "total": 99.77354823512906
+      },
+      "native_worst_day": -5640.8488,
+      "priced": 53,
+      "unresolved": 0
+    },
+    "PREMIUM_GUARD": {
+      "advance": false,
+      "conditional_worst_day": -5640.8488,
+      "increment": {
+        "after_best_five": -6882.110012294767,
+        "annual": {
+          "2022": 1629.0879937495417,
+          "2023": 66.28575562959531,
+          "2024": -2005.8493053612283,
+          "2025": -348.27930694320617,
+          "2026": 588.8647606813158
+        },
+        "total": -69.89010224398135
+      },
+      "increment_double": {
+        "after_best_five": -7117.110012294767,
+        "annual": {
+          "2022": 1589.0879937495417,
+          "2023": -3.7142443704046855,
+          "2024": -2030.8493053612283,
+          "2025": -453.27930694320617,
+          "2026": 563.8647606813158
+        },
+        "total": -334.89010224398135
+      },
+      "native_worst_day": -5640.8488,
+      "priced": 53,
+      "unresolved": 0
+    }
+  }
+}

@@ -18,6 +18,8 @@ Avoid threshold sweeps on the same tape. Range carry lost ₹4,017 versus N11T w
 
 [Round 29](ROUND29_RESULTS.md) bounded the entire modeled spread crossing at ₹7,939.75 on 224 tickets, only 15.03% of the historical improvement hurdle at fixed positions and clocks. [Round 31](ROUND31_RESULTS.md) found the RBI event-day follow rule stronger than matched weekdays, with negative absolute points after removing the top five events. The [dated RBI calendar](RBI_CALENDAR_EVIDENCE.md) remains useful for a distinct event hypothesis with an adequate sample.
 
+[Rounds 32–35](ROUNDS32_TO_35_RESULTS.md) rejected a capped credit payoff and a cash–futures basis direction signal. Two cheaper option lots often fit the native one-lot cash and stop budget. The 53 priced cases improved modeled initial exposure by 21.1% at the median, but their fixed-clock profit gain was only ₹365 and concentrated in a few dates. Reuse the full-premium and equal-stop budget checks for a distinct payoff. These results give no reason to promote the strike substitution.
+
 ## Different opportunities to investigate
 
 1. **Forward held-spread management:** collect complete paired entry and management books under the existing evidence contract, reconcile actual native exits first, then freeze a distinct costed exit hypothesis. Abandon if joint depth/freshness coverage or native reconciliation fails; prior spread exit scoring lacked joint coverage.
