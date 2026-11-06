@@ -22,6 +22,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [strict held-quote replay](research/simulation/2026-11-05-fno-n12/TREND_HELD_REPLAY.md) compares the frozen trend exit on fixed N11T entries after native decision and ledger parity. Missing continuation, depth or quote clocks withhold the paired result.
+
 The [N11 paper quote evidence extension](research/simulation/2026-11-05-fno-n12/DIRECTIONAL_QUOTE_EVIDENCE.md) optionally adds displayed size, exact futures identity and provider clocks to the existing held-path recorder. `FNO_N012_FORWARD_EVIDENCE` defaults to false.
 
 The [five-minute shock repair](research/simulation/2026-11-05-fno-n12/SHOCK_REPAIR_RESULTS.md) found 23 opportunities against a required 30 and is retired at the signal-frequency stage.

@@ -24,6 +24,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+The [strict trend replay](research/simulation/2026-11-05-fno-n12/TREND_HELD_REPLAY.md) passed synthetic native parity and execution checks. The legacy November 5 rows lack the required receipt fields. Bind a prospective held and continuation cohort before market scoring, and keep its fixed-entry results separate from the shared-wallet panel.
+
 The [N11 held quote evidence extension](research/simulation/2026-11-05-fno-n12/DIRECTIONAL_QUOTE_EVIDENCE.md) passed Dev regression checks. Qualify the recorded depth and clocks plus any required continuation quotes before forward scoring. Run the 2022 exam on its verified pre-extension source `67dfc35` and the 2021 reclaim test on `1f4bfb2`.
 
 The [shock-repair frequency check](research/simulation/2026-11-05-fno-n12/SHOCK_REPAIR_RESULTS.md) failed at 23 against the frozen minimum of 30. Preserve the rejection and keep the standalone reclaim and N012-A market exams separate.
