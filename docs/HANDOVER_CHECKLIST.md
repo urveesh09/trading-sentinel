@@ -1,3 +1,10 @@
+## November 6 - N08 partner fixes
+
+- **Verify:** `pytest tests/test_nov06_partner_fixes.py` (12 checks) and the partner group.
+- **Rollout:** merge through GitHub. On the first card day, check `partner_watch_plan_versions` for `stop_basis` CARD on a card buy, and `partner_advisory_updates` for `partner_holds_none` rows.
+- **Rollback:** revert the commit.
+- **Status:** Dev only; Production `398d44a` is unchanged.
+
 ## November 6 opening-drive storage
 
 Verify the single-transaction rollback test and matching NIFTY and SENSEX histories. The existing schema and cache are retained. The local benchmark covers cold SQLite persistence. See [evidence](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).

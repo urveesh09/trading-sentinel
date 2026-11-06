@@ -1567,7 +1567,8 @@ async def pending_management_updates(
     as if it were current.
     """
     await init_partner_advisory_db(db_path)
-    sql = ("SELECT u.update_id,u.advisory_id,u.event_type,u.observed_at,u.rendered_update,i.status,i.payload,{acked} "
+    sql = ("SELECT u.update_id,u.advisory_id,u.event_type,u.observed_at,u.rendered_update,i.status,i.payload,{acked},"
+           "u.observed_underlying,i.underlying "
            "FROM partner_advisory_updates u JOIN partner_advisory_ideas i ON i.advisory_id=u.advisory_id "
            "WHERE u.status='QUEUED'" + (" AND i.underlying=?" if underlying is not None else "")
            + " ORDER BY u.observed_at, u.created_at")
@@ -1579,7 +1580,8 @@ async def pending_management_updates(
                  "WHERE m.kind='manual_advisory_update' AND m.dedup_key=u.update_id)") if has_claims else "NULL"
         rows = await (await db.execute(sql.format(acked=acked), args)).fetchall()
         pending, closed = [], []
-        for update_id, advisory_id, event_type, observed, text, idea_status, raw_payload, delivered in rows:
+        for (update_id, advisory_id, event_type, observed, text, idea_status, raw_payload, delivered,
+             observed_underlying, idea_underlying) in rows:
             try:
                 observed_at = datetime.fromisoformat(str(observed)).astimezone(IST)
             except ValueError:
@@ -1594,13 +1596,18 @@ async def pending_management_updates(
                 closed.append(("EXPIRED_UNSENT", "observation_older_than_management_bound", update_id))
             else:
                 try:
-                    profile_id = str(json.loads(raw_payload)["profile_id"])
+                    payload = json.loads(raw_payload)
+                    profile_id = str(payload["profile_id"])
                 except (KeyError, TypeError, ValueError, json.JSONDecodeError):
                     closed.append(("EXPIRED_UNSENT", "idea_payload_unusable", update_id))
                     continue
+                view = payload.get("buyer_view") if isinstance(payload.get("buyer_view"), dict) else None
                 pending.append({"update_id": update_id, "advisory_id": advisory_id, "profile_id": profile_id,
                                 "event_type": event_type, "observed_at": observed, "rendered_update": text,
-                                "status": "QUEUED"})
+                                "status": "QUEUED",
+                                # [N08-C2] For the send-time check of what the partner holds of the card's option.
+                                "symbol": (view or {}).get("symbol"), "buyer_view": view,
+                                "underlying": idea_underlying, "observed_underlying": observed_underlying})
         for status, reason, update_id in closed:
             await db.execute(
                 "UPDATE partner_advisory_updates SET status=?,status_reason=?,updated_at=? "
@@ -1610,6 +1617,43 @@ async def pending_management_updates(
                                         status=status, reason=reason)
         await db.commit()
     return pending
+
+
+HELD_NONE = "partner_holds_none"
+
+
+def _partner_units(symbol: Optional[str], now: datetime) -> Optional[int]:
+    """[N08-C2] What the trade watch's latest Zerodha read shows held of the card's option. None when it cannot say
+    (watch off, no read today or a stale read, no symbol): the follow-up then goes as before."""
+    if not symbol:
+        return None
+    try:
+        import partner_watch
+        return partner_watch.held_units(str(symbol), now)
+    except Exception as exc:                    # the check must never cost the partner a stop update
+        import structlog
+        structlog.get_logger().warning("partner_manual_advisory_held_check_failed err=%s", type(exc).__name__)
+        return None
+
+
+def _not_held_text(update: dict, observed_at: datetime) -> Optional[str]:
+    """[N08-C2] The follow-up for a card whose option is not held: one line for a stop or a target, None for the
+    square-off reminder (not sent)."""
+    event_type = str(update.get("event_type"))
+    if event_type not in ("INVALIDATION", "TARGET_ZONE"):
+        return None
+    view, fut = update.get("buyer_view"), update.get("observed_underlying")
+    if isinstance(view, dict) and _finite_positive(fut):
+        try:
+            from partner_buyer import render_buyer_update_not_held
+            line = render_buyer_update_not_held(view, event_type, underlying=str(update.get("underlying") or ""),
+                                                observed_fut=float(fut), observed_at=observed_at)
+            if line:
+                return line
+        except (KeyError, TypeError, ValueError):
+            pass
+    what = "stop level hit" if event_type == "INVALIDATION" else "target reached"
+    return f"Card update: {what}. You hold none of its option: nothing to sell."
 
 
 async def dispatch_queued_management_update(db_path: str, update: dict, *, now: datetime, clock=None) -> bool:
@@ -1625,8 +1669,26 @@ async def dispatch_queued_management_update(db_path: str, update: dict, *, now: 
     update_id = str(update["update_id"])
     advisory_id = str(update["advisory_id"])
     reminder = str(update["event_type"]) == "SESSION_EXIT_REMINDER"
+    text = str(update["rendered_update"])
+    held_none = _partner_units(update.get("symbol"), final_now) == 0
+    if held_none:
+        # [N08-C2] The trade watch's latest Zerodha read shows none of the card's option held: no instruction to
+        # sell it. A stop or target becomes one line saying what happened and that there is nothing to sell (it
+        # still closes the card for a later buy and for the evening review); the square-off reminder is not sent.
+        # The stored text changes only once that line is delivered, so a retry checks the holding again.
+        text = _not_held_text(update, observed_at)
+        if text is None:
+            async with aiosqlite.connect(db_path) as db:
+                await db.execute(
+                    "UPDATE partner_advisory_updates SET status='EXPIRED_UNSENT',status_reason=?,updated_at=? "
+                    "WHERE update_id=? AND status='QUEUED'", (HELD_NONE, _iso(final_now), update_id))
+                await db.commit()
+            import structlog
+            structlog.get_logger().info("partner_manual_advisory_update_closed", update_id=update_id,
+                                        status="EXPIRED_UNSENT", reason=HELD_NONE)
+            return False
     sent = await _send_claimed_review(
-        db_path, "manual_advisory_update", update_id, str(update["rendered_update"]),
+        db_path, "manual_advisory_update", update_id, text,
         detail={
             "phase": "manual_update_v1", "policy_version": INTRADAY_POLICY_VERSION,
             "update_id": update_id, "advisory_id": str(update["advisory_id"]),
@@ -1647,7 +1709,13 @@ async def dispatch_queued_management_update(db_path: str, update: dict, *, now: 
     )
     if sent:
         async with aiosqlite.connect(db_path) as db:
-            await db.execute("UPDATE partner_advisory_updates SET status='DELIVERED_ACKNOWLEDGED',updated_at=? WHERE update_id=? AND status='QUEUED'", (_iso(final_now), update_id))
+            if held_none:
+                await db.execute(
+                    "UPDATE partner_advisory_updates SET status='DELIVERED_ACKNOWLEDGED',rendered_update=?,"
+                    "status_reason=?,updated_at=? WHERE update_id=? AND status='QUEUED'",
+                    (text, HELD_NONE, _iso(final_now), update_id))
+            else:
+                await db.execute("UPDATE partner_advisory_updates SET status='DELIVERED_ACKNOWLEDGED',updated_at=? WHERE update_id=? AND status='QUEUED'", (_iso(final_now), update_id))
             await db.commit()
     return sent
 

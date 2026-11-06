@@ -1,3 +1,13 @@
+## November 6 - N08 partner: one stop for a card buy; card follow-ups that know what is held (Dev only)
+
+[The N08 record](PARTNER_NOV06_FIXES_N08.md) has the Production evidence. A buy of a card's option inside its window now takes the card's stop and target in its PLAN. The N04-A lookup had never run: `_plan_job` required `size is None` and `_start_plan` always passes a size.
+
+A card's target or stop message reads the trade watch's latest book read (`partner_watch.held_units`, at most 60 s old). With none of the option held, it says "You hold none of it: nothing to sell". The 15:10 square-off reminder is then not sent (`EXPIRED_UNSENT`, `partner_holds_none`). Without a fresh read the message goes as before.
+
+The evening review flags a sale by the partner's own SL order, closer than the card's, as `STOP_TIGHTER_THAN_CARD`, not `EARLY_EXIT`. A stop moved down but still above the plan stop ends "Still above the plan stop ₹X."
+
+No schema, setting or schedule change. Messages only. Tests: `tests/test_nov06_partner_fixes.py`.
+
 ## November 6 opening-drive storage
 
 The regular F&O cold path writes available opening-drive backfills and the current observation in one SQLite transaction. The orchestrator awaits the same value and median comparison before requesting the option chain. Existing rows retain priority. A failed insert rolls back the batch for retry. See [local parity and timings](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).

@@ -349,6 +349,24 @@ def render_buyer_update(view: dict, event_type: str, *, underlying: str, observe
             "move SL to your entry price.")
 
 
+def render_buyer_update_not_held(view: dict, event_type: str, *, underlying: str, observed_fut: float,
+                                 observed_at: datetime) -> Optional[str]:
+    """[N08-C2] The card's stop or target when the trade watch sees none of its option held: what happened and that
+    there is nothing to sell, in one line. None for the square-off reminder: with nothing held it is not sent.
+    (Nov 6: "Book profit" at 13:20 and "square off by 15:15" at 15:10 for an option sold by the partner's stop at
+    10:54.)"""
+    if event_type not in ("INVALIDATION", "TARGET_ZONE"):
+        return None
+    name = _option_name(underlying, view)
+    tag = card_tag(view)
+    offset = view.get("fut_to_index_offset")
+    level = observed_fut - offset if offset is not None else observed_fut
+    seen = f"{level_label(underlying, level, view['level_basis'])} at {_hhmm(observed_at)}"
+    if event_type == "INVALIDATION":
+        return f"🛑 {name}{tag}: stop level hit ({seen}). You hold none of it: nothing to sell. Idea closed."
+    return f"🎯 {name}{tag}: target reached ({seen}). You hold none of it: nothing to sell."
+
+
 def _premium_read(iv_read: str) -> str:
     return {"CHEAP": "premium cheap 🟢", "FAIR": "premium fair",
             "RICH": "premium rich, take profits quickly"}.get(iv_read, "")

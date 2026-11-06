@@ -345,7 +345,9 @@ def test_every_stop_moved_down_is_told_with_its_reason():
     assert pw.lowered_reason(trip, 75.0, 70.0, plan, first=False) == "GUARD"      # 75 is within 0.5% of 75.05
     assert pw.lowered_reason(trip, 60.0, 55.0, plan, first=False) == "BELOW_PLAN"
     assert pw.lowered_reason(trip, 65.0, 60.0, None, first=False) == "AGAIN"
-    assert pw.lowered_text(trip, 65.0, 60.0, "AGAIN", plan).endswith(
+    # [N08-L1] Still above the plan stop: told, and said to be within the plan; without a plan, as before.
+    assert pw.lowered_text(trip, 65.0, 60.0, "AGAIN", plan).endswith(" Still above the plan stop ₹57.85.")
+    assert pw.lowered_text(trip, 65.0, 60.0, "AGAIN").endswith(
         "Moved down again: each move adds to the loss if it is hit.")
     # Nov 2 shape: entry 326.15, plan stop 270.20, already told once; each of 310 -> 300 -> 290 -> 280 is told.
     sx = pw.Trip("2", "BFO", "SENSEX26N0575800CE", "NRML", D(10, 37, 32), bought=40, buy_value=40 * 326.15)
@@ -2146,9 +2148,10 @@ async def test_gtts_moved_down_together_are_all_told(watch, kite):
         await pw.watch_tick(at, market=market)
     [lowered] = [m["text"] for m in watch if m["kind"] == "watch_lowered"]
     after, before = _both(pw._state.view.holdings[0], (70.0, 68.0), (69.0, 60.0))
+    stop = (await pw.plan_versions(settings.DB_PATH, "101"))[0]["plan"].stop
+    assert stop < 60.0                                     # both new stops still above the plan stop: [N08-L1]
     assert lowered == (f"⚠️ NIFTY 22300 PE: you moved 2 stops down: ₹70 → ₹69 for 65 and ₹68 → ₹60 for 65. If they "
-                       f"are hit, on your 130: {after} instead of {before}. Stops moved down add to the loss you "
-                       f"chose when you placed them.")
+                       f"are hit, on your 130: {after} instead of {before}. Still above the plan stop {pw._px(stop)}.")
 
 
 @pytest.mark.asyncio

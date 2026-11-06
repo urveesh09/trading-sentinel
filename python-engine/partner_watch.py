@@ -1461,6 +1461,25 @@ async def card_for(db_path: str, day: str, trip) -> Optional[dict]:
             "closed": {"event": closes[0][1], "at": closes[0][0].isoformat()} if closes else None}
 
 
+HELD_VIEW_FRESH = timedelta(seconds=60)     # [N08-C2] a book read this recent says what is held, for card follow-ups
+
+
+def held_units(symbol: str, now: datetime) -> Optional[int]:
+    """[N08-C2] Units of one option the partner holds now, from the watch's last reconciled book read (orders, fills
+    and Zerodha's positions), for a card's follow-up message. None when the watch cannot say: it is off, has not read
+    the book today, or its last read is older than HELD_VIEW_FRESH. Then the follow-up goes as before.
+
+    Nov 6: the 09:50 card's option was sold by the partner's stop at 10:54 (and a re-buy at 11:00). The card's 13:20
+    "target reached. Book profit" and 15:10 "square off by 15:15" still went out, about an option they no longer held."""
+    view = _state.view
+    if not symbol or view is None or not enabled():
+        return None
+    now = now.astimezone(IST)
+    if view.day != now.date().isoformat() or abs(now - view.at) > HELD_VIEW_FRESH:
+        return None
+    return sum(int(h.qty) for h in view.holdings if h.tradingsymbol == symbol)
+
+
 def card_relation(card: Optional[dict], trip) -> Optional[str]:
     """How a buy stands to the card on its option: ON_CARD (inside the card's buy window, the card still open
     and its stop under the price), AFTER_CLOSE (the card's exit or target message came first), AFTER_WINDOW
@@ -1883,13 +1902,22 @@ def lowered_text(trip, old: float, new: float, reason: str = "FIRST", plan: Opti
     else:
         line = (f"⚠️ {name}: you moved your stop down {_px(old)} → {_px(new)}. If it is hit: "
                 f"{_signed(after)} instead of {_signed(before)}.")
-    return line + _lowered_why(reason, plan, units if part else None, after=after)
+    return line + _lowered_why(reason, plan, units if part else None, after=after, new=new)
+
+
+def _within_plan(plan: Optional[Plan], new: Optional[float]) -> bool:
+    return plan is not None and plan.stop is not None and new is not None and new >= plan.stop - 1e-9
 
 
 def _lowered_why(reason: str, plan: Optional[Plan], units: Optional[int] = None, *,
-                 after: Optional[float] = None) -> str:
+                 after: Optional[float] = None, new: Optional[float] = None) -> str:
     """[N03-L2] ``after``: the result at the new stop. A stop still above the buy price gives back profit; it
-    does not add to a loss (Nov 2: "+₹2,003 instead of +₹2,522 ... adds to the loss")."""
+    does not add to a loss (Nov 2: "+₹2,003 instead of +₹2,522 ... adds to the loss").
+
+    [N08-L1] ``new``: the new stop. Still at or above the plan stop, the move is within the plan and is said so (it is
+    still told: owner, Oct 24). Nov 6: 9 of 10 stops moved down stayed above the plan stop (e.g. 98 → 96 with the plan
+    stop at 82.05) and each was told "adds to the loss you chose"; 23 of the 24 morning trades closed before their
+    plan stop was reached, on stops much closer than the plan's."""
     if reason == "GUARD":
         return (f" It was guarding your buy price; now those {units} can end in a loss." if units else
                 " It was guarding your buy price; now this trade can end in a loss.")
@@ -1897,6 +1925,8 @@ def _lowered_why(reason: str, plan: Optional[Plan], units: Optional[int] = None,
         return f" That is under your plan stop {_px(plan.stop)}: the loss can now be bigger than planned."
     if after is not None and after >= 0:
         return " A stop moved down gives back profit it had kept for you."
+    if _within_plan(plan, new):
+        return f" Still above the plan stop {_px(plan.stop)}."
     if reason == "AGAIN":
         return " Moved down again: each move adds to the loss if it is hit."
     return " A stop moved down adds to the loss you chose when you placed it."
@@ -1939,6 +1969,8 @@ def _moves_why(reason: str, plan: Optional[Plan], used: list, trip, *, after: Op
                 f"plan stop {_px(plan.stop)}: the loss can now be bigger than planned.")
     if after is not None and after >= 0:
         return " Stops moved down give back profit they had kept for you."
+    if used and _within_plan(plan, min(m["new"] for m, _u in used)):
+        return f" Still above the plan stop {_px(plan.stop)}."                 # [N08-L1]
     return " Stops moved down add to the loss you chose when you placed them."
 
 
@@ -1984,7 +2016,8 @@ def changed_text(trip, gone: list, added: list, reason: str = "FIRST", plan: Opt
     new = f"new ones at {_triggers(added)}" if len(added) > 1 else f"a new one at {_triggers(added)}"
     return (f"⚠️ {_name(trip)}: your stops changed: {_triggers(gone)} cancelled, {new}. If they are "
             f"hit, {on}: about {_signed(after)} instead of about {_signed(before)}."
-            + _lowered_why(reason, plan, qty if qty < held else None, after=after))
+            + _lowered_why(reason, plan, qty if qty < held else None, after=after,
+                           new=min(float(s["trigger"]) for s in added) if added else None))
 
 
 def removed_text(holding, why: dict, plan: Optional[Plan], quote: Optional[dict] = None,
@@ -4231,7 +4264,11 @@ async def _plan_job(db_path: str, day: str, trip: Trip, trips: list, now: dateti
     if owner is not _state:
         return 0                      # a new day or login started meanwhile
     # [N04-A] A buy of a card's option inside its buy window takes the card's stop and target: one plan.
-    card = await card_for(db_path, day, trip) if size is None else None
+    # [N08-C1] Looked up for every buy. It used to run only when ``size`` was None, but _start_plan always passes the
+    # held size, so no buy ever took its card's plan (Nov 6: the 09:50 SENSEX 79800 CE card said SL ₹636.85, the
+    # watch told the 09:50:29 buy "Plan stop ₹671.1"; the partner's stop at ₹680 sold at 10:54, the option's low was
+    # ₹648, and the card reached its target at 13:20).
+    card = await card_for(db_path, day, trip)
     relation = card_relation(card, trip)
     if relation == "ON_CARD":
         plan = adopt_card(plan, card, trip.exchange)

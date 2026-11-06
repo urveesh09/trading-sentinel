@@ -1,3 +1,15 @@
+## November 6 - N08 partner fixes (Dev only; deploy needs the owner's word)
+
+Done in Dev ([record](PARTNER_NOV06_FIXES_N08.md)):
+- C1: the card's stop in the PLAN for a buy on the card.
+- C2: card follow-ups that check what is held.
+- C3: an own-stop sale is not "a wobble" in the review.
+- L1: within-plan wording for a stop moved down.
+
+Next:
+- Give the pre-buy check the card's stop inside a card window.
+- After deploy, on the first card day, confirm that a card buy's PLAN says "on the HH:MM card" and that `partner_advisory_updates` shows `partner_holds_none` for an option not held.
+
 ## November 6 opening-drive storage
 
 Dev batches cold opening-drive persistence before the regular signal pass. The five focused suites passed 153 checks and local benchmarks matched every stored row. The full Dev engine suite completed with 6,246 passed and four skipped. Review the GitHub promotion path before any rollout. Rollback is the isolated revert. See [scope and parity](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).
