@@ -18,7 +18,7 @@ Read immutable export hashes and only November 3–5 records. Report unavailable
 
 Across 2,263 held observations, all five recorded exits matched on clock, reason and price with independently recomputed costs. The recomputed single-leg sum was ₹4,254.93, of which ₹4,821.18 came from November 5. Defined-risk positions settled separately for ₹690.28 and ₹2,545.91. The first settlement entered the cash pool before the November 4 admission. The second settled after the last November 5 admission. The November 5 export is unsealed. The November 3 and 4 sessions may predate the current Production revision.
 
-The [machine-readable audit](deployed-control-nov5.json) retains the exact clocks, symbol identities and equity at entry. `python deployed_control_nov5.py <local-export>` validated the file hashes and completed with five matches. Entry evidence comes from the recorded accepted signals and position ledger. Independently reconstructing all entry decisions, and the historical two-venue one-wallet comparison, remain open. The SENSEX time stops in the earlier fixed-clock replay disagreed because the live EFF stop was recomputed as each position stalled.
+The [machine-readable audit](deployed-control-nov5.json) retains the exact clocks, symbol identities and equity at entry. `python deployed_control_nov5.py <local-export>` validated the file hashes and completed with five matches. Entry economics come from the recorded accepted signals and position ledger. The conditional entry-signal replay below is separate from the complete entry planner and historical two-venue one-wallet comparison. The SENSEX time stops in the earlier fixed-clock replay disagreed because the live EFF stop was recomputed as each position stalled.
 
 ## Historical data feasibility
 
@@ -33,3 +33,25 @@ The two dated SENSEX snapshots have disjoint calendars. Round 9 has 896,633 opti
 Counts come from intersecting each frozen NIFTY manifest's `sessions` with the union of the two SENSEX session lists, and querying both snapshot databases read-only. For each snapshot use `SELECT count(*), sum(oi>0), count(DISTINCT CASE WHEN oi>0 THEN substr(datetime,1,10) END) FROM candles WHERE kind='option'`. The Round 9 manifest SHA-256 is `935bfdb971d443479417020fa6d46f72b9e3b3f94f3db834b973c37c19d6ba8a`. See [Round 36](ROUND36_DATA.md) for that manifest hash. No replay or P&L was computed from these gaps.
 
 Historical trade or order book data would need a sample with dated SENSEX series, bid and ask, last-trade time, volume and intraday OI to qualify as a source. BSE advertises historical and derivative data. Its public daily market summary describes session-level OI, and the published materials inspected here do not establish that the available historical package includes the needed intraday field. [BSE data catalogue](https://www.bseindia.com/downloads1/Information_Products_Pricing_Sheet.pdf), [BSE derivative file formats](https://www.bseindia.com/downloads1/File_Format_Equity_Derivatives.pdf).
+
+## Entry evidence slice
+
+Use only the existing frozen export and IDs 55–59. Compare the Dev pure signal sources with Production `398d44ad`, and keep prior-session deployment uncertainty visible. Re-evaluate the native ordered N11 route from 21 calendar days of archived front-future bars. For SENSEX use archived NIFTY participation. Condition the replay on the recorded regime and HIGH trend branch. Rebuild intraday retest memory on observable closed bars, then evaluate at the recorded scan clock. Match direction, strategy, bar, range, ATR, participation, stop and target.
+
+Independently locate the last archived option and futures packets before each entry. Check them against recorded prices and explain the effect of any disagreement on full admission parity. Keep payoff arithmetic on the recorded selected contract separate from strike selection and sizing. Hash inputs and retain the five exact rows. No runtime, configuration, trading or rollout change. Rollback is to retire the evidence script and retain the result.
+
+### November 3–5 entry evidence
+
+The native ordered N11 route reproduced **5 of 5** recorded direction, strategy and signal bars, with identical range, ATR, relative volume, stop and target to eight decimal places. Each case was conditioned on the recorded regime and the HIGH ADX branch implied by the recorded strategy. The earlier intraday state was rebuilt one second after each archived five-minute bar closed. The final evaluation used the scan-ID clock. This reproduces signal geometry while leaving the original ADX reading and intervening runtime state unverified.
+
+| ID | Replayed route | Recorded ask | Previous recorder ask | Recorder seconds before entry | Reward / risk on logged terms |
+|---|---|---:|---:|---:|---:|
+| 55 | SENSEX EFF | ₹335.40 | ₹339.80 | 36.894 | 2.38316 |
+| 56 | SENSEX EFF | ₹345.55 | ₹323.95 | 41.679 | 2.31556 |
+| 57 | NIFTY OR20 | ₹141.75 | ₹138.70 | 57.935 | 1.77600 |
+| 58 | NIFTY OR20 | ₹154.00 | ₹157.10 | 40.449 | 3.08189 |
+| 59 | NIFTY TPB | ₹152.95 | ₹142.25 | 42.002 | 2.04149 |
+
+The independently scheduled quote recorder supplied each listed packet. All five option asks and all five futures marks differ from the recorded decision snapshot. Strike selection, age checks, lot sizing and reservation timing still require the actual decision chain and complete decision-time risk state. The logged selected ask times initial quantity matched structural maximum loss for each position. SENSEX's two two-lot entries were ordinary N11 sizing. The deployed N11T tolerance applies only to NIFTY paper entries. [Production entry orchestration](../../../../python-engine/fno_orchestrator.py), [recorder schedule](../../../../python-engine/scheduler_setup.py).
+
+`python deployed_entry_audit.py <local-export>` validated the export database and three quote segment hashes, checked the pure source against Production `398d44ad`, and reproduced the [saved five-row audit](deployed-entry-audit.json) on a second run. Production and Dev differ in the excluded opening-drive storage functions and two unrelated config declarations. Earlier runtime revisions are still uncertain. The first audit run exposed text tokens in the quote archive and integer tokens in the ledger. The completed audit normalizes the representation and independently checks symbol, expiry and lot size. The unchanged exit auditor reproduced five exits and ₹4,254.93. The four focused engine suites passed 89 tests and emitted an asynchronous shadow cleanup warning after completion. The full historical two-venue benchmark remains unavailable with the current SENSEX open-interest coverage.

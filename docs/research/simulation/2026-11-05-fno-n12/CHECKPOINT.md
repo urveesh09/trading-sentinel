@@ -102,7 +102,7 @@ The [Round 30 mix](ROUND30_RESULTS.md) earned ₹5,834.51 more than N11T with lo
 
 ## Part 9 qualification path
 
-The [development closeout](CLOSEOUT.md) ends candidate mining on the seen windows. The [ordinary SENSEX inventory](ROUND36_DATA.md) is paused after coverage and contract identity checks. The [deployed control audit](DEPLOYED_CONTROL.md) reconciles all five recorded exits from November 3–5, including the dynamic SENSEX time stops. Independent replay of entries and the partial-coverage historical two-venue control are open.
+The [development closeout](CLOSEOUT.md) ends candidate mining on the seen windows. The [ordinary SENSEX inventory](ROUND36_DATA.md) is paused after coverage and contract identity checks. The [deployed control audit](DEPLOYED_CONTROL.md) reconciles all five November 3–5 exits and reproduces all five entry signals conditional on their logged regime and trend branch. The recorder sampled a different option chain. Complete entry replay and the historical two-venue control remain open.
 
 The [January–May 2022 exam](EXAM_2022_H1.md) was frozen at `2758869`. The [single B screen](N012_B_SCREEN.md) failed its aggregate gate, leaving A as the only challenger. Keep the approved archive unopened until the owner completes the guarded targets and the exact request-key manifest is frozen. The April–May fallback requires a prior declaration that January–March is unavailable. Advance to forward paper work only after the sealed exam gates are met. Preserve the ₹250,000 capital treatment and the separate ₹15,000 trial constraints. There is no rollout or migration in this research slice.
 
