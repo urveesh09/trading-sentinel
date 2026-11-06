@@ -24,6 +24,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+The [shock-repair signal freeze](research/simulation/2026-11-05-fno-n12/SHOCK_REPAIR.md) sets a minimum of 30 opportunities on the declared development futures archives. Count the unchanged signal first. A passing count earns a separate forward standalone execution proposal.
+
 The [paired reclaim decision study](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_STRESS.md) passed symmetric cost and decision-gate rehearsal. Obtain the sealed standalone verdict on the earlier pinned source, then bind independently qualified forward quotes, schedules and common spread events before running the paired study on market evidence.
 
 The [paired reclaim comparison](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_PAIRED.md) records changed native and earned tickets and reconciles both wallets in synthetic runs. The next scored comparison needs the standalone verdict, independently qualified forward inputs, and frozen symmetric cost stress and gates.

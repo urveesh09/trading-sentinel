@@ -22,6 +22,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [five-minute shock repair](research/simulation/2026-11-05-fno-n12/SHOCK_REPAIR.md) is an isolated signal-frequency experiment that looks for a partial recovery after a traded NIFTY futures shock. Its frozen first pass reads futures signal inputs only.
+
 The [paired reclaim cost study](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_STRESS.md) runs the same standard and doubled stress on both wallets, with stress reserved before entry and realised at settlement. It applies the support, concentration and downside gates.
 
 The [paired reclaim quote replay](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_PAIRED.md) reconciles the native trade changes and reclaim cash on a common qualified tape. A missing first reclaim quote or held mark withholds both summaries.
