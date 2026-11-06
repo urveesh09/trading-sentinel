@@ -22,6 +22,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [standalone prior-range adapter](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_EXECUTION.md) uses the native one-lot planner and the candidate's explicit stop and midpoint exit, with a separate research cash ledger. It records missing held observations and has synthetic verification only.
+
 The [prior-range frequency result](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_COUNT.md) found 85 setups on four seen NIFTY windows. It measured signal frequency only.
 
 The [prior-session range reclaim](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_RECLAIM.md) is a frozen NIFTY strategy hypothesis in Dev research. The first pass counts independent signal opportunities without scoring trades.
