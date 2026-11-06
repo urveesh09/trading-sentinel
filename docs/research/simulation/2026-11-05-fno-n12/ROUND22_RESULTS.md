@@ -18,3 +18,5 @@ Rejection added eight trades and lost ₹6,854.24 on them, with about ₹20,966.
 On November 5 a native paper position was open at every eligible action clock from 10:15 through 12:30. Both new arms would have been refused on that fixed observed path. Recorded native singles were ₹4,821.18 and the separate regular spread was ₹2,545.91. [Observed gate receipt](round22-nov5.json).
 
 Run `round22.py` once per `N12_YEAR`, then `round22_compare.py` on all five completed receipts. All results are local Dev research. No runtime, broker, authority, rollout, capital or expiry changes.
+
+The [three worst-session attribution](ROUND22_ATTRIBUTION.md) later reproduced the frozen acceptance and N11T runs to separate re-entry, a carry-over loss pause and drawdown-driven sizing. These three days account for ₹57,258.02 of the native-book residual.

@@ -12,6 +12,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+The [Round 22 attribution](research/simulation/2026-11-05-fno-n12/ROUND22_ATTRIBUTION.md) completes the three worst-session trace requested in the advisory. Preserve the rejection of both arms. Check future additions first as independent sleeves, then attribute each shared-wallet displacement or size change.
+
 The [historical one-lot shadow check](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#historical-one-lot-shadow-path-slice) resolved two of 18 representative NIFTY paths. Keep the unresolved paths and full gate history out of portfolio scores. Exact contemporaneous chain and held quotes remain necessary before joining the older shared-wallet replay.
 
 The [point-in-time N11 gate](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#point-in-time-n11-gate-slice) matched five observed directional gates and six shadow entry flags. The older 31 quote dates have zero overlapping logged volatility readings. A historical run needs causal volatility inputs and its own fully evidenced one-lot shadow, alongside shared spread and held quotes.

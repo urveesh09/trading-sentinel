@@ -1,0 +1,498 @@
+{
+  "aggregate_native_delta": -114205.5985,
+  "days": {
+    "2025-02-11": {
+      "accept_net": 10295.5308,
+      "acceptance_prior_closes": [
+        {
+          "at": "2025-01-21T15:10:59+05:30",
+          "member": 3,
+          "net": 6067.526
+        },
+        {
+          "at": "2025-01-27T12:03:59+05:30",
+          "member": 5,
+          "net": -3333.4026
+        },
+        {
+          "at": "2025-01-28T14:50:59+05:30",
+          "member": 5,
+          "net": -1067.2943
+        },
+        {
+          "at": "2025-01-29T11:23:59+05:30",
+          "member": 5,
+          "net": -4064.1651
+        },
+        {
+          "at": "2025-01-31T14:00:59+05:30",
+          "member": 1,
+          "net": 1058.607
+        },
+        {
+          "at": "2025-02-01T14:32:59+05:30",
+          "member": 2,
+          "net": -1900.4045
+        },
+        {
+          "at": "2025-02-05T13:13:59+05:30",
+          "member": 4,
+          "net": -1640.4531
+        },
+        {
+          "at": "2025-02-10T14:00:59+05:30",
+          "member": 5,
+          "net": -1242.8735
+        }
+      ],
+      "acceptance_trades": [
+        {
+          "direction": "SHORT",
+          "entry_premium": 153.65,
+          "entry_qty": 65,
+          "entry_time": "2025-02-11T11:30:59+05:30",
+          "entry_underlying": 23325.05,
+          "exit_premium": 316.6,
+          "exit_reason": "trail_stop",
+          "exit_time": "2025-02-11T13:15:59+05:30",
+          "initial_stop_underlying": 23363.14422694849,
+          "member": 4,
+          "n10_children": [],
+          "net_pnl": 10295.5308,
+          "tradingsymbol": "NIFTY25021323350PE"
+        }
+      ],
+      "entry_comparisons": [
+        {
+          "acceptance": {
+            "at": "2025-02-11T11:30:59+05:30",
+            "bar": "2025-02-11 11:25:00",
+            "day_realized": 0,
+            "filled": {
+              "bar": "2025-02-11 11:25:00",
+              "direction": "SHORT",
+              "n11": {
+                "atr": 20.729484632327594,
+                "evidence": true,
+                "lots": 1,
+                "stop_points": 38.09422694849127,
+                "vol_up": true
+              },
+              "premium": 153.65,
+              "qty": 65,
+              "symbol": "NIFTY25021323350PE"
+            },
+            "halts": [],
+            "held": [],
+            "outcome": "accepted",
+            "pool": 258301.9295,
+            "risk_multiplier": 0.5,
+            "stance": "drawdown_cut1"
+          },
+          "n11t": {
+            "at": "2025-02-11T11:30:59+05:30",
+            "bar": "2025-02-11 11:25:00",
+            "day_realized": 0,
+            "filled": {
+              "bar": "2025-02-11 11:25:00",
+              "direction": "SHORT",
+              "n11": {
+                "atr": 20.729484632327594,
+                "evidence": true,
+                "lots": 2,
+                "stop_points": 38.09422694849127,
+                "vol_up": true
+              },
+              "premium": 153.65,
+              "qty": 130,
+              "symbol": "NIFTY25021323350PE"
+            },
+            "halts": [],
+            "held": [],
+            "outcome": "accepted",
+            "pool": 271941.872,
+            "risk_multiplier": 1.0,
+            "stance": "base"
+          }
+        }
+      ],
+      "n11t_net": 27597.5447,
+      "n11t_trades": [
+        {
+          "direction": "SHORT",
+          "entry_premium": 153.65,
+          "entry_qty": 130,
+          "entry_time": "2025-02-11T11:30:59+05:30",
+          "entry_underlying": 23325.05,
+          "exit_premium": 316.6,
+          "exit_reason": "trail_stop",
+          "exit_time": "2025-02-11T13:15:59+05:30",
+          "initial_stop_underlying": 23363.14422694849,
+          "member": 4,
+          "n10_children": [
+            {
+              "ask": 204.8,
+              "at": "2025-02-11T12:56:59+05:30",
+              "bid": 316.6,
+              "exit_at": "2025-02-11T13:15:59+05:30",
+              "extra": 205.0,
+              "future": 23258.75,
+              "gross": 7267.0,
+              "level": 23325.05,
+              "limit": 5000.0,
+              "net": 6969.2832,
+              "planned_total": 4672.31,
+              "premium_stop": 153.6,
+              "progress": 1.7404,
+              "qty": 65,
+              "reason": "with_first:trail_stop",
+              "risk": 3605.369817953279,
+              "step": 0
+            }
+          ],
+          "net_pnl": 27597.5447,
+          "tradingsymbol": "NIFTY25021323350PE"
+        }
+      ],
+      "native_delta": -17302.0139,
+      "sleeve_net": 0.0
+    },
+    "2026-06-01": {
+      "accept_net": -1523.7007,
+      "acceptance_prior_closes": [
+        {
+          "at": "2026-04-10T14:15:59+05:30",
+          "member": 3,
+          "net": -3360.4503
+        },
+        {
+          "at": "2026-04-17T13:15:59+05:30",
+          "member": 5,
+          "net": 8.6398
+        },
+        {
+          "at": "2026-04-24T11:32:59+05:30",
+          "member": 5,
+          "net": -1529.557
+        },
+        {
+          "at": "2026-04-30T12:05:59+05:30",
+          "member": 5,
+          "net": -2051.1323
+        },
+        {
+          "at": "2026-05-06T11:29:59+05:30",
+          "member": 5,
+          "net": -1248.6448
+        },
+        {
+          "at": "2026-05-18T14:34:59+05:30",
+          "member": 5,
+          "net": 91.1365
+        },
+        {
+          "at": "2026-05-20T13:30:59+05:30",
+          "member": 5,
+          "net": -1830.5719
+        },
+        {
+          "at": "2026-05-21T11:28:59+05:30",
+          "member": 5,
+          "net": -2754.9119
+        }
+      ],
+      "acceptance_trades": [
+        {
+          "direction": "SHORT",
+          "entry_premium": 147.0,
+          "entry_qty": 65,
+          "entry_time": "2026-06-01T10:30:59+05:30",
+          "entry_underlying": 23608.5,
+          "exit_premium": 127.75,
+          "exit_reason": "underlying_stop",
+          "exit_time": "2026-06-01T10:48:59+05:30",
+          "initial_stop_underlying": 23638.6325,
+          "member": 5,
+          "n10_children": [],
+          "net_pnl": -1523.7007,
+          "tradingsymbol": "NIFTY26060223650PE"
+        }
+      ],
+      "entry_comparisons": [
+        {
+          "acceptance": {
+            "at": "2026-06-01T11:30:59+05:30",
+            "bar": "2026-06-01 11:25:00",
+            "day_realized": -1523.7007,
+            "filled": null,
+            "halts": [],
+            "held": [],
+            "outcome": "reentry_not_confirmed",
+            "pool": 293624.084,
+            "risk_multiplier": 0.5,
+            "stance": "drawdown_cut1"
+          },
+          "n11t": {
+            "at": "2026-06-01T11:30:59+05:30",
+            "bar": "2026-06-01 11:25:00",
+            "day_realized": 0,
+            "filled": {
+              "bar": "2026-06-01 11:25:00",
+              "direction": "SHORT",
+              "n11": {
+                "atr": 30.30412007499447,
+                "evidence": true,
+                "lots": 2,
+                "stop_points": 39.85618011249244,
+                "vol_up": true
+              },
+              "premium": 162.85,
+              "qty": 130,
+              "symbol": "NIFTY26060223700PE"
+            },
+            "halts": [],
+            "held": [],
+            "outcome": "accepted",
+            "pool": 288731.2435,
+            "risk_multiplier": 1.25,
+            "stance": "proven_edge_up1"
+          }
+        },
+        {
+          "acceptance": {
+            "at": "2026-06-01T11:36:59+05:30",
+            "bar": "2026-06-01 11:30:00",
+            "day_realized": -1523.7007,
+            "filled": null,
+            "halts": [],
+            "held": [],
+            "outcome": "reentry_not_confirmed",
+            "pool": 293624.084,
+            "risk_multiplier": 0.5,
+            "stance": "drawdown_cut1"
+          },
+          "n11t": {
+            "at": "2026-06-01T11:36:59+05:30",
+            "bar": "2026-06-01 11:30:00",
+            "day_realized": 0,
+            "filled": {
+              "bar": "2026-06-01 11:30:00",
+              "direction": "SHORT",
+              "n11": {
+                "atr": 29.99668292678058,
+                "evidence": true,
+                "lots": 2,
+                "stop_points": 45.895024390170875,
+                "vol_up": true
+              },
+              "premium": 139.3,
+              "qty": 130,
+              "symbol": "NIFTY26060223650PE"
+            },
+            "halts": [],
+            "held": [
+              {
+                "id": 29,
+                "member": 4,
+                "qty": 130,
+                "symbol": "NIFTY26060223700PE"
+              }
+            ],
+            "outcome": "accepted",
+            "pool": 288731.2435,
+            "risk_multiplier": 1.25,
+            "stance": "proven_edge_up1"
+          }
+        }
+      ],
+      "n11t_net": 22638.936,
+      "n11t_trades": [
+        {
+          "direction": "SHORT",
+          "entry_premium": 162.85,
+          "entry_qty": 130,
+          "entry_time": "2026-06-01T11:30:59+05:30",
+          "entry_underlying": 23636.0,
+          "exit_premium": 263.7,
+          "exit_reason": "hard_flat_1510",
+          "exit_time": "2026-06-01T15:10:59+05:30",
+          "initial_stop_underlying": 23675.856180112492,
+          "member": 4,
+          "n10_children": [],
+          "net_pnl": 12567.9296,
+          "tradingsymbol": "NIFTY26060223700PE"
+        },
+        {
+          "direction": "SHORT",
+          "entry_premium": 139.3,
+          "entry_qty": 130,
+          "entry_time": "2026-06-01T11:36:59+05:30",
+          "entry_underlying": 23616.0,
+          "exit_premium": 220.85,
+          "exit_reason": "hard_flat_1510",
+          "exit_time": "2026-06-01T15:10:59+05:30",
+          "initial_stop_underlying": 23661.89502439017,
+          "member": 4,
+          "n10_children": [],
+          "net_pnl": 10071.0064,
+          "tradingsymbol": "NIFTY26060223650PE"
+        }
+      ],
+      "native_delta": -22638.936,
+      "sleeve_net": -1523.7007
+    },
+    "2026-09-24": {
+      "accept_net": 0.0,
+      "acceptance_prior_closes": [
+        {
+          "at": "2026-08-27T15:10:59+05:30",
+          "member": 4,
+          "net": 478.8459
+        },
+        {
+          "at": "2026-08-27T15:10:59+05:30",
+          "member": 4,
+          "net": -789.9952
+        },
+        {
+          "at": "2026-08-28T13:19:59+05:30",
+          "member": 5,
+          "net": -1010.8636
+        },
+        {
+          "at": "2026-09-04T12:04:59+05:30",
+          "member": 5,
+          "net": -604.7454
+        },
+        {
+          "at": "2026-09-07T13:53:59+05:30",
+          "member": 4,
+          "net": -1665.2088
+        },
+        {
+          "at": "2026-09-11T13:15:59+05:30",
+          "member": 5,
+          "net": -699.3848
+        },
+        {
+          "at": "2026-09-17T13:27:59+05:30",
+          "member": 5,
+          "net": -2409.2466
+        },
+        {
+          "at": "2026-09-23T13:34:59+05:30",
+          "member": 5,
+          "net": -1761.2963
+        }
+      ],
+      "acceptance_trades": [],
+      "entry_comparisons": [
+        {
+          "acceptance": {
+            "at": "2026-09-24T11:51:59+05:30",
+            "bar": "2026-09-24 11:45:00",
+            "day_realized": 0,
+            "filled": null,
+            "halts": [
+              "consecutive_loss_pause streak=6 last=2026-09-23"
+            ],
+            "held": [],
+            "outcome": "kill_switches_clear",
+            "pool": 276993.0,
+            "risk_multiplier": 0.25,
+            "stance": "drawdown_cut2"
+          },
+          "n11t": {
+            "at": "2026-09-24T11:51:59+05:30",
+            "bar": "2026-09-24 11:45:00",
+            "day_realized": 0,
+            "filled": {
+              "bar": "2026-09-24 11:45:00",
+              "direction": "SHORT",
+              "n11": {
+                "atr": 21.756534871464254,
+                "evidence": true,
+                "lots": 2,
+                "stop_points": 24.63480230719506,
+                "vol_up": true
+              },
+              "premium": 126.15,
+              "qty": 130,
+              "symbol": "NIFTY26092923250PE"
+            },
+            "halts": [],
+            "held": [],
+            "outcome": "accepted",
+            "pool": 306282.4867,
+            "risk_multiplier": 1.25,
+            "stance": "proven_edge_up1"
+          }
+        }
+      ],
+      "n11t_net": 17317.0731,
+      "n11t_trades": [
+        {
+          "direction": "SHORT",
+          "entry_premium": 126.15,
+          "entry_qty": 130,
+          "entry_time": "2026-09-24T11:51:59+05:30",
+          "entry_underlying": 23232.0,
+          "exit_premium": 223.75,
+          "exit_reason": "trail_stop",
+          "exit_time": "2026-09-24T14:02:59+05:30",
+          "initial_stop_underlying": 23256.634802307195,
+          "member": 4,
+          "n10_children": [
+            {
+              "ask": 140.0,
+              "at": "2026-09-24T12:32:59+05:30",
+              "bid": 223.75,
+              "exit_at": "2026-09-24T14:02:59+05:30",
+              "extra": 205.0,
+              "future": 23205.0,
+              "gross": 5443.75,
+              "level": 23232.0,
+              "limit": 5000.0,
+              "net": 5159.5207,
+              "planned_total": 4786.24,
+              "premium_stop": 105.0,
+              "progress": 1.096,
+              "qty": 65,
+              "reason": "with_first:trail_stop",
+              "risk": 2544.4059302415,
+              "step": 0
+            }
+          ],
+          "net_pnl": 17317.0731,
+          "tradingsymbol": "NIFTY26092923250PE"
+        }
+      ],
+      "native_delta": -17317.0731,
+      "sleeve_net": 0.0
+    }
+  },
+  "reproduction": {
+    "2025": {
+      "acceptance_daily_cash_and_non_memo_metrics": true,
+      "acceptance_sleeve_rows": true,
+      "n11t_economic_tuples": true
+    },
+    "2026": {
+      "acceptance_daily_cash_and_non_memo_metrics": true,
+      "acceptance_sleeve_rows": true,
+      "n11t_economic_tuples": true
+    }
+  },
+  "source_reports_sha256": {
+    "2022": "9df92955a08ae8bfcb4766ec430b97dac3d7c315b28fc218e0e6e4e6576fedde",
+    "2023": "934dd6360897b469d8f22db6b5c73c9474b0c32745e9621f44c8eacd10468a44",
+    "2024": "409541bd471133501ac34c3187db7865f21a8c310b30c79cfd9e9aafb202fcb0",
+    "2025": "992765910227de8cfc3a1150fde850c31feda98eda20cc9596b84d49d1d53572",
+    "2026": "ceca4e917f7aa7b83d22b484255631f4ff35e63399ea80f03d5ff2a1bd87f650"
+  },
+  "three_day_native_delta": -57258.023,
+  "trace_sha256": {
+    "round22-attribution-2025-v2.json": "8af88e52ddffa7fc99d141a87f3b9bfbf7fa4f673e29a50aa22b35af46e8546b",
+    "round22-attribution-2026-v2.json": "004b7f1f6f5ca78ace50106bfc36b93b2d8d7707d1960c113abcc737a6b8ef5e"
+  }
+}

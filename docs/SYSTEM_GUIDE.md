@@ -12,6 +12,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [Round 22 attribution](research/simulation/2026-11-05-fno-n12/ROUND22_ATTRIBUTION.md) reproduces the frozen wallet results and traces the three biggest native trade losses to re-entry, the consecutive-loss pause and drawdown sizing. The audit runs entirely in Dev research.
+
 The [historical shadow path check](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#historical-one-lot-shadow-path-slice) uses the native one-lot planner and exit rules on independent NIFTY signals. It resolves only two of 18 sampled paths, so the recorder cannot supply the full shadow gate history.
 
 The [point-in-time gate adapter](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#point-in-time-n11-gate-slice) uses the same daily N11 volatility and completed shadow history for NIFTY and SENSEX. It refuses new trades outside the evidenced scope and keeps existing exit management available. The observed shadow history includes native research seeds.
