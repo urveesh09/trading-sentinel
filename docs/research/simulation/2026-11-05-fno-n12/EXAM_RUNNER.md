@@ -58,3 +58,5 @@ Read the 40-session calendar, exact archived request scopes and only candle cloc
 | May 31 | June 30 | 356 | None | 376 | Regular |
 
 The exact finished keys are `future|NIFTY|2022-04-28|2022-04-27|2022-04-28`, `future|NIFTY|2022-05-26|2022-04-29|2022-05-02`, `future|NIFTY|2022-05-26|2022-05-26|2022-05-26` and `future|NIFTY|2022-06-30|2022-05-31|2022-06-01`. All returned fewer than 1,000 rows and are already marked finished. The dated regular book would skip the two own-expiry entries. The declared snapshot still requires complete session evidence, and the two regular-session gaps independently prevent either exam. The first April session also has no archived prior minutes of its front contract in the authorized request scope, with one and two prior sessions respectively for April 4 and 5. The audit does not select the fallback or prepare an exam dataset.
+
+The [data recovery handoff](EXAM_DATA_REPAIR.md) records four verified unused keys for the owner and guard maintainer. Its synthetic test reproduces why the installed guard sees the entirely missing session while accepting a truncated one.
