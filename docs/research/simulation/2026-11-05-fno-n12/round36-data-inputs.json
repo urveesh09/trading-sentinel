@@ -1,0 +1,17 @@
+{
+  "candidate_dates": 157,
+  "exclusions": {
+    "nifty_calendar": 71,
+    "no_complete_sensex_future": 26,
+    "no_two_sensex_option_rights": 74
+  },
+  "nifty_manifest_sha256": {
+    "2025": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+    "2026": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555"
+  },
+  "plan_sha256": "2ce50a23a7132463018a6b1db8bb26d1079a61bec98886c84d7011e2629d741d",
+  "window": [
+    "2025-07-01",
+    "2026-10-28"
+  ]
+}
