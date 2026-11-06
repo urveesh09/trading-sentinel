@@ -1,6 +1,6 @@
 ## November 6 opening-drive storage
 
-Dev batches cold opening-drive persistence before the regular signal pass. The five focused suites passed 153 checks and local benchmarks matched every stored row. Review the full suite and the GitHub promotion path before any rollout. Rollback is the isolated revert. See [scope and parity](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).
+Dev batches cold opening-drive persistence before the regular signal pass. The five focused suites passed 153 checks and local benchmarks matched every stored row. The full Dev engine suite completed with 6,246 passed and four skipped. Review the GitHub promotion path before any rollout. Rollback is the isolated revert. See [scope and parity](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).
 
 ## November 5 regular F&O held-spread evidence
 

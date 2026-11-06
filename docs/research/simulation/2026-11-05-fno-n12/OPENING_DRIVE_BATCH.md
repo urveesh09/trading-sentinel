@@ -16,3 +16,5 @@ On the local Windows engine, sixteen alternating before/after runs per case comp
 | 20 | 112.28 ms | 39.38 ms | 116.23 ms | 40.98 ms |
 
 The five focused files `test_fno_book.py`, `test_fno_book_start.py`, `test_fno_orchestrator.py`, `test_fno_n11.py` and `test_fno_n11_second_lot.py` passed 153 tests. The first draft of the new rollback fixture had too few prior completed sessions to yield the asserted `HIGH` side. The final fixture warms the earlier backfills and proves that a failed insert rolls back the batch and that retry preserves an existing row. `python scripts/build_system_code_atlas.py` indexed 304 modules.
+
+After `66d66e1`, the full Dev engine `python -m pytest -q` completed with exit 0, 6,246 passed and four skipped in 715.23 seconds. The run emitted 53 warnings and logged a teardown error from the Penny test that simulates a database outage. The execution change stayed in Dev and Production still reported `398d44ad`.
