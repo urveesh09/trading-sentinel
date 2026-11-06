@@ -1,0 +1,261 @@
+{
+  "books": {
+    "TREND_ENTRY_MIX": {
+      "cfg": {
+        "FNO_MAX_LOTS": 2,
+        "FNO_MAX_LOTS_PROVEN": 2
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "label": "N12|TREND_ENTRY_MIX",
+      "members": [
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "OR20",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "EFF",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:LOW",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "n02_contract": "v1",
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n03_context": "TPB_ONE",
+      "n03_contract": "v1",
+      "n03_sizing": "NORMAL",
+      "n03_variant": "RETEST",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n04_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n05_mode": "BASE",
+      "n07_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_last_minute": 840,
+        "low_two_lots_before": 720
+      },
+      "n09": {
+        "contract": "v1",
+        "vol_size": true
+      },
+      "n091": {
+        "contract": "v1",
+        "mode": "VOL_CLOCK"
+      },
+      "n10": {
+        "contract": "v1",
+        "eligibility": "RISK",
+        "entry": "NATIVE",
+        "flat_risk": 5000.0,
+        "max_total": 3,
+        "parent_min": 2,
+        "steps": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "vol": false
+      },
+      "n11": {
+        "add": "HONEST",
+        "contract": "v1",
+        "flat": 6250.0,
+        "k": 1.75,
+        "loss_one": true,
+        "stand_ratio": 0.9,
+        "true_risk": true
+      },
+      "n11t": {
+        "add": false,
+        "clamp": "SECOND_LOT",
+        "contract": "v4",
+        "limit": 6250.0,
+        "strict": true,
+        "when": [
+          "VOL",
+          "EV"
+        ]
+      },
+      "n12_mix": "ENTRY_MIX",
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE"
+    },
+    "TREND_ONLY": {
+      "cfg": {
+        "FNO_MAX_LOTS": 2,
+        "FNO_MAX_LOTS_PROVEN": 2
+      },
+      "cost": [
+        200.0,
+        5.0
+      ],
+      "label": "N12|TREND_ONLY",
+      "members": [
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "SHIPPED",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "OR20",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "EFF",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:HIGH",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        },
+        {
+          "exit": "OWN",
+          "gate": "adx_abs30:LOW",
+          "kind": "NAMED",
+          "name": "TPB",
+          "vwap_exit": "OFF"
+        }
+      ],
+      "n02_contract": "v1",
+      "n02_policy": "STATIC",
+      "n02_profile": "TPB_ONE",
+      "n03_context": "TPB_ONE",
+      "n03_contract": "v1",
+      "n03_sizing": "NORMAL",
+      "n03_variant": "RETEST",
+      "n04_context": "BALANCED_RETEST",
+      "n04_contract": "v1",
+      "n04_mode": "BASE",
+      "n05_context": "BALANCED_RETEST",
+      "n05_contract": "v1",
+      "n05_mode": "BASE",
+      "n07_contract": "v1",
+      "n07_mode": "PREMIUM_STALL",
+      "n08": {
+        "contract": "v1",
+        "exits": {
+          "EFF": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          },
+          "OR20": {
+            "FNO_TRAIL_ATR_MULT": 2.0
+          }
+        },
+        "low_last_minute": 840,
+        "low_two_lots_before": 720
+      },
+      "n09": {
+        "contract": "v1",
+        "vol_size": true
+      },
+      "n091": {
+        "contract": "v1",
+        "mode": "VOL_CLOCK"
+      },
+      "n10": {
+        "contract": "v1",
+        "eligibility": "RISK",
+        "entry": "NATIVE",
+        "flat_risk": 5000.0,
+        "max_total": 3,
+        "parent_min": 2,
+        "steps": [
+          [
+            1.0,
+            0.0
+          ]
+        ],
+        "vol": false
+      },
+      "n11": {
+        "add": "HONEST",
+        "contract": "v1",
+        "flat": 6250.0,
+        "k": 1.75,
+        "loss_one": true,
+        "stand": 20,
+        "stand_ratio": 0.9,
+        "true_risk": true
+      },
+      "n11t": {
+        "add": false,
+        "clamp": "SECOND_LOT",
+        "contract": "v4",
+        "limit": 6250.0,
+        "strict": true,
+        "when": [
+          "VOL",
+          "EV"
+        ]
+      },
+      "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE"
+    }
+  },
+  "source": {
+    "docs/research/simulation/2026-11-05-fno-expiry-followup/regular-annual-2023.json": "282876024727f519392f725ae41a1cde8828f539ee5cfb69a263886104cc0db1",
+    "docs/research/simulation/2026-11-05-fno-expiry-followup/regular-annual-2024.json": "7f11c63a5815036dfa19bad64cbeb8d55888643babc14a262c0b0109f4a2d684",
+    "docs/research/simulation/2026-11-05-fno-expiry-followup/regular-annual-2025.json": "8a7fea3982ddeee9b7a5e3614ec5ad24cdbc516d70b502869fd7cd12700a7f8b",
+    "docs/research/simulation/2026-11-05-fno-expiry-followup/regular-annual-2026.json": "275a76697c75846c5f769c763c672f4cbe88375e25cc407755932dc1200081cd",
+    "docs/research/simulation/2026-11-05-fno-expiry-followup/regular_rules.py": "aef23b08f721e6ccddec64038b3906a93067685f7901e57c1be8178f90904233",
+    "docs/research/simulation/2026-11-05-fno-n12/ROUND30.md": "6026a3cc44cf967b6e4f1dc281f033a876d994b9101bcdc315b4487c759a4d14",
+    "docs/research/simulation/2026-11-05-fno-n12/round2.py": "8c9b0eb72810b5ddfbc192a436cd745c6270be1c6a87b22aa754b3a1f0dba95e",
+    "docs/research/simulation/2026-11-05-fno-n12/round22_compare.py": "7075d5a973699d3803bd36327b0a692639f0e1607da0433713d2073effe818c3",
+    "docs/research/simulation/2026-11-05-fno-n12/round24.py": "0f1c90d161af96bd5a9a652e3dc6e2d2e217dacae16bbc164b5a189fbe8075a7",
+    "docs/research/simulation/2026-11-05-fno-n12/round3.py": "4b8f1a4ea33185f826febca5ba5fe0c4e0c474f1b4124a3c21aa2062c390e475",
+    "docs/research/simulation/2026-11-05-fno-n12/round30.py": "77edab4a822548a86faafac69c93c35aafe43319e51120e47342fe48b71db617",
+    "docs/research/simulation/2026-11-05-fno-n12/round5.py": "f360abc4ef60b58f74b9f8b85c6e84616f8ecef9fd2cb8dff82b2eead40d1c55",
+    "docs/research/simulation/2026-11-05-fno-n12/test_round30.py": "09a9e20c167c97cc626798ca3702d6cb191441c166238f5d69fcb1d80db37d0e"
+  }
+}
