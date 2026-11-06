@@ -45,3 +45,16 @@ The focused suite passed 23 checks using `python -m pytest test_exam_prepare.py 
 The saved full Q2 check at 06:59 IST on November 6 is complete for its planned requests and has an unclean result. The in-window problem is May 31. The front NIFTY future dated June 30 has zero minutes on May 31 and 376 on June 1. The two-session request `future|NIFTY|2022-06-30|2022-05-31|2022-06-01` is already marked `ok` with 376 rows. This is a one-day reply recorded as complete. Its row count is below the 1,000-candle ceiling addressed by the existing repair target. A scope-specific guarded resolution is needed. Ordinary reruns skip finished request keys.
 
 The Q2 check also flagged missing June 14 cash-index minutes and ten archive-wide volume validation issues from 2024–2025. Those findings are outside the N012 exam dates. The saved guard result remains unclean and the preparer requires a clean result. The May 31 gap affects both frozen windows and cannot be solved by selecting April–May. The January–March target still needs its completed guard check. This audit used only the request ledger and timestamp counts. Neither unseen price window has been opened or scored.
+
+### Session-by-session April–May metadata audit
+
+Read the 40-session calendar, exact archived request scopes and only candle clocks and volumes, under the preparer's price-denying authorizer. The 706 finished scoped requests covered every required cash-index minute and both traded option rights in the entry window on all 32 non-expiry dates. Four front-futures sessions were incomplete through 15:10 IST.
+
+| Session | Front expiry | Missing minutes | Last observed | Existing request rows | Session type |
+|---|---|---:|---|---:|---|
+| April 28 | April 28 | 244 | 11:06 | 488 | Expiry |
+| April 29 | May 26 | 98 | 13:32 | 634 | Regular |
+| May 26 | May 26 | 246 | 11:04 | 110 | Expiry |
+| May 31 | June 30 | 356 | None | 376 | Regular |
+
+The exact finished keys are `future|NIFTY|2022-04-28|2022-04-27|2022-04-28`, `future|NIFTY|2022-05-26|2022-04-29|2022-05-02`, `future|NIFTY|2022-05-26|2022-05-26|2022-05-26` and `future|NIFTY|2022-06-30|2022-05-31|2022-06-01`. All returned fewer than 1,000 rows and are already marked finished. The dated regular book would skip the two own-expiry entries. The declared snapshot still requires complete session evidence, and the two regular-session gaps independently prevent either exam. The first April session also has no archived prior minutes of its front contract in the authorized request scope, with one and two prior sessions respectively for April 4 and 5. The audit does not select the fallback or prepare an exam dataset.
