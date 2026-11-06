@@ -12,6 +12,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+The [paired N11T and N012-A directional driver](research/simulation/2026-11-05-fno-n12/PAIRED_REPLAY.md) is ready for qualified tapes. The synthetic case proves that exit timing changes later SENSEX access. Real comparison still requires complete scan and held clocks and separate spread replay for a combined book. Keep the 2022 exam and forward rollout sequence in force.
+
 The [Round 22 attribution](research/simulation/2026-11-05-fno-n12/ROUND22_ATTRIBUTION.md) completes the three worst-session trace requested in the advisory. Preserve the rejection of both arms. Check future additions first as independent sleeves, then attribute each shared-wallet displacement or size change.
 
 The [historical one-lot shadow check](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#historical-one-lot-shadow-path-slice) resolved two of 18 representative NIFTY paths. Keep the unresolved paths and full gate history out of portfolio scores. Exact contemporaneous chain and held quotes remain necessary before joining the older shared-wallet replay.

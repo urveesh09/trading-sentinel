@@ -12,6 +12,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [offline paired driver](research/simulation/2026-11-05-fno-n12/PAIRED_REPLAY.md) runs N11T and frozen N012-A in separate directional wallets on the same tape. It traces changed entries and withholds the comparison when either arm loses its held quote path. Supplied spread events are conditional inputs.
+
 The [Round 22 attribution](research/simulation/2026-11-05-fno-n12/ROUND22_ATTRIBUTION.md) reproduces the frozen wallet results and traces the three biggest native trade losses to re-entry, the consecutive-loss pause and drawdown sizing. The audit runs entirely in Dev research.
 
 The [historical shadow path check](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#historical-one-lot-shadow-path-slice) uses the native one-lot planner and exit rules on independent NIFTY signals. It resolves only two of 18 sampled paths, so the recorder cannot supply the full shadow gate history.

@@ -214,6 +214,9 @@ class SharedControl:
         self._last_at = at
         return Step(tuple(exits), decisions, tuple(missing), earned)
 
+    def _exit_params(self, position, now, future, params):
+        return params
+
     def _manage(self, p: FnoPosition, now: datetime, future: float | None, bid: float) -> Exit | None:
         exchange = options_exchange_for(p.underlying)
         params = {**live_single_leg_exit_params(settings), **fno_book.exit_overrides(p.strategy)}
@@ -228,7 +231,7 @@ class SharedControl:
         decision = evaluate_single_leg_exit(
             p, now_ist=now, fut_price=future, exit_px_basis=bid,
             hard_flat=(now.hour * 60 + now.minute >= settings.FNO_HARD_FLAT_MIN),
-            params=params, lock_breach_since=self._lock_since.get(p.id),
+            params=self._exit_params(p, now, future, params), lock_breach_since=self._lock_since.get(p.id),
         )
         reason = decision.exit_reason
         is_child = p.strategy == fno_n11.ADD
