@@ -1,3 +1,7 @@
+## November 6 opening-drive storage
+
+Dev batches cold opening-drive persistence before the regular signal pass. The five focused suites passed 153 checks and local benchmarks matched every stored row. Review the full suite and the GitHub promotion path before any rollout. Rollback is the isolated revert. See [scope and parity](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).
+
 ## November 5 regular F&O held-spread evidence
 
 The Dev recorder and export contract are implemented and off by default. Freeze the held observation mode before scoring any future panel. Establish native paper settlement parity and usable end-to-end quote coverage first. Delayed exit outcomes can remain unavailable once native management stops collecting a closed position. The next rollout decision concerns paper evidence only. The rollback is `FNO_DR_EXIT_PATH_RECORDING=false` or the isolated GitHub revert. See [scope, commands and validation](research/simulation/2026-11-05-fno-n12/FORWARD_SPREAD_EVIDENCE.md).

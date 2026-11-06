@@ -1,3 +1,7 @@
+## November 6 opening-drive storage
+
+Verify the single-transaction rollback test and matching NIFTY and SENSEX histories. The existing schema and cache are retained. The local benchmark covers cold SQLite persistence. See [evidence](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).
+
 ## November 5 regular F&O held-spread evidence
 
 Confirm the [scope and verification record](research/simulation/2026-11-05-fno-n12/FORWARD_SPREAD_EVIDENCE.md). Seven focused files passed 125 tests, including the synthetic three-lot clock and cash reconciliation. The atlas indexes 304 modules. The recorder is disabled by default. Dev only, with no migration, deployment or order authority. Production was read-only at `398d44ad`. Keep the November 5 spread exit counterfactual unavailable and treat any future scored run as a separate frozen study.
