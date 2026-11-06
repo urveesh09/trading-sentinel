@@ -1,0 +1,177 @@
+{
+  "freeze": "7011f4b27495d850b0d3cea61ba7f4406419a133",
+  "n11t_gates": {
+    "annual_delta": {
+      "2022": 304.91,
+      "2023": -79.43,
+      "2024": 0.0,
+      "2025": 3866.33,
+      "2026": 1742.7
+    },
+    "control": "N11T",
+    "control_max_drawdown_pct": 7.09309,
+    "control_net": 264142.37,
+    "control_worst_day": -5640.85,
+    "doubled_stress": "NOT_SCORED",
+    "gates": {
+      "20_percent_net_improvement": false,
+      "after_best_five_incremental_days": false,
+      "annual_net_floor": true,
+      "max_annual_closed_drawdown": true,
+      "no_unresolved_exposure": true,
+      "worst_day": true
+    },
+    "increment_after_best_five": -1295.4,
+    "max_drawdown_pct": 6.97165,
+    "net": 269976.88,
+    "net_target": 316970.84,
+    "paired_increment": 5834.51,
+    "provisional_development_pass": false,
+    "qualified": false,
+    "removed_days": [
+      [
+        "2023-07-17",
+        2686.1901
+      ],
+      [
+        "2025-06-30",
+        1929.8073
+      ],
+      [
+        "2026-03-25",
+        1015.2963999999997
+      ],
+      [
+        "2025-01-29",
+        1012.0526999999997
+      ],
+      [
+        "2025-10-24",
+        486.5637999999999
+      ]
+    ],
+    "untouched_validation": "NOT_SCORED",
+    "worst_day": -5640.85
+  },
+  "pairwise_baselines": {
+    "ROUND24_ENTRY_MIX": {
+      "annual_candidate_delta": {
+        "2022": 304.91,
+        "2023": 405.47,
+        "2024": 0.0,
+        "2025": 1936.52,
+        "2026": 1404.54
+      },
+      "baseline_net": 265925.44,
+      "best_five_incremental_days": [
+        [
+          "2026-03-25",
+          1015.2963999999997
+        ],
+        [
+          "2025-01-29",
+          1012.0526999999997
+        ],
+        [
+          "2025-10-24",
+          486.5637999999999
+        ],
+        [
+          "2025-01-31",
+          437.90740000000005
+        ],
+        [
+          "2026-09-28",
+          389.2509999999993
+        ]
+      ],
+      "candidate_net": 269976.88,
+      "increment_after_best_five": 710.38,
+      "paired_increment": 4051.45
+    },
+    "TREND_ONLY": {
+      "annual_candidate_delta": {
+        "2022": 0.0,
+        "2023": -484.9,
+        "2024": 0.0,
+        "2025": 1929.81,
+        "2026": 338.15
+      },
+      "baseline_net": 268193.82,
+      "best_five_incremental_days": [
+        [
+          "2023-07-17",
+          2686.1901
+        ],
+        [
+          "2025-06-30",
+          1929.8073
+        ],
+        [
+          "2026-03-13",
+          338.15229999999974
+        ],
+        [
+          "2023-05-22",
+          322.6303
+        ]
+      ],
+      "candidate_net": 269976.88,
+      "increment_after_best_five": -3493.73,
+      "paired_increment": 1783.05
+    }
+  },
+  "trend_only_gates": {
+    "annual_delta": {
+      "2022": 304.91,
+      "2023": 405.47,
+      "2024": 0.0,
+      "2025": 1936.52,
+      "2026": 1404.55
+    },
+    "control": "N11T",
+    "control_max_drawdown_pct": 7.09309,
+    "control_net": 264142.37,
+    "control_worst_day": -5640.85,
+    "doubled_stress": "NOT_SCORED",
+    "gates": {
+      "20_percent_net_improvement": false,
+      "after_best_five_incremental_days": true,
+      "annual_net_floor": true,
+      "max_annual_closed_drawdown": true,
+      "no_unresolved_exposure": true,
+      "worst_day": true
+    },
+    "increment_after_best_five": 710.38,
+    "max_drawdown_pct": 6.97165,
+    "net": 268193.82,
+    "net_target": 316970.84,
+    "paired_increment": 4051.45,
+    "provisional_development_pass": false,
+    "qualified": false,
+    "removed_days": [
+      [
+        "2026-03-25",
+        1015.2963999999997
+      ],
+      [
+        "2025-01-29",
+        1012.0526999999997
+      ],
+      [
+        "2025-10-24",
+        486.5637999999999
+      ],
+      [
+        "2025-01-31",
+        437.90740000000005
+      ],
+      [
+        "2026-09-28",
+        389.2509999999993
+      ]
+    ],
+    "untouched_validation": "NOT_SCORED",
+    "worst_day": -5640.85
+  }
+}
