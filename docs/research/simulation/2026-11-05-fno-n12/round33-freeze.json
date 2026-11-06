@@ -1,0 +1,17 @@
+{
+  "manifest": {
+    "2022": "41bd03dadaa1b297ff67955ec88b435a1f0df911aae90850f02382014baf033f",
+    "2023": "e40fef86b46b17f07d31ba4f214e9c776eac1d4fee3cfc52f7cdfb43c5cc8a45",
+    "2024": "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+    "2025": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+    "2026": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555"
+  },
+  "source": {
+    "ROUND33.md": "b61b207ec40b69fe6c86fbb722eb18a302790d48a0d533988b91287fddfee950",
+    "anatomy.py": "b36692b00d500dc3289ec752db7316f0bf93bc22c72e7bbaf595b2c8fe6d086c",
+    "round25.py": "b9f14e5550fd88b6b2169c64b0abbd8e3a9cb2161f4ef1e3385780f709dea16f",
+    "round28.py": "fea041490ff9719d8f0e272c9ef30276ea84b40b88da785a9d89561e366583b2",
+    "round33.py": "0a81c80adbc9a9dc621827b112d3ea42e454a8fee762b75d75f18c4e27603282",
+    "test_round33.py": "faace2cf39abb7db7cdbb3caf21935ce7d6b94b6cd4e5a5f59ef522563d66f87"
+  }
+}
