@@ -76,7 +76,7 @@ def source_coverage(frame, day, calendar):
     }
 
 
-def native_signals(day, name, own, volume, side, regimes):
+def native_signals(day, name, own, volume, side, regimes, *, include_geometry=False):
     fno_book._RETEST.clear()
     frame = fno_book.with_participation(own, volume)
     clocks, labels = regimes
@@ -100,16 +100,24 @@ def native_signals(day, name, own, volume, side, regimes):
             fired.append({"at": now.isoformat(), "minute": slot, "bar": sig.bar_ts,
                           "strategy": sig.strategy, "direction": sig.direction.value, "regime": regime,
                           "retest_context_complete": slot > unknown_state_until})
+            if include_geometry:
+                fired[-1]["geometry"] = {"atr": sig.atr, "stop_underlying": sig.stop_underlying,
+                                         "target_underlying": sig.target_underlying}
     return fired, missing_regime
 
 
-def first_entry(row, name, master, batches):
+def first_entry_sample(row, name, batches):
     start = quotes.stamp(row["at"])
     choices = sorted((at, data) for (venue, at), data in batches.items()
                      if venue == name and start <= at < clock(start.date(), row["minute"] + 1))
-    if not choices:
+    return choices[0] if choices else None
+
+
+def first_entry(row, name, master, batches):
+    sample = first_entry_sample(row, name, batches)
+    if sample is None:
         return {"status": "no_sample_after_signal"}
-    at, observed = choices[0]
+    at, observed = sample
     snapshot, complete = quotes.ladder_snapshot(name, at, master, observed)
     if snapshot is None or not complete:
         return {"status": "incomplete_verified_ladder", "receipt": at.isoformat()}
@@ -180,7 +188,7 @@ def summarize_held(name, entry, packets, lots):
             "native_10sec_path": flat and maximum <= NATIVE_MANAGE_GAP}
 
 
-def day_signals(db, day, master, daily, calendar):
+def day_signals(db, day, master, daily, calendar, *, include_geometry=False):
     gate = daily_gate(daily, day)
     regimes = prior_regimes(db, day)
     frames = {name: bars(db, front_name(row), clock(day, quotes.CLOCKS[-1], 1)) for name, row in master.items()}
@@ -192,7 +200,7 @@ def day_signals(db, day, master, daily, calendar):
         missing = available[name]
         thin = any(missing.values()) or (borrowed is not None and any(available["NIFTY"].values()))
         signals, missing_regime = ([], []) if own_expiry or gate["side"] is None else native_signals(
-            day, name, frames[name], borrowed, gate["side"], regimes
+            day, name, frames[name], borrowed, gate["side"], regimes, include_geometry=include_geometry
         )
         result[name] = {**missing, "own_expiry": own_expiry, "truncated_input": thin,
                         "missing_regime_minutes": missing_regime, "signals": signals}

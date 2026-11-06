@@ -1,0 +1,230 @@
+{
+  "allocation": 250000.0,
+  "counts": {
+    "held_gap": 10,
+    "incomplete_verified_ladder": 2,
+    "no_sample_after_signal": 4,
+    "resolved_at_sampled_clock": 2
+  },
+  "days": {
+    "2026-09-10": [],
+    "2026-09-11": [],
+    "2026-09-15": [],
+    "2026-09-16": [],
+    "2026-09-17": [],
+    "2026-09-21": [],
+    "2026-09-22": [],
+    "2026-09-23": [],
+    "2026-09-24": [
+      {
+        "complete_signal_context": true,
+        "gap_sec": 109.098984,
+        "last_verified": "2026-09-24T11:59:33.193207+05:30",
+        "looks": 9,
+        "next_usable": "2026-09-24T12:01:22.292191+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-24T11:50:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_TPB_LOW"
+      },
+      {
+        "complete_signal_context": true,
+        "gap_sec": 109.098984,
+        "last_verified": "2026-09-24T11:59:33.193207+05:30",
+        "looks": 4,
+        "next_usable": "2026-09-24T12:01:22.292191+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-24T11:55:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_TPB_LOW"
+      },
+      {
+        "complete_signal_context": true,
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-24T12:00:01+05:30",
+        "status": "no_sample_after_signal",
+        "strategy": "N11_TPB_LOW"
+      }
+    ],
+    "2026-09-25": [],
+    "2026-09-28": [
+      {
+        "complete_signal_context": false,
+        "gap_sec": 154.370026,
+        "last_verified": "2026-09-28T10:14:25.468790+05:30",
+        "looks": 19,
+        "next_usable": "2026-09-28T10:16:59.838816+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-28T09:55:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_OR20"
+      },
+      {
+        "complete_signal_context": true,
+        "gap_sec": 92.538804,
+        "last_verified": "2026-09-28T10:29:26.464591+05:30",
+        "looks": 4,
+        "next_usable": "2026-09-28T10:30:59.003395+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-28T10:25:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_SHIPPED"
+      },
+      {
+        "complete_signal_context": true,
+        "gap_sec": 92.785132,
+        "last_verified": "2026-09-28T11:59:26.221128+05:30",
+        "looks": 4,
+        "next_usable": "2026-09-28T12:00:59.006260+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-28T11:55:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_SHIPPED"
+      },
+      {
+        "complete_signal_context": true,
+        "gap_sec": 272.653632,
+        "last_verified": "2026-09-28T13:44:25.478660+05:30",
+        "looks": 9,
+        "next_usable": "2026-09-28T13:48:58.132292+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-28T13:35:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_SHIPPED"
+      },
+      {
+        "complete_signal_context": true,
+        "gap_sec": 272.398552,
+        "last_verified": "2026-09-28T14:14:25.451890+05:30",
+        "looks": 4,
+        "next_usable": "2026-09-28T14:18:57.850442+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-09-28T14:10:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_TPB"
+      }
+    ],
+    "2026-09-29": [],
+    "2026-09-30": [],
+    "2026-10-01": [],
+    "2026-10-05": [
+      {
+        "complete_signal_context": true,
+        "gap_sec": 112.486211,
+        "last_verified": "2026-10-05T10:34:34.744268+05:30",
+        "looks": 19,
+        "next_usable": "2026-10-05T10:36:27.230479+05:30",
+        "prior_through_flat_90sec": true,
+        "signal_at": "2026-10-05T10:15:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_EFF"
+      }
+    ],
+    "2026-10-06": [],
+    "2026-10-07": [
+      {
+        "complete_signal_context": true,
+        "exit_at": "2026-10-07T10:17:26.628360+05:30",
+        "exit_reason": "underlying_stop",
+        "looks": 12,
+        "max_gap_sec": 61.256586,
+        "prior_through_flat_90sec": true,
+        "signal_at": "2026-10-07T10:05:01+05:30",
+        "status": "resolved_at_sampled_clock",
+        "strategy": "N11_OR20"
+      }
+    ],
+    "2026-10-08": [
+      {
+        "complete_signal_context": true,
+        "exit_at": "2026-10-08T15:10:25.403226+05:30",
+        "exit_reason": "hard_flat_1510",
+        "looks": 275,
+        "max_gap_sec": 61.339653,
+        "prior_through_flat_90sec": true,
+        "signal_at": "2026-10-08T10:35:01+05:30",
+        "status": "resolved_at_sampled_clock",
+        "strategy": "N11_OR20"
+      }
+    ],
+    "2026-10-09": [
+      {
+        "complete_signal_context": true,
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-10-09T12:00:01+05:30",
+        "status": "incomplete_verified_ladder",
+        "strategy": "N11_EFF"
+      },
+      {
+        "complete_signal_context": true,
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-10-09T12:10:01+05:30",
+        "status": "incomplete_verified_ladder",
+        "strategy": "N11_TPB"
+      }
+    ],
+    "2026-10-12": [],
+    "2026-10-13": [],
+    "2026-10-14": [
+      {
+        "complete_signal_context": true,
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-10-14T13:00:01+05:30",
+        "status": "no_sample_after_signal",
+        "strategy": "N11_OR20"
+      },
+      {
+        "complete_signal_context": true,
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-10-14T13:55:01+05:30",
+        "status": "no_sample_after_signal",
+        "strategy": "N11_EFF"
+      }
+    ],
+    "2026-10-15": [],
+    "2026-10-16": [
+      {
+        "complete_signal_context": true,
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-10-16T10:55:01+05:30",
+        "status": "no_sample_after_signal",
+        "strategy": "N11_SHIPPED"
+      }
+    ],
+    "2026-10-19": [],
+    "2026-10-21": [
+      {
+        "complete_signal_context": true,
+        "gap_sec": 92.958768,
+        "last_verified": "2026-10-21T11:01:55.149618+05:30",
+        "looks": 16,
+        "next_usable": "2026-10-21T11:03:28.108386+05:30",
+        "prior_through_flat_90sec": false,
+        "signal_at": "2026-10-21T10:45:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_OR20"
+      }
+    ],
+    "2026-10-22": [],
+    "2026-10-23": [
+      {
+        "complete_signal_context": true,
+        "gap_sec": 109.575936,
+        "last_verified": "2026-10-23T14:03:50.961993+05:30",
+        "looks": 8,
+        "next_usable": "2026-10-23T14:05:40.537929+05:30",
+        "prior_through_flat_90sec": true,
+        "signal_at": "2026-10-23T13:55:01+05:30",
+        "status": "held_gap",
+        "strategy": "N11_TPB_LOW"
+      }
+    ],
+    "2026-10-26": [],
+    "2026-10-27": [],
+    "2026-10-28": []
+  },
+  "maximum_held_gap_sec": 90,
+  "pre_flat_minimum_interval_sec": 55,
+  "scope": "independent NIFTY shadow paths, representative clocks, no portfolio cash result",
+  "signal_reference_sha256": "d5caacbcd849f108e0bd5fa8517d97063ed05992571a7a796c7f45b343a4c997"
+}

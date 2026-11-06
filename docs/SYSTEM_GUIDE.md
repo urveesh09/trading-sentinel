@@ -12,6 +12,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 N012 regular F&O research boundary
 
+The [historical shadow path check](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#historical-one-lot-shadow-path-slice) uses the native one-lot planner and exit rules on independent NIFTY signals. It resolves only two of 18 sampled paths, so the recorder cannot supply the full shadow gate history.
+
 The [point-in-time gate adapter](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#point-in-time-n11-gate-slice) uses the same daily N11 volatility and completed shadow history for NIFTY and SENSEX. It refuses new trades outside the evidenced scope and keeps existing exit management available. The observed shadow history includes native research seeds.
 
 The [November 6 observation](research/simulation/2026-11-05-fno-n12/NOV6.md) reconciles the finished export and Production paper ledger. Directional N11T had no trades. The separate spread settled at INR 5,252.77. The frozen N012-A had no eligible observed entry that day.
