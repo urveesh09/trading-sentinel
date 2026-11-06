@@ -1,0 +1,184 @@
+{
+  "directional_observed_net_rs": 0.0,
+  "directional_signal_logs": [
+    {
+      "accepted": 0,
+      "bars": 1,
+      "first": "2026-11-06T04:15:08.058741+00:00",
+      "last": "2026-11-06T04:15:08.058741+00:00",
+      "leg": "ENGINE",
+      "reject_reason": "n11_high:inside_opening_range_window",
+      "rows": 1,
+      "underlying": "NIFTY"
+    },
+    {
+      "accepted": 0,
+      "bars": 58,
+      "first": "2026-11-06T04:25:37.003497+00:00",
+      "last": "2026-11-06T09:10:37.277895+00:00",
+      "leg": "ENGINE",
+      "reject_reason": "n11_high:not_fresh_break",
+      "rows": 58,
+      "underlying": "NIFTY"
+    },
+    {
+      "accepted": 0,
+      "bars": 1,
+      "first": "2026-11-06T04:21:06.970665+00:00",
+      "last": "2026-11-06T04:21:06.970665+00:00",
+      "leg": "ENGINE",
+      "reject_reason": "stretched:SHIPPED",
+      "rows": 1,
+      "underlying": "NIFTY"
+    },
+    {
+      "accepted": 0,
+      "bars": 1,
+      "first": "2026-11-06T04:15:08.841816+00:00",
+      "last": "2026-11-06T04:15:08.841816+00:00",
+      "leg": "ENGINE",
+      "reject_reason": "n11_high:inside_opening_range_window",
+      "rows": 1,
+      "underlying": "SENSEX"
+    },
+    {
+      "accepted": 0,
+      "bars": 57,
+      "first": "2026-11-06T04:25:37.157888+00:00",
+      "last": "2026-11-06T09:10:37.726336+00:00",
+      "leg": "ENGINE",
+      "reject_reason": "n11_high:not_fresh_break",
+      "rows": 57,
+      "underlying": "SENSEX"
+    },
+    {
+      "accepted": 0,
+      "bars": 1,
+      "first": "2026-11-06T08:36:12.035898+00:00",
+      "last": "2026-11-06T08:36:12.035898+00:00",
+      "leg": "ENGINE",
+      "reject_reason": "stretched:EFF",
+      "rows": 1,
+      "underlying": "SENSEX"
+    },
+    {
+      "accepted": 0,
+      "bars": 1,
+      "first": "2026-11-06T04:21:07.048882+00:00",
+      "last": "2026-11-06T04:21:07.048882+00:00",
+      "leg": "ENGINE",
+      "reject_reason": "stretched:SHIPPED",
+      "rows": 1,
+      "underlying": "SENSEX"
+    }
+  ],
+  "directional_trades": 0,
+  "export": "20261106T103349Z",
+  "export_files_sha256": {
+    "fno-replay.sqlite": "18cca33138cdb8fb3fcb3289f9f160aff0f4fe478923478c52a1ac915e5ac7b1",
+    "quotes/2026-11-06/quotes.jsonl.open": "3731dca768ea26e1462e8068fcde4f302219c5d1ff29e7081daf8ba574571c51"
+  },
+  "exported_at_utc": "2026-11-06T10:34:32.014055+00:00",
+  "n012_a": {
+    "eligible_observed_entries": 0,
+    "frozen_at": "2758869",
+    "paired_net_rs": null,
+    "status": "NO_DIRECTIONAL_OPPORTUNITY"
+  },
+  "production": {
+    "read_at_utc": "2026-11-06T13:21:55.264276+00:00",
+    "release_sha": "398d44adeffa26a6314250858bcf2ee6eb7a2f71",
+    "settings": {
+      "FNO_BOOK": "N11",
+      "FNO_DR_EXIT_PATH_RECORDING": null,
+      "FNO_EXIT_PATH_RECORDING": true,
+      "FNO_N11_TOLERANCE_ENABLED": true,
+      "FNO_PAPER_BANKROLL": 250000.0,
+      "FNO_TRADING_UNDERLYINGS": "NIFTY,SENSEX"
+    },
+    "sources": {
+      "fno_book.py": "f67ac9fd2ec6fa90bff617879c2d68d81632b3978dda117066934055e30b9577",
+      "fno_costs.py": "c148d3deadec3982b90ff617d0c9b3aec3e1794c69c48f69cc4aaaf9cb391e8a",
+      "fno_exit_rules.py": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467",
+      "fno_n11.py": "fcc1517eab7a19e3ad557fd5ed730b691b8939728e0c23e012d17e4a18864c95",
+      "fno_orchestrator.py": "6a437e4ddb762a8693b46f4615a42491607cb6bcd2066c966d80de44a10e7592"
+    }
+  },
+  "session": "2026-11-06",
+  "spread_ledger": {
+    "39": [
+      {
+        "origin_ref": "fno_dr_structure:39",
+        "pnl": 5252.77
+      }
+    ]
+  },
+  "spread_ledger_present_in_export": false,
+  "spread_ledger_source": "PRODUCTION_READ_ONLY",
+  "spread_observed_net_rs": 5252.77,
+  "spread_replay": "UNAVAILABLE_EXACT_EXIT_QUOTES",
+  "spread_reserves": {
+    "39": [
+      {
+        "book": "DEFINED_RISK",
+        "position_ref": "fno_dr_position:39",
+        "state": "CONSUMED",
+        "worst_case_cash_rs": 8709.23
+      }
+    ]
+  },
+  "spreads": [
+    {
+      "cash_pnl": 5252.77,
+      "closed_at": "2026-11-06T14:52:36.860030+05:30",
+      "costs": 216.98,
+      "entry_cost_rs": 216.98,
+      "exit_reason": "target",
+      "gross_pnl": 5469.75,
+      "id": 39,
+      "kind": "DEBIT_SPREAD",
+      "legs": [
+        {
+          "contract": {
+            "exchange": "NFO",
+            "expiry": "2026-11-09",
+            "instrument_type": "CE",
+            "lot_size": 65,
+            "token": 10242306,
+            "tradingsymbol": "NIFTY26N0924650CE",
+            "underlying": "NIFTY"
+          },
+          "opt_type": "CE",
+          "premium": 154.35,
+          "quantity": 3,
+          "strike": 24650.0
+        },
+        {
+          "contract": {
+            "exchange": "NFO",
+            "expiry": "2026-11-09",
+            "instrument_type": "CE",
+            "lot_size": 65,
+            "token": 10243330,
+            "tradingsymbol": "NIFTY26N0924750CE",
+            "underlying": "NIFTY"
+          },
+          "opt_type": "CE",
+          "premium": 110.80000000000001,
+          "quantity": -3,
+          "strike": 24750.0
+        }
+      ],
+      "lot_size": 65,
+      "lots": 3,
+      "max_loss_rs": 8492.25,
+      "model_pnl": 5340.52,
+      "opened_at": "2026-11-06T09:51:06.885828+05:30",
+      "pnl": 5252.77,
+      "pricing_policy": "ENTRY_MID_EXIT_BID_ASK_V1",
+      "settlement_state": "SETTLED",
+      "status": "CLOSED"
+    }
+  ],
+  "unsealed_quote_journal": true
+}

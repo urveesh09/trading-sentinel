@@ -12,6 +12,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+Keep [November 6](research/simulation/2026-11-05-fno-n12/NOV6.md) as a separate post-freeze observation with zero paired directional trades. It verifies spread cash and the booked reserve for that date. It does not qualify the historical combined control or open the sealed exam.
+
 The [earned-lot replay](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#earned-lot-mechanics-slice) passed 151 focused checks. Three observed two-lot parents had no futures mark at the add threshold. Continue with causal gate inputs, spread cash and reserve chronology, and qualifying exact bid and ask packets before any combined result.
 
 The [shared-wallet directional adapter](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#chronological-shared-wallet-mechanics-slice) passed thirteen synthetic cases and 146 focused checks overall. Connect qualified held quote paths, native N11 gate and earned-lot evidence, and spread exposure and settlements before a combined historical replay. Keep that work in Dev research and preserve the sealed exam.
