@@ -97,6 +97,7 @@ class Exit:
     reason: str
     fees: float
     net: float
+    stress: float = 0.
 
 
 @dataclass(frozen=True)
@@ -115,11 +116,14 @@ class SharedControl:
     separate clock/coverage check before scoring any result.
     """
 
-    def __init__(self, allocation: float, *, gate_tape: GateTape | None = None):
+    def __init__(self, allocation: float, *, gate_tape: GateTape | None = None, stress_multiple: int = 0):
         if not isfinite(allocation) or allocation <= 0:
             raise ValueError("allocation must be positive and finite")
+        if stress_multiple not in (0, 1, 2):
+            raise ValueError("unsupported research cost stress")
         self.allocation = allocation
         self._gate_tape = gate_tape
+        self._stress_multiple = stress_multiple
         self.positions: dict[int, FnoPosition] = {}
         self.closes: list[Close] = []
         self._fees: dict[int, float] = {}
@@ -135,6 +139,9 @@ class SharedControl:
     @property
     def equity(self) -> float:
         return self.allocation + sum(close.pnl for close in self.closes)
+
+    def _extra_cost(self, lots: int) -> float:
+        return self._stress_multiple * fno_n11.extra_cost(lots)
 
     def _available(self, spread_reserve: float) -> float:
         exposure = sum(p.max_loss_rupees + self._fees[p.id] for p in self.positions.values())
@@ -239,7 +246,8 @@ class SharedControl:
             reason = "n11_with_first"
         if reason:
             fees = calc_fno_costs(p.entry_premium, bid, p.qty, exchange=exchange)
-            net = (bid - p.entry_premium) * p.qty - fees
+            stress = self._extra_cost(p.lots)
+            net = (bid - p.entry_premium) * p.qty - fees - stress
             self.closes.append(Close(now, net, single_leg=not is_child))
             day = now.date()
             self._directional_net[day] = self._directional_net.get(day, 0.0) + net
@@ -250,7 +258,7 @@ class SharedControl:
                 levels[p.direction] = reentry_level(
                     p.direction, p.entry_underlying, p.stop_underlying, settings.FNO_REENTRY_MARGIN_R,
                 )
-            return Exit(p.id, p.underlying, p.tradingsymbol, now, bid, p.qty, reason, fees, net)
+            return Exit(p.id, p.underlying, p.tradingsymbol, now, bid, p.qty, reason, fees, net, stress)
 
         if decision.persist_trail:
             p.trail_active = int(decision.trail_active)
@@ -315,7 +323,7 @@ class SharedControl:
         child = fno_n11.child_full_loss(ask, stop_pct, qty, fno_n11.extra_cost(1), fees)
         if held + child > fno_n11.budget(self.equity, stance.multiplier):
             return reject("earned_budget_exceeded")
-        fee_reserve = fees(ask, 0.0, qty)
+        fee_reserve = fees(ask, 0.0, qty) + self._extra_cost(1)
         if ask * qty + fee_reserve > available:
             return reject("shared_worst_case_cash_exhausted")
         if quote.ask_quantity < qty:
@@ -403,7 +411,7 @@ class SharedControl:
         fill = quote.ask
         for plan in (second.plan, first) if second is not None else (first,):
             qty = plan.lots * plan.lot_size
-            fee_reserve = calc_fno_costs(fill, 0.0, qty, exchange=exchange)
+            fee_reserve = calc_fno_costs(fill, 0.0, qty, exchange=exchange) + self._extra_cost(plan.lots)
             if plan.max_loss_rupees + fee_reserve > available:
                 if plan is first:
                     return reject("shared_worst_case_cash_exhausted")

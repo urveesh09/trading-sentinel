@@ -48,9 +48,9 @@ class ReclaimStep:
 
 
 class ReclaimControl(SharedControl):
-    def __init__(self, allocation, *, gate_tape=None, reclaim_stress=0.):
-        super().__init__(allocation, gate_tape=gate_tape)
-        self._sleeve = RangeSleeve(allocation, stress=reclaim_stress)
+    def __init__(self, allocation, *, gate_tape=None, stress_multiple=0):
+        super().__init__(allocation, gate_tape=gate_tape, stress_multiple=stress_multiple)
+        self._sleeve = RangeSleeve(allocation, stress=self._extra_cost(1))
 
     def step_with_reclaim(self, tick: Tick, quote: ReclaimQuote | None = None) -> ReclaimStep:
         if quote is not None:
@@ -129,4 +129,4 @@ class ReclaimControl(SharedControl):
             levels = self._stopped.setdefault((day, p.underlying), {})
             levels[p.direction] = reentry_level(p.direction, p.entry_underlying, p.stop_underlying,
                                                 settings.FNO_REENTRY_MARGIN_R)
-        return Exit(p.id, p.underlying, p.tradingsymbol, now, bid, p.qty, close.reason, close.fees, close.net)
+        return Exit(p.id, p.underlying, p.tradingsymbol, now, bid, p.qty, close.reason, close.fees, close.net, close.stress)

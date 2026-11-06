@@ -103,8 +103,8 @@ class _Control(_TraceEntries, SharedControl):
 
 
 class _Challenger(_TraceEntries, ReclaimControl):
-    def __init__(self, allocation, gate_tape, signals, quotes):
-        super().__init__(allocation, gate_tape=gate_tape)
+    def __init__(self, allocation, gate_tape, signals, quotes, stress_multiple):
+        super().__init__(allocation, gate_tape=gate_tape, stress_multiple=stress_multiple)
         self.signals = signals
         self.quotes = quotes
         self.reclaim_entries = []
@@ -182,11 +182,11 @@ def _quote_map(signals, quotes, scans):
 
 def compare_reclaim(ticks: Iterable[Tick], expected_scans: Sequence[datetime], *,
                     signals: Mapping[datetime, Signal], quotes: Iterable[ReclaimQuote],
-                    allocation=250_000., gate_tape=None) -> ReclaimPairResult:
+                    allocation=250_000., gate_tape=None, stress_multiple=0) -> ReclaimPairResult:
     """Compare complete quote paths conditional on the supplied common spread events."""
     routed = _quote_map(signals, quotes, expected_scans)
-    control = _Control(allocation, gate_tape=gate_tape)
-    challenger = _Challenger(allocation, gate_tape, signals, routed)
+    control = _Control(allocation, gate_tape=gate_tape, stress_multiple=stress_multiple)
+    challenger = _Challenger(allocation, gate_tape, signals, routed, stress_multiple)
     ledgers = {BASELINE: _Trades(), CHALLENGER: _Trades()}
 
     def observe(arm, book, tick, result):

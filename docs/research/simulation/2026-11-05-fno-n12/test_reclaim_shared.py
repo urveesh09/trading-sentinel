@@ -37,7 +37,7 @@ def test_shared_spread_reserve_and_reclaim_stress_are_real_cash():
     normal = plain.step_with_reclaim(Tick(NOW, 0), quote)
     p = plain.positions[normal.entry.position_id]
     reserve = p.entry_premium * p.qty + calc_fno_costs(p.entry_premium, 0, p.qty)
-    stress = ReclaimControl(250_000, reclaim_stress=205)
+    stress = ReclaimControl(250_000, stress_multiple=1)
     result = stress.step_with_reclaim(Tick(NOW, 250_000 - reserve - 100), quote)
     assert result.entry.cash_before_rs == pytest.approx(reserve + 100)
     assert result.entry.reason == "full_cash_reserve" and not stress.positions

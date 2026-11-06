@@ -24,6 +24,8 @@ The defined-risk exit research verifier now prices fees using each exact bound l
 
 ## November 5 regular F&O N012 research
 
+The [paired reclaim decision study](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_STRESS.md) passed symmetric cost and decision-gate rehearsal. Obtain the sealed standalone verdict on the earlier pinned source, then bind independently qualified forward quotes, schedules and common spread events before running the paired study on market evidence.
+
 The [paired reclaim comparison](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_PAIRED.md) records changed native and earned tickets and reconciles both wallets in synthetic runs. The next scored comparison needs the standalone verdict, independently qualified forward inputs, and frozen symmetric cost stress and gates.
 
 The [shared-wallet rehearsal](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_SHARED.md) now exercises reclaim in the native cash and loss ledger. Before an economic run, require the standalone result, exact paired quote and spread coverage, and a trace of changed native trades. Bind the standalone 2021 archive on its earlier pinned source.
