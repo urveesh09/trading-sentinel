@@ -103,15 +103,18 @@ def compare(ticks: Iterable[Tick], expected_scan_clocks: Sequence[datetime], *,
     externally confirmed, identical spread events. The paired result is a
     directional comparison conditional on those events.
     """
+    books = (SharedControl(allocation, gate_tape=gate_tape), TrendControl(allocation, gate_tape=gate_tape))
+    return _compare(ticks, expected_scan_clocks, books, ARMS, allocation=allocation)
+
+
+def _compare(ticks, expected_scan_clocks, books, arms, *, allocation, observe=None, extra_coverage=None):
     scans = set(expected_scan_clocks)
     if (not scans or len(scans) != len(expected_scan_clocks)
             or any(at.utcoffset() is None for at in scans)):
         raise ValueError("expected scan clocks must be distinct aware timestamps")
     days = {at.astimezone(IST).date() for at in scans}
-    books = (SharedControl(allocation, gate_tape=gate_tape),
-             TrendControl(allocation, gate_tape=gate_tape))
     gaps, changes = [], []
-    exits = {arm: [] for arm in ARMS}
+    exits = {arm: [] for arm in arms}
     seen_scans, end_by_day = set(), {}
     previous = None
     reported_by_position = defaultdict(set)
@@ -132,7 +135,7 @@ def compare(ticks: Iterable[Tick], expected_scan_clocks: Sequence[datetime], *,
         if tick.spread_reserve_rs or tick.spread_closes or (tick.earned and tick.earned.spread_reserve_rs):
             uses_external_spreads = True
         decisions = []
-        for arm, book in zip(ARMS, books, strict=True):
+        for arm, book in zip(arms, books, strict=True):
             held = dict(book.positions)
             for p in held.values():
                 reported = reported_by_position[arm, p.id]
@@ -145,6 +148,8 @@ def compare(ticks: Iterable[Tick], expected_scan_clocks: Sequence[datetime], *,
                     gaps.append(CoverageGap(arm, at, "held_future_missing", p.id, p.underlying, p.token))
                     reported.add("held_future_missing")
             result = book.step(tick)
+            if observe is not None:
+                observe(arm, book, tick, result)
             exits[arm].extend(result.exits)
             for position_id in result.missing_marks:
                 p = held[position_id]
@@ -175,9 +180,11 @@ def compare(ticks: Iterable[Tick], expected_scan_clocks: Sequence[datetime], *,
         if until is None or until.hour * 60 + until.minute < settings.FNO_HARD_FLAT_MIN:
             clock = min(at for at in scans if at.astimezone(IST).date() == day)
             gaps.append(CoverageGap("BOTH", until or clock, "session_horizon_missing"))
-    for arm, book in zip(ARMS, books, strict=True):
+    for arm, book in zip(arms, books, strict=True):
         for p in book.positions.values():
             gaps.append(CoverageGap(arm, previous, "unresolved_position", p.id, p.underlying, p.token))
+    if extra_coverage is not None:
+        gaps.extend(extra_coverage())
 
     summaries = None
     delta = None
@@ -185,8 +192,8 @@ def compare(ticks: Iterable[Tick], expected_scan_clocks: Sequence[datetime], *,
         summaries = {
             arm: summarize([{"status": "CLOSED", "exit_time": close.at.isoformat(), "net_pnl": close.pnl}
                             for close in book.closes], Decimal(str(allocation)))
-            for arm, book in zip(ARMS, books, strict=True)
+            for arm, book in zip(arms, books, strict=True)
         }
-        delta = summaries[ARMS[1]]["net"] - summaries[ARMS[0]]["net"]
+        delta = summaries[arms[1]]["net"] - summaries[arms[0]]["net"]
     return PairResult(tuple(gaps), tuple(changes), {arm: tuple(rows) for arm, rows in exits.items()},
                       summaries, delta, uses_external_spreads)
