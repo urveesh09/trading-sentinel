@@ -1,3 +1,18 @@
+## November 8 - Penny auction forward: Production clock fixes
+
+Production quotes broke rules in the first `penny_auction_forward.py` (`6af2f08`). Dev now follows the real Kite packets.
+
+- **Old packets after the close.** At 16:03 on Nov 5–6 every stored packet (10 of 10) was 182–612 s old; the book required under 30 s. Every overnight entry would have stayed UNRESOLVED, and the Smart close arm could never sell after the close.
+  - Now, in a segment that sends nothing until the read, a packet only has to be today's, from its start time on, and not after the read: from 09:00 in the 09:12–09:15 auction buffer, and from 15:30 in the post-close book and after 16:00.
+  - The 09:30–15:20 bid exits keep the 30 s rule.
+- **UNRESOLVED never ended.** It held its cash and an overnight slot for good, and one such Smart row stopped both Smart books for good. A decision whose evidence phase passed without usable evidence, or whose job never ran, is now `NO_EVIDENCE`: counted, no P&L, cash and slot freed.
+- **No 15:50 trade needed.** The 15:51 decision no longer requires one. The official close is in the quote from about 15:31 (6 of 6 matched the daily close).
+- **No trade after the decision** is now REFUSED `no_later_postclose_volume`, not missing evidence.
+- **The Smart arms cannot pick.** At 09:07 Kite's `last_price` was the previous close on 125 of 125 Production quotes. The store records this as `smart_preopen_price.visible`.
+- **Replay of the 10 real post-close quotes.** The old rules give no outcome for any of them. The new rules enter MTNL (138 of 463 shares) and TTML (96 of 313) and refuse 8 at 1% of later volume.
+
+[Review and evidence](research/penny/2026-11-08-auction-forward/PRODUCTION_CLOCK_REVIEW.md). Dev only, a local commit; paper only, no order path.
+
 ## November 8 - Penny funded auction forward books and Classic entry retirement
 
 Dev paper implementation: `penny_auction_forward.py`. Smart has paired Rs 2,000

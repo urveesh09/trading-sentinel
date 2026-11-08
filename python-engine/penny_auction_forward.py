@@ -1,13 +1,16 @@
 """Funded, clock-bound Penny auction paper comparisons. Never places orders.
 
 All auction entries and exits are capacity assumptions, actual_fill UNKNOWN.
-Missing evidence keeps cash reserved and makes complete modeled P&L unavailable.
+Open exposure (PENDING or OPEN) keeps cash reserved and makes complete modeled P&L unavailable.
+A decision whose only evidence phase passed without usable evidence becomes NO_EVIDENCE: it stays
+in the denominator, carries no modeled P&L and frees its cash and slot, because no later phase can
+resolve it (Nov 8 Production clock review: as UNRESOLVED it held both books shut for good).
 Legacy Smart/overnight stores are neither read as fills nor mutated.
 """
 from __future__ import annotations
 
 from contextlib import contextmanager, closing
-from datetime import datetime, time
+from datetime import date, datetime, time
 import json
 import logging
 import math
@@ -27,6 +30,16 @@ WINDOWS = {
     "POST_BASE": (time(15, 51), time(15, 52)),
     "POST_END": (time(16, 3), time(16, 5)),
 }
+OPEN_EXPOSURE = ("PENDING", "OPEN")
+NO_EVIDENCE = "NO_EVIDENCE"
+LIVE_PACKET_AGE_SEC = 30
+# A packet in a segment that sends nothing new before the receipt (the 09:12-09:15 auction
+# buffer, the sparse 15:40-16:00 post-close book, after 16:00) is not stale for being old; it must
+# be today's and from at least this time. Production Nov 5-6: at 16:03 every packet was 182-612 s old.
+AUCTION_SETTLED_SINCE = time(9, 0)
+CLOSE_SETTLED_SINCE = time(15, 30)
+# The end of a PENDING row's only evidence phase; after it the row can never resolve.
+EVIDENCE_ENDS = {"SMART": WINDOWS["MATCH"][1], "OVERNIGHT": WINDOWS["POST_END"][1]}
 logger = logging.getLogger(__name__)
 
 
@@ -66,18 +79,67 @@ def dump(value):
     return json.dumps(safe(value), default=str, allow_nan=False)
 
 
-def quality(q, at, *, trade_window=None):
+def quality(q, at, *, trade_window=None, settled_since=None):
+    """Why the packet is not evidence at receipt ``at``, else None.
+
+    A live session's packet must be at most 30 s old. With ``settled_since`` the segment sends
+    nothing new until the receipt, so age is no fault; the packet must be today's, from
+    ``settled_since`` on, and not after the receipt."""
     provider = stamp(q.get("timestamp"))
     if not provider or provider.date() != at.date():
         return "missing_or_cross_date_provider"
-    if not 0 <= (at - provider).total_seconds() <= 30:
+    age = (at - provider).total_seconds()
+    if settled_since is None and not 0 <= age <= LIVE_PACKET_AGE_SEC:
         return "stale_or_future_provider"
+    if settled_since is not None and (age < 0 or provider.time() < settled_since):
+        return "future_or_unsettled_provider"
     if trade_window:
         trade = stamp(q.get("last_trade_time"))
         if (not trade or trade.date() != at.date() or trade > provider
                 or not trade_window[0] <= trade.time() < trade_window[1]):
             return "no_supported_session_trade"
     return None
+
+
+def traded_today(q, at):
+    """The packet's last trade is today's and not after the packet: its price is today's."""
+    trade, provider = stamp(q.get("last_trade_time")), stamp(q.get("timestamp"))
+    return bool(trade and provider and trade.date() == at.date() and trade <= provider)
+
+
+def later_volume(q, at, base):
+    """(shares traded after ``base`` at its price, None) or (None, why the packet is no evidence).
+
+    The post-close session trades only at the official close. A settled packet whose last trade
+    is at or before the decision shows zero later volume: evidence of no capacity, not missing."""
+    why = quality(q, at, settled_since=CLOSE_SETTLED_SINCE)
+    if why:
+        return None, why
+    trade = stamp(q.get("last_trade_time"))
+    if not traded_today(q, at) or trade.time() >= time(16):
+        return None, "no_supported_session_trade"
+    if not positive(q.get("volume")) or float(q["volume"]) < base["volume"]:
+        return None, "volume_missing_or_reset"
+    if trade <= stamp(base["at"]):
+        return 0., None
+    if not positive(q.get("last_price")) or abs(float(q["last_price"]) - base["price"]) >= .0001:
+        return None, "postclose_price_changed"
+    return float(q["volume"]) - base["volume"], None
+
+
+def expire(c, at):
+    """PENDING rows whose evidence phase has ended (the job missed it) become NO_EVIDENCE."""
+    for r in rows(c):
+        if r["status"] == "UNRESOLVED":          # written by the first version of this book
+            r.update(status=NO_EVIDENCE)
+        elif r["status"] == "PENDING":
+            end = EVIDENCE_ENDS["SMART" if r["variant"] in SMART else "OVERNIGHT"]
+            if at < datetime.combine(date.fromisoformat(r["day"]), end, IST):
+                continue
+            r.update(status=NO_EVIDENCE, reason="evidence_phase_not_observed")
+        else:
+            continue
+        save(c, r)
 
 
 @contextmanager
@@ -113,7 +175,7 @@ def free_cash(c, variant):
     held = [r for r in rows(c) if r["variant"] == variant]
     initial = held[0]["initial_capital"] if held else allocation(variant)
     realized = sum(r.get("net", 0.) for r in held if r["status"] == "CLOSED")
-    reserved = sum(r["reserve"] for r in held if r["status"] in ("PENDING", "OPEN", "UNRESOLVED"))
+    reserved = sum(r["reserve"] for r in held if r["status"] in OPEN_EXPOSURE)
     return max(0., min(initial, initial + realized) - reserved)
 
 
@@ -163,11 +225,17 @@ def capture_smart(cache, quotes, medians, thin, at):
     from penny_smart_v3 import _candidates, select
     day = at.date().isoformat()
     good = {t: q for t, q in quotes.items() if quality(q, at) is None}
+    # Whether the 09:07 quote shows the auction at all: Production Nov 5-6, last_price equalled the
+    # previous close on 125 of 125 pre-open quotes, so no gap (and no pick) was visible.
+    moved = sum(1 for q in quotes.values() if positive(q.get("last_price"))
+                and positive((q.get("ohlc") or {}).get("close"))
+                and abs(float(q["last_price"]) - float(q["ohlc"]["close"])) > 1e-9)
     with store(cache) as c:
         if c.execute("SELECT 1 FROM sources WHERE family='SMART' AND day=?", (day,)).fetchone():
             return
+        expire(c, at)
         cash = min(free_cash(c, v) for v in SMART)
-        if any(r["variant"] in SMART and r["status"] in ("PENDING", "OPEN", "UNRESOLVED") for r in rows(c)):
+        if any(r["variant"] in SMART and r["status"] in OPEN_EXPOSURE for r in rows(c)):
             cash = 0.
         picks, refused = select(_candidates(good, medians, "last_price"), capital=cash, thin=thin)
         made = []
@@ -183,7 +251,7 @@ def capture_smart(cache, quotes, medians, thin, at):
                 made.append(pick.ticker)
         c.execute("INSERT INTO sources VALUES('SMART',?,?)", (day, dump({
             "at": at.isoformat(), "requested": len(quotes), "fresh": len(good),
-            "picks": made, "refusals": refused, "paired_available_cash": cash,
+            "preopen_price_moved": moved, "picks": made, "refusals": refused, "paired_available_cash": cash,
             "quotes": quotes, "medians": medians, "thin": thin})))
 
 
@@ -249,6 +317,7 @@ def apply_phase(c, phase, quotes, at):
     if phase not in WINDOWS or not WINDOWS[phase][0] <= at.time() < WINDOWS[phase][1]:
         raise ValueError("outside phase window")
     day = at.date().isoformat()
+    expire(c, at)
     if phase == "POST_BASE":
         source = (c.execute("SELECT payload FROM sources WHERE family='OVERNIGHT' AND day=?", (day,)).fetchone()
                   if settings.EDGE_OVERNIGHT_PAPER_ENABLED else None)
@@ -258,7 +327,7 @@ def apply_phase(c, phase, quotes, at):
                 if variant == "OVERNIGHT_V3" and not source["v3_inputs_complete"]:
                     continue
                 existing = [r for r in rows(c) if r["variant"] == variant
-                            and (r["day"] == day or r["status"] in ("PENDING", "OPEN", "UNRESOLVED"))]
+                            and (r["day"] == day or r["status"] in OPEN_EXPOSURE)]
                 slots = 2 - len(existing)
                 cash = free_cash(c, variant)
                 ticket = cash / slots if slots > 0 else 0.
@@ -266,7 +335,10 @@ def apply_phase(c, phase, quotes, at):
                     if slots < 1 or any(r["ticker"] == ticker for r in existing):
                         continue
                     q = quotes.get(ticker) or {}
-                    if (quality(q, at, trade_window=(time(15, 50), time(16)))
+                    # The official close is the post-close session's only price and is in the quote
+                    # from ~15:31 (Production Nov 5: 6 of 6 equal the daily close), so no 15:50 trade
+                    # is needed to know it.
+                    if (not postclose_base_ok(q, at)
                             or not positive(q.get("last_price")) or not positive(q.get("volume"))):
                         continue
                     price = float(q["last_price"])
@@ -284,12 +356,14 @@ def apply_phase(c, phase, quotes, at):
         if phase == "EXIT_INTENTS" and r["status"] == "OPEN" and r["variant"] in OVERNIGHT and r["day"] < day:
             r["auction_exit_intent_at"] = at.isoformat()
         elif phase == "MATCH":
-            why = quality(q, at, trade_window=(time(9, 10), time(9, 12, 1)))
+            # Any trade today before 09:15 is the call auction's; nothing trades in the buffer.
+            why = quality(q, at, trade_window=(AUCTION_SETTLED_SINCE, time(9, 15)),
+                          settled_since=AUCTION_SETTLED_SINCE)
             opening = (q.get("ohlc") or {}).get("open")
             usable = not why and positive(opening) and positive(q.get("volume"))
             if r["variant"] in SMART and r["day"] == day and r["status"] == "PENDING":
                 if not usable:
-                    r.update(status="UNRESOLVED", reason=why or "missing_auction_price_or_volume")
+                    r.update(status=NO_EVIDENCE, reason=why or "missing_auction_price_or_volume")
                 elif opening > r["limit"]:
                     r.update(status="REFUSED", reason="open_above_frozen_limit")
                 else:
@@ -304,28 +378,30 @@ def apply_phase(c, phase, quotes, at):
             if price is not None:
                 close_row(r, price, at, "OBSERVED_BID_CAPACITY_MODEL")
         elif phase == "POST_BASE" and r["variant"] == SMART[0] and r["day"] == day and r["status"] == "OPEN":
-            if (not quality(q, at, trade_window=(time(15, 50), time(16)))
-                    and positive(q.get("last_price")) and positive(q.get("volume"))):
+            if postclose_base_ok(q, at) and positive(q.get("last_price")) and positive(q.get("volume")):
                 r["close_intent"] = {"at": at.isoformat(), "price": float(q["last_price"]), "volume": float(q["volume"])}
         elif phase == "POST_END" and r["day"] == day:
             base = r.get("close_intent") if r["variant"] in SMART else {
                 "at": r["intent_at"], "price": r["limit"], "volume": r.get("base_volume")}
-            if not base or r["status"] not in ("PENDING", "OPEN"):
+            if not base or r["status"] not in OPEN_EXPOSURE:
                 continue
-            why = quality(q, at, trade_window=(time(15, 50), time(16)))
-            trade = stamp(q.get("last_trade_time"))
-            good = (not why and positive(q.get("volume")) and positive(q.get("last_price"))
-                    and trade > stamp(base["at"]) and abs(float(q["last_price"]) - base["price"]) < .0001
-                    and float(q["volume"]) >= base["volume"])
-            volume = float(q["volume"]) - base["volume"] if good else 0.
+            volume, why = later_volume(q, at, base)
             if r["variant"] in OVERNIGHT and r["status"] == "PENDING":
-                if good:
-                    _modeled_entry(r, r["limit"], volume, .01)
+                if volume is None:
+                    r.update(status=NO_EVIDENCE, reason=why)
+                elif volume == 0:
+                    r.update(status="REFUSED", reason="no_later_postclose_volume", later_volume=0.)
                 else:
-                    r.update(status="UNRESOLVED", reason=why or "unverified_later_postclose_volume")
-            elif r["variant"] == SMART[0] and good and volume * .01 >= r["modeled_quantity"]:
+                    r["later_volume"] = volume
+                    _modeled_entry(r, r["limit"], volume, .01)
+            elif r["variant"] == SMART[0] and volume and volume * .01 >= r["modeled_quantity"]:
                 close_row(r, base["price"], at, "POSTCLOSE_CAPACITY_MODEL")
         save(c, r)
+
+
+def postclose_base_ok(q, at):
+    """A decision packet after the close: settled since 15:30 and traded today (its price is today's close)."""
+    return quality(q, at, settled_since=CLOSE_SETTLED_SINCE) is None and traded_today(q, at)
 
 
 async def collect(kite, phase, cache=None, now=None):
@@ -351,7 +427,7 @@ async def collect(kite, phase, cache=None, now=None):
             if not names:
                 return {"status": "idle"}
         else:
-            names = {r["ticker"] for r in records if r["status"] in ("PENDING", "OPEN", "UNRESOLVED")}
+            names = {r["ticker"] for r in records if r["status"] in OPEN_EXPOSURE}
         if phase == "POST_BASE":
             source = c.execute("SELECT payload FROM sources WHERE family='OVERNIGHT' AND day=?", (day,)).fetchone()
             if source:
@@ -387,17 +463,22 @@ def comparison(cache):
         with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)) as c:
             records = rows(c)
             runs = c.execute("SELECT COUNT(*) FROM runs").fetchone()[0]
+            smart_days = [s for s in (json.loads(p[0]) for p in c.execute(
+                "SELECT payload FROM sources WHERE family='SMART'")) if "preopen_price_moved" in s]
         result.update(status="observed", observations=runs)
         for variant in (*SMART, *OVERNIGHT):
             selected = [r for r in records if r["variant"] == variant]
             closed = [r for r in selected if r["status"] == "CLOSED"]
-            unresolved = [r for r in selected if r["status"] in ("PENDING", "OPEN", "UNRESOLVED")]
+            exposed = [r for r in selected if r["status"] in OPEN_EXPOSURE]
             net = sum(r["net"] for r in closed)
             result["variants"][variant] = {"intents": len(selected), "closed": len(closed),
-                "unresolved": len(unresolved), "closed_modeled_net_subtotal": net,
-                "complete_modeled_net": None if unresolved or not selected else net,
+                "unresolved": len(exposed),
+                "no_evidence": sum(r["status"] in (NO_EVIDENCE, "UNRESOLVED") for r in selected),
+                "refused": sum(r["status"] == "REFUSED" for r in selected),
+                "closed_modeled_net_subtotal": net,
+                "complete_modeled_net": None if exposed or not closed else net,
                 "net_ex_best_winner": net - max([0.] + [r["net"] for r in closed]),
-                "reserved_cash": sum(r["reserve"] for r in unresolved), "recent": selected[-20:]}
+                "reserved_cash": sum(r["reserve"] for r in exposed), "recent": selected[-20:]}
         pairs = {}
         for row in records:
             if row["variant"] in SMART:
@@ -405,9 +486,17 @@ def comparison(cache):
         resolved = [p for p in pairs.values() if all(v in p and p[v]["status"] == "CLOSED" for v in SMART)]
         result["paired_smart"] = {
             "resolved_pairs": len(resolved), "unresolved_pairs": len(pairs) - len(resolved),
+            "no_evidence_pairs": sum(any(r["status"] in (NO_EVIDENCE, "UNRESOLVED") for r in p.values())
+                                     for p in pairs.values()),
             "closed_pairs_morning_minus_close": sum(p[SMART[1]]["net"] - p[SMART[0]]["net"] for p in resolved),
             "scope": "SAME_FUNDED_ENTRY_CONDITIONAL_EXIT_COMPARISON",
         }
+        seen = sum(int(s.get("requested") or 0) for s in smart_days)
+        moved = sum(int(s.get("preopen_price_moved") or 0) for s in smart_days)
+        result["smart_preopen_price"] = {
+            "days": len(smart_days), "quotes": seen, "moved_from_previous_close": moved,
+            # False: the 09:07 quote never showed the auction, so the Smart arms cannot pick.
+            "visible": None if not seen else moved > 0}
         return result
     except (sqlite3.Error, ValueError, KeyError, TypeError):
         return result | {"status": "unavailable"}

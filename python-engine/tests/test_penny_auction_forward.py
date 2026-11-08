@@ -1,5 +1,5 @@
 """Auction contracts exercised on observed synthetic tapes, never alpha evidence."""
-from datetime import datetime
+from datetime import datetime, time
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 import sqlite3
@@ -83,23 +83,47 @@ def test_matching_volume_partial_never_uses_continuous_volume(cache):
     assert {r["modeled_quantity"] for r in read(cache)} == {50}
 
 
-@pytest.mark.parametrize("change", ["missing", "stale", "future", "crossday", "continuous", "zero"])
-def test_invalid_auction_data_keeps_reserve_and_withholds_complete_profit(cache, change):
+@pytest.mark.parametrize("change", ["missing", "unsettled", "future", "crossday", "continuous", "zero"])
+def test_invalid_auction_data_is_no_evidence_frees_the_reserve_and_reports_no_profit(cache, change):
     smart(cache)
     q = quote("09:12:00", trade="09:11:00")
     if change == "missing": q.pop("timestamp")
-    if change == "stale": q["timestamp"] = at("09:10:00")
+    if change == "unsettled": q["timestamp"] = at("08:59:59")
     if change == "future": q["timestamp"] = at("09:12:01")
     if change == "crossday": q["last_trade_time"] = at("09:11:00", NEXT)
     if change == "continuous": q["last_trade_time"] = at("09:15:00")
     if change == "zero": q["volume"] = 0
     phase(cache, "MATCH", {"AAA": q}, "09:12:00")
-    assert all(r["status"] == "UNRESOLVED" for r in read(cache))
+    assert all(r["status"] == f.NO_EVIDENCE for r in read(cache))
     for v in f.comparison(cache)["variants"].values():
         if v["intents"]:
-            assert v["reserved_cash"] > 1900 and v["complete_modeled_net"] is None
+            assert v["reserved_cash"] == 0 and v["complete_modeled_net"] is None and v["no_evidence"] == 1
+    assert f.comparison(cache)["paired_smart"]["no_evidence_pairs"] == 1
     with f.store(cache) as c:
-        assert f.free_cash(c, f.SMART[0]) < 10
+        assert f.free_cash(c, f.SMART[0]) == 2000
+
+
+def test_an_auction_packet_from_before_the_buffer_is_evidence(cache):
+    """Nothing trades 09:12-09:15, so the 09:08 auction packet read at 09:12 is the auction's result."""
+    smart(cache)
+    phase(cache, "MATCH", {"AAA": quote("09:08:05", trade="09:08:00")}, "09:12:00")
+    assert {r["status"] for r in read(cache)} == {"OPEN"}
+
+
+def test_a_missed_match_job_does_not_shut_the_smart_books(cache):
+    smart(cache)                                 # 09:07 orders; the 09:12 job never ran
+    f.capture_smart(cache, {"AAA": quote(day=NEXT)}, {"AAA": (2e6, 1e5)}, {"AAA": 10000}, at("09:07:00", NEXT))
+    first, fresh = [r for r in read(cache) if r["day"] == DAY], [r for r in read(cache) if r["day"] == NEXT]
+    assert {(r["status"], r["reason"]) for r in first} == {(f.NO_EVIDENCE, "evidence_phase_not_observed")}
+    assert len(fresh) == 2 and {r["status"] for r in fresh} == {"PENDING"}
+
+
+def test_the_preopen_quote_showing_only_the_previous_close_is_recorded(cache):
+    """Production Nov 5-6: at 09:07 last_price was the previous close on 125 of 125 quotes."""
+    smart(cache, quote(price=20.))               # previous close 20: no visible gap
+    assert read(cache) == []
+    assert f.comparison(cache)["smart_preopen_price"] == {
+        "days": 1, "quotes": 1, "moved_from_previous_close": 0, "visible": False}
 
 
 def test_open_over_frozen_limit_is_refused_and_no_fee_is_invented(cache):
@@ -189,13 +213,70 @@ def test_overnight_v2_v3_ordering_and_funded_postclose_quantities(cache):
     assert all(r["status"] == "CLOSED" and r["exit_price"] == 21 * .9995 for r in read(cache))
 
 
-def test_incomplete_overnight_entry_stays_reserved_and_no_new_slots_are_created(cache):
+def test_an_unobserved_overnight_entry_is_no_evidence_and_frees_its_slots(cache):
     overnight(cache)
     phase(cache, "POST_BASE", {t: quote("15:51:00", price=20.) for t in ("AAA", "BBB")}, "15:51:00")
     phase(cache, "POST_END", {}, "16:03:00")
-    assert all(r["status"] == "UNRESOLVED" for r in read(cache))
+    assert all(r["status"] == f.NO_EVIDENCE for r in read(cache))
     with f.store(cache) as c:
-        assert f.free_cash(c, f.OVERNIGHT[0]) < 40
+        assert f.free_cash(c, f.OVERNIGHT[0]) == 25000
+    f.capture_overnight(cache, day=NEXT, decided=at("15:20:00", NEXT), picks=[SimpleNamespace(ticker="AAA")],
+                        nights={"AAA": .002}, features={"AAA": {"near_hi20": 0.}}, fillers=[], late=None)
+    phase(cache, "POST_BASE", {"AAA": quote("15:51:00", price=20., day=NEXT)}, "15:51:00", NEXT)
+    assert {r["status"] for r in read(cache) if r["day"] == NEXT} == {"PENDING"}
+
+
+def test_a_missed_postclose_end_job_frees_the_overnight_books_next_session(cache):
+    overnight(cache)
+    phase(cache, "POST_BASE", {t: quote("15:51:00", price=20.) for t in ("AAA", "BBB")}, "15:51:00")
+    phase(cache, "EXIT_INTENTS", {}, "09:03:00", NEXT)      # the 16:03 job never ran
+    assert {(r["status"], r["reason"]) for r in read(cache)} == {(f.NO_EVIDENCE, "evidence_phase_not_observed")}
+
+
+def test_no_trade_after_the_decision_is_measured_zero_capacity_not_missing_evidence(cache):
+    overnight(cache)
+    phase(cache, "POST_BASE", {t: quote("15:51:00", price=20.) for t in ("AAA", "BBB")}, "15:51:00")
+    quiet = {t: quote("15:51:00", price=20.) for t in ("AAA", "BBB")}   # its last packet is the 15:51 one
+    phase(cache, "POST_END", quiet, "16:03:00")
+    assert {(r["status"], r["reason"]) for r in read(cache)} == {("REFUSED", "no_later_postclose_volume")}
+    assert all(v["no_evidence"] == 0 for v in f.comparison(cache)["variants"].values())
+
+
+# Production Nov 6, 2026 (edge_overnight_postclose_probe, read-only): the 15:32 CLOSE packet and the
+# 16:03 POST packet of two of that day's picks. The 16:03 packets were 182 s and 189 s old.
+NOV6 = "2026-11-06"
+PROD = {
+    "MTNL": dict(px=26.86, close=("15:31:22", "15:29:59", 83186522), post=("15:59:51", "15:59:50", 83200354)),
+    "TTML": dict(px=39.77, close=("15:31:21", "15:29:59", 185082326), post=("15:59:58", "15:59:04", 185092017)),
+}
+
+
+def prod_packet(name, which):
+    ts, trade, volume = PROD[name][which]
+    return {"timestamp": at(ts, NOV6), "last_trade_time": at(trade, NOV6), "last_price": PROD[name]["px"],
+            "volume": volume, "ohlc": {"open": PROD[name]["px"], "close": PROD[name]["px"]}}
+
+
+def test_production_postclose_packets_are_evidence_at_their_real_age(cache):
+    """The first version demanded a 16:03 packet under 30 s old; every real one is minutes old."""
+    picks = [SimpleNamespace(ticker=t) for t in PROD]
+    f.capture_overnight(cache, day=NOV6, decided=at("15:20:07", NOV6), picks=picks,
+                        nights={t: .002 for t in PROD}, features={t: {"near_hi20": 0.} for t in PROD},
+                        fillers=[], late=None)
+    for name in PROD:                            # the old live-session rule rejects the real packets
+        assert f.quality(prod_packet(name, "post"), at("16:03:00", NOV6),
+                         trade_window=(time(15, 50), time(16))) == "stale_or_future_provider"
+    # The base packet stands for a 15:51 read with no post-close trade yet (a constructed base).
+    phase(cache, "POST_BASE", {t: prod_packet(t, "close") for t in PROD}, "15:51:00", NOV6)
+    phase(cache, "POST_END", {t: prod_packet(t, "post") for t in PROD}, "16:03:00", NOV6)
+    got = {(r["variant"], r["ticker"]): r for r in read(cache)}
+    for variant in ("OVERNIGHT_V2", "OVERNIGHT_V3"):
+        mtnl, ttml = got[variant, "MTNL"], got[variant, "TTML"]
+        assert mtnl["later_volume"] == 13832 and ttml["later_volume"] == 9691
+        # 1% of the later post-close volume, never more than the funded order.
+        assert (mtnl["status"], mtnl["modeled_quantity"]) == ("OPEN", 138)
+        assert (ttml["status"], ttml["modeled_quantity"]) == ("OPEN", 96)
+        assert mtnl["order_quantity"] > 138 and ttml["order_quantity"] > 96
 
 
 def test_unresolved_smart_halts_both_paired_entry_arms_next_day(cache):

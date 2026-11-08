@@ -1,3 +1,21 @@
+## November 8 - Penny auction forward: Production clock fixes; next
+
+Done (Dev):
+- The post-close and auction clock rules follow the real Kite packets.
+- `NO_EVIDENCE` replaces the permanent UNRESOLVED.
+- The 15:51 decision needs no 15:50 trade.
+- Smart's pre-open visibility is recorded.
+
+See the [review](research/penny/2026-11-08-auction-forward/PRODUCTION_CLOCK_REVIEW.md).
+
+Next:
+- **First MATCH reads (09:12):** check the `runs` payloads. Does the quote show `ohlc.open` and the auction volume before 09:15? Which `last_trade_time` does the auction trade carry?
+- **15:51 and 16:03 depth:** does the post-close book show its resting orders at the close?
+  - If it does, a time-priority fill (resting sells first, then later volume after the buyers ahead) can replace 1% of later volume.
+  - At 1%, 8 of the 10 real Nov 5–6 picks are refused.
+- **Smart:** with no visible pre-open price, the Smart arms make no picks. A new decision source needs research first; the preselected-limit design already failed (Nov 4).
+- **Owner's call before promotion:** Classic MIS/CNC new entries default off in `6af2f08`.
+
 ## November 8 - Penny auction forward implementation and evidence boundary
 
 The owner authorized development/testing after the Dev Penny review. Implemented

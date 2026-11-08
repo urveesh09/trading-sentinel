@@ -1,3 +1,12 @@
+## November 8 - Penny auction forward clock fixes
+
+- **Verify:**
+  - `pytest tests/test_penny_auction_forward.py`: 35 checks. The 7 new ones fail on `6af2f08` and pass now.
+  - The penny, overnight, Smart, scheduler and surface group: 1,290 passed, 1 skipped.
+- **Config:** nothing new. Store rows can be `NO_EVIDENCE`, and old `UNRESOLVED` rows read the same way.
+- **API:** `comparison()` adds `no_evidence`, `refused`, `paired_smart.no_evidence_pairs` and `smart_preopen_price`. `complete_modeled_net` is null until a decision has closed.
+- **Rollback:** revert the commit. `PENNY_AUCTION_FORWARD_ENABLED=false` stops collection.
+
 ## November 8 - Penny auction forward and Classic retirement verification
 
 Check the [report and commands](research/penny/2026-11-08-auction-forward/REPORT.md),

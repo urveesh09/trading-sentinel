@@ -1946,9 +1946,9 @@ Related tests: `python-engine/tests/test_penny_accept_watchdog.py`
 
 ## `python-engine/penny_auction_forward.py`
 
-Funded, clock-bound Penny auction paper comparisons. Never places orders. All auction entries and exits are capacity assumptions, actual_fill UNKNOWN. Missing evidence keeps cash reserved and makes complete modeled P&L unavailable. Legacy Smart/overnight stores are neither read as fills nor mutated.
+Funded, clock-bound Penny auction paper comparisons. Never places orders. All auction entries and exits are capacity assumptions, actual_fill UNKNOWN. Open exposure (PENDING or OPEN) keeps cash reserved and makes complete modeled P&L unavailable. A decision whose only evidence phase passed without usable evidence becomes NO_EVIDENCE: it stays in the denominator, carries no modeled P&L and frees its cash and slot, because no later phase can resolve it (Nov 8 Production clock review: as UNRESOLVED it held both books shut for good). Legacy Smart/overnight stores are neither read as fills nor mutated.
 
-Top-level declarations: `enabled` (line 33), `store_path` (line 37), `stamp` (line 41), `positive` (line 49), `dump` (line 56), `quality` (line 69), `store` (line 84), `rows` (line 99), `save` (line 103), `allocation` (line 108), `free_cash` (line 112), `cost_rates` (line 120), `fees` (line 129), `funded_quantity` (line 135), `intent` (line 149), `capture_smart` (line 156), `capture_overnight` (line 190), `bid_price` (line 210), `close_row` (line 230), `_modeled_entry` (line 238), `apply_phase` (line 247), `collect` (line 331), `comparison` (line 380)
+Top-level declarations: `enabled` (line 46), `store_path` (line 50), `stamp` (line 54), `positive` (line 62), `dump` (line 69), `quality` (line 82), `traded_today` (line 104), `later_volume` (line 110), `expire` (line 130), `store` (line 146), `rows` (line 161), `save` (line 165), `allocation` (line 170), `free_cash` (line 174), `cost_rates` (line 182), `fees` (line 191), `funded_quantity` (line 197), `intent` (line 211), `capture_smart` (line 218), `capture_overnight` (line 258), `bid_price` (line 278), `close_row` (line 298), `_modeled_entry` (line 306), `apply_phase` (line 315), `postclose_base_ok` (line 402), `collect` (line 407), `comparison` (line 456)
 
 Engine dependencies: `config`, `edge_overnight_paper`, `penny_risk`, `penny_smart_v3`
 

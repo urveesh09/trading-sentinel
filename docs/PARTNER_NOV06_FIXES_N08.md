@@ -58,4 +58,4 @@ Still not checked: the eleven flow-pulse messages of Nov 6 ("OI flow leans ...")
 
 Dev only, in `partner_watch.py`, `partner_manual_advisory.py`, `partner_buyer.py`, `partner_coach.py` and `partner_lessons.py`. There is no schema, configuration or scheduler change. The existing `status_reason` column records `partner_holds_none`. Messages only: nothing trades.
 
-Rollback is to revert the commit through GitHub. Deploy needs the owner's word. The Dev branch also carries the other agent's unreleased Nov 5 profit protection (`5642781`, off by its own setting) and research commits.
+Rollback is to revert the commit through GitHub. Deploy needs the owner's word. The Dev branch also carries the other agent's unreleased Nov 5 profit protection (`5642781`) and research commits. That protection is on by default (`PARTNER_WATCH_PROFIT_PROTECTION_ENABLED`; set it to false to turn it off). An earlier version of this note said it was off; that was wrong.
