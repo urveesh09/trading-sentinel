@@ -360,6 +360,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "run_momentum_orb_shadow",
+    "id": "'momentum_orb_shadow'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "run_momentum_screener",
     "id": "f'momentum_scan_{hour}{minute}'",
     "trigger": "'cron'"

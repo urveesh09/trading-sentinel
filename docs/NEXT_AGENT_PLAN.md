@@ -1,3 +1,21 @@
+## November 8 - Momentum M01; next
+
+Done (Dev):
+- Diagnosis and the sealed Jan–Jul exam. No shipped rule has an edge, and the live MOM_SELECTIVE rule lost on unseen data.
+- The stocks-in-play breakout (A3) passed and runs as a paper shadow (`momentum_orb_shadow.py`, 15:05).
+- See [results](research/simulation/2026-11-08-momentum-m01/RESULTS.md).
+
+Next:
+- **Judge A3** after at least 30 sessions and 100 trades, against random names and against the paper book on the same days.
+  - Its edge is about ₹13 a trade on ₹10,000 slots.
+  - It lost on Aug–Nov.
+  - Never call it proven.
+- **Unseen data:** none is left for Momentum. Score new ideas only on sessions from Nov 9 on.
+- **Owner's calls:**
+  - whether Momentum paper entries should switch from MOM_SELECTIVE to A3 after the shadow;
+  - the short side (first-bar reversal or weakness), which needs margin for intraday shorting;
+  - anything real-money.
+
 ## November 8 - Penny clock review complete; source and forward evidence next
 
 Reviewed parent 4e69c8e and retained its useful clock/recovery fixes. Additional

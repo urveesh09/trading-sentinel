@@ -1,3 +1,13 @@
+## November 8 - Momentum M01 breakout shadow
+
+- **Verify:**
+  - `pytest tests/test_momentum_orb_shadow.py` (5 checks, including parity with the research lab).
+  - The momentum, scheduler, surface and route group: 409 passed. The full engine suite: 6,333 passed, 4 skipped, exit 0.
+  - Research: `python runtime_parity.py` in the study folder (0 mismatched sessions over 200).
+- **Config:** new `MOMENTUM_ORB_SHADOW_ENABLED` (default true). New job `momentum_orb_shadow` at 15:05 Mon–Fri. New store `<DB_PATH>.momentum-orb-shadow.db`. No schema change to existing stores.
+- **Rollout:** after the first session, check that `/experiments/momentum` returns `orb_shadow.status=observed` with `sessions: 1`.
+- **Rollback:** set `MOMENTUM_ORB_SHADOW_ENABLED=false`, or revert the commit. The store can stay.
+
 ## November 8 - Penny clock follow-up checks
 
 [Verification](research/penny/2026-11-08-clock-fix-review/verification.json):

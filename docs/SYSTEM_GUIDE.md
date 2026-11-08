@@ -1,3 +1,18 @@
+## November 8 - Momentum M01: no edge in the shipped rules; stocks-in-play breakout paper shadow
+
+**Study:** `docs/research/simulation/2026-11-08-momentum-m01` (freeze `5a90870`, fixed `8f61189`). The Jan–Jul 2026 exam was scored once, on the owner's word.
+- **Shipped entry (exact evaluator):** flat before costs on 675 unseen trades (gross −₹608, net −₹34,026). It lost before costs under every exit on Aug–Nov, so the clock stops are not the fault.
+- **Live MOM_SELECTIVE rule:** −₹3,344 on 85 unseen trades.
+- **First-hour winners lag the rest of the day** on both windows (−0.031% and −0.059% against the day's mean): mild reversal, not momentum.
+- **Stocks-in-play opening-range breakout with a VWAP exit (A3)** passed all five checks: +₹4,759 over 357 trades; random names under the same rules lost ₹9,365. It lost ₹2,531 on Aug–Nov, so it is only promising.
+
+**Runtime (Dev):** `momentum_orb_shadow.py` is a paper shadow of A3.
+- It runs at 15:05 on trading days, behind `MOMENTUM_ORB_SHADOW_ENABLED` (default on), replaying the frozen rule on the day's cached 15-minute and daily bars. It makes no Kite call and places no order.
+- Store: `<DB_PATH>.momentum-orb-shadow.db`. Report: `/experiments/momentum` returns it as `orb_shadow`.
+- Parity with the research arm: 0 mismatched sessions over 200.
+
+Momentum entries and the owner's live-entry halt are unchanged. Jan–Jul 2026 is now seen for Momentum.
+
 ## November 8 - Penny clock correction review and Smart source qualification
 
 The [independent review](research/penny/2026-11-08-clock-fix-review/REPORT.md)

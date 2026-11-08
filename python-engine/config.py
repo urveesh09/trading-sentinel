@@ -326,6 +326,8 @@ class Settings(BaseSettings):
     # >= 0.3% ahead of NIFTY and above yesterday's high (momentum_selective).
     # Oct 7's IRCON (-Rs 507) is the kind it refuses. Off = shipped entries.
     MOMENTUM_SELECTIVE_ENTRY_ENABLED: bool = True
+    # [M01] Paper shadow of the stocks-in-play opening-range breakout, replayed at 15:05 from cached bars.
+    MOMENTUM_ORB_SHADOW_ENABLED: bool = True
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
     MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
