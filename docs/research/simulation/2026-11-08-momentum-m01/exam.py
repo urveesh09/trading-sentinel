@@ -22,9 +22,10 @@ FROZEN = ("lab.py", "lab_data.py", "signals.py", "explore_exits.py", "exam.py", 
 
 
 def digest(name):
-    return hashlib.sha256((HERE / name).read_bytes().replace(b"
-", b"
-")).hexdigest()   # line-ending neutral
+    return hashlib.sha256((HERE / name).read_bytes().replace(CRLF, LF)).hexdigest()   # line-ending neutral
+
+
+CRLF, LF = bytes([13, 10]), bytes([10])
 
 
 def verify_freeze():
