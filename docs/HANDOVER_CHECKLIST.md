@@ -1,6 +1,6 @@
 ## November 6 - N08 partner fixes
 
-- **Verify:** `pytest tests/test_nov06_partner_fixes.py` (12 checks) and the partner group.
+- **Verify:** `pytest tests/test_nov06_partner_fixes.py` (14 checks) and the partner group.
 - **Rollout:** merge through GitHub. On the first card day, check `partner_watch_plan_versions` for `stop_basis` CARD on a card buy, and `partner_advisory_updates` for `partner_holds_none` rows.
 - **Rollback:** revert the commit.
 - **Status:** Dev only; Production `398d44a` is unchanged.

@@ -336,3 +336,39 @@ def test_a_stop_moved_down_but_above_the_plan_stop_says_so():
         "A stop moved down adds to the loss you chose when you placed it.")
     moves = [{"id": "a", "old": 98.0, "new": 96.0, "units": 130}, {"id": "b", "old": 97.0, "new": 90.0, "units": 130}]
     assert pw.moved_text(trip, moves, "FIRST", plan).endswith(" Still above the plan stop ₹82.05.")
+
+
+# ---------------------------------------------------------------------------
+# C4: a check before a buy on a card's option gives the card's stop
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_a_check_inside_the_card_window_gives_the_cards_stop_and_target(watch, kite, monkeypatch):
+    """[N08-C4] "check 22300 pe" while the 11:28 card on it is open: the card's stop and target, the same ones the
+    PLAN after the buy gives, and never the watch's own second stop. After the window: the watch's plan, told it is
+    not the card's."""
+    import fno_underlyings
+    from tests.test_partner_watch import FakeBook
+    monkeypatch.setattr(fno_underlyings, "get_instruments_for", lambda name: FakeBook())
+    db = settings.DB_PATH
+    await _login()
+    market = _market(D(11, 30))
+    await pw.watch_tick(D(11, 30, 0), market=market)
+    await _deliver_card(db, made=D(11, 28, 40), fill_by=D(11, 38, 40))
+    assert await pw.answer_check(db, "check 22300 pe", D(11, 30, 2), key="check:c1", market=market) == "check"
+    lines = watch[-1]["text"].splitlines()
+    assert lines[0] == "🔎 Check: NIFTY 22300 PE (27 Oct) · 1 lot (65) at ₹75.1 (the ask now; bid ₹75)."
+    assert lines[1] == "🃏 On the 11:28 card: buy up to ₹76."
+    assert lines[2].startswith("🛑 If you buy: the card's stop ₹66 (or exit on a 5-min close over")
+    assert "If it sells there: about −₹" in lines[2]
+    assert any(line.startswith("🎯 The card's target: option ≈₹84–92") for line in lines)
+    assert not any("plan stop" in line for line in lines)                 # one stop: the card's
+    # A price over the card's buy-up-to is told.
+    await pw.answer_check(db, "check 22300 pe 77", D(11, 30, 4), key="check:c2", market=market)
+    assert watch[-1]["text"].splitlines()[1] == "🃏 On the 11:28 card: buy up to ₹76. ₹77 is over it."
+    # After the window: the watch's own plan, and why it is not the card's.
+    late = _market(D(11, 45))
+    await pw.answer_check(db, "check 22300 pe", D(11, 45, 2), key="check:c3", market=late)
+    lines = watch[-1]["text"].splitlines()
+    assert lines[1] == "• Not the 11:28 card's trade: its buy window ended 11:38. This plan is for your own buy."
+    assert lines[2].startswith("🛑 If you buy: plan stop ₹")

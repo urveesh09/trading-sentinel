@@ -6,6 +6,8 @@ A card's target or stop message reads the trade watch's latest book read (`partn
 
 The evening review flags a sale by the partner's own SL order, closer than the card's, as `STOP_TIGHTER_THAN_CARD`, not `EARLY_EXIT`. A stop moved down but still above the plan stop ends "Still above the plan stop ₹X."
 
+C4 (Nov 8): a check (`check 79800 ce`) of a card's option inside its buy window gives the card's stop and target ("🃏 On the 09:50 card: buy up to ₹759.75."), so the check, the card and the PLAN after the buy give one stop. After the window, after the card's close or at or under its stop, the check says it is not the card's trade and gives the watch's own plan.
+
 No schema, setting or schedule change. Messages only. Tests: `tests/test_nov06_partner_fixes.py`.
 
 ## November 6 opening-drive storage

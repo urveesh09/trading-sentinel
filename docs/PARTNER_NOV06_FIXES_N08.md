@@ -41,12 +41,14 @@ Both went out although the trade watch had read, every few seconds since 11:00, 
 | C2 | Card follow-ups (target, stop, 15:10 square-off) ignored what the partner held. | At send time `partner_watch.held_units` reads the watch's latest reconciled book read (at most 60 s old). With none of the card's option held, a target or stop becomes one line: "... target reached (...). You hold none of it: nothing to sell." The square-off reminder is not sent and is recorded `EXPIRED_UNSENT` / `partner_holds_none`. If the watch cannot say (off, no read today, stale read), the message goes as before. |
 | C3 | The review called a sale by the partner's own SL order "selling on a wobble". | A sale made by the partner's fired SL order (matched by order id, else fired within 60 s of the sale), with that stop closer than the card's, is flagged `STOP_TIGHTER_THAN_CARD`: "Your SL order at ₹680 sold at 10:54 for ₹680; the card's SL was ₹636.85 ...". The advice is to put the SL at the card's SL, not closer. A sale by hand is still `EARLY_EXIT`. A replayed hold still gets a held-back square-off reminder at its time. |
 | L1 | A stop moved down but still above the plan stop was told as adding to the chosen loss. | Every move down is still told (owner, Oct 24). One still at or above the plan stop now ends "Still above the plan stop ₹82.05." A move under the plan stop, off the buy price or in profit keeps its wording. |
+| C4 (Nov 8) | The pre-buy check (`check 79800 ce`) gave the watch's own stop inside a card's buy window, a second stop beside the card's. | `_check_reply` looks the card up as `_plan_job` does. Inside the window: "🃏 On the 09:50 card: buy up to ₹759.75." (and "₹764.3 is over it." for a dearer price), "🛑 If you buy: the card's stop ₹636.85 (or exit on a 5-min close under SENSEX ≈79,460) ...", "🎯 The card's target: option ≈₹776–913 ...". The size line uses the card's stop. After the window, after the card's close or at or under its stop: "• Not the 09:50 card's trade: ..." and the watch's own plan. A failed card read leaves the watch's plan. |
 
-Not changed: the pre-buy check (`check 79800 ce`) still uses the watch's own plan inside a card window. Bringing it the card's stop is the next small step.
+Still not checked: the eleven flow-pulse messages of Nov 6 ("OI flow leans ..."), whose text is not stored.
 
 ## Verification
 
-- `tests/test_nov06_partner_fixes.py` has 13 checks, including the real Nov 6 card and both buys. The end-to-end card test fails on the old line and passes with the fix.
+- `tests/test_nov06_partner_fixes.py` has 14 checks, including the real Nov 6 card and both buys. The end-to-end card test fails on the old line and passes with the fix.
+- **C4 (Nov 8):** one check-through-the-inbox test (inside the window, a price over the buy limit, after the window). All partner suites: 675 passed.
 - Two older `test_partner_watch.py` wording checks were updated for L1.
 - **Partner group:** the 24 partner, coach, advisory and watch suites passed, 591 checks before the two wording updates. After them, the watch group re-ran 161 passed and the advisory group 211 passed.
 - **Whole engine suite:** 6,246 passed and 4 skipped, `pytest_exit=0`, in 11 min 19 s. That run left out the new file, which passed on its own.

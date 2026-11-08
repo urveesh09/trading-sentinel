@@ -1518,8 +1518,8 @@ def _card_level(card: dict, key: str) -> str:
     return level_label(card.get("underlying") or "", float(value), card.get("basis") or "FUTURES") if value else ""
 
 
-def _card_note(card: dict, relation: str) -> str:
-    """Why this buy is not the card's trade."""
+def _card_note(card: dict, relation: str, *, checking: bool = False) -> str:
+    """Why this buy is not the card's trade. [N08-C4] ``checking``: for a check before a buy (no buy yet)."""
     if relation == "AFTER_CLOSE":
         closed = card["closed"]
         what = "stop level hit" if closed["event"] == "INVALIDATION" else "target reached"
@@ -1529,6 +1529,9 @@ def _card_note(card: dict, relation: str) -> str:
         fill = _dt(card.get("fill_by"))
         ended = f" ended {fill.astimezone(IST):%H:%M}" if fill else " has ended"
         return f"• Not the {card['at']} card's trade: its buy window{ended}. This plan is for your own buy."
+    if checking:
+        return (f"• Not the {card['at']} card's trade: the price is at or under its stop {_px(float(card['sl']))}, "
+                f"so its idea has failed. This plan is for your own buy.")
     return (f"• Not the {card['at']} card's trade: you bought at or under its stop {_px(float(card['sl']))}, so its "
             f"idea had already failed. This plan is for your own buy.")
 
@@ -5064,7 +5067,8 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
                day_line: Optional[str] = None, usual: Optional[float] = None, expires_today: bool = False,
                price_note: Optional[str] = None, future_live: bool = True,
                refreshed_at: Optional[datetime] = None, size_note: str = "", size_tail: str = "",
-               after_tail: str = "", spike_warn: bool = True, sentinel_line: str = "") -> str:
+               after_tail: str = "", spike_warn: bool = True, sentinel_line: str = "",
+               card: Optional[dict] = None, card_relation_: Optional[str] = None) -> str:
     """[O24h] The reply to a check: the plan for this option bought now, at
     the price the partner gave or the ask just read, then only the facts
     that stand out. Never "buy" or "don't buy".
@@ -5074,7 +5078,9 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
     ``refreshed_at``: the prices were read again, the first answer late.
     [N06] ``size_note``: the loss at the stop for 1 and 2 lots; [N06c] ``size_tail``/``after_tail`` end the size and
     after-loss warning lines (the partner's record, the Sentinel's rule); ``spike_warn`` False: the chased-spike warning is left out (its frozen score does not
-    support it, partner_watch_score: the run stays among the facts); ``sentinel_line``: what the Sentinel holds."""
+    support it, partner_watch_score: the run stays among the facts); ``sentinel_line``: what the Sentinel holds.
+    [N08-C4] ``card``/``card_relation_``: the card on this option and how a buy now stands to it; a CARD plan gives
+    the card's stop and target (the PLAN after the buy says the same), any other relation says it is not the card's."""
     from partner_insights import SPIKE_RUN_PCT, USUAL_SIZE_MULT
     state = quote_freshness(quote)
     if quote is not None and state != "FRESH":     # never "the ask now" from a quote whose clocks do not hold
@@ -5090,8 +5096,23 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
     else:
         price = f"at {_px(plan.entry)} ({price_note or 'no current price to compare'})"
     lines = [f"🔎 Check: {name}{when} · {lots} lot{'s' if lots != 1 else ''} ({qty}) {price}."]
+    on_card = card is not None and plan.stop_basis == "CARD"
+    if on_card:
+        limit = card.get("buy_limit")
+        line = f"🃏 On the {card['at']} card" + (f": buy up to {_px(float(limit))}" if limit else "") + "."
+        if limit and plan.entry > float(limit) + 1e-9:
+            line += f" {_px(plan.entry)} is over it."
+        lines.append(line)
+    elif card is not None and card_relation_:
+        lines.append(_card_note(card, card_relation_, checking=True))
     share = _share(plan.loss, plan.cash)
-    if plan.stop_basis == "INDEX" and plan.stop is not None:
+    if on_card:
+        level = _card_level(card, "stop_level")
+        past = "under" if opt_type == "CE" else "over"
+        lines.append(f"🛑 If you buy: the card's stop {_px(plan.stop)}"
+                     + (f" (or exit on a 5-min close {past} {level})" if level else "")
+                     + f". If it sells there: about −{_amt(plan.loss)} with charges{share}.")
+    elif plan.stop_basis == "INDEX" and plan.stop is not None:
         lines.append(f"🛑 If you buy: plan stop {_px(plan.stop)} ({future} {plan.stop_index:,.0f}). If it sells "
                      f"there: about −{_amt(plan.loss)} with charges{share}.")
     elif plan.stop_basis == "SWING" and plan.stop is not None:
@@ -5102,11 +5123,16 @@ def check_text(name: str, expiry: Optional[date], plan: Plan, quote: Optional[di
                      f"all {_amt(plan.entry * qty)} you would pay is at risk without a stop{share}.")
     if size_note:
         lines.append(size_note)
-    if plan.target is not None and plan.target_index is not None:
+    if on_card and card.get("target"):
+        low, high = card.get("target_low"), float(card["target"])
+        zone = f"≈₹{float(low):,.0f}–{high:,.0f}" if low else f"≈₹{high:,.0f}"
+        level = _card_level(card, "target_level")
+        lines.append(f"🎯 The card's target: option {zone}" + (f" ({level})" if level else "") + ".")
+    elif plan.target is not None and plan.target_index is not None:
         lines.append(f"🎯 Target zone {_px(plan.target)} ({future} {plan.target_index:,.0f}).")
     kind = "call" if opt_type == "CE" else "put"
     facts = []
-    if plan.stop_basis in ("INDEX", "SWING") and plan.swing:
+    if plan.stop_basis in ("INDEX", "SWING", "CARD") and plan.swing:
         facts.append(f"normal 5-min swing {_px(plan.swing)}")
     if plan.run_pct is not None and plan.run_from:
         facts.append(f"{'up' if plan.run_pct >= 0 else 'down'} {_pct_down(plan.run_pct)} in the last 15 min "
@@ -5238,6 +5264,17 @@ async def _check_reply(parsed: dict, now: datetime, market: Market, db_path: Opt
         return (f"🔎 {label}{when}: {note or 'its price could not be read now'} (the market may be closed). Send the "
                 f"price you would pay to check it: check {parsed['strike']:g} {parsed['opt_type'].lower()} 75."), None
     trip.bought, trip.buy_value = qty, qty * plan.entry
+    # [N08-C4] A check of a card's option inside its buy window gives the card's stop and target, the plan its buy
+    # would get (_plan_job), never a second stop. Nov 6 audit: the check still gave the watch's own stop then.
+    card = relation = None
+    if db_path:
+        try:
+            card = await card_for(db_path, now.date().isoformat(), trip)
+        except Exception as exc:      # the check goes with the watch's plan
+            logger.warning("partner_watch_check_card_failed err=%s", type(exc).__name__)
+        relation = card_relation(card, trip)
+        if relation == "ON_CARD":
+            plan = adopt_card(plan, card, spec.segment)
     view = _state.view if _state.view is not None and _state.view.day == now.date().isoformat() else None
     trips = list(view.trips) if view is not None else []
     usual = await _usual_share(db_path, trip, trips, now) if db_path and view is not None else None
@@ -5263,7 +5300,7 @@ async def _check_reply(parsed: dict, now: datetime, market: Market, db_path: Opt
                       expires_today=expiry == now.date(), price_note=note or None,
                       future_live=inputs.get("future") == "FRESH", refreshed_at=now if refreshed else None,
                       size_note=size_note, size_tail=size_tail, after_tail=after_tail, spike_warn=spike_warn,
-                      sentinel_line=sentinel_line)
+                      sentinel_line=sentinel_line, card=card, card_relation_=relation)
     if db_path and _profit_on() and view is not None:
         await _load_profit_choice(db_path, view.day)
         note = await _profit_risk_note(view, now, trip, candidate=plan,

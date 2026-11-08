@@ -5,9 +5,9 @@ Done in Dev ([record](PARTNER_NOV06_FIXES_N08.md)):
 - C2: card follow-ups that check what is held.
 - C3: an own-stop sale is not "a wobble" in the review.
 - L1: within-plan wording for a stop moved down.
+- C4 (Nov 8): the pre-buy check gives the card's stop inside a card window.
 
 Next:
-- Give the pre-buy check the card's stop inside a card window.
 - After deploy, on the first card day, confirm that a card buy's PLAN says "on the HH:MM card" and that `partner_advisory_updates` shows `partner_holds_none` for an option not held.
 
 ## November 6 opening-drive storage
