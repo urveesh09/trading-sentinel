@@ -1,0 +1,21 @@
+{
+  "study": "M01",
+  "frozen_at": "2026-11-08",
+  "sha256": {
+    "lab.py": "05e2d712dfcf9311dbb3e32ba27af2c50b278798002d9bfbfcce985d97337d97",
+    "lab_data.py": "7431f481c52e2ababeb1c92204832fb18fc6658fbb773e8da737ff0a436008ca",
+    "signals.py": "e8171b9e171b4be03bdc4b290dc0f00088d3716c72ef9380727150df21d8a0ad",
+    "explore_exits.py": "9c56aab1b25efa7a596889b4ed87a56810b41b38bbd44af01a86d72b104cc074",
+    "exam.py": "91794e34ed26205b4372172d69def474dece193daca2246c8415ac74df819399",
+    "PLAN.md": "8066a5a5bddac418437a2ce66ec1b4fad29a6e35037d92f32d561d2d7268587f"
+  },
+  "exam_window": [
+    "2026-01-01",
+    "2026-07-31"
+  ],
+  "dev_window": [
+    "2026-08-11",
+    "2026-11-06"
+  ],
+  "note": "commit recorded in RESULTS after scoring"
+}
