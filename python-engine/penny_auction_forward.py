@@ -47,6 +47,10 @@ def enabled():
     return bool(settings.PENNY_AUCTION_FORWARD_ENABLED)
 
 
+def smart_entries_enabled():
+    return bool(settings.PENNY_SMART_AUCTION_ENTRIES_ENABLED)
+
+
 def store_path(cache):
     return str(cache) + ".penny-auction-forward.db"
 
@@ -120,11 +124,14 @@ def later_volume(q, at, base):
         return None, "no_supported_session_trade"
     if not positive(q.get("volume")) or float(q["volume"]) < base["volume"]:
         return None, "volume_missing_or_reset"
+    delta = float(q["volume"]) - base["volume"]
+    if (trade <= stamp(base["at"]) and delta > 0) or (trade > stamp(base["at"]) and delta == 0):
+        return None, "volume_trade_clock_inconsistent"
     if trade <= stamp(base["at"]):
         return 0., None
     if not positive(q.get("last_price")) or abs(float(q["last_price"]) - base["price"]) >= .0001:
         return None, "postclose_price_changed"
-    return float(q["volume"]) - base["volume"], None
+    return delta, None
 
 
 def expire(c, at):
@@ -163,6 +170,8 @@ def rows(c):
 
 
 def save(c, row):
+    if row["status"] == NO_EVIDENCE:
+        row.setdefault("capital_assumption", "UNOBSERVED_INTENT_EXCLUDED_PAPER_RESERVATION_RELEASED")
     c.execute("INSERT OR REPLACE INTO rows VALUES(?,?,?,?)",
               (row["variant"], row["day"], row["ticker"], dump(row)))
 
@@ -237,7 +246,9 @@ def capture_smart(cache, quotes, medians, thin, at):
         cash = min(free_cash(c, v) for v in SMART)
         if any(r["variant"] in SMART and r["status"] in OPEN_EXPOSURE for r in rows(c)):
             cash = 0.
-        picks, refused = select(_candidates(good, medians, "last_price"), capital=cash, thin=thin)
+        allowed = smart_entries_enabled()
+        picks, refused = (select(_candidates(good, medians, "last_price"), capital=cash, thin=thin)
+                          if allowed else ([], {}))
         made = []
         for pick in picks:
             # Buy limit rounded down to a valid five-paise tick, never rounded up beyond funding.
@@ -251,7 +262,8 @@ def capture_smart(cache, quotes, medians, thin, at):
                 made.append(pick.ticker)
         c.execute("INSERT INTO sources VALUES('SMART',?,?)", (day, dump({
             "at": at.isoformat(), "requested": len(quotes), "fresh": len(good),
-            "preopen_price_moved": moved, "picks": made, "refusals": refused, "paired_available_cash": cash,
+            "preopen_price_moved": moved, "entry_enabled": allowed,
+            "indicative_price_verified": False, "picks": made, "refusals": refused, "paired_available_cash": cash,
             "quotes": quotes, "medians": medians, "thin": thin})))
 
 
@@ -356,8 +368,9 @@ def apply_phase(c, phase, quotes, at):
         if phase == "EXIT_INTENTS" and r["status"] == "OPEN" and r["variant"] in OVERNIGHT and r["day"] < day:
             r["auction_exit_intent_at"] = at.isoformat()
         elif phase == "MATCH":
-            # Any trade today before 09:15 is the call auction's; nothing trades in the buffer.
-            why = quality(q, at, trade_window=(AUCTION_SETTLED_SINCE, time(9, 15)),
+            # Published matching is 09:10-09:12. An old provider packet can
+            # be the settled result, but a 09:08 trade stamp is unverified.
+            why = quality(q, at, trade_window=(time(9, 10), time(9, 12, 1)),
                           settled_since=AUCTION_SETTLED_SINCE)
             opening = (q.get("ohlc") or {}).get("open")
             usable = not why and positive(opening) and positive(q.get("volume"))
@@ -420,6 +433,7 @@ async def collect(kite, phase, cache=None, now=None):
     with store(cache) as c:
         if c.execute("SELECT 1 FROM runs WHERE day=? AND phase=?", (day, key)).fetchone():
             return {"status": "repeat"}
+        expire(c, at)
         records = rows(c)
         if phase == "MORNING":
             names = {r["ticker"] for r in records if r["status"] == "OPEN"
@@ -470,13 +484,15 @@ def comparison(cache):
             selected = [r for r in records if r["variant"] == variant]
             closed = [r for r in selected if r["status"] == "CLOSED"]
             exposed = [r for r in selected if r["status"] in OPEN_EXPOSURE]
+            missing = sum(r["status"] in (NO_EVIDENCE, "UNRESOLVED") for r in selected)
             net = sum(r["net"] for r in closed)
             result["variants"][variant] = {"intents": len(selected), "closed": len(closed),
                 "unresolved": len(exposed),
-                "no_evidence": sum(r["status"] in (NO_EVIDENCE, "UNRESOLVED") for r in selected),
+                "no_evidence": missing, "capital_path_complete": not missing,
+                "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
                 "refused": sum(r["status"] == "REFUSED" for r in selected),
                 "closed_modeled_net_subtotal": net,
-                "complete_modeled_net": None if exposed or not closed else net,
+                "complete_modeled_net": None if exposed or missing or not closed else net,
                 "net_ex_best_winner": net - max([0.] + [r["net"] for r in closed]),
                 "reserved_cash": sum(r["reserve"] for r in exposed), "recent": selected[-20:]}
         pairs = {}
@@ -495,8 +511,9 @@ def comparison(cache):
         moved = sum(int(s.get("preopen_price_moved") or 0) for s in smart_days)
         result["smart_preopen_price"] = {
             "days": len(smart_days), "quotes": seen, "moved_from_previous_close": moved,
-            # False: the 09:07 quote never showed the auction, so the Smart arms cannot pick.
-            "visible": None if not seen else moved > 0}
+            # A changed LTP alone does not establish an indicative auction price.
+            "visible": None if not seen else moved > 0,
+            "indicative_price_verified": False, "entry_enabled": smart_entries_enabled()}
         return result
     except (sqlite3.Error, ValueError, KeyError, TypeError):
         return result | {"status": "unavailable"}

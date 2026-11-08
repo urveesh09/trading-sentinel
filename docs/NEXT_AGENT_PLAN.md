@@ -1,3 +1,15 @@
+## November 8 - Penny clock review complete; source and forward evidence next
+
+Reviewed parent 4e69c8e and retained its useful clock/recovery fixes. Additional
+regressions and evidence are in [review](research/penny/2026-11-08-clock-fix-review/REPORT.md).
+Missing entry observations release only paper reservations and leave the full
+capital/P&L path incomplete. Real modeled OPEN exposure still holds cash.
+Smart entry switch defaults false, visibility capture remains. Verify an actual
+indicative auction source before enabling it; legacy after-auction references
+are not executable orders. Overnight needs actual 15:51 receipts: the historical
+15:32 baseline cannot prove 2 executable partial entries. Forward fill/profit
+qualification remains open. No F&O work resumed or Production code changed.
+
 ## November 8 - Penny auction forward: Production clock fixes; next
 
 Done (Dev):

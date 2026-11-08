@@ -900,6 +900,9 @@ class Settings(BaseSettings):
     PENNY_CLASSIC_CNC_ENTRIES_ENABLED: bool = False
     # Funded auction comparisons only. No broker orders or changes to legacy books.
     PENNY_AUCTION_FORWARD_ENABLED: bool = True
+    # LTP is not a verified pre-open indicative price. Keep observation on,
+    # but require explicit research opt-in for the conditional Smart entry arms.
+    PENNY_SMART_AUCTION_ENTRIES_ENABLED: bool = False
     PENNY_DISABLE_TICKERS:         str   = ""         # comma-separated manual kill-switch
     PENNY_LOG_CSV_PATH:            str   = "/data/penny_signals.csv"
     PENNY_ENTRY_FILL_TIMEOUT_SEC:  float = 60.0      # max wait for LIMIT entry to fill before cancel

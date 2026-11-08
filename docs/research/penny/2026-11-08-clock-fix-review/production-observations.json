@@ -1,0 +1,92 @@
+{
+  "scope": "Production read-only observed fields; no forward strategy profit/fill replay",
+  "export_sha256": "bcbf4e1683172de8276453565ab1e9bf3bc3100d902d3d4762886a526cefb698",
+  "post_packets": 10,
+  "min_packet_age_seconds": 182.00574,
+  "max_packet_age_seconds": 612.004538,
+  "preopen_quotes": 125,
+  "unchanged_preopen_prices": 125,
+  "volume_deltas": [
+    {
+      "day": "2026-11-05",
+      "ticker": "GNRL",
+      "close_to_post_volume": 1490.0,
+      "base_receipt": "2026-11-05T15:32:00.037447+05:30",
+      "post_receipt": "2026-11-05T16:03:00.004538+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-05",
+      "ticker": "NOVAAGRI",
+      "close_to_post_volume": 30.0,
+      "base_receipt": "2026-11-05T15:32:00.037447+05:30",
+      "post_receipt": "2026-11-05T16:03:00.004538+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-05",
+      "ticker": "OPTIFIN",
+      "close_to_post_volume": 1501.0,
+      "base_receipt": "2026-11-05T15:32:00.037447+05:30",
+      "post_receipt": "2026-11-05T16:03:00.004538+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-05",
+      "ticker": "ORIENTALTL",
+      "close_to_post_volume": 0.0,
+      "base_receipt": "2026-11-05T15:32:00.037447+05:30",
+      "post_receipt": "2026-11-05T16:03:00.004538+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-05",
+      "ticker": "RUSHIL",
+      "close_to_post_volume": 22.0,
+      "base_receipt": "2026-11-05T15:32:00.037447+05:30",
+      "post_receipt": "2026-11-05T16:03:00.004538+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-05",
+      "ticker": "VERTOZ",
+      "close_to_post_volume": 0.0,
+      "base_receipt": "2026-11-05T15:32:00.037447+05:30",
+      "post_receipt": "2026-11-05T16:03:00.004538+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-06",
+      "ticker": "LAL",
+      "close_to_post_volume": 670.0,
+      "base_receipt": "2026-11-06T15:32:00.029206+05:30",
+      "post_receipt": "2026-11-06T16:03:00.005740+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-06",
+      "ticker": "MFML",
+      "close_to_post_volume": 1100.0,
+      "base_receipt": "2026-11-06T15:32:00.029206+05:30",
+      "post_receipt": "2026-11-06T16:03:00.005740+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-06",
+      "ticker": "MTNL",
+      "close_to_post_volume": 13832.0,
+      "base_receipt": "2026-11-06T15:32:00.029206+05:30",
+      "post_receipt": "2026-11-06T16:03:00.005740+05:30",
+      "can_measure_after_1551_volume": false
+    },
+    {
+      "day": "2026-11-06",
+      "ticker": "TTML",
+      "close_to_post_volume": 9691.0,
+      "base_receipt": "2026-11-06T15:32:00.029206+05:30",
+      "post_receipt": "2026-11-06T16:03:00.005740+05:30",
+      "can_measure_after_1551_volume": false
+    }
+  ],
+  "warning": "15:32 source readings cannot stand in for the missing 15:51 decision baseline to establish subsequent capacity or actual entries."
+}

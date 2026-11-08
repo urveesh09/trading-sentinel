@@ -51,7 +51,7 @@ def exercise():
                         assert abs(gross - row["costs"] - row["net"]) < 1e-8
                         assert row["modeled_quantity"] <= row["order_quantity"]
                 if missing:
-                    assert all(row["status"] == "UNRESOLVED" for row in records)
+                    assert all(row["status"] == f.NO_EVIDENCE for row in records)
             results["scenarios"][name] = f.comparison(cache)
     results["source_sha256"] = hashlib.sha256((ROOT / "python-engine/penny_auction_forward.py").read_bytes()).hexdigest()
     return results
@@ -89,10 +89,14 @@ if __name__ == "__main__":
     # Only this disposable research process is configured. No .env file changes.
     settings.PENNY_AUCTION_FORWARD_ENABLED = True
     settings.PENNY_SMART_V3_ENABLED = True
+    settings.PENNY_SMART_AUCTION_ENTRIES_ENABLED = True  # synthetic source assumption only
     settings.PENNY_SMART_V3_BANKROLL = 2000.
     out = exercise()
     out["concurrent_collector"] = asyncio.run(asyncio.wait_for(concurrent_receipts(), timeout=5.))
-    path = Path(__file__).with_name("synthetic-results.json")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=Path, default=Path(__file__).with_name("synthetic-results.json"))
+    path = parser.parse_args().out
     path.write_text(json.dumps(out, indent=2), encoding="utf-8")
     for name, result in out["scenarios"].items():
         print(name, {k: {x: v[x] for x in ("closed", "unresolved", "complete_modeled_net")}

@@ -1,0 +1,407 @@
+{
+  "synthetic": true,
+  "financial_qualification": "NOT_EVALUATED",
+  "scenarios": {
+    "complete_observed_tape": {
+      "enabled": true,
+      "status": "observed",
+      "actual_fill": "UNKNOWN",
+      "scope": "CONDITIONAL_CAPACITY_PAPER_ONLY",
+      "variants": {
+        "SMART_OPEN_CLOSE": {
+          "intents": 1,
+          "closed": 1,
+          "unresolved": 0,
+          "no_evidence": 0,
+          "capital_path_complete": true,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 152.321,
+          "complete_modeled_net": 152.321,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": [
+            {
+              "variant": "SMART_OPEN_CLOSE",
+              "ticker": "AAA",
+              "day": "2026-11-09",
+              "intent_at": "2026-11-09T09:07:00+05:30",
+              "limit": 19.15,
+              "order_quantity": 103,
+              "reserve": 1992.1782999999998,
+              "initial_capital": 2000.0,
+              "cost_rates": {
+                "PENNY_BROKERAGE_PCT": 0.0003,
+                "PENNY_BROKERAGE_MAX": 20.0,
+                "PENNY_EXCHANGE_PCT": 3.07e-05,
+                "PENNY_SEBI_PCT": 1e-06,
+                "PENNY_IPFT_PCT": 1e-09,
+                "PENNY_GST_PCT": 0.18,
+                "PENNY_STAMP_DUTY_PCT": 3e-05,
+                "PENNY_CNC_STAMP_DUTY_PCT": 0.00015,
+                "PENNY_STT_MIS": 0.00025,
+                "PENNY_STT_CNC": 0.001,
+                "PENNY_CNC_DP_CHARGE": 15.34
+              },
+              "status": "CLOSED",
+              "actual_fill": "UNKNOWN",
+              "prev_close": 20.0,
+              "decision_quote": {
+                "timestamp": "2026-11-09 09:07:00+05:30",
+                "last_trade_time": "2026-11-09 09:07:00+05:30",
+                "last_price": 19.0,
+                "ohlc": {
+                  "close": 20.0,
+                  "open": 19.0
+                },
+                "volume": 10000,
+                "depth": {
+                  "buy": [
+                    {
+                      "price": 20.0,
+                      "quantity": 10000
+                    }
+                  ],
+                  "sell": [
+                    {
+                      "price": 20.05,
+                      "quantity": 10000
+                    }
+                  ]
+                }
+              },
+              "entry_model": "10pct_observed_auction_volume",
+              "entry_price": 19.0,
+              "modeled_quantity": 103,
+              "close_intent": {
+                "at": "2026-11-09T15:51:00+05:30",
+                "price": 20.5,
+                "volume": 20000.0
+              },
+              "exit_price": 20.5,
+              "exit_at": "2026-11-09T16:03:00+05:30",
+              "exit_basis": "POSTCLOSE_CAPACITY_MODEL",
+              "costs": 2.179,
+              "net": 152.321
+            }
+          ]
+        },
+        "SMART_OPEN_MORNING": {
+          "intents": 1,
+          "closed": 1,
+          "unresolved": 0,
+          "no_evidence": 0,
+          "capital_path_complete": true,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 100.854,
+          "complete_modeled_net": 100.854,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": [
+            {
+              "variant": "SMART_OPEN_MORNING",
+              "ticker": "AAA",
+              "day": "2026-11-09",
+              "intent_at": "2026-11-09T09:07:00+05:30",
+              "limit": 19.15,
+              "order_quantity": 103,
+              "reserve": 1992.1782999999998,
+              "initial_capital": 2000.0,
+              "cost_rates": {
+                "PENNY_BROKERAGE_PCT": 0.0003,
+                "PENNY_BROKERAGE_MAX": 20.0,
+                "PENNY_EXCHANGE_PCT": 3.07e-05,
+                "PENNY_SEBI_PCT": 1e-06,
+                "PENNY_IPFT_PCT": 1e-09,
+                "PENNY_GST_PCT": 0.18,
+                "PENNY_STAMP_DUTY_PCT": 3e-05,
+                "PENNY_CNC_STAMP_DUTY_PCT": 0.00015,
+                "PENNY_STT_MIS": 0.00025,
+                "PENNY_STT_CNC": 0.001,
+                "PENNY_CNC_DP_CHARGE": 15.34
+              },
+              "status": "CLOSED",
+              "actual_fill": "UNKNOWN",
+              "prev_close": 20.0,
+              "decision_quote": {
+                "timestamp": "2026-11-09 09:07:00+05:30",
+                "last_trade_time": "2026-11-09 09:07:00+05:30",
+                "last_price": 19.0,
+                "ohlc": {
+                  "close": 20.0,
+                  "open": 19.0
+                },
+                "volume": 10000,
+                "depth": {
+                  "buy": [
+                    {
+                      "price": 20.0,
+                      "quantity": 10000
+                    }
+                  ],
+                  "sell": [
+                    {
+                      "price": 20.05,
+                      "quantity": 10000
+                    }
+                  ]
+                }
+              },
+              "entry_model": "10pct_observed_auction_volume",
+              "entry_price": 19.0,
+              "modeled_quantity": 103,
+              "exit_price": 20.0,
+              "exit_at": "2026-11-09T09:30:00+05:30",
+              "exit_basis": "OBSERVED_BID_CAPACITY_MODEL",
+              "costs": 2.146,
+              "net": 100.854
+            }
+          ]
+        },
+        "OVERNIGHT_V2": {
+          "intents": 0,
+          "closed": 0,
+          "unresolved": 0,
+          "no_evidence": 0,
+          "capital_path_complete": true,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 0,
+          "complete_modeled_net": null,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": []
+        },
+        "OVERNIGHT_V3": {
+          "intents": 0,
+          "closed": 0,
+          "unresolved": 0,
+          "no_evidence": 0,
+          "capital_path_complete": true,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 0,
+          "complete_modeled_net": null,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": []
+        }
+      },
+      "observations": 0,
+      "paired_smart": {
+        "resolved_pairs": 1,
+        "unresolved_pairs": 0,
+        "no_evidence_pairs": 0,
+        "closed_pairs_morning_minus_close": -51.467,
+        "scope": "SAME_FUNDED_ENTRY_CONDITIONAL_EXIT_COMPARISON"
+      },
+      "smart_preopen_price": {
+        "days": 1,
+        "quotes": 1,
+        "moved_from_previous_close": 1,
+        "visible": true,
+        "indicative_price_verified": false,
+        "entry_enabled": true
+      }
+    },
+    "missing_matching_quote": {
+      "enabled": true,
+      "status": "observed",
+      "actual_fill": "UNKNOWN",
+      "scope": "CONDITIONAL_CAPACITY_PAPER_ONLY",
+      "variants": {
+        "SMART_OPEN_CLOSE": {
+          "intents": 1,
+          "closed": 0,
+          "unresolved": 0,
+          "no_evidence": 1,
+          "capital_path_complete": false,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 0,
+          "complete_modeled_net": null,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": [
+            {
+              "variant": "SMART_OPEN_CLOSE",
+              "ticker": "AAA",
+              "day": "2026-11-09",
+              "intent_at": "2026-11-09T09:07:00+05:30",
+              "limit": 19.15,
+              "order_quantity": 103,
+              "reserve": 1992.1782999999998,
+              "initial_capital": 2000.0,
+              "cost_rates": {
+                "PENNY_BROKERAGE_PCT": 0.0003,
+                "PENNY_BROKERAGE_MAX": 20.0,
+                "PENNY_EXCHANGE_PCT": 3.07e-05,
+                "PENNY_SEBI_PCT": 1e-06,
+                "PENNY_IPFT_PCT": 1e-09,
+                "PENNY_GST_PCT": 0.18,
+                "PENNY_STAMP_DUTY_PCT": 3e-05,
+                "PENNY_CNC_STAMP_DUTY_PCT": 0.00015,
+                "PENNY_STT_MIS": 0.00025,
+                "PENNY_STT_CNC": 0.001,
+                "PENNY_CNC_DP_CHARGE": 15.34
+              },
+              "status": "NO_EVIDENCE",
+              "actual_fill": "UNKNOWN",
+              "prev_close": 20.0,
+              "decision_quote": {
+                "timestamp": "2026-11-09 09:07:00+05:30",
+                "last_trade_time": "2026-11-09 09:07:00+05:30",
+                "last_price": 19.0,
+                "ohlc": {
+                  "close": 20.0,
+                  "open": 19.0
+                },
+                "volume": 10000,
+                "depth": {
+                  "buy": [
+                    {
+                      "price": 20.0,
+                      "quantity": 10000
+                    }
+                  ],
+                  "sell": [
+                    {
+                      "price": 20.05,
+                      "quantity": 10000
+                    }
+                  ]
+                }
+              },
+              "entry_model": "10pct_observed_auction_volume",
+              "reason": "missing_or_cross_date_provider",
+              "capital_assumption": "UNOBSERVED_INTENT_EXCLUDED_PAPER_RESERVATION_RELEASED"
+            }
+          ]
+        },
+        "SMART_OPEN_MORNING": {
+          "intents": 1,
+          "closed": 0,
+          "unresolved": 0,
+          "no_evidence": 1,
+          "capital_path_complete": false,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 0,
+          "complete_modeled_net": null,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": [
+            {
+              "variant": "SMART_OPEN_MORNING",
+              "ticker": "AAA",
+              "day": "2026-11-09",
+              "intent_at": "2026-11-09T09:07:00+05:30",
+              "limit": 19.15,
+              "order_quantity": 103,
+              "reserve": 1992.1782999999998,
+              "initial_capital": 2000.0,
+              "cost_rates": {
+                "PENNY_BROKERAGE_PCT": 0.0003,
+                "PENNY_BROKERAGE_MAX": 20.0,
+                "PENNY_EXCHANGE_PCT": 3.07e-05,
+                "PENNY_SEBI_PCT": 1e-06,
+                "PENNY_IPFT_PCT": 1e-09,
+                "PENNY_GST_PCT": 0.18,
+                "PENNY_STAMP_DUTY_PCT": 3e-05,
+                "PENNY_CNC_STAMP_DUTY_PCT": 0.00015,
+                "PENNY_STT_MIS": 0.00025,
+                "PENNY_STT_CNC": 0.001,
+                "PENNY_CNC_DP_CHARGE": 15.34
+              },
+              "status": "NO_EVIDENCE",
+              "actual_fill": "UNKNOWN",
+              "prev_close": 20.0,
+              "decision_quote": {
+                "timestamp": "2026-11-09 09:07:00+05:30",
+                "last_trade_time": "2026-11-09 09:07:00+05:30",
+                "last_price": 19.0,
+                "ohlc": {
+                  "close": 20.0,
+                  "open": 19.0
+                },
+                "volume": 10000,
+                "depth": {
+                  "buy": [
+                    {
+                      "price": 20.0,
+                      "quantity": 10000
+                    }
+                  ],
+                  "sell": [
+                    {
+                      "price": 20.05,
+                      "quantity": 10000
+                    }
+                  ]
+                }
+              },
+              "entry_model": "10pct_observed_auction_volume",
+              "reason": "missing_or_cross_date_provider",
+              "capital_assumption": "UNOBSERVED_INTENT_EXCLUDED_PAPER_RESERVATION_RELEASED"
+            }
+          ]
+        },
+        "OVERNIGHT_V2": {
+          "intents": 0,
+          "closed": 0,
+          "unresolved": 0,
+          "no_evidence": 0,
+          "capital_path_complete": true,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 0,
+          "complete_modeled_net": null,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": []
+        },
+        "OVERNIGHT_V3": {
+          "intents": 0,
+          "closed": 0,
+          "unresolved": 0,
+          "no_evidence": 0,
+          "capital_path_complete": true,
+          "capital_release_scope": "PAPER_MODEL_ONLY_UNOBSERVED_INTENTS_EXCLUDED",
+          "refused": 0,
+          "closed_modeled_net_subtotal": 0,
+          "complete_modeled_net": null,
+          "net_ex_best_winner": 0.0,
+          "reserved_cash": 0,
+          "recent": []
+        }
+      },
+      "observations": 0,
+      "paired_smart": {
+        "resolved_pairs": 0,
+        "unresolved_pairs": 1,
+        "no_evidence_pairs": 1,
+        "closed_pairs_morning_minus_close": 0,
+        "scope": "SAME_FUNDED_ENTRY_CONDITIONAL_EXIT_COMPARISON"
+      },
+      "smart_preopen_price": {
+        "days": 1,
+        "quotes": 1,
+        "moved_from_previous_close": 1,
+        "visible": true,
+        "indicative_price_verified": false,
+        "entry_enabled": true
+      }
+    }
+  },
+  "source_sha256": "1d1457b3fe5b5e751b6cc854fedbd835e38ea88833ef75004889b5479a5f4427",
+  "concurrent_collector": {
+    "statuses": [
+      "observed",
+      "repeat"
+    ],
+    "rows": 2,
+    "actual_fill": "UNKNOWN",
+    "quote_calls": 2
+  }
+}

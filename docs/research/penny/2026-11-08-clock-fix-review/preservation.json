@@ -1,0 +1,14 @@
+{
+  "docs/SYSTEM_GUIDE.md": {
+    "owner_bytes_preserved": true,
+    "original_sha256": "128462bdb8c6c56bef54507b8dcda33f258caaf0c0ebbf70c06dde515d76b578"
+  },
+  "docs/NEXT_AGENT_PLAN.md": {
+    "owner_bytes_preserved": true,
+    "original_sha256": "88f9dbabf1baee273738a14f28023219f3954b0df57f7248a454474da22bbc46"
+  },
+  "docs/HANDOVER_CHECKLIST.md": {
+    "owner_bytes_preserved": true,
+    "original_sha256": "6a1f871b2752e67b61ffde1e897febd751ebe3a000f49af0f24d89511dd88ecd"
+  }
+}

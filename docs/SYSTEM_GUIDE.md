@@ -1,3 +1,18 @@
+## November 8 - Penny clock correction review and Smart source qualification
+
+The [independent review](research/penny/2026-11-08-clock-fix-review/REPORT.md)
+confirms the 10 old POST packet clocks and 125 unchanged pre-open prices from
+read-only Production evidence. Keep 4e69c8e settled-clock/NO_EVIDENCE fixes.
+NO_EVIDENCE releases hypothetical paper reservations, but permanently withholds
+complete portfolio P&L for that history; partial closed totals stay available.
+Reject inconsistent volume/trade clocks. Matching evidence follows 09:10-09:12;
+older matching packets remain usable at 09:12. Idle ticks expire missed intents.
+PENNY_SMART_AUCTION_ENTRIES_ENABLED defaults false: Smart pre-open observation
+continues, while its new entry arms need a verified indicative-price source.
+Changed LTP is not verification. Existing reference books/Classic retirement
+remain. No schema/dependency/order/F&O change. 43 direct checks and 1,065
+current-source affected checks passed, one skipped. Dev only, no push/deploy.
+
 ## November 8 - Penny auction forward: Production clock fixes
 
 Production quotes broke rules in the first `penny_auction_forward.py` (`6af2f08`). Dev now follows the real Kite packets.

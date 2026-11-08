@@ -1,0 +1,29 @@
+{
+  "base_commit": "4e69c8e0d8f3ed3387819c21891668b6ff6467e6",
+  "production_checkout_read_only": "398d44adeffa26a6314250858bcf2ee6eb7a2f71",
+  "engine_source_files": 709,
+  "source_drift": [],
+  "direct_tests": {
+    "passed": 43,
+    "exit": 0
+  },
+  "affected_tests": {
+    "passed": 1065,
+    "skipped": 1,
+    "warnings": 14,
+    "seconds": 87.82,
+    "exit": 0
+  },
+  "full_suite_current_source": "NOT_RERUN_LOCAL_MODULE_CHANGE; parent suite is separate",
+  "atlas_modules": 306,
+  "financial_qualification": "NOT_ESTABLISHED",
+  "new_setting": {
+    "PENNY_SMART_AUCTION_ENTRIES_ENABLED": false
+  },
+  "migration": "NONE",
+  "state": "DEV_ONLY_NOT_PUSHED_NOT_DEPLOYED",
+  "Production_edits": false,
+  "provider_quotes": 0,
+  "orders": 0,
+  "Breeze_calls": 0
+}

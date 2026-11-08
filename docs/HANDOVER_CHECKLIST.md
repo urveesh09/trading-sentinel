@@ -1,3 +1,14 @@
+## November 8 - Penny clock follow-up checks
+
+[Verification](research/penny/2026-11-08-clock-fix-review/verification.json):
+43 direct and 1,065 affected checks passed, one skipped, no source drift.
+Do not call the parent full suite a current-source result. Atlas 306 modules.
+Check missing-plus-later-closed decisions keep complete P&L null and that OPEN
+positions retain cash. Smart forward entry flag defaults false; observation
+continues. No old-store schema migration, real order, push or deployment.
+Preserve owner bytes and prior research. Actual 15:51/auction receipts and
+verified pre-open price semantics remain required for forward qualification.
+
 ## November 8 - Penny auction forward clock fixes
 
 - **Verify:**

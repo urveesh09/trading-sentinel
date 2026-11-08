@@ -29,6 +29,8 @@ def quote(clock="09:07:00", *, price=19., opening=19., volume=10000, bid=20., qt
 def cache(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "PENNY_AUCTION_FORWARD_ENABLED", True)
     monkeypatch.setattr(settings, "PENNY_SMART_V3_ENABLED", True)
+    # Synthetic entry tests explicitly assume a usable indicative source.
+    monkeypatch.setattr(settings, "PENNY_SMART_AUCTION_ENTRIES_ENABLED", True)
     monkeypatch.setattr(settings, "EDGE_OVERNIGHT_PAPER_ENABLED", True)
     monkeypatch.setattr(settings, "PENNY_SMART_V3_BANKROLL", 2000.)
     monkeypatch.setattr(settings, "EDGE_OVERNIGHT_PAPER_BANKROLL", 25000.)
@@ -104,9 +106,9 @@ def test_invalid_auction_data_is_no_evidence_frees_the_reserve_and_reports_no_pr
 
 
 def test_an_auction_packet_from_before_the_buffer_is_evidence(cache):
-    """Nothing trades 09:12-09:15, so the 09:08 auction packet read at 09:12 is the auction's result."""
+    """The valid 09:10 matching result can be over 30s old in the buffer."""
     smart(cache)
-    phase(cache, "MATCH", {"AAA": quote("09:08:05", trade="09:08:00")}, "09:12:00")
+    phase(cache, "MATCH", {"AAA": quote("09:10:10", trade="09:10:05")}, "09:12:00")
     assert {r["status"] for r in read(cache)} == {"OPEN"}
 
 
@@ -123,7 +125,8 @@ def test_the_preopen_quote_showing_only_the_previous_close_is_recorded(cache):
     smart(cache, quote(price=20.))               # previous close 20: no visible gap
     assert read(cache) == []
     assert f.comparison(cache)["smart_preopen_price"] == {
-        "days": 1, "quotes": 1, "moved_from_previous_close": 0, "visible": False}
+        "days": 1, "quotes": 1, "moved_from_previous_close": 0, "visible": False,
+        "entry_enabled": True, "indicative_price_verified": False}
 
 
 def test_open_over_frozen_limit_is_refused_and_no_fee_is_invented(cache):
@@ -311,7 +314,7 @@ async def test_collection_restart_safety_bounded_batch_and_zero_order_calls(cach
 async def test_quote_receipt_crossing_window_is_rejected(cache, monkeypatch):
     import edge_overnight_paper as eop
     smart(cache)
-    class Clock:
+    class Clock(datetime):
         calls = 0
         @classmethod
         def now(cls, tz):
