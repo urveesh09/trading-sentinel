@@ -1,0 +1,160 @@
+{
+  "2025": {
+    "counts": {
+      "expiry_or_identity_excluded": 34,
+      "n11t_already_entered": 2,
+      "nifty_missing_clock": 1,
+      "paired_complete": 80,
+      "sensex_missing_clock": 10,
+      "sessions_in_source_span": 125,
+      "signals": 5
+    },
+    "median_nifty_points": -17.8,
+    "rows": [
+      {
+        "catchup_range_units": -0.206662,
+        "competing_n11t_entry": false,
+        "day": "2025-08-01",
+        "nifty_expiry": "2025-08-28",
+        "option_expiry": "2025-08-07",
+        "sensex_expiry": "2025-08-26",
+        "side": -1,
+        "signed_nifty_points": -68.8,
+        "signed_sensex_points": -265.2
+      },
+      {
+        "catchup_range_units": -0.410567,
+        "competing_n11t_entry": false,
+        "day": "2025-09-12",
+        "nifty_expiry": "2025-09-30",
+        "option_expiry": "2025-09-16",
+        "sensex_expiry": "2025-09-25",
+        "side": -1,
+        "signed_nifty_points": -17.8,
+        "signed_sensex_points": -65.0
+      },
+      {
+        "catchup_range_units": -0.05778,
+        "competing_n11t_entry": false,
+        "day": "2025-10-03",
+        "nifty_expiry": "2025-10-28",
+        "option_expiry": "2025-10-07",
+        "sensex_expiry": "2025-10-30",
+        "side": 1,
+        "signed_nifty_points": -37.9,
+        "signed_sensex_points": -136.75
+      },
+      {
+        "catchup_range_units": -0.098183,
+        "competing_n11t_entry": false,
+        "day": "2025-10-13",
+        "nifty_expiry": "2025-10-28",
+        "option_expiry": "2025-10-14",
+        "sensex_expiry": "2025-10-30",
+        "side": -1,
+        "signed_nifty_points": -12.4,
+        "signed_sensex_points": -13.55
+      },
+      {
+        "catchup_range_units": 0.022372,
+        "competing_n11t_entry": false,
+        "day": "2025-11-19",
+        "nifty_expiry": "2025-11-25",
+        "option_expiry": "2025-11-25",
+        "sensex_expiry": "2025-11-27",
+        "side": 1,
+        "signed_nifty_points": 41.9,
+        "signed_sensex_points": 127.65
+      }
+    ],
+    "signed_nifty_points": -95.0
+  },
+  "2026": {
+    "counts": {
+      "expiry_or_identity_excluded": 52,
+      "n11t_already_entered": 2,
+      "nifty_missing_clock": 0,
+      "paired_complete": 138,
+      "sensex_missing_clock": 12,
+      "sessions_in_source_span": 202,
+      "signals": 6
+    },
+    "median_nifty_points": -36.35,
+    "rows": [
+      {
+        "catchup_range_units": -0.189534,
+        "competing_n11t_entry": false,
+        "day": "2026-03-04",
+        "nifty_expiry": "2026-03-30",
+        "option_expiry": "2026-03-10",
+        "sensex_expiry": "2026-03-25",
+        "side": -1,
+        "signed_nifty_points": -56.8,
+        "signed_sensex_points": -202.8
+      },
+      {
+        "catchup_range_units": -0.168339,
+        "competing_n11t_entry": false,
+        "day": "2026-05-08",
+        "nifty_expiry": "2026-05-26",
+        "option_expiry": "2026-05-12",
+        "sensex_expiry": "2026-05-27",
+        "side": -1,
+        "signed_nifty_points": -40.0,
+        "signed_sensex_points": -119.25
+      },
+      {
+        "catchup_range_units": 0.008217,
+        "competing_n11t_entry": false,
+        "day": "2026-05-14",
+        "nifty_expiry": "2026-05-26",
+        "option_expiry": "2026-05-19",
+        "sensex_expiry": "2026-05-27",
+        "side": -1,
+        "signed_nifty_points": -23.0,
+        "signed_sensex_points": -89.05
+      },
+      {
+        "catchup_range_units": -0.17678,
+        "competing_n11t_entry": false,
+        "day": "2026-07-08",
+        "nifty_expiry": "2026-07-28",
+        "option_expiry": "2026-07-14",
+        "sensex_expiry": "2026-07-30",
+        "side": -1,
+        "signed_nifty_points": -49.5,
+        "signed_sensex_points": -131.0
+      },
+      {
+        "catchup_range_units": 0.310581,
+        "competing_n11t_entry": false,
+        "day": "2026-07-27",
+        "nifty_expiry": "2026-07-28",
+        "option_expiry": "2026-07-28",
+        "sensex_expiry": "2026-07-30",
+        "side": 1,
+        "signed_nifty_points": 9.5,
+        "signed_sensex_points": -57.55
+      },
+      {
+        "catchup_range_units": -0.261073,
+        "competing_n11t_entry": false,
+        "day": "2026-09-30",
+        "nifty_expiry": "2026-10-27",
+        "option_expiry": "2026-10-06",
+        "sensex_expiry": "2026-10-29",
+        "side": 1,
+        "signed_nifty_points": -32.7,
+        "signed_sensex_points": -82.9
+      }
+    ],
+    "signed_nifty_points": -192.5
+  },
+  "aggregate": {
+    "screened_points": -315.7,
+    "source_bounds": [
+      "2025-07-01",
+      "2026-10-27"
+    ]
+  }
+}

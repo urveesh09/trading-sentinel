@@ -1,0 +1,177 @@
+{
+  "cases": [
+    {
+      "day": "2026-01-05",
+      "required_reserve": 10935.34557838735,
+      "worst_scenario_net": -3954.9914798298114
+    },
+    {
+      "day": "2026-01-12",
+      "required_reserve": 11407.7128510445,
+      "worst_scenario_net": -2589.5718970271564
+    },
+    {
+      "day": "2026-01-19",
+      "required_reserve": 11661.81386668076,
+      "worst_scenario_net": -1793.638998071128
+    },
+    {
+      "day": "2026-02-01",
+      "required_reserve": 26510.43475475862,
+      "worst_scenario_net": -2771.243878014417
+    },
+    {
+      "day": "2026-02-02",
+      "required_reserve": 19245.75187182452,
+      "worst_scenario_net": -2685.4856935898215
+    },
+    {
+      "day": "2026-02-09",
+      "required_reserve": 11652.04075069475,
+      "worst_scenario_net": -2415.4226867597627
+    },
+    {
+      "day": "2026-02-16",
+      "required_reserve": 11430.51678834519,
+      "worst_scenario_net": -1959.4634604918429
+    },
+    {
+      "day": "2026-02-23",
+      "required_reserve": 13609.921653225421,
+      "worst_scenario_net": -1231.3354764647283
+    },
+    {
+      "day": "2026-03-09",
+      "required_reserve": 29409.792497274917,
+      "worst_scenario_net": -3286.223525237389
+    },
+    {
+      "day": "2026-03-16",
+      "required_reserve": 23637.13865487168,
+      "worst_scenario_net": -2197.689493710828
+    },
+    {
+      "day": "2026-04-06",
+      "required_reserve": 27937.30968871608,
+      "worst_scenario_net": -3001.2076566135056
+    },
+    {
+      "day": "2026-04-20",
+      "required_reserve": 18382.45995972697,
+      "worst_scenario_net": -2188.794920721062
+    },
+    {
+      "day": "2026-04-27",
+      "required_reserve": 14808.757214175981,
+      "worst_scenario_net": -869.0869017099099
+    },
+    {
+      "day": "2026-05-04",
+      "required_reserve": 15746.97634883294,
+      "worst_scenario_net": -2046.0730334825316
+    },
+    {
+      "day": "2026-05-18",
+      "required_reserve": 17434.467709083998,
+      "worst_scenario_net": -1833.7245325284007
+    },
+    {
+      "day": "2026-05-25",
+      "required_reserve": 14310.32829888947,
+      "worst_scenario_net": -171.0625264356414
+    },
+    {
+      "day": "2026-06-01",
+      "required_reserve": 14408.059458749569,
+      "worst_scenario_net": -2035.4152783767272
+    },
+    {
+      "day": "2026-06-08",
+      "required_reserve": 16623.29908224517,
+      "worst_scenario_net": -2203.467106541998
+    },
+    {
+      "day": "2026-06-15",
+      "required_reserve": 13570.82918928138,
+      "worst_scenario_net": -1106.2874777466357
+    },
+    {
+      "day": "2026-06-22",
+      "required_reserve": 10720.337026695131,
+      "worst_scenario_net": -1143.355923502133
+    },
+    {
+      "day": "2026-06-29",
+      "required_reserve": 11625.97910806539,
+      "worst_scenario_net": -1236.6611773169618
+    },
+    {
+      "day": "2026-07-06",
+      "required_reserve": 10313.12386061138,
+      "worst_scenario_net": -2547.90996165621
+    },
+    {
+      "day": "2026-07-13",
+      "required_reserve": 13039.823220708171,
+      "worst_scenario_net": -2352.153572176463
+    },
+    {
+      "day": "2026-07-20",
+      "required_reserve": 12173.27360328195,
+      "worst_scenario_net": -1377.0107091923649
+    },
+    {
+      "day": "2026-07-27",
+      "required_reserve": 10430.401252443498,
+      "worst_scenario_net": -606.6036502836806
+    },
+    {
+      "day": "2026-08-03",
+      "required_reserve": 9606.201804289989,
+      "worst_scenario_net": -2802.249390277437
+    },
+    {
+      "day": "2026-08-10",
+      "required_reserve": 12694.50645586915,
+      "worst_scenario_net": -2044.3717654487114
+    },
+    {
+      "day": "2026-08-17",
+      "required_reserve": 9055.649603744761,
+      "worst_scenario_net": -2118.5268684288894
+    },
+    {
+      "day": "2026-08-31",
+      "required_reserve": 13212.481603127679,
+      "worst_scenario_net": -4037.4849439620384
+    },
+    {
+      "day": "2026-09-07",
+      "required_reserve": 11837.72995442894,
+      "worst_scenario_net": -3499.341199738951
+    },
+    {
+      "day": "2026-09-21",
+      "required_reserve": 9918.94151584231,
+      "worst_scenario_net": -1147.2707193957553
+    },
+    {
+      "day": "2026-10-05",
+      "required_reserve": 13850.991847547,
+      "worst_scenario_net": -3539.8914654747077
+    },
+    {
+      "day": "2026-10-12",
+      "required_reserve": 13176.64684451231,
+      "worst_scenario_net": -2578.965897293483
+    },
+    {
+      "day": "2026-10-26",
+      "required_reserve": 17310.67490659454,
+      "worst_scenario_net": -1660.4444820339806
+    }
+  ],
+  "cash_rejections": 34,
+  "pricing_hurdle_passes": 0,
+  "pricing_hurdle_passes_at_15000_full_reserve": 0
+}

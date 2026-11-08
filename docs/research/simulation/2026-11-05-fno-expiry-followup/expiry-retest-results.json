@@ -1,0 +1,318 @@
+{
+  "2026-10-08": {
+    "1": {
+      "checks": {},
+      "closed": 1,
+      "net": -1.64,
+      "signals": [
+        {
+          "at": "2026-10-08T14:49:40.086015+05:30",
+          "side": "DOWN"
+        }
+      ],
+      "trades": [
+        {
+          "_events": [
+            {
+              "action": "BUY",
+              "charges": 24.56,
+              "fill_model": "CONTINUOUS",
+              "lots": 1,
+              "price": 116.2,
+              "ts": "2026-10-08T14:49:50.075867+05:30"
+            },
+            {
+              "action": "TIME_STOP",
+              "charges": 28.08,
+              "fill_model": "CONTINUOUS",
+              "gross": 51.0,
+              "lots": 1,
+              "net": 22.92,
+              "price": 118.75,
+              "ts": "2026-10-08T14:57:50.078740+05:30"
+            }
+          ],
+          "entry_price": 116.2,
+          "entry_ts": "2026-10-08T14:49:50.075867+05:30",
+          "lots": 1,
+          "max_loss": 2372.16,
+          "net_pnl": -1.64,
+          "status": "CLOSED",
+          "symbol": "SENSEX26O0871500PE"
+        }
+      ],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 1,
+      "net": 162.24,
+      "signals": [
+        {
+          "at": "2026-10-08T14:49:40.086015+05:30",
+          "side": "DOWN"
+        }
+      ],
+      "trades": [
+        {
+          "_events": [
+            {
+              "action": "BUY",
+              "charges": 24.53,
+              "fill_model": "CONTINUOUS",
+              "lots": 1,
+              "price": 112.05,
+              "ts": "2026-10-08T14:50:00.074165+05:30"
+            },
+            {
+              "action": "TIME_STOP",
+              "charges": 28.23,
+              "fill_model": "CONTINUOUS",
+              "gross": 215.0,
+              "lots": 1,
+              "net": 186.77,
+              "price": 122.8,
+              "ts": "2026-10-08T14:58:10.094639+05:30"
+            }
+          ],
+          "entry_price": 112.05,
+          "entry_ts": "2026-10-08T14:50:00.074165+05:30",
+          "lots": 1,
+          "max_loss": 2289.13,
+          "net_pnl": 162.24,
+          "status": "CLOSED",
+          "symbol": "SENSEX26O0871500PE"
+        }
+      ],
+      "unresolved": 0
+    }
+  },
+  "2026-10-13": {
+    "1": {
+      "checks": {
+        "decision_budget_or_depth": 2
+      },
+      "closed": 0,
+      "net": 0,
+      "signals": [
+        {
+          "at": "2026-10-13T14:06:10.069733+05:30",
+          "side": "UP"
+        }
+      ],
+      "trades": [],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {
+        "decision_budget_or_depth": 2
+      },
+      "closed": 0,
+      "net": 0,
+      "signals": [
+        {
+          "at": "2026-10-13T14:06:10.069733+05:30",
+          "side": "UP"
+        }
+      ],
+      "trades": [],
+      "unresolved": 0
+    }
+  },
+  "2026-10-15": {
+    "1": {
+      "checks": {},
+      "closed": 1,
+      "net": -796.24,
+      "signals": [
+        {
+          "at": "2026-10-15T14:34:00.067739+05:30",
+          "side": "DOWN"
+        }
+      ],
+      "trades": [
+        {
+          "_events": [
+            {
+              "action": "BUY",
+              "charges": 24.58,
+              "fill_model": "CONTINUOUS",
+              "lots": 1,
+              "price": 118.35,
+              "ts": "2026-10-15T14:34:10.071178+05:30"
+            },
+            {
+              "action": "STOP",
+              "charges": 26.66,
+              "fill_model": "CONTINUOUS",
+              "gross": -745.0,
+              "lots": 1,
+              "net": -771.66,
+              "price": 81.1,
+              "ts": "2026-10-15T14:43:50.048396+05:30"
+            }
+          ],
+          "entry_price": 118.35,
+          "entry_ts": "2026-10-15T14:34:10.071178+05:30",
+          "lots": 1,
+          "max_loss": 2415.18,
+          "net_pnl": -796.24,
+          "status": "CLOSED",
+          "symbol": "SENSEX26O1574100PE"
+        }
+      ],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 1,
+      "net": -799.24,
+      "signals": [
+        {
+          "at": "2026-10-15T14:34:00.067739+05:30",
+          "side": "DOWN"
+        }
+      ],
+      "trades": [
+        {
+          "_events": [
+            {
+              "action": "BUY",
+              "charges": 24.58,
+              "fill_model": "CONTINUOUS",
+              "lots": 1,
+              "price": 118.5,
+              "ts": "2026-10-15T14:34:20.067005+05:30"
+            },
+            {
+              "action": "STOP",
+              "charges": 26.66,
+              "fill_model": "CONTINUOUS",
+              "gross": -748.0,
+              "lots": 1,
+              "net": -774.66,
+              "price": 81.1,
+              "ts": "2026-10-15T14:43:50.048396+05:30"
+            }
+          ],
+          "entry_price": 118.5,
+          "entry_ts": "2026-10-15T14:34:20.067005+05:30",
+          "lots": 1,
+          "max_loss": 2418.18,
+          "net_pnl": -799.24,
+          "status": "CLOSED",
+          "symbol": "SENSEX26O1574100PE"
+        }
+      ],
+      "unresolved": 0
+    }
+  },
+  "2026-10-19": {
+    "1": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    }
+  },
+  "2026-10-22": {
+    "1": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    }
+  },
+  "2026-10-27": {
+    "1": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    }
+  },
+  "2026-10-29": {
+    "1": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    }
+  },
+  "2026-11-03": {
+    "1": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    }
+  },
+  "2026-11-05": {
+    "1": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    },
+    "2": {
+      "checks": {},
+      "closed": 0,
+      "net": 0,
+      "signals": [],
+      "trades": [],
+      "unresolved": 0
+    }
+  }
+}

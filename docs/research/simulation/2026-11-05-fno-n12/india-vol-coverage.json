@@ -1,0 +1,431 @@
+{
+  "acquired_at_utc": "2026-11-05T17:05:35.083089+00:00",
+  "historical_session_prior_input_coverage": {
+    "2022": {
+      "missing_preceding_close_pair": [],
+      "sessions": 145
+    },
+    "2023": {
+      "missing_preceding_close_pair": [],
+      "sessions": 245
+    },
+    "2024": {
+      "missing_preceding_close_pair": [],
+      "sessions": 248
+    },
+    "2025": {
+      "missing_preceding_close_pair": [],
+      "sessions": 248
+    },
+    "2026": {
+      "missing_preceding_close_pair": [],
+      "sessions": 203
+    }
+  },
+  "normalized_sha256": "1e2a033f12408d664cf8863c92223fad05bc8e8911ca5af2bc59295980664004",
+  "only_nifty": [
+    "2021-02-12",
+    "2021-03-30"
+  ],
+  "only_vix": [],
+  "paired_first": "2021-01-01",
+  "paired_last": "2026-11-04",
+  "requested": [
+    "2021-01-01",
+    "2026-11-04"
+  ],
+  "response_receipts": {
+    "nifty-2021-01-01.json": {
+      "count": 61,
+      "file": "nifty-2021-01-01.json",
+      "first": "2021-01-01",
+      "invalid_ohlc_dates": [],
+      "last": "2021-03-31",
+      "sha256": "060b4adab31f50fba4aba1f394669d4eb611902ca6ec7fb74288ed911fa1320b"
+    },
+    "nifty-2021-04-01.json": {
+      "count": 61,
+      "file": "nifty-2021-04-01.json",
+      "first": "2021-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2021-06-30",
+      "sha256": "20b8da9a6a73611283fc035008a5472343aedce1c4d77bd913f4e9adcfb2bf62"
+    },
+    "nifty-2021-07-01.json": {
+      "count": 63,
+      "file": "nifty-2021-07-01.json",
+      "first": "2021-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2021-09-30",
+      "sha256": "a280abb2da9f4555939c45e4a36da3075f9c66995b74c976f6e7cc335a476634"
+    },
+    "nifty-2021-10-01.json": {
+      "count": 63,
+      "file": "nifty-2021-10-01.json",
+      "first": "2021-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2021-12-31",
+      "sha256": "35b70451ed883b5c8d4d634fcee557553be53559d334c54e46d3015ac33a1a33"
+    },
+    "nifty-2022-01-01.json": {
+      "count": 61,
+      "file": "nifty-2022-01-01.json",
+      "first": "2022-01-03",
+      "invalid_ohlc_dates": [],
+      "last": "2022-03-31",
+      "sha256": "7b44fc740a2e131756e8e1dbe4976f58543442ca6c71f09803a661edfa9de194"
+    },
+    "nifty-2022-04-01.json": {
+      "count": 62,
+      "file": "nifty-2022-04-01.json",
+      "first": "2022-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2022-06-30",
+      "sha256": "8e83d96243adb23c7e466e1757c38f0a78f16bf687f33b0e60b390abf41efb4d"
+    },
+    "nifty-2022-07-01.json": {
+      "count": 63,
+      "file": "nifty-2022-07-01.json",
+      "first": "2022-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2022-09-30",
+      "sha256": "21da4ba99b7217cb0bd074ad31d20332e27ca0bc9c31f5deb04d1af3fbbb7845"
+    },
+    "nifty-2022-10-01.json": {
+      "count": 62,
+      "file": "nifty-2022-10-01.json",
+      "first": "2022-10-03",
+      "invalid_ohlc_dates": [],
+      "last": "2022-12-30",
+      "sha256": "6c15456cb1d3ea630ec5934af6aab51f9d4673ae72077984029d289e26a3d3ee"
+    },
+    "nifty-2023-01-01.json": {
+      "count": 62,
+      "file": "nifty-2023-01-01.json",
+      "first": "2023-01-02",
+      "invalid_ohlc_dates": [],
+      "last": "2023-03-31",
+      "sha256": "dbebe73307ce5dd88a34a61ea7801514c2223695df16172e63a57d7fec2a022f"
+    },
+    "nifty-2023-04-01.json": {
+      "count": 60,
+      "file": "nifty-2023-04-01.json",
+      "first": "2023-04-03",
+      "invalid_ohlc_dates": [],
+      "last": "2023-06-30",
+      "sha256": "7a3ab1dd2afd3c2b2ca253468cb171bc31d90751c021d7b6a086877875d19628"
+    },
+    "nifty-2023-07-01.json": {
+      "count": 63,
+      "file": "nifty-2023-07-01.json",
+      "first": "2023-07-03",
+      "invalid_ohlc_dates": [],
+      "last": "2023-09-29",
+      "sha256": "8b61c48ae1cceb36b7d63038fe1f20a3ad507eadca37e78fefcf49eb5752549a"
+    },
+    "nifty-2023-10-01.json": {
+      "count": 61,
+      "file": "nifty-2023-10-01.json",
+      "first": "2023-10-03",
+      "invalid_ohlc_dates": [],
+      "last": "2023-12-29",
+      "sha256": "d0a835b01691d462551023a896bc885c9b749797aab1feddb9597e310fbeadb3"
+    },
+    "nifty-2024-01-01.json": {
+      "count": 61,
+      "file": "nifty-2024-01-01.json",
+      "first": "2024-01-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-03-28",
+      "sha256": "ae50ea0d2239cb9a85e44723b98cb5485f26bd9c13f250d6a7afd460ae6febd6"
+    },
+    "nifty-2024-04-01.json": {
+      "count": 61,
+      "file": "nifty-2024-04-01.json",
+      "first": "2024-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-06-28",
+      "sha256": "db1c7088ff3925ba9d8e1fc56172fbf767433b2586a08797515a8f45d6cf46d1"
+    },
+    "nifty-2024-07-01.json": {
+      "count": 64,
+      "file": "nifty-2024-07-01.json",
+      "first": "2024-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-09-30",
+      "sha256": "78f72dfa3821b8c7d8a93b5f4bc63c2343cf6c5511e9496ba2721a5b7f7ec134"
+    },
+    "nifty-2024-10-01.json": {
+      "count": 62,
+      "file": "nifty-2024-10-01.json",
+      "first": "2024-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-12-31",
+      "sha256": "438a6603956bb7f5cdc7089664d6c10c2e43ac8c91a1f92bde51d8b9a7f391bd"
+    },
+    "nifty-2025-01-01.json": {
+      "count": 62,
+      "file": "nifty-2025-01-01.json",
+      "first": "2025-01-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-03-28",
+      "sha256": "53cfde4be909bbc09985dbdb1b74c100de29b55a4b6674f13d8484811ca88769"
+    },
+    "nifty-2025-04-01.json": {
+      "count": 61,
+      "file": "nifty-2025-04-01.json",
+      "first": "2025-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-06-30",
+      "sha256": "fc493928877bf07a5d563f1c07809cf0e200beb706e4db27cea62dee955d2701"
+    },
+    "nifty-2025-07-01.json": {
+      "count": 64,
+      "file": "nifty-2025-07-01.json",
+      "first": "2025-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-09-30",
+      "sha256": "21e877951652db2d6082564ffcdda90ead9c2891743d6cf41b9f24a35e054159"
+    },
+    "nifty-2025-10-01.json": {
+      "count": 62,
+      "file": "nifty-2025-10-01.json",
+      "first": "2025-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-12-31",
+      "sha256": "b8e0c840b5ce6da1931653fd8ef762d164d40b5d5af386df68b2b85bc9b0a865"
+    },
+    "nifty-2026-01-01.json": {
+      "count": 60,
+      "file": "nifty-2026-01-01.json",
+      "first": "2026-01-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-03-30",
+      "sha256": "3e6cce89dcaf5c7c37a6e4b322a6ae55bce485d8118c56e8b83d69208b02fd47"
+    },
+    "nifty-2026-04-01.json": {
+      "count": 60,
+      "file": "nifty-2026-04-01.json",
+      "first": "2026-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-06-30",
+      "sha256": "aaea7ef5f45b999d81cba39b25bcafe97f7e14431e870484ad95bfda8990c399"
+    },
+    "nifty-2026-07-01.json": {
+      "count": 65,
+      "file": "nifty-2026-07-01.json",
+      "first": "2026-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-09-30",
+      "sha256": "24973e9632ae65f0b50fad7c93d1fe9f5222974fcc2620c65e9078d1d1844595"
+    },
+    "nifty-2026-10-01.json": {
+      "count": 23,
+      "file": "nifty-2026-10-01.json",
+      "first": "2026-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-11-04",
+      "sha256": "cdd5afcbbcbf1404ef95239d37e00ea437c5165fd406b6dba5c3c7d49ad7881e"
+    },
+    "vix-2021-01-01.json": {
+      "count": 59,
+      "file": "vix-2021-01-01.json",
+      "first": "2021-01-01",
+      "invalid_ohlc_dates": [
+        "2021-02-12",
+        "2021-03-30"
+      ],
+      "last": "2021-03-31",
+      "sha256": "2e4d5f567d3e741e899b9f4f22e00964117c56b8b34377cd4cacb8e4da1045c0"
+    },
+    "vix-2021-04-01.json": {
+      "count": 61,
+      "file": "vix-2021-04-01.json",
+      "first": "2021-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2021-06-30",
+      "sha256": "de36b989f0c908c5ebe95f02281423d8935119cd3ef651f5b3a9b46d65494cd6"
+    },
+    "vix-2021-07-01.json": {
+      "count": 63,
+      "file": "vix-2021-07-01.json",
+      "first": "2021-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2021-09-30",
+      "sha256": "622d98256c1f94a254b861d70cea00f866967f7d233ee8e0454f712556156961"
+    },
+    "vix-2021-10-01.json": {
+      "count": 63,
+      "file": "vix-2021-10-01.json",
+      "first": "2021-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2021-12-31",
+      "sha256": "84680eff6a910a71bc2ba27f53d117e53799b1989cf6b067dc540ac7bda80fbd"
+    },
+    "vix-2022-01-01.json": {
+      "count": 61,
+      "file": "vix-2022-01-01.json",
+      "first": "2022-01-03",
+      "invalid_ohlc_dates": [],
+      "last": "2022-03-31",
+      "sha256": "eaab11630aabc4ea6acee777e30d3ca924743da1b6951d4e590803f313925c15"
+    },
+    "vix-2022-04-01.json": {
+      "count": 62,
+      "file": "vix-2022-04-01.json",
+      "first": "2022-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2022-06-30",
+      "sha256": "aaf2b635c09dd3f48f55ed538b19d566df21d9f77a8360852b8a7213bf24fbb2"
+    },
+    "vix-2022-07-01.json": {
+      "count": 63,
+      "file": "vix-2022-07-01.json",
+      "first": "2022-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2022-09-30",
+      "sha256": "27dcee6b9fe6943e57529ed192a5dd66a68d59352ec4754ca7b63f131348c16e"
+    },
+    "vix-2022-10-01.json": {
+      "count": 62,
+      "file": "vix-2022-10-01.json",
+      "first": "2022-10-03",
+      "invalid_ohlc_dates": [],
+      "last": "2022-12-30",
+      "sha256": "de6421a3e481f73aee5bce9bdbd35bc8adf3bc65376e7b6696a4d77a3eab8487"
+    },
+    "vix-2023-01-01.json": {
+      "count": 62,
+      "file": "vix-2023-01-01.json",
+      "first": "2023-01-02",
+      "invalid_ohlc_dates": [],
+      "last": "2023-03-31",
+      "sha256": "7f87f06f1fd4dfb30277437539b43affa3c8c1740763fd96530bb9f024a3dd97"
+    },
+    "vix-2023-04-01.json": {
+      "count": 60,
+      "file": "vix-2023-04-01.json",
+      "first": "2023-04-03",
+      "invalid_ohlc_dates": [],
+      "last": "2023-06-30",
+      "sha256": "7d9a157abb079069b560089c921b4ead2ce7b763268ab95725c468db4f7ea328"
+    },
+    "vix-2023-07-01.json": {
+      "count": 63,
+      "file": "vix-2023-07-01.json",
+      "first": "2023-07-03",
+      "invalid_ohlc_dates": [],
+      "last": "2023-09-29",
+      "sha256": "339c80bf448708ae3645a07a947a624ab54a5919dd30dde58f31d62ded116c94"
+    },
+    "vix-2023-10-01.json": {
+      "count": 61,
+      "file": "vix-2023-10-01.json",
+      "first": "2023-10-03",
+      "invalid_ohlc_dates": [],
+      "last": "2023-12-29",
+      "sha256": "038f453ead2df912e4a7eee525985a1d3379826371f350214f8af9e8bc8583c9"
+    },
+    "vix-2024-01-01.json": {
+      "count": 61,
+      "file": "vix-2024-01-01.json",
+      "first": "2024-01-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-03-28",
+      "sha256": "36482e8f1c47bb649b67431c1a0b51b824b7b44b54e8985805d7725239878990"
+    },
+    "vix-2024-04-01.json": {
+      "count": 61,
+      "file": "vix-2024-04-01.json",
+      "first": "2024-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-06-28",
+      "sha256": "afd527b4c1b4d3a121367d85bb553bde553b6883b656e611c3332d030b1914f9"
+    },
+    "vix-2024-07-01.json": {
+      "count": 64,
+      "file": "vix-2024-07-01.json",
+      "first": "2024-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-09-30",
+      "sha256": "9ec1aa6f3493a7d3ce8b671bd1ba53e0eb9de91d44941f4161dfc319b0bbdb35"
+    },
+    "vix-2024-10-01.json": {
+      "count": 62,
+      "file": "vix-2024-10-01.json",
+      "first": "2024-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2024-12-31",
+      "sha256": "dad491ebf34b68862eace4032d444a4f425be40aaa45d95e72304d0873026561"
+    },
+    "vix-2025-01-01.json": {
+      "count": 62,
+      "file": "vix-2025-01-01.json",
+      "first": "2025-01-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-03-28",
+      "sha256": "5ee92783530646a0680ed7da94008f791e6cab686e73cbe44512dc2e2f11113b"
+    },
+    "vix-2025-04-01.json": {
+      "count": 61,
+      "file": "vix-2025-04-01.json",
+      "first": "2025-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-06-30",
+      "sha256": "a3ab8115ddbf7737a4373d00ebf98757f591caf48d6ae8b866792e029444ca8c"
+    },
+    "vix-2025-07-01.json": {
+      "count": 64,
+      "file": "vix-2025-07-01.json",
+      "first": "2025-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-09-30",
+      "sha256": "69baadb167d1cba9948855c322fbb4795975ce0f61e286877df1d11c610f97b0"
+    },
+    "vix-2025-10-01.json": {
+      "count": 62,
+      "file": "vix-2025-10-01.json",
+      "first": "2025-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2025-12-31",
+      "sha256": "8b96bc28eb359faf1cb9e63e1d34e7b2443cfb359619c79b77a75d99850ecc28"
+    },
+    "vix-2026-01-01.json": {
+      "count": 60,
+      "file": "vix-2026-01-01.json",
+      "first": "2026-01-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-03-30",
+      "sha256": "e05acd9c8159b9d2ede2c8242c7053607357da6d41906198ea0f60324ca5c4c9"
+    },
+    "vix-2026-04-01.json": {
+      "count": 60,
+      "file": "vix-2026-04-01.json",
+      "first": "2026-04-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-06-30",
+      "sha256": "647dcc3a95e77cce6068198acc160b4e05b31bf005b644621b89717b4fb531d2"
+    },
+    "vix-2026-07-01.json": {
+      "count": 65,
+      "file": "vix-2026-07-01.json",
+      "first": "2026-07-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-09-30",
+      "sha256": "397132b7749d9de0a0824f4bb120bff9ce447629b5b97ef4d291837af1ad8840"
+    },
+    "vix-2026-10-01.json": {
+      "count": 23,
+      "file": "vix-2026-10-01.json",
+      "first": "2026-10-01",
+      "invalid_ohlc_dates": [],
+      "last": "2026-11-04",
+      "sha256": "37bfdf18ffaeed69eedb270c37e2e0fd85115ec26bbb456b63aed3ed2b99b380"
+    }
+  },
+  "source": "NSE public historical index series",
+  "valid_counts": {
+    "nifty": 1447,
+    "vix": 1445
+  }
+}

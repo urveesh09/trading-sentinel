@@ -1,0 +1,36 @@
+# Penny auction forward development — November 8, 2026
+
+## Outcome
+Implemented an independent corrected forward paper book for Smart and overnight EDGE, and retired the current Classic MIS/CNC entry paths by default in Dev. No claim of improved realized profit or qualified new alpha. No order, Breeze request, Production edit, push or deployment by this task. F&O is unchanged.
+
+## New paper behavior
+`penny_auction_forward.py` uses its own `<DB_PATH>.penny-auction-forward.db`, leaving existing Smart V3/overnight books and ledgers intact. `SMART_OPEN_CLOSE` and `SMART_OPEN_MORNING` have identical funded entries and separate Rs 2,000 paper books. Existing Smart candidate rules select the deepest eligible gap. Before 09:08 the new book records a buy limit, immutable order quantity, quote, fee rates and cash reservation. The reservation includes the larger of same-day or delivery flat-roundtrip charges. It never increases order quantity because the eventual opening price is lower.
+
+The 09:12 observation accepts only fresh same-session packets and an observed matching-period trade. At most 10% of the observed before-continuous volume can become modeled shares. A limit below the clearing price refuses. Less than a quarter of planned quantity refuses under the declared capacity model. Missing or invalid evidence stays unresolved and funded. These are conditional assumptions, with actual_fill always UNKNOWN.
+
+The morning arm sells against sufficient displayed bids starting at 09:30. Missing/partial depth carries and retries at later observed minute batches through 15:19. The close arm records an intention at a fresh 15:51 post-close trade, then requires later supported-session traded volume by 16:03 at the same closing price. It never uses a next-day previous-close field as a same-day sale. Failed sales stay open and use later observed bids with delivery charges. Both Smart entry arms pause while either has unresolved exposure, preserving paired entry comparisons.
+
+`OVERNIGHT_V2` and `OVERNIGHT_V3` use separate Rs 25,000 books. The original 15:20 rank/night/high/filler inputs are archived without extra entry-hook quote calls. At a fresh 15:51 post-close observation, each book fixes two own-cash ticket quantities. Only volume observed after that decision can support a modeled entry, at 1% participation. Missing/reset volume, changed closing prices, late trades or invalid clocks stay unresolved. Quantity is never recalculated from a later print. V3 needs its recorded feature inputs; missing features do not silently downgrade its rule.
+
+Overnight auction-sale intentions are recorded at 09:03 before the market-order deadline. A 09:12 auction sale needs that intention plus enough observed matching volume. Without it, the book waits for an actual displayed-bid observation from 09:30. No 09:17 observation can be backdated into a sell order.
+
+Native Penny cost arithmetic accepts an optional frozen rate snapshot and explicit bypass policy. Existing callers retain their prior defaults. The forward books ignore fee bypasses and hold their entry-time rates through settlement. Profits are withheld, losses reduce available risk capital, and pending/open/unknown exposure reserves cash. Fees, quantities and actual observation clocks are retained per row. P&L is withheld as complete whenever exposure is unresolved. Same-entry resolved Smart pairs have an explicit exit comparison.
+
+## Retirement and integration
+`PENNY_CLASSIC_MIS_ENTRIES_ENABLED=false` blocks only the accepted Classic MIS entry path after independent Smart/shadow evaluation. `PENNY_CLASSIC_CNC_ENTRIES_ENABLED=false` skips the entry-only CNC scan. Existing-position monitors, force-close/EOD functions, source code, research, V1/V2 and Classic shadow evaluations remain. The switches independently restore the old entries if the owner decides to do so.
+
+`PENNY_AUCTION_FORWARD_ENABLED=true` enables only the new paper path. Five additive trading-day/token-gated scheduled jobs handle exit intentions, matching, morning retries, post-close decision and post-close final evidence. A morning tick with nothing eligible to exit makes no quote request or observation row. Parent book switches gate new captures. The existing authenticated Smart V3 and overnight endpoints gain `auction_forward`. Missing/damaged new stores cannot fabricate profits or break legacy results; reads do not create stores. No old-store migration, dependency or credential change.
+
+## What the tests establish
+The 72 final focused checks and the wider affected-group run are recorded in commands.json. Synthetic tapes use the real new functions, not a separate strategy implementation. They verify funding, immutable quantities, partial capacity, strict receipt/provider/trade clocks, stale/future/cross-day rejection, limit refusal, price/volume resets, bid walking, missing exits, delivery carry fees, cost snapshot/bypass isolation, restart idempotence, original pre-open hook, authenticated read-only API and retirement preserving shadows. They do not establish auction queue priority, actual fills, or profitability.
+
+`history-coverage.json` inventories eight local Penny research SQLite stores, containing daily/minute candle tables. They contain no pre-auction order/receipt lifecycle for this new forward policy. No historical daily opening or first-minute volume is substituted as fill proof. The older Smart target experiment remains research, with its negative recent verdict preserved. No old exam is reopened.
+
+`synthetic-results.json` deliberately marks all arithmetic as synthetic, financial_qualification NOT_EVALUATED. A missing-matching-quote tape reports null complete P&L with reserved cash. Its positive fixture amounts are not historical or expected returns.
+
+## Verification and remaining evidence
+**Full engine suite: 6,314 passed, 4 skipped, 53 warnings, 704.51 seconds, exit 0.** All 708 bound engine/test source hashes match the start of the run. Final focused group: 72 passed, exit 0; affected wider group: 1,003 passed, 1 skipped, exit 0. The independent concurrent collector race committed one phase and two paired rows, with the duplicate returning repeat. Atlas: 306 modules. Staged whitespace checks pass. The known intentionally broken ledger-writer test emits a teardown logging error after passing summaries; this is retained in raw test logs. The old uncommitted Smart/Classic plan has pre-existing whitespace issues, which are preserved. Own-file/staged checks are assessed separately.
+
+Forward review needs at least 30 resolved Smart pairs and 30 comparable overnight nights, with unresolved decisions retained in the denominator. Compare net, net excluding the best winner, losses, capacity refusals, elapsed quote windows and missing evidence. Do not promote a model merely because small observed volume is sufficient. Public quote capacity remains conditional; actual own-order fills require separately authorized order evidence. No new profitability verdict can be supplied today from engineering tests.
+
+Roll back collection with PENNY_AUCTION_FORWARD_ENABLED=false, retaining its evidence. Restore Classic entries only through the separate switches. Promote through GitHub after owner instruction. All older uncommitted reports and other agent changes remain untouched.

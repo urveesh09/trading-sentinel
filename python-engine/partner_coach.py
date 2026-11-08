@@ -79,6 +79,7 @@ IST = pytz.timezone("Asia/Kolkata")
 
 CARD_KIND = "manual_market_advisory"
 UPDATE_KIND = "manual_advisory_update"
+HELD_NONE_REASON = "partner_holds_none"   # [N08-C2] partner_manual_advisory.HELD_NONE: held back, none held
 PRINT_MAX_WAIT = timedelta(minutes=15)   # a plan exit needs a print this soon
 LIMIT_TOLERANCE_TICKS = 1                # paid more than one tick over the limit
 STOP_SLIPPAGE_PCT = 0.03                 # a fast fall fills a little under the SL
@@ -123,6 +124,8 @@ ADVICE = {
     "NO_STOP_ORDER": "Place the SL order right after the buy fills, every time. It exits for you even when "
                      "you are busy or the price falls fast.",
     "STOP_WIDER_THAN_CARD": "Put the SL order at the card's price.",
+    "STOP_TIGHTER_THAN_CARD": "Put the SL order at the card's SL, not closer: a closer stop sells on swings the card "
+                              "allows for.",
     "STOP_CANCELLED": "Never cancel or lower a stop once it is placed. Move it only up, to lock in profit.",
     # [O21-PX] partner_insights.py
     "CHASED_SPIKE": "Do not buy an option that has just jumped. Wait for a card, or let the price settle first.",
@@ -149,6 +152,7 @@ TITLES = {
     "OVERTRADING": "More trades than cards",
     "NO_STOP_ORDER": "No stop-loss order",
     "STOP_WIDER_THAN_CARD": "Stop wider than the card",
+    "STOP_TIGHTER_THAN_CARD": "Stop closer than the card's",
     "STOP_CANCELLED": "Cancelled the stop",
     "CHASED_SPIKE": "Bought after a spike (FOMO)",
     "GAVE_BACK_PROFIT": "A winning trade turned into a loss",
@@ -257,12 +261,15 @@ def card_exit(card: dict, entry_at: datetime, reaction: timedelta) -> Optional[d
     labels = {"INVALIDATION": "EXIT_MESSAGE", "TARGET_ZONE": "TARGET_MESSAGE",
               "SESSION_EXIT_REMINDER": "SQUARE_OFF_MESSAGE"}
     for update in card.get("updates") or []:
-        if not update.get("delivered_at") or update["delivered_at"] < entry_at:
+        # [N08-C2] ``would_at``: a message held back because the partner held none of the option; replaying a hold
+        # of it, it would have come then.
+        at = update.get("delivered_at") or update.get("would_at")
+        if not at or at < entry_at:
             continue
-        found = print_at(series, update["delivered_at"] + reaction)
+        found = print_at(series, at + reaction)
         if found:
-            events.append({"at": update["delivered_at"], "price": found[1], "reason": labels.get(update["event_type"], update["event_type"]),
-                           "note": f"{_hhmm(update['delivered_at'])} message, print {_px(found[1])} at {_hhmm(found[0])}"})
+            events.append({"at": at, "price": found[1], "reason": labels.get(update["event_type"], update["event_type"]),
+                           "note": f"{_hhmm(at)} message, print {_px(found[1])} at {_hhmm(found[0])}"})
     exit_by = card.get("exit_by")
     if exit_by and exit_by > entry_at:
         found = last_print_before(series, exit_by)
@@ -541,6 +548,25 @@ def trade_stops(trade: dict, stops: list) -> list:
     return sorted(out, key=lambda s: s["placed_dt"])
 
 
+OWN_STOP_SALE_SEC = 60      # [N08-C3] a stop that fired this close to the last sale sold it (no order id to match)
+
+
+def _sold_by_own_stop(trade: dict, stops: Optional[list]) -> Optional[dict]:
+    """[N08-C3] The partner's stop that made the trade's last sale: the fired stop with that sale's order id, else one
+    that fired within OWN_STOP_SALE_SEC of it. None when the sale was not a stop or the stops are unknown."""
+    if not stops or not trade.get("sells") or trade.get("last_sell_at") is None:
+        return None
+    fired = [s for s in stops if s.get("status") == "TRIGGERED"]
+    order_id = trade["sells"][-1].get("order_id")
+    if order_id:
+        same = next((s for s in fired if str(s.get("source_id") or "").split(":", 1)[-1] == str(order_id)), None)
+        if same is not None:
+            return same
+    last = trade["last_sell_at"]
+    return next((s for s in fired if s.get("updated_dt") is not None
+                 and abs((s["updated_dt"] - last).total_seconds()) <= OWN_STOP_SALE_SEC), None)
+
+
 def _stop_checks(out: dict, trade: dict, card: Optional[dict], stops: Optional[list], qty: Optional[int],
                  exchange: str) -> None:
     """Stop discipline from Zerodha's order book. ``stops`` is None when the
@@ -785,14 +811,30 @@ def analyse_card(card: dict, trade: Optional[dict], reaction: timedelta, traded_
                 and same_entry["exit"] >= exit_px * (1 + EARLY_EXIT_PCT)):
             label = EXIT_LABELS[same_entry["reason"]]
             held = _pnl(entry, same_entry["exit"], qty, exchange, n_orders)
-            flags.append(_flag(
-                "EARLY_EXIT", f"You sold at {_hhmm(last_sell)} for {_px(exit_px)}. The card's {label} came at "
-                              f"{same_entry['exit_at']} with the option at {_px(same_entry['exit'])}.",
-                _gap(actual, held),
-                why="Selling early on a wobble keeps the wins small while the stop still allows a full loss, so "
-                    "the wins stop paying for the losses.",
-                better=f"Holding with the SL order in place until the card's {label}: {_instead(held, actual)}.",
-                better_pnl=held, actual_pnl=actual))
+            own = _sold_by_own_stop(trade, stops)
+            if own is not None and sl and float(own["trigger_price"]) > sl + 1e-9:
+                # [N08-C3] The partner's own SL order sold it, closer than the card's SL: not a sale "on a wobble".
+                # Nov 6: "Sold before the card's exit ... not on a wobble" for the 10:54 sale at ₹680, which was
+                # their SL order (the watch had told them a ₹671.1 plan stop; the card's SL was ₹636.85).
+                flags.append(_flag(
+                    "STOP_TIGHTER_THAN_CARD",
+                    f"Your SL order at {_px(float(own['trigger_price']))} sold at {_hhmm(last_sell)} for "
+                    f"{_px(exit_px)}; the card's SL was {_px(sl)}. The card's {label} came at "
+                    f"{same_entry['exit_at']} with the option at {_px(same_entry['exit'])}.",
+                    _gap(actual, held),
+                    why="The option did not reach the card's SL first: a stop closer than the card's is sold by "
+                        "the ordinary swings the card's stop leaves room for.",
+                    better=f"The SL order at the card's {_px(sl)}: {_instead(held, actual)}.",
+                    better_pnl=held, actual_pnl=actual))
+            else:
+                flags.append(_flag(
+                    "EARLY_EXIT", f"You sold at {_hhmm(last_sell)} for {_px(exit_px)}. The card's {label} came "
+                                  f"at {same_entry['exit_at']} with the option at {_px(same_entry['exit'])}.",
+                    _gap(actual, held),
+                    why="Selling early on a wobble keeps the wins small while the stop still allows a full loss, "
+                        "so the wins stop paying for the losses.",
+                    better=f"Holding with the SL order in place until the card's {label}: {_instead(held, actual)}.",
+                    better_pnl=held, actual_pnl=actual))
         target = next((u for u in card.get("updates") or [] if u["event_type"] == "TARGET_ZONE"
                        and u.get("delivered_at") and first_buy and u["delivered_at"] > first_buy), None)
         if target and last_sell and last_sell > target["delivered_at"] + timedelta(minutes=GAVE_BACK_MIN):
@@ -1171,8 +1213,12 @@ async def load_cards(db_path: str, first_day: str, last_day: str) -> list[dict]:
                 "WHERE kind IN (?,?) AND delivered=1", (CARD_KIND, UPDATE_KIND))).fetchall()
             ideas = await (await db.execute(
                 "SELECT advisory_id, underlying, payload FROM partner_advisory_ideas")).fetchall()
+            columns = {row[1] for row in await (await db.execute(
+                "PRAGMA table_info(partner_advisory_updates)")).fetchall()}
+            reason = "status_reason" if "status_reason" in columns else "NULL"
             updates = await (await db.execute(
-                "SELECT update_id, advisory_id, event_type, observed_at FROM partner_advisory_updates")).fetchall()
+                f"SELECT update_id, advisory_id, event_type, observed_at, {reason} "
+                "FROM partner_advisory_updates")).fetchall()
             frozen = dict(await (await db.execute(
                 "SELECT advisory_id, series_json FROM partner_coach_card_paths "
                 "WHERE session_date>=? AND session_date<=?", (first_day, last_day))).fetchall())
@@ -1183,9 +1229,13 @@ async def load_cards(db_path: str, first_day: str, last_day: str) -> list[dict]:
         sent[(kind, key)] = _dt(sent_at)
     payloads = {aid: (underlying, payload) for aid, underlying, payload in ideas}
     by_card: dict = defaultdict(list)
-    for update_id, advisory_id, event_type, observed_at in updates:
-        by_card[advisory_id].append({"event_type": event_type, "observed_at": observed_at,
-                                     "delivered_at": sent.get((UPDATE_KIND, update_id))})
+    for update_id, advisory_id, event_type, observed_at, status_reason in updates:
+        item = {"event_type": event_type, "observed_at": observed_at,
+                "delivered_at": sent.get((UPDATE_KIND, update_id))}
+        if item["delivered_at"] is None and status_reason == HELD_NONE_REASON:
+            # [N08-C2] Not sent because the partner held none of the option: a replay of holding it still gets it.
+            item["would_at"] = _dt(observed_at)
+        by_card[advisory_id].append(item)
     cards = []
     for (kind, key), delivered_at in sent.items():
         if kind != CARD_KIND or key not in payloads or delivered_at is None:

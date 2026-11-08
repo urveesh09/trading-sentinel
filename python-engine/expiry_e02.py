@@ -112,35 +112,46 @@ def policy_for(variant):
 def path_for(db_path,variant=E02):return str(db_path)+variant.suffix
 
 
-def signal(bars:list[dict])->Optional[Reading]:
-    """Twelve completed consecutive bars; no future/missing sample imputation."""
-    if len(bars)<12:return None
+def _count(diagnostics: Optional[dict], stage: str, reason: str) -> None:
+    if diagnostics is not None:
+        counts = diagnostics.setdefault(stage, {})
+        counts[reason] = counts.get(reason, 0) + 1
+
+
+def signal(bars: list[dict], diagnostics: Optional[dict] = None) -> Optional[Reading]:
+    """Twelve completed consecutive bars, with optional refusal counts."""
+    def refuse(reason):
+        _count(diagnostics, "signal", reason)
+        return None
+
+    if len(bars)<12:return refuse("warmup")
     b=bars[-12:]
     stamps=[datetime.fromisoformat(x['end']) for x in b]
-    if any(y-x!=timedelta(minutes=1) for x,y in zip(stamps,stamps[1:])):return None
-    if len({x.date() for x in stamps})!=1:return None
-    if any(len(x.get('s',[]))!=4 or len(x.get('f',[]))!=4 for x in b):return None
+    if any(y-x!=timedelta(minutes=1) for x,y in zip(stamps,stamps[1:])):return refuse("bar_gap")
+    if len({x.date() for x in stamps})!=1:return refuse("session_boundary")
+    if any(len(x.get('s',[]))!=4 or len(x.get('f',[]))!=4 for x in b):return refuse("invalid_bar")
     values=[v for x in b for k in ('s','f') for v in x[k]]
-    if not all(isinstance(v,(int,float)) and math.isfinite(v) and v>0 for v in values):return None
+    if not all(isinstance(v,(int,float)) and math.isfinite(v) and v>0 for v in values):return refuse("invalid_bar")
     for x in b:
         for k in ('s','f'):
             o,h,l,c=x[k]
-            if not l<=min(o,c)<=max(o,c)<=h:return None
+            if not l<=min(o,c)<=max(o,c)<=h:return refuse("invalid_bar")
     now=stamps[-1];minute=now.hour*60+now.minute
-    if not 780<=minute<900:return None
+    if not 780<=minute<900:return refuse("outside_window")
     closes=[x['s'][3] for x in b]
     history=closes[-11:]
     distance=sum(abs(y-x) for x,y in zip(history,history[1:]))
-    if distance<=0:return None
+    if distance<=0:return refuse("no_move")
     er=(history[-1]-history[0])/distance
     sign=1 if er>0 else -1
-    if sign*er<.7:return None
+    if sign*er<.7:return refuse("low_efficiency")
     tr=[max(x['s'][1]-x['s'][2],abs(x['s'][1]-prev),abs(x['s'][2]-prev)) for x,prev in zip(b[-11:-1],closes[-12:-2])]
     atr=sum(tr)/10.
-    if atr<=0 or abs(closes[-1]-sum(closes[-11:-1])/10.)>4*atr:return None
-    if sign*(closes[-2]-closes[-4])>=0:return None
-    if sign*(closes[-1]-closes[-2])<=0:return None
-    if sign*(b[-1]['f'][3]-b[-2]['f'][3])<=0:return None
+    if atr<=0 or abs(closes[-1]-sum(closes[-11:-1])/10.)>4*atr:return refuse("stretched")
+    if sign*(closes[-2]-closes[-4])>=0:return refuse("no_pullback")
+    if sign*(closes[-1]-closes[-2])<=0:return refuse("no_resume")
+    if sign*(b[-1]['f'][3]-b[-2]['f'][3])<=0:return refuse("future_disagrees")
+    _count(diagnostics, "signal", "passed")
     return Reading(sign,closes[-1],atr,minute,er)
 
 
@@ -213,23 +224,42 @@ def _lots(q,room,most,schedule,chase=.10,lot=LOT):
     return 0,None
 
 
-def plan(reading,legs,book,now,budget,cash,variant=E02,underlying='NIFTY'):
+def plan(reading,legs,book,now,budget,cash,variant=E02,underlying='NIFTY', *, diagnostics=None):
     """Nearest observed OTM strike within a causal move allowance; E02 one lot, E03 up to three."""
     expected=reading.atr*math.sqrt(max(1,930-reading.minute))
     spec=UNDERLYINGS[underlying];lo,hi=spec['band']
     candidates=[];schedule=EP.fee_schedule(spec['exchange'])
     for symbol,raw in legs.items():
         contract=book.by_symbol.get(symbol)
-        if contract is None or contract.underlying!=underlying or contract.expiry!=now.date() or contract.lot_size!=spec['lot']:continue
+        if contract is None or contract.name != underlying or contract.expiry != now.date() or contract.lot_size != spec['lot']:
+            _count(diagnostics, "contract", "contract_identity")
+            continue
         if contract.instrument_type!=('CE' if reading.direction==1 else 'PE'):continue
         distance=reading.direction*(contract.strike-reading.spot)
-        if not 0<distance<=min(variant.max_distance*spec['scale'],expected):continue
+        if not 0<distance<=min(variant.max_distance*spec['scale'],expected):
+            _count(diagnostics, "contract", "strike_distance")
+            continue
         q=logged_quote(raw)
-        if q is None or not q.fresh(now) or not q.spread_ok(.10) or not lo<=q.ask<=hi:continue
+        if q is None or not q.fresh(now):
+            _count(diagnostics, "contract", "quote_missing_or_stale")
+            continue
+        if not q.spread_ok(.10):
+            _count(diagnostics, "contract", "spread")
+            continue
+        if not lo<=q.ask<=hi:
+            _count(diagnostics, "contract", "premium_band")
+            continue
         lots,limit=_lots(q,min(budget,cash),int(round(variant.max_lots*ticket_scale(variant,reading.direction))),schedule,variant.chase,spec['lot'])
-        if not lots:continue
+        if not lots:
+            if diagnostics is not None:
+                has_depth = sum(size for _price, size in q.asks) >= spec['lot']
+                _count(diagnostics, "contract", "budget" if has_depth else "depth")
+            continue
         candidates.append((distance,symbol,limit,lots))
-    if not candidates:return None
+    if not candidates:
+        _count(diagnostics, "plan", "no_eligible_contract")
+        return None
+    _count(diagnostics, "plan", "created")
     _,symbol,limit,lots=min(candidates)
     return dict(symbol=symbol,limit=limit,lots=lots,at=now.isoformat(),expires=(now+timedelta(minutes=1)).isoformat(),
                 direction=reading.direction,underlying_stop=reading.spot-reading.direction*2*reading.atr)
@@ -341,7 +371,22 @@ def summary_lines(db_path,day,underlying,variant=None):
            f"everything sold from 15:14; own Rs 25,000 paper book, fitted on seen NIFTY 2024/2025"
            +(", untested on SENSEX until now" if underlying=='SENSEX' else "")]
     today=[p for p in mine if p['day']==day]
-    if not today:lines.append(f"  {name}: no trade")
+    if not today:
+        lines.append(f"  {name}: no trade")
+        path = Path(path_for(db_path, variant))
+        if variant == E032 and path.exists():
+            try:
+                with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro', uri=True, timeout=1)) as db:
+                    row = db.execute("SELECT payload FROM e02_state WHERE id=1").fetchone()
+            except sqlite3.OperationalError:
+                row = None
+            state = json.loads(row[0]) if row else {}
+            if (state.get("day") or {}).get("date") == day:
+                counts = state.get("decision_counts", {})
+                signal_counts = counts.get("signal", {})
+                plans = counts.get("plan", {}).get("created", 0)
+                if signal_counts:
+                    lines.append(f"  Entry checks: {signal_counts.get('passed', 0)} signals passed, {plans} paper entry plans.")
     for p in today:
         sold=', '.join(f"{e['action']} {e['lots']} at {e['price']:.2f}" for e in p.get('_events',[])[1:] if e.get('price') is not None)
         lines.append(f"  {name}: {_lots_text(p['lots'])} {p['symbol']} bought {p['entry_price']:.2f}, {p['status']}"
@@ -381,6 +426,8 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                     if state['position']:return {'status':'UNRESOLVED_PRIOR_DAY'}
                     dd=state['peak']-state['cash'];scale=0 if dd>=4000 else .25 if dd>=3000 else .5 if dd>=1500 else 1
                     state.update(day=dict(date=now.date().isoformat(),budget=min(DAY_CEILING*day_scale(variant)*scale,state['cash']),spent=0.,trades=0),bars=[],building=None,pending=None,last_decided=None)
+                    state.pop("decision_counts", None)
+                diagnostics = state.setdefault("decision_counts", {}) if variant == E032 else None
                 # Reconcile realized cash from immutable closed records before risk admission.
                 closed=[json.loads(r[0]) for r in dst.execute("SELECT payload FROM e02_positions WHERE status='CLOSED' ORDER BY id")]
                 expected=peak=START_CASH
@@ -417,22 +464,30 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                     cool=not state['last_close'] or now-datetime.fromisoformat(state['last_close'])>=timedelta(minutes=5)
                     if completed and completed['end']!=state['last_decided']:
                         state['last_decided']=completed['end']
-                        reading=signal(state['bars'])
+                        reading=signal(state['bars'], diagnostics)
                         if reading and datetime.fromisoformat(completed['end'])>datetime.fromisoformat(state['activation']) and cool and day['trades']<MAX_TRADES:
                             if book is None:
                                 from fno_underlyings import get_instruments_for
                                 book=get_instruments_for(underlying)
-                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.*ticket_scale(variant,reading.direction),day['budget']-day['spent']),state['cash'],variant,underlying)
+                            state['pending']=plan(reading,state.get('last_bar_legs',{}),book,datetime.fromisoformat(completed['end']),min(1250.*ticket_scale(variant,reading.direction),day['budget']-day['spent']),state['cash'],variant,underlying,diagnostics=diagnostics)
                     pending=state['pending']
                     if pending:
-                        if now>datetime.fromisoformat(pending['expires']) or now.time()>=time(15,0) or day['trades']>=MAX_TRADES:state['pending']=None
+                        if now>datetime.fromisoformat(pending['expires']) or now.time()>=time(15,0) or day['trades']>=MAX_TRADES:
+                            _count(diagnostics, "pending", "expired_or_cutoff")
+                            state['pending']=None
                         else:
                             if book is None:
                                 from fno_underlyings import get_instruments_for
                                 book=get_instruments_for(underlying)
                             q=logged_quote(legs.get(pending['symbol']))
                             con=book.by_symbol.get(pending['symbol']) if book else None
-                            if con and con.underlying==underlying and con.expiry==now.date() and con.lot_size==spec['lot'] and q and q.fresh(now) and q.spread_ok(.10):
+                            if not con or con.name!=underlying or con.expiry!=now.date() or con.lot_size!=spec['lot']:
+                                _count(diagnostics, "pending", "contract_identity")
+                            elif not q or not q.fresh(now):
+                                _count(diagnostics, "pending", "quote_missing_or_stale")
+                            elif not q.spread_ok(.10):
+                                _count(diagnostics, "pending", "spread")
+                            else:
                                 lots,price=EP.walk(q.asks,pending.get('lots',1),spec['lot'])
                                 schedule=EP.fee_schedule(spec['exchange'])
                                 risk=EP.worst_case_loss(price,lots,spec['lot'],schedule) if lots else math.inf
@@ -441,8 +496,13 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                                     p.update(stop=round(price*(1-variant.initial_stop),2),direction=pending['direction'],underlying_stop=pending['underlying_stop'],e02_version=variant.version,data_basis='SAMPLED_10S_FORWARD',e02_policy=policy_for(variant))
                                     _save_position(dst,p);state['position']=p;day['spent']=round(day['spent']+risk,2);day['trades']+=1;state['pending']=None
                                     notes.append((f"{p['day']}:{underlying}:{variant.play}:{p['id']}:BUY",entry_text(variant,p,risk)))
+                                    _count(diagnostics, "pending", "filled")
+                                else:
+                                    reason = "depth" if not lots else "price_chase" if price > pending['limit'] else "budget"
+                                    _count(diagnostics, "pending", reason)
                 if not enabled:state['pending']=None
                 if state['day']['spent']>state['day']['budget']+.01:raise ValueError('E02 daily reserve exceeded')
                 _store(dst,state)
                 return dict(status='OPEN' if state['position'] else 'OBSERVING',version=variant.version,qualification=QUALIFICATION,cash=state['cash'],day=state['day'],event=event,
-                            underlying=underlying,notices=notes)
+                            underlying=underlying,notices=notes,
+                            **({"decision_counts": diagnostics} if diagnostics is not None else {}))

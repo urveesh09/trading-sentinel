@@ -1,0 +1,100 @@
+{
+  "ACCEPT_15": {
+    "annual_delta": {
+      "2022": -11705.08,
+      "2023": -13828.74,
+      "2024": -40864.26,
+      "2025": -46102.76,
+      "2026": -76275.61
+    },
+    "control": "N11T",
+    "control_max_drawdown_pct": 7.09309,
+    "control_net": 264142.37,
+    "control_worst_day": -5640.85,
+    "doubled_stress": "NOT_SCORED",
+    "gates": {
+      "20_percent_net_improvement": false,
+      "after_best_five_incremental_days": false,
+      "annual_net_floor": false,
+      "max_annual_closed_drawdown": false,
+      "no_unresolved_exposure": true,
+      "worst_day": true
+    },
+    "increment_after_best_five": -239362.18,
+    "max_drawdown_pct": 11.40359,
+    "net": 75365.92,
+    "net_target": 316970.84,
+    "paired_increment": -188776.47,
+    "provisional_development_pass": false,
+    "qualified": false,
+    "removed_days": [
+      [
+        "2023-03-13",
+        12703.4631
+      ],
+      [
+        "2026-02-19",
+        12414.075
+      ],
+      [
+        "2026-03-13",
+        9358.3373
+      ],
+      [
+        "2024-10-22",
+        8305.9047
+      ],
+      [
+        "2026-01-08",
+        7803.9387
+      ]
+    ],
+    "untouched_validation": "NOT_SCORED",
+    "worst_day": -6102.1
+  },
+  "REJECT_15": {
+    "annual_delta": {
+      "2022": 2567.71,
+      "2023": -1094.37,
+      "2024": -5185.77,
+      "2025": -1925.64,
+      "2026": -22183.03
+    },
+    "control": "N11T",
+    "control_max_drawdown_pct": 7.09309,
+    "control_net": 264142.37,
+    "control_worst_day": -5640.85,
+    "doubled_stress": "NOT_SCORED",
+    "gates": {
+      "20_percent_net_improvement": false,
+      "after_best_five_incremental_days": false,
+      "annual_net_floor": false,
+      "max_annual_closed_drawdown": true,
+      "no_unresolved_exposure": true,
+      "worst_day": true
+    },
+    "increment_after_best_five": -35670.64,
+    "max_drawdown_pct": 7.33018,
+    "net": 236321.27,
+    "net_target": 316970.84,
+    "paired_increment": -27821.11,
+    "provisional_development_pass": false,
+    "qualified": false,
+    "removed_days": [
+      [
+        "2022-07-22",
+        3569.2237
+      ],
+      [
+        "2026-03-25",
+        3522.5050999999994
+      ],
+      [
+        "2023-03-22",
+        757.7952
+      ]
+    ],
+    "untouched_validation": "NOT_SCORED",
+    "worst_day": -5640.85
+  }
+}

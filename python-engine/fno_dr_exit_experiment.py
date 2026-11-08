@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import argparse
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -43,9 +43,10 @@ from fno_costs import calc_fno_costs
 from fno_defined_risk import _profile
 from fno_dr_book import (
     _bound_legs_from_row, _legs_from_json, _squareoff_min, _stop_frac, _target_frac,
-    evaluate_dr_exit, structure_executable_pnl_rs, structure_mtm_rs,
+    evaluate_dr_exit, exit_path_settings, structure_executable_pnl_rs, structure_mtm_rs,
 )
 from fno_exit_experiment import VerifiedQuote, index_archive_events, verify_archive_event
+from fno_exit_paths import DR_PATH_FOLDER, DR_PATH_SCHEMA
 from momentum_exit_study import ExitStudyError, _canonical_bytes, write_study_report_once
 
 BASELINE = "defined_risk_current_target_stop_flat_v1"
@@ -57,7 +58,8 @@ IST = ZoneInfo("Asia/Kolkata")
 COST_MULTIPLIERS = (1.0, 1.5, 2.0)
 _TOLERANCE_RS = 0.01
 _SOURCE_MODULES = ("fno_dr_exit_experiment.py", "fno_dr_book.py", "fno_defined_risk.py", "fno_risk.py",
-                   "fno_costs.py", "cost_schedules.py", "fno_exit_experiment.py", "exit_experiment_metrics.py")
+                   "fno_costs.py", "cost_schedules.py", "fno_exit_experiment.py", "exit_experiment_metrics.py",
+                   "fno_exit_paths.py")
 CANDIDATE_PARAMETERS = {
     "description": "hold a target hit; exit when the mid mark gives back a fraction of max profit from its peak",
     "trail_giveback_fraction_of_max_profit": 0.5,
@@ -149,7 +151,8 @@ def verify_entry(envelope: bytes, settlement: Mapping[str, Any] | None = None) -
         if abs(stored - derived) > _TOLERANCE_RS:
             raise DrStudyError(f"{field} does not reproduce from the bound legs")
     entry_cost = _finite(value.get("entry_cost_rs"), "entry_cost_rs")
-    derived_cost = round(sum(calc_fno_costs(leg.premium, leg.premium, lot_size) for leg in legs), 2)
+    derived_cost = round(sum(calc_fno_costs(leg.premium, leg.premium, abs(leg.quantity) * lot_size)
+                             for leg in legs), 2)
     if abs(entry_cost - derived_cost) > _TOLERANCE_RS:
         raise DrStudyError("entry_cost_rs does not reproduce from the bound legs and cost schedule")
     max_profit, max_loss = _finite(value["max_profit_rs"], "max_profit_rs", positive=True), \
@@ -200,6 +203,80 @@ def observations_from_archive(events: Iterable[Mapping[str, Any]], entry: DrEntr
             continue
         observations.append(DrObservation(observed_at=observed_at, quotes=quotes))
     return observations, excluded
+
+
+def _held_clock(value: Any) -> datetime:
+    try:
+        result = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if result.tzinfo is not None:
+            return result
+    except (AttributeError, ValueError):
+        pass
+    raise DrStudyError("invalid held management clock")
+
+
+def _check_held_export_file(root: Path, relative: str, files: Mapping[str, str]) -> Path:
+    path = root / relative
+    expected = files.get(relative)
+    if not expected:
+        raise DrStudyError(f"held export does not bind {relative}")
+    with path.open("rb") as handle:
+        if hashlib.file_digest(handle, "sha256").hexdigest() != expected:
+            raise DrStudyError(f"held export file changed: {relative}")
+    return path
+
+
+def observations_from_held_paths(records: Iterable[Mapping[str, Any]], entry: DrEntry, *,
+                                 max_age_seconds: int) -> list[DrObservation]:
+    """Strict exact-clock evidence. Refuse a path with an unverified management look."""
+    previous = entry.opened_at
+    observations = []
+    expected = {int(leg["contract"]["token"]): leg for leg in json.loads(entry.legs_row["legs_json"])}
+    entry_day = entry.opened_at.astimezone(IST).date().isoformat()
+    if any(leg["contract"]["expiry"] <= entry_day for leg in expected.values()):
+        raise DrStudyError("held position is outside regular F&O scope")
+    for record in records:
+        if entry.position_ref not in record.get("position_refs", ()):
+            continue
+        if record.get("schema") != DR_PATH_SCHEMA or record.get("params") != exit_path_settings():
+            raise DrStudyError("held management schema or policy differs")
+        if not record.get("snapshot_available"):
+            raise DrStudyError("held management snapshot unavailable")
+        at, received = _held_clock(record.get("at")), _held_clock(record.get("received_at"))
+        if not previous < at or not received <= at or (at - received).total_seconds() > max_age_seconds:
+            raise DrStudyError("held management clocks out of order or stale")
+        quotes = {}
+        for event in record.get("quotes", ()):
+            token = int(event["contract"]["instrument_token"])
+            if token not in expected:
+                continue
+            leg = expected[token]
+            identity = leg["contract"]
+            if token in quotes or any(event["contract"].get(key) != identity[key] for key in (
+                "exchange", "underlying", "expiry", "lot_size", "instrument_type",
+            )) or float(event["contract"]["strike"]) != float(leg["strike"]):
+                raise DrStudyError("held contract identity differs from entry")
+            quote, reason = verify_archive_event(event, token=token, symbol=identity["tradingsymbol"],
+                                                 max_age_seconds=max_age_seconds)
+            if quote is None:
+                raise DrStudyError(f"held quote unusable: {reason}")
+            if quote.receipt_at != received or (at - quote.provider_at).total_seconds() > max_age_seconds:
+                raise DrStudyError("held quote receipt differs or is stale at decision")
+            side = "buy_depth" if int(leg["quantity"]) > 0 else "sell_depth"
+            quantity = abs(int(leg["quantity"])) * entry.lot_size
+            level = event[side][0]
+            if (level["price"] or 0) <= 0 or (level["quantity"] or 0) < quantity:
+                raise DrStudyError("held quote lacks full exit-side size")
+            raw_side = "buy" if side == "buy_depth" else "sell"
+            raw_level = event["raw_packet"]["depth"][raw_side][0]
+            if int(raw_level["quantity"]) != int(level["quantity"]):
+                raise DrStudyError("held quote depth differs from raw packet")
+            quotes[token] = quote
+        if quotes.keys() != expected.keys():
+            raise DrStudyError("held quote batch missing exact legs")
+        observations.append(DrObservation(observed_at=at, quotes=quotes))
+        previous = at
+    return observations
 
 
 def _lookups(entry: DrEntry, obs: DrObservation):
@@ -280,6 +357,13 @@ def reconcile(entry: DrEntry, baseline: Mapping[str, Any]) -> dict[str, Any]:
     if baseline.get("status") != "CLOSED":
         return {"state": "BASELINE_NOT_CLOSED", "usable": False}
     same_reason = settlement.get("exit_reason") == baseline.get("reason")
+    if settlement.get("require_exact_exit_clock"):
+        try:
+            same_clock = _held_clock(settlement.get("closed_at")) == _held_clock(baseline.get("exit_at"))
+        except DrStudyError:
+            same_clock = False
+        if not same_clock:
+            return {"state": "HELD_EXIT_CLOCK_MISMATCH", "usable": False}
     delta = float(baseline["net_pnl"]) - float(ledger)
     usable = same_reason and abs(delta) <= RECONCILIATION_TOLERANCE_RS
     return {"state": "RECONCILED" if usable else "BASELINE_DIFFERS_FROM_SETTLEMENT", "usable": usable,
@@ -299,15 +383,15 @@ def _source_fingerprint() -> str:
 def _frozen_terms() -> dict[str, Any]:
     return {"baseline_policy": BASELINE, "candidate_policy": TRAIL,
             "candidate_parameters": deepcopy(CANDIDATE_PARAMETERS),
-            "live_settings": {"FNO_DR_TARGET_FRAC": _target_frac(), "FNO_DR_STOP_FRAC": _stop_frac(),
-                              "FNO_DR_SQUAREOFF_MIN": _squareoff_min()},
+            "live_settings": exit_path_settings(),
             "cost_schedule": options_cost_snapshot(), "cost_multipliers": list(COST_MULTIPLIERS),
             "reconciliation_tolerance_rs": RECONCILIATION_TOLERANCE_RS,
             "max_gap_seconds": max(1, min(300, int(getattr(settings, "FNO_DR_STUDY_MAX_GAP_SECONDS", 180)))),
             "source_fingerprint": _source_fingerprint()}
 
 
-def freeze_manifest(*, experiment_id: str, frozen_at: datetime | None = None) -> dict[str, Any]:
+def freeze_manifest(*, experiment_id: str, frozen_at: datetime | None = None,
+                    held_paths: bool = False) -> dict[str, Any]:
     experiment_id = (experiment_id or "").strip()
     if not experiment_id or len(experiment_id) > 160:
         raise DrStudyError("experiment_id must be a non-empty <=160-character string")
@@ -316,12 +400,15 @@ def freeze_manifest(*, experiment_id: str, frozen_at: datetime | None = None) ->
         raise DrStudyError("frozen_at must be timezone-aware")
     return {"schema": MANIFEST_SCHEMA, "experiment_id": experiment_id, **_frozen_terms(),
             "frozen_at": frozen_at.astimezone(timezone.utc).isoformat(),
+            "observation_mode": "held" if held_paths else "sampled",
             "holdout_rule": "only entries strictly after frozen_at are HOLDOUT"}
 
 
 def verify_manifest(manifest: Mapping[str, Any]) -> datetime:
     if not isinstance(manifest, Mapping) or manifest.get("schema") != MANIFEST_SCHEMA:
         raise DrStudyError(f"manifest schema must be {MANIFEST_SCHEMA}")
+    if manifest.get("observation_mode") not in ("held", "sampled"):
+        raise DrStudyError("invalid frozen observation mode")
     for field, current in _frozen_terms().items():
         if _canonical_bytes({"v": manifest.get(field)}) != _canonical_bytes({"v": current}):
             raise DrStudyError(f"FROZEN_POLICY_MISMATCH: {field} differs from the frozen manifest")
@@ -340,6 +427,8 @@ def build_report(items: Sequence[tuple[DrEntry, Sequence[DrObservation], Mapping
     gap = int(manifest["max_gap_seconds"])
     seen, pairs = set(), []
     for entry, observations, excluded in items:
+        if bool(entry.settlement.get("require_exact_exit_clock")) != (manifest["observation_mode"] == "held"):
+            raise DrStudyError("entry evidence mode differs from the frozen study")
         if entry.position_ref in seen:
             raise DrStudyError(f"duplicate entry identity: {entry.position_ref}")
         seen.add(entry.position_ref)
@@ -392,6 +481,7 @@ def entries_from_db(db_path: str) -> tuple[list[DrEntry], list[dict[str, Any]]]:
                     ledger = (None, 0)
                 settlement = {"status": row["status"], "settlement_state": row["settlement_state"],
                               "exit_reason": row["exit_reason"], "position_net_pnl": row["pnl"],
+                              "closed_at": row["closed_at"] if "closed_at" in row.keys() else None,
                               "ledger_net_pnl": None if not ledger[1] else float(ledger[0])}
                 entries.append(verify_entry(envelope, settlement))
             except DrStudyError as exc:
@@ -407,26 +497,55 @@ def _main(argv: Sequence[str] | None = None) -> int:
     freeze = sub.add_parser("freeze")
     freeze.add_argument("--experiment-id", required=True)
     freeze.add_argument("--output", required=True)
+    freeze.add_argument("--held-paths", action="store_true", help="freeze the exact management evidence mode")
     evaluate = sub.add_parser("evaluate")
     evaluate.add_argument("--db", required=True, help="engine SQLite (opened read-only)")
     evaluate.add_argument("--archive-root", required=True)
+    evaluate.add_argument("--held-paths", action="store_true",
+                          help="verify exact spread manager decisions instead of sampled chain quotes")
     evaluate.add_argument("--manifest", required=True)
     evaluate.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "freeze":
-            value = freeze_manifest(experiment_id=args.experiment_id)
+            value = freeze_manifest(experiment_id=args.experiment_id, held_paths=args.held_paths)
         else:
             from intraday_spread_archive_adapter import read_archived_quote_events
             manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
+            verify_manifest(manifest)
+            if args.held_paths != (manifest["observation_mode"] == "held"):
+                raise DrStudyError("requested observation mode differs from the freeze")
+            if args.held_paths:
+                root = Path(args.archive_root).resolve()
+                export = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+                files = export.get("files_sha256") if isinstance(export, dict) else None
+                if not isinstance(files, dict) or export.get("schema") != "sentinel_fno_replay_dataset_v1":
+                    raise DrStudyError("held mode needs a completed F&O export manifest")
+                db = _check_held_export_file(root, "fno-replay.sqlite", files)
+                if Path(args.db).resolve() != db:
+                    raise DrStudyError("held mode needs the database bound to this export")
             entries, unavailable = entries_from_db(args.db)
             items = []
             for entry in entries:
-                day = entry.opened_at.astimezone(entry.opened_at.tzinfo).date().isoformat()
-                events = read_archived_quote_events(args.archive_root, days=[day])
-                observations, excluded = observations_from_archive(
-                    events, entry, max_age_seconds=int(manifest["max_gap_seconds"]))
-                items.append((entry, observations, excluded))
+                day = entry.opened_at.astimezone(IST).date().isoformat()
+                gap = int(manifest["max_gap_seconds"])
+                if args.held_paths:
+                    try:
+                        path = _check_held_export_file(root, f"{DR_PATH_FOLDER}/{day}.jsonl", files)
+                        with path.open(encoding="utf-8") as handle:
+                            observations = observations_from_held_paths(
+                                (json.loads(line) for line in handle if line.strip()), entry, max_age_seconds=gap)
+                        if not observations:
+                            raise DrStudyError("no held management looks")
+                    except (ExitStudyError, OSError, ValueError, TypeError, KeyError, IndexError) as exc:
+                        unavailable.append({"position_ref": entry.position_ref, "reason": str(exc)})
+                        continue
+                    entry = replace(entry, settlement={**entry.settlement, "require_exact_exit_clock": True})
+                    items.append((entry, observations, {}))
+                else:
+                    events = read_archived_quote_events(args.archive_root, days=[day])
+                    observations, excluded = observations_from_archive(events, entry, max_age_seconds=gap)
+                    items.append((entry, observations, excluded))
             value = build_report(items, manifest, unavailable=unavailable)
         write_study_report_once(value, args.output)
     except (ExitStudyError, OSError, ValueError) as exc:

@@ -1,6 +1,7 @@
 """expiry-v5: E03.2 is the expiry book's main paper ticket, on NIFTY and SENSEX (owner order, Nov 3 2026)."""
 from datetime import date,datetime,time,timedelta
 from types import SimpleNamespace
+from fno_models import Contract
 import json,sqlite3
 import expiry_e02 as X
 import expiry_paper as xp
@@ -12,7 +13,7 @@ THURSDAY=date(2026,11,5)
 
 
 def sensex_put(strike=79900.,expiry=THURSDAY):
-    return SimpleNamespace(underlying='SENSEX',expiry=expiry,lot_size=20,instrument_type='PE',strike=strike,tradingsymbol='S',token=7)
+    return Contract(name='SENSEX',expiry=expiry,lot_size=20,instrument_type='PE',strike=strike,tradingsymbol='S',token=7)
 
 
 def test_sensex_ticket_keeps_the_rupees_a_lot_four_strikes_and_twice_the_put_reserve():
@@ -22,8 +23,10 @@ def test_sensex_ticket_keeps_the_rupees_a_lot_four_strikes_and_twice_the_put_res
     assert p and 1<=p['lots']<=6 and EP.worst_case_loss(p['limit'],p['lots'],20,EP.fee_schedule('BFO'))<=2500
     assert p['limit']==21.6                                                              # the 8% limit
     assert X.plan(reading,{'S':quote(10.,now)},book,now,2500.,25000.,X.E032,'SENSEX') is None   # under Rs 16.25: too far out
-    assert X.plan(reading,{'S':quote(70.,now)},book,now,2500.,25000.,X.E032,'SENSEX') is None   # over Rs 65
-    far=SimpleNamespace(**{**vars(sensex_put()),'strike':79500.})                         # five 100-point steps
+    counts = {}
+    assert X.plan(reading,{'S':quote(70.,now)},book,now,2500.,25000.,X.E032,'SENSEX',diagnostics=counts) is None
+    assert counts == {"contract": {"premium_band": 1}, "plan": {"no_eligible_contract": 1}}
+    far=sensex_put(strike=79500.)                         # five 100-point steps
     assert X.plan(X.Reading(-1,80000.,60.,791,-.9),{'S':quote(20.,now)},SimpleNamespace(by_symbol={'S':far}),now,2500.,25000.,X.E032,'SENSEX') is None
     # A NIFTY plan never takes a SENSEX contract, and NIFTY-only variants never see SENSEX.
     assert X.plan(reading,{'S':quote(20.,now)},book,now,2500.,25000.,X.E032) is None
@@ -47,6 +50,7 @@ def test_buy_and_sell_produce_owner_notices(tmp_path):
         db.execute('CREATE TABLE e02_positions(id INTEGER PRIMARY KEY,day TEXT,status TEXT,payload TEXT)')
         db.execute('INSERT INTO e02_state VALUES(1,?)',(json.dumps(s),))
     out=X.run_tick(base,enabled=True,now=now,book=SimpleNamespace(by_symbol={'X':contract()}),variant=X.E032)
+    assert out["decision_counts"]["pending"] == {"filled": 1}
     (key,text),=out['notices']
     assert out['status']=='OPEN' and key.endswith(':BUY') and 'E03.2 (main): bought 2 lots X at Rs 8.00 (call ticket' in text
     assert 'everything is sold from 15:14' in text and 'Paper only' in text
@@ -54,6 +58,7 @@ def test_buy_and_sell_produce_owner_notices(tmp_path):
     out=X.run_tick(base,enabled=True,now=later,variant=X.E032)
     (key,text),=out['notices']
     assert out['status']=='OBSERVING' and 'FLAT_TIME' in key and 'sold 2 lots X at Rs 8.95 (FLAT_TIME); ticket closed, net Rs' in text
+    assert out["decision_counts"]["pending"] == {"filled": 1}
     assert X.day_results(base)=={('2026-11-03','NIFTY'):X.positions(base)[0]['net_pnl']}
     # The scheduler queues them in the expiry outbox; the usual flush sends them.
     assert xp.queue_notices(str(base),out['notices'],later)==1

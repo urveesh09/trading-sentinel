@@ -1,0 +1,32 @@
+{
+  "futures": {
+    "2022": [
+      "41bd03dadaa1b297ff67955ec88b435a1f0df911aae90850f02382014baf033f",
+      "93e7f630bdbfba70cc6838b941673cfa3ab6b58f6290fca1668ec41dd0bcc68f"
+    ],
+    "2023": [
+      "e40fef86b46b17f07d31ba4f214e9c776eac1d4fee3cfc52f7cdfb43c5cc8a45",
+      "34638ce43cce547f8e151391374bb960ac5e29866a62381b62b6428bd3775fb2"
+    ],
+    "2024": [
+      "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+      "bed246b055c96b2b58034b9538a01ebe742dfd1b7bf016be23c696fc31086daf"
+    ],
+    "2025": [
+      "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+      "405398f825ea619482bfd50660abb588d33476d49b4b43e0b8c406767dbd0cab"
+    ],
+    "2026": [
+      "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555",
+      "8fb3a2b6c4f98056a0c8737a241689a72a6207c2c830648714c3c5d738bab627"
+    ]
+  },
+  "official_closes": "1e2a033f12408d664cf8863c92223fad05bc8e8911ca5af2bc59295980664004",
+  "source": {
+    "ROUND18.md": "d1b62157815003cec14ac0a4fa6f4f0c0c9b2901a8c0e28fa055ea2a34583541",
+    "anatomy.py": "b36692b00d500dc3289ec752db7316f0bf93bc22c72e7bbaf595b2c8fe6d086c",
+    "india-vol-coverage.json": "922d666443e319f70efd7acd7dd7fd21bc7098fb18846fe0b85409d18a2666bb",
+    "round18.py": "98736acc9760a66cc8b54317d9fc1cc0bbf3e8fb5753fbbc65a53532a67f71e9",
+    "test_round18.py": "c0bc415f105faebe3ee79b3530a017698f0b9f603d04252a6dc74d79811ab7de"
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "cases": [
+    {
+      "day": "2023-01-03",
+      "required_reserve": 11645.52534003741,
+      "worst_scenario_net": -1811.7664814063482
+    },
+    {
+      "day": "2023-01-04",
+      "required_reserve": 9899.39528387029,
+      "worst_scenario_net": -1607.9764658453432
+    },
+    {
+      "day": "2023-01-10",
+      "required_reserve": 12339.41657504412,
+      "worst_scenario_net": -2384.8273208825103
+    },
+    {
+      "day": "2023-01-11",
+      "required_reserve": 12209.10836189732,
+      "worst_scenario_net": -2714.456488413778
+    },
+    {
+      "day": "2023-01-18",
+      "required_reserve": 9062.1650144021,
+      "worst_scenario_net": -1894.028286588841
+    },
+    {
+      "day": "2023-01-23",
+      "required_reserve": 10052.50743431778,
+      "worst_scenario_net": -1241.7196093308235
+    },
+    {
+      "day": "2023-01-31",
+      "required_reserve": 21946.38958929195,
+      "worst_scenario_net": -2460.4979741521806
+    },
+    {
+      "day": "2023-02-01",
+      "required_reserve": 17923.1235083845,
+      "worst_scenario_net": -2882.829923468307
+    },
+    {
+      "day": "2023-02-08",
+      "required_reserve": 10111.14613023384,
+      "worst_scenario_net": -2095.6400820068393
+    },
+    {
+      "day": "2023-02-21",
+      "required_reserve": 10977.69574766006,
+      "worst_scenario_net": -1438.246025118268
+    },
+    {
+      "day": "2023-03-14",
+      "required_reserve": 13912.888248791729,
+      "worst_scenario_net": -2021.910297564121
+    },
+    {
+      "day": "2023-03-15",
+      "required_reserve": 10417.37043112882,
+      "worst_scenario_net": -2131.536022018025
+    },
+    {
+      "day": "2023-03-21",
+      "required_reserve": 13821.672499588969,
+      "worst_scenario_net": -1988.0689117625916
+    },
+    {
+      "day": "2023-03-22",
+      "required_reserve": 10381.53567251345,
+      "worst_scenario_net": -1951.7862764786967
+    },
+    {
+      "day": "2023-03-27",
+      "required_reserve": 12948.60747150541,
+      "worst_scenario_net": -1135.2342078009092
+    },
+    {
+      "day": "2023-03-28",
+      "required_reserve": 10111.14613023384,
+      "worst_scenario_net": -1196.4525127090383
+    },
+    {
+      "day": "2023-04-05",
+      "required_reserve": 9045.87648775875,
+      "worst_scenario_net": -2739.6528291045843
+    },
+    {
+      "day": "2023-04-11",
+      "required_reserve": 9013.29943447205,
+      "worst_scenario_net": -2430.6144600856574
+    },
+    {
+      "day": "2023-04-18",
+      "required_reserve": 9488.924412457869,
+      "worst_scenario_net": -1515.475270956798
+    },
+    {
+      "day": "2023-05-02",
+      "required_reserve": 9495.43982311521,
+      "worst_scenario_net": -2552.051315215624
+    },
+    {
+      "day": "2023-05-16",
+      "required_reserve": 9352.10078865373,
+      "worst_scenario_net": -1633.509510628671
+    },
+    {
+      "day": "2023-05-30",
+      "required_reserve": 9612.71721494733,
+      "worst_scenario_net": -2132.0956569496802
+    },
+    {
+      "day": "2023-06-26",
+      "required_reserve": 10133.95006753453,
+      "worst_scenario_net": -1316.465766701679
+    },
+    {
+      "day": "2023-07-04",
+      "required_reserve": 10795.26424925454,
+      "worst_scenario_net": -2752.9536676104635
+    },
+    {
+      "day": "2023-07-05",
+      "required_reserve": 9528.01687640191,
+      "worst_scenario_net": -2738.697379972779
+    },
+    {
+      "day": "2023-07-18",
+      "required_reserve": 10961.40722101671,
+      "worst_scenario_net": -1301.4418455770744
+    },
+    {
+      "day": "2023-07-25",
+      "required_reserve": 11117.77707679287,
+      "worst_scenario_net": -1315.58462262461
+    },
+    {
+      "day": "2023-08-01",
+      "required_reserve": 9993.868738401721,
+      "worst_scenario_net": -2372.9498552304285
+    },
+    {
+      "day": "2023-08-08",
+      "required_reserve": 10274.03139666734,
+      "worst_scenario_net": -2275.1144288071055
+    },
+    {
+      "day": "2023-08-22",
+      "required_reserve": 9013.29943447205,
+      "worst_scenario_net": -1486.7486102410521
+    },
+    {
+      "day": "2023-09-05",
+      "required_reserve": 9189.215522220231,
+      "worst_scenario_net": -2659.8981883491897
+    },
+    {
+      "day": "2023-09-12",
+      "required_reserve": 11306.72398585573,
+      "worst_scenario_net": -1778.240946603712
+    },
+    {
+      "day": "2023-09-13",
+      "required_reserve": 9410.739484569789,
+      "worst_scenario_net": -2453.330551107337
+    },
+    {
+      "day": "2023-09-26",
+      "required_reserve": 9615.974920276,
+      "worst_scenario_net": -1168.7813792239635
+    },
+    {
+      "day": "2023-10-03",
+      "required_reserve": 11306.72398585573,
+      "worst_scenario_net": -2143.837991710282
+    },
+    {
+      "day": "2023-10-10",
+      "required_reserve": 10006.8995597164,
+      "worst_scenario_net": -1649.26326791855
+    },
+    {
+      "day": "2023-10-17",
+      "required_reserve": 9420.5126005558,
+      "worst_scenario_net": -1165.533946750834
+    },
+    {
+      "day": "2023-10-25",
+      "required_reserve": 9371.64702062575,
+      "worst_scenario_net": -1212.6283531382874
+    },
+    {
+      "day": "2023-10-31",
+      "required_reserve": 11915.91488231702,
+      "worst_scenario_net": -2321.0386273787344
+    },
+    {
+      "day": "2023-11-01",
+      "required_reserve": 9726.73690145078,
+      "worst_scenario_net": -2221.689529734051
+    },
+    {
+      "day": "2023-11-07",
+      "required_reserve": 9521.50146574457,
+      "worst_scenario_net": -2336.0877907300637
+    },
+    {
+      "day": "2023-11-21",
+      "required_reserve": 9896.13757854162,
+      "worst_scenario_net": -2146.8963114389844
+    },
+    {
+      "day": "2023-11-28",
+      "required_reserve": 9078.45354104545,
+      "worst_scenario_net": -1091.9134300784376
+    },
+    {
+      "day": "2023-12-05",
+      "required_reserve": 13948.7230074071,
+      "worst_scenario_net": -2364.1455108346245
+    },
+    {
+      "day": "2023-12-06",
+      "required_reserve": 11593.40205477869,
+      "worst_scenario_net": -3164.566851018135
+    },
+    {
+      "day": "2023-12-12",
+      "required_reserve": 11424.00137768785,
+      "worst_scenario_net": -2065.2596124980955
+    },
+    {
+      "day": "2023-12-13",
+      "required_reserve": 10303.35074462537,
+      "worst_scenario_net": -2828.5322269524854
+    },
+    {
+      "day": "2023-12-19",
+      "required_reserve": 12293.80870044274,
+      "worst_scenario_net": -2156.5995930649055
+    },
+    {
+      "day": "2023-12-20",
+      "required_reserve": 9726.736901450779,
+      "worst_scenario_net": -2540.749592734897
+    },
+    {
+      "day": "2023-12-26",
+      "required_reserve": 13958.49612339311,
+      "worst_scenario_net": -1128.8193487239469
+    },
+    {
+      "day": "2023-12-27",
+      "required_reserve": 10938.60328371602,
+      "worst_scenario_net": -1103.3998115605218
+    }
+  ],
+  "cash_rejections": 51,
+  "pricing_hurdle_passes": 0,
+  "pricing_hurdle_passes_at_15000_full_reserve": 0
+}

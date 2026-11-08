@@ -1,0 +1,104 @@
+{
+  "refusals": [
+    {
+      "at": "2022-06-28T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-06-30",
+      "full_reserve": 15251.805138875101,
+      "opening_width": 76.5,
+      "pair_ask": 226.5,
+      "strike": 15750,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-08-02T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-08-04",
+      "full_reserve": 13873.79578484769,
+      "opening_width": 113.25,
+      "pair_ask": 205.35000000000002,
+      "strike": 17300,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-08-10T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-08-11",
+      "full_reserve": 12046.22309546382,
+      "opening_width": 124.95000000000073,
+      "pair_ask": 177.3,
+      "strike": 17550,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-08-16T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-08-18",
+      "full_reserve": 11114.519371464201,
+      "opening_width": 114.79999999999927,
+      "pair_ask": 163.0,
+      "strike": 17850,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-09-07T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-09-08",
+      "full_reserve": 12231.912299198011,
+      "opening_width": 88.75,
+      "pair_ask": 180.15,
+      "strike": 17550,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-09-21T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-09-22",
+      "full_reserve": 15007.477239224849,
+      "opening_width": 103.0,
+      "pair_ask": 222.75,
+      "strike": 17800,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-11-30T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-12-01",
+      "full_reserve": 9795.14871335285,
+      "opening_width": 58.70000000000073,
+      "pair_ask": 142.75,
+      "strike": 18750,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-12-14T11:00:59+05:30",
+      "cash_failed": false,
+      "expiry": "2022-12-15",
+      "full_reserve": 8720.10595489175,
+      "opening_width": 57.54999999999927,
+      "pair_ask": 126.25,
+      "strike": 18750,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2022-12-27T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2022-12-29",
+      "full_reserve": 12326.38575372944,
+      "opening_width": 174.45000000000073,
+      "pair_ask": 181.6,
+      "strike": 18050,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    }
+  ],
+  "source_receipt_sha256": "caf419e3be656fba25f5378a79142bd20a9101d9bfafdb8404400a9c7a369a6e"
+}

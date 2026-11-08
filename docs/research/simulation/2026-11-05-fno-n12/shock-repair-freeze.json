@@ -1,0 +1,19 @@
+{
+  "input_manifests": {
+    "2023": "e40fef86b46b17f07d31ba4f214e9c776eac1d4fee3cfc52f7cdfb43c5cc8a45",
+    "2024": "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+    "2025": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+    "2026": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555"
+  },
+  "new_economic_validation": "forward-only after the minimum 30-signal gate",
+  "scope": "2023 through October 2026 frozen development futures inputs; frequency only",
+  "sources": {
+    "SHOCK_REPAIR.md": "b701f75d5a7644814927ff74767148620b2426268cfdea27c6baf2cf4872986d",
+    "anatomy.py": "b36692b00d500dc3289ec752db7316f0bf93bc22c72e7bbaf595b2c8fe6d086c",
+    "exam_run.py": "7a5609291db9af6a307b631909757a743306c81e058223afb3b1980b8b8b6d4e",
+    "exam_scoring.py": "f13658ad1939ca04c7aa84f49104e16957601e5aad4ee5e52bee393cab190047",
+    "prior_range_reclaim.py": "6031c5b0f6eb606c0671b463ebf17f2d580e38652de79c993ffc3a993a62e0a2",
+    "shock_repair.py": "2738e742a5973736d97f9a6e840c44aa6bb07bfbb33dff9a79ef7760669aaa99",
+    "test_shock_repair.py": "7deeafdc001784e73ffe2ffdfa2dfbed71a2015f89d83fb2f5aa955c855d3793"
+  }
+}

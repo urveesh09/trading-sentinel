@@ -1,0 +1,648 @@
+{
+  "duplicates": {
+    "15:STOP_BREAK": "N11T",
+    "16:COMPRESSION_STRADDLE": "N11T",
+    "17:CONTEXT_RELEASE": "N11T",
+    "19:VOL_PRICE_PAIR": "N11T",
+    "20:WING_SKEW": "N11T",
+    "3:STRIKE_DOMINANCE": "N11T",
+    "6:CAP_LOCKED": "N11T",
+    "7:ACCEPT_NO_PUT": "N11T"
+  },
+  "full_family_pbo": null,
+  "full_family_reason": "mixed P&L, partial windows, standalone or fixed-parent attribution, forecast and signal screens cannot form common strategy returns",
+  "method": "N11 analyze_panel.cscv: 16 contiguous blocks, 12870 half splits, weekly Sharpe, same tie rank; deduplicated weekly P&L rounded to 2 decimals, control retained first",
+  "rows": [
+    {
+      "arm": "PRICE_WAIT",
+      "delta": -135417.25,
+      "eligibility": "full_book",
+      "ex_top_five": -152095.52,
+      "receipt": "round1-YYYY.json",
+      "round": 1,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "PROTECT",
+      "delta": -8636.62,
+      "eligibility": "full_book",
+      "ex_top_five": -12957.31,
+      "receipt": "round1-YYYY.json",
+      "round": 1,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CLUSTER",
+      "delta": -350.57,
+      "eligibility": "full_book",
+      "ex_top_five": -11960.53,
+      "receipt": "round2-YYYY.json",
+      "round": 2,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "RECOVERY",
+      "delta": 1444.9,
+      "eligibility": "full_book",
+      "ex_top_five": -3493.73,
+      "receipt": "round2-YYYY.json",
+      "round": 2,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CHAIN_FALLBACK",
+      "delta": 338.15,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round3-YYYY.json",
+      "round": 3,
+      "verdict": "Retain as component",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "STRIKE_DOMINANCE",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round3-YYYY.json",
+      "round": 3,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "MIDDAY_COIL",
+      "delta": -16333.4,
+      "eligibility": "full_book",
+      "ex_top_five": -22754.17,
+      "receipt": "round4-YYYY.json",
+      "round": 4,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "OPEN_FLIP",
+      "delta": -1482.14,
+      "eligibility": "full_book",
+      "ex_top_five": -1852.17,
+      "receipt": "round4-YYYY.json",
+      "round": 4,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "INVALIDATED",
+      "delta": -8850.77,
+      "eligibility": "full_book",
+      "ex_top_five": -16818.07,
+      "receipt": "round5-YYYY.json",
+      "round": 5,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "RUNNER",
+      "delta": -7642.3,
+      "eligibility": "full_book",
+      "ex_top_five": -7798.0,
+      "receipt": "round5-YYYY.json",
+      "round": 5,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CAP20",
+      "delta": -9922.85,
+      "eligibility": "full_book",
+      "ex_top_five": -10799.78,
+      "receipt": "round6-YYYY.json",
+      "round": 6,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CAP_LOCKED",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round6-YYYY.json",
+      "round": 6,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "ACCEPT_CALL",
+      "delta": -8208.7,
+      "eligibility": "full_book",
+      "ex_top_five": -10805.33,
+      "receipt": "round7-YYYY.json",
+      "round": 7,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "ACCEPT_NO_PUT",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round7-YYYY.json",
+      "round": 7,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "ABSORPTION",
+      "delta": -172.01,
+      "eligibility": "full_book",
+      "ex_top_five": -2086.38,
+      "receipt": "round8-YYYY.json",
+      "round": 8,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "TRANSMISSION",
+      "delta": -13023.68,
+      "eligibility": "full_book",
+      "ex_top_five": -14023.87,
+      "receipt": "round8-YYYY.json",
+      "round": 8,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CALENDAR",
+      "delta": 0.0,
+      "eligibility": "partial_shared_book",
+      "ex_top_five": 0.0,
+      "receipt": "round9-{y}-base.json",
+      "round": 9,
+      "verdict": "No change",
+      "window": "2025–2026 only"
+    },
+    {
+      "arm": "CALENDAR_STRICT",
+      "delta": 0.0,
+      "eligibility": "partial_shared_book",
+      "ex_top_five": 0.0,
+      "receipt": "round9-strict-{y}-base.json",
+      "round": 9,
+      "verdict": "No change",
+      "window": "2025–2026 only"
+    },
+    {
+      "arm": "CALENDAR_PRIOR_OI",
+      "delta": 11575.51,
+      "eligibility": "partial_shared_book",
+      "ex_top_five": -8322.97,
+      "receipt": "round10-{y}-base.json",
+      "round": 10,
+      "verdict": "Rejected",
+      "window": "2025–2026 only"
+    },
+    {
+      "arm": "TARGET_HOLD",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND11.md",
+      "round": 11,
+      "verdict": "Unavailable joint exit evidence",
+      "window": "see receipt"
+    },
+    {
+      "arm": "FUNDED_RANGE",
+      "delta": -4017.32,
+      "eligibility": "full_book",
+      "ex_top_five": -4017.32,
+      "receipt": "round12-YYYY.json",
+      "round": 12,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "late-session standalone",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND13.md",
+      "round": 13,
+      "verdict": "Standalone net −₹18,203.97",
+      "window": "see receipt"
+    },
+    {
+      "arm": "SENSEX catch-up",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND14.md",
+      "round": 14,
+      "verdict": "Rejected",
+      "window": "see receipt"
+    },
+    {
+      "arm": "STOP_BREAK",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round15-YYYY.json",
+      "round": 15,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "COMPRESSION_STRADDLE",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round16-YYYY.json",
+      "round": 16,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CONTEXT_GATE",
+      "delta": -1227.47,
+      "eligibility": "full_book",
+      "ex_top_five": -3284.47,
+      "receipt": "round17-YYYY.json",
+      "round": 17,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CONTEXT_RELEASE",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round17-YYYY.json",
+      "round": 17,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "implied variance forecast",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND18.md",
+      "round": 18,
+      "verdict": "Forecast error improved 17.4%",
+      "window": "see receipt"
+    },
+    {
+      "arm": "VOL_PRICE_PAIR",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round19-YYYY.json",
+      "round": 19,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "VOL_TRAIL",
+      "delta": -10336.76,
+      "eligibility": "full_book",
+      "ex_top_five": -21470.44,
+      "receipt": "round19-YYYY.json",
+      "round": 19,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "WING_SKEW",
+      "delta": 0.0,
+      "eligibility": "full_book",
+      "ex_top_five": 0.0,
+      "receipt": "round20-YYYY.json",
+      "round": 20,
+      "verdict": "No change",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "breadth forecast",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND21.md",
+      "round": 21,
+      "verdict": "Rejected",
+      "window": "see receipt"
+    },
+    {
+      "arm": "ACCEPT_15",
+      "delta": -188776.47,
+      "eligibility": "full_book",
+      "ex_top_five": -239362.18,
+      "receipt": "round22-YYYY.json",
+      "round": 22,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "REJECT_15",
+      "delta": -27821.11,
+      "eligibility": "full_book",
+      "ex_top_five": -35670.64,
+      "receipt": "round22-YYYY.json",
+      "round": 22,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "EARLY_GAP_HOLD",
+      "delta": -17403.24,
+      "eligibility": "full_book",
+      "ex_top_five": -25610.41,
+      "receipt": "round23-YYYY.json",
+      "round": 23,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "EARLY_GAP_REPAIR",
+      "delta": -1116.61,
+      "eligibility": "full_book",
+      "ex_top_five": -1279.14,
+      "receipt": "round23-YYYY.json",
+      "round": 23,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "CONDITIONED_MIX",
+      "delta": 1225.13,
+      "eligibility": "full_book",
+      "ex_top_five": -4051.65,
+      "receipt": "round24-YYYY.json",
+      "round": 24,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "ENTRY_MIX",
+      "delta": 1783.05,
+      "eligibility": "full_book",
+      "ex_top_five": -3493.73,
+      "receipt": "round24-YYYY.json",
+      "round": 24,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "FUTURES_0.1",
+      "delta": -3855.06,
+      "eligibility": "fixed_parent_attribution",
+      "ex_top_five": -4380.9,
+      "receipt": "round25-results.json",
+      "round": 25,
+      "verdict": "Rejected",
+      "window": "Five windows, fixed parent attribution"
+    },
+    {
+      "arm": "FUTURES_0.13",
+      "delta": -3855.06,
+      "eligibility": "fixed_parent_attribution",
+      "ex_top_five": -4380.9,
+      "receipt": "round25-results.json",
+      "round": 25,
+      "verdict": "Rejected",
+      "window": "five windows; matched native parent clock, 13% proxy"
+    },
+    {
+      "arm": "FUTURES_0.16",
+      "delta": -3392.31,
+      "eligibility": "fixed_parent_attribution",
+      "ex_top_five": -3918.15,
+      "receipt": "round25-results.json",
+      "round": 25,
+      "verdict": "Rejected",
+      "window": "Five windows, fixed parent attribution"
+    },
+    {
+      "arm": "FUTURES_UNRESTRICTED",
+      "delta": -186640.1,
+      "eligibility": "fixed_parent_attribution",
+      "ex_top_five": -214569.4,
+      "receipt": "round25-results.json",
+      "round": 25,
+      "verdict": "Rejected",
+      "window": "Five windows, fixed parent attribution"
+    },
+    {
+      "arm": "midday rotation",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND26.md",
+      "round": 26,
+      "verdict": "Rejected",
+      "window": "see receipt"
+    },
+    {
+      "arm": "BANKED_RETEST",
+      "delta": -2030.97,
+      "eligibility": "full_book",
+      "ex_top_five": -2030.97,
+      "receipt": "round27-YYYY.json",
+      "round": 27,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "OI/volume forecast",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND28.md",
+      "round": 28,
+      "verdict": "Rejected",
+      "window": "see receipt"
+    },
+    {
+      "arm": "cost decomposition",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND29.md",
+      "round": 29,
+      "verdict": "Accounting attribution only",
+      "window": "see receipt"
+    },
+    {
+      "arm": "TREND_ENTRY_MIX",
+      "delta": 5834.51,
+      "eligibility": "full_book",
+      "ex_top_five": -1295.4,
+      "receipt": "round30-YYYY.json",
+      "round": 30,
+      "verdict": "Rejected",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "TREND_ONLY",
+      "delta": 4051.45,
+      "eligibility": "full_book",
+      "ex_top_five": 710.38,
+      "receipt": "round30-YYYY.json",
+      "round": 30,
+      "verdict": "Retain as component",
+      "window": "2022-06-03..2026-10-28, five separate accounts"
+    },
+    {
+      "arm": "FOLLOW",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND31.md",
+      "round": 31,
+      "verdict": "Rejected",
+      "window": "see receipt"
+    },
+    {
+      "arm": "FADE",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND31.md",
+      "round": 31,
+      "verdict": "Rejected",
+      "window": "see receipt"
+    },
+    {
+      "arm": "credit vertical replacement",
+      "delta": -60277.95,
+      "eligibility": "fixed_parent_attribution",
+      "ex_top_five": -72239.29,
+      "receipt": "round32-results.json",
+      "round": 32,
+      "verdict": "Rejected",
+      "window": "five windows; matched parent"
+    },
+    {
+      "arm": "basis forecast",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND33.md",
+      "round": 33,
+      "verdict": "Rejected",
+      "window": "see receipt"
+    },
+    {
+      "arm": "two-lot entry preflight",
+      "delta": null,
+      "eligibility": "not_comparable_full_five_window_book",
+      "ex_top_five": null,
+      "receipt": "ROUND34.md",
+      "round": 34,
+      "verdict": "Entry check passed, priced in 35",
+      "window": "see receipt"
+    },
+    {
+      "arm": "NATIVE_CLOCK",
+      "delta": 364.77,
+      "eligibility": "fixed_parent_attribution",
+      "ex_top_five": -6447.45,
+      "receipt": "round35-results.json",
+      "round": 35,
+      "verdict": "Rejected",
+      "window": "five windows; matched parent"
+    },
+    {
+      "arm": "PREMIUM_GUARD",
+      "delta": -69.89,
+      "eligibility": "fixed_parent_attribution",
+      "ex_top_five": -6882.11,
+      "receipt": "round35-results.json",
+      "round": 35,
+      "verdict": "Rejected",
+      "window": "five windows; matched parent"
+    },
+    {
+      "arm": "TREND",
+      "delta": 3746.54,
+      "eligibility": "partial_4_year_not_padded",
+      "ex_top_five": 405.47,
+      "receipt": "../2026-11-05-fno-expiry-followup/regular-annual-YYYY.json",
+      "round": "Nov5",
+      "verdict": "Retain as component",
+      "window": "2023–2026"
+    },
+    {
+      "arm": "BANK",
+      "delta": -34091.73,
+      "eligibility": "partial_4_year_not_padded",
+      "ex_top_five": -44916.39,
+      "receipt": "../2026-11-05-fno-expiry-followup/regular-annual-YYYY.json",
+      "round": "Nov5",
+      "verdict": "Rejected",
+      "window": "2023–2026"
+    },
+    {
+      "arm": "ADD",
+      "delta": 1102.38,
+      "eligibility": "partial_4_year_not_padded",
+      "ex_top_five": -1485.82,
+      "receipt": "../2026-11-05-fno-expiry-followup/regular-annual-YYYY.json",
+      "round": "Nov5",
+      "verdict": "Rejected",
+      "window": "2023–2026"
+    }
+  ],
+  "scope": "saved full-book five-window daily receipts only; not family-wide",
+  "subset_cscv": {
+    "books": 26,
+    "combinations": 12870,
+    "median_out_of_sample_percentile": 0.6666666666666666,
+    "pbo": 0.38764568764568763,
+    "picks": {
+      "19:VOL_TRAIL": 2299,
+      "1:PRICE_WAIT": 14,
+      "1:PROTECT": 9,
+      "22:REJECT_15": 30,
+      "23:EARLY_GAP_HOLD": 84,
+      "2:CLUSTER": 5315,
+      "2:RECOVERY": 1,
+      "30:TREND_ENTRY_MIX": 3981,
+      "30:TREND_ONLY": 422,
+      "4:MIDDAY_COIL": 17,
+      "5:INVALIDATED": 468,
+      "8:ABSORPTION": 230
+    },
+    "weeks": 231
+  },
+  "subset_names": [
+    "N11T",
+    "1:PRICE_WAIT",
+    "1:PROTECT",
+    "2:CLUSTER",
+    "2:RECOVERY",
+    "3:CHAIN_FALLBACK",
+    "4:MIDDAY_COIL",
+    "4:OPEN_FLIP",
+    "5:INVALIDATED",
+    "5:RUNNER",
+    "6:CAP20",
+    "7:ACCEPT_CALL",
+    "8:ABSORPTION",
+    "8:TRANSMISSION",
+    "12:FUNDED_RANGE",
+    "17:CONTEXT_GATE",
+    "19:VOL_TRAIL",
+    "22:ACCEPT_15",
+    "22:REJECT_15",
+    "23:EARLY_GAP_HOLD",
+    "23:EARLY_GAP_REPAIR",
+    "24:CONDITIONED_MIX",
+    "24:ENTRY_MIX",
+    "27:BANKED_RETEST",
+    "30:TREND_ENTRY_MIX",
+    "30:TREND_ONLY"
+  ],
+  "window": "2022-06-03..2022-12-31 and full 2023–2025 and 2026-01-01..2026-10-28; separate annual wallets; includes empty calendar ISO weeks"
+}

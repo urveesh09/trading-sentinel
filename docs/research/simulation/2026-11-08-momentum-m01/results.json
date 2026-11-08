@@ -1,0 +1,123 @@
+{
+  "freeze_commit": null,
+  "window": [
+    "2026-01-01",
+    "2026-07-31"
+  ],
+  "sessions": 143,
+  "arms": {
+    "A0_BASE_LIVE": {
+      "trades": 675,
+      "net": -34025.8,
+      "gross": -607.9,
+      "costs": 33417.9,
+      "win": 0.314,
+      "avg_r": -0.085,
+      "net_ex_best_day": -36732.6,
+      "worst_day": -3200.5,
+      "max_dd": 34101.3,
+      "days": 129
+    },
+    "A1_SELECTIVE_LIVE": {
+      "trades": 85,
+      "net": -3343.5,
+      "gross": 863.9,
+      "costs": 4207.5,
+      "win": 0.353,
+      "avg_r": -0.071,
+      "net_ex_best_day": -5024.9,
+      "worst_day": -1395.7,
+      "max_dd": 4769.5,
+      "days": 34
+    },
+    "A2_SELECTIVE_VWAP": {
+      "trades": 85,
+      "net": -4673.5,
+      "gross": -468.4,
+      "costs": 4205.2,
+      "win": 0.318,
+      "avg_r": -0.09,
+      "net_ex_best_day": -6895.6,
+      "worst_day": -1714.5,
+      "max_dd": 6895.6,
+      "days": 34
+    },
+    "A3_ORB_TOP5_VWAP": {
+      "trades": 357,
+      "net": 4759.0,
+      "gross": 8221.3,
+      "costs": 3462.3,
+      "win": 0.395,
+      "avg_r": 0.011,
+      "net_ex_best_day": 3448.6,
+      "worst_day": -711.3,
+      "max_dd": 3343.0,
+      "days": 138
+    },
+    "NULL_ORB_RANDOM5_VWAP": {
+      "trades": 279,
+      "net": -9364.8,
+      "gross": -6601.8,
+      "costs": 2763.0,
+      "win": 0.226,
+      "avg_r": -0.253,
+      "net_ex_best_day": -9685.7,
+      "worst_day": -459.6,
+      "max_dd": 9951.4,
+      "days": 125
+    }
+  },
+  "verdicts": {
+    "A2_SELECTIVE_VWAP": {
+      "checks": {
+        "trades_ge_30": true,
+        "net_positive": "False",
+        "net_ex_best_day_positive": "False",
+        "beats_live_rule": "False",
+        "drawdown_ok": "True"
+      },
+      "promising": false
+    },
+    "A3_ORB_TOP5_VWAP": {
+      "checks": {
+        "trades_ge_30": true,
+        "net_positive": "True",
+        "net_ex_best_day_positive": "True",
+        "beats_live_rule": "True",
+        "drawdown_ok": "True"
+      },
+      "promising": true
+    }
+  },
+  "hypotheses": {
+    "stock_days": 68291,
+    "days": 143,
+    "mean_rest_pct": -0.0106,
+    "H1_top_vs_mean_pct": -0.031,
+    "H1_top_positive_days": 65,
+    "H2_bottom_vs_mean_pct": 0.0328,
+    "H2_bottom_positive_days": 71
+  },
+  "absolute_checks": {
+    "A0_BASE_LIVE": {
+      "checks": {
+        "trades_ge_30": true,
+        "net_positive": "False",
+        "net_ex_best_day_positive": "False",
+        "beats_live_rule": "True",
+        "drawdown_ok": "True"
+      },
+      "promising": false
+    },
+    "A1_SELECTIVE_LIVE": {
+      "checks": {
+        "trades_ge_30": true,
+        "net_positive": "False",
+        "net_ex_best_day_positive": "False",
+        "beats_live_rule": "True",
+        "drawdown_ok": "True"
+      },
+      "promising": false
+    }
+  }
+}

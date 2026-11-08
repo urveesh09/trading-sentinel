@@ -55,13 +55,15 @@ def _shadow_row(kwargs):
     }]
 
 
-async def _scan(tmp_path, monkeypatch, enabled, shadow_effect=None, persist=None, order_result=None):
+async def _scan(tmp_path, monkeypatch, enabled, shadow_effect=None, persist=None, order_result=None, classic_entries=True):
     from config import settings
     from penny_scanner import PennyScanner
 
     monkeypatch.setattr(settings, "DB_PATH", str(tmp_path / "scan.db"))
     monkeypatch.setattr(settings, "PENNY_LOG_CSV_PATH", str(tmp_path / "signals.csv"))
     monkeypatch.setattr(settings, "PENNY_SHADOW_ENABLED", enabled)
+    # These legacy execution-contract tests explicitly restore the retired entry path.
+    monkeypatch.setattr(settings, "PENNY_CLASSIC_MIS_ENTRIES_ENABLED", classic_entries)
     monkeypatch.setattr(settings, "PENNY_USE_SECTOR_FILTER", False)
     kite = _kite()
     scanner = PennyScanner(
@@ -235,6 +237,14 @@ async def test_shadow_on_off_preserves_baseline_and_market_call_counts(tmp_path,
     assert len(off["shadow_calls"]) == 0
     on["persist"].assert_awaited_once()
     off["persist"].assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_retired_mis_still_evaluates_shadows_without_order_attempt(tmp_path, monkeypatch):
+    result = await _scan(tmp_path, monkeypatch, True, classic_entries=False)
+    assert result["summary"] == {"accept": 0, "reject": 1, "error": 0}
+    assert result["order_calls"] == 0 and len(result["shadow_calls"]) == 1
+    result["persist"].assert_awaited_once()
 
 
 @pytest.mark.asyncio

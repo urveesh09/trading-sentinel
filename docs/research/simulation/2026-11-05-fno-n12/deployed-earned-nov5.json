@@ -1,0 +1,37 @@
+{
+  "export": "20261106T103349Z",
+  "export_files_sha256": {
+    "fno-replay.sqlite": "18cca33138cdb8fb3fcb3289f9f160aff0f4fe478923478c52a1ac915e5ac7b1",
+    "fno_exit_paths/2026-11-03.jsonl": "d970dc335ed2161ac43e3d3752ffbcd6b61c3a0a96b7718927f7ff8c1b01a233",
+    "fno_exit_paths/2026-11-04.jsonl": "46df95cade0dfdc6e2d0736d5edd991ae17eed7f6a106d5f8b99c89f2bbe2a76",
+    "fno_exit_paths/2026-11-05.jsonl": "84c37470eaef0125b4f284dc472a2d95fcac9e6d31da43ed83fba6c1b82127a5"
+  },
+  "parents": [
+    {
+      "futures_looks_before_exit": 175,
+      "id": 55,
+      "max_favorable_r": 0.347206,
+      "observed_looks_at_or_above_trigger": 0,
+      "recorded_child_ids": [],
+      "venue": "SENSEX"
+    },
+    {
+      "futures_looks_before_exit": 184,
+      "id": 56,
+      "max_favorable_r": 0.338859,
+      "observed_looks_at_or_above_trigger": 0,
+      "recorded_child_ids": [],
+      "venue": "SENSEX"
+    },
+    {
+      "futures_looks_before_exit": 446,
+      "id": 57,
+      "max_favorable_r": 0.590618,
+      "observed_looks_at_or_above_trigger": 0,
+      "recorded_child_ids": [],
+      "venue": "NIFTY"
+    }
+  ],
+  "scope": "conditional on observed Production parents and recorded pre-exit futures marks",
+  "trigger_r": 1.0
+}

@@ -1,0 +1,121 @@
+{
+  "export_manifest_sha256": "832c3fc441cf29f8af69da2c0bf46faf8f28c1faf908cf49974f5dfef17b5192",
+  "inputs_sha256": "9eb4e6ee4f4fb6319546c7fce6626c5563a5aa9cb6839eb0630db8c18820e790",
+  "positions": [
+    {
+      "adx": 31.128826,
+      "day_realised_singles": 0,
+      "final_lots": 2,
+      "held_premium": 0,
+      "held_single_ids": [],
+      "id": 55,
+      "native_ceiling": 2,
+      "native_lots": 2,
+      "open_premium_cap": 37500.0,
+      "pool": 250000.0,
+      "prior_20_net": 19159.13,
+      "prior_20_sources": {
+        "N11_PAPER": 3,
+        "research_seed": 17
+      },
+      "reserved_cash": 13468.76,
+      "risk_multiplier": 1.0,
+      "tolerance": "NIFTY paper only",
+      "two_lot_committed_premium": 13416.0,
+      "volatility_ratio": 1.225682
+    },
+    {
+      "adx": 30.69205,
+      "day_realised_singles": 0,
+      "final_lots": 2,
+      "held_premium": 0,
+      "held_single_ids": [],
+      "id": 56,
+      "native_ceiling": 2,
+      "native_lots": 2,
+      "open_premium_cap": 37531.35,
+      "pool": 250208.99,
+      "prior_20_net": 19159.13,
+      "prior_20_sources": {
+        "N11_PAPER": 3,
+        "research_seed": 17
+      },
+      "reserved_cash": 13874.93,
+      "risk_multiplier": 1.0,
+      "tolerance": "NIFTY paper only",
+      "two_lot_committed_premium": 13822.0,
+      "volatility_ratio": 1.217903
+    },
+    {
+      "adx": 30.662417,
+      "day_realised_singles": 0,
+      "final_lots": 2,
+      "held_premium": 0,
+      "held_single_ids": [],
+      "id": 57,
+      "native_ceiling": 2,
+      "native_lots": 2,
+      "open_premium_cap": 37518.6,
+      "pool": 250124.02,
+      "prior_20_net": 19159.13,
+      "prior_20_sources": {
+        "N11_PAPER": 3,
+        "research_seed": 17
+      },
+      "reserved_cash": 18483.0,
+      "risk_multiplier": 1.0,
+      "tolerance": "native size already two",
+      "two_lot_committed_premium": 18427.5,
+      "volatility_ratio": 1.181935
+    },
+    {
+      "adx": 30.662417,
+      "day_realised_singles": 0,
+      "final_lots": 1,
+      "held_premium": 18427.5,
+      "held_single_ids": [
+        57
+      ],
+      "id": 58,
+      "native_ceiling": 2,
+      "native_lots": 1,
+      "open_premium_cap": 37518.6,
+      "pool": 250124.02,
+      "prior_20_net": 19159.13,
+      "prior_20_sources": {
+        "N11_PAPER": 3,
+        "research_seed": 17
+      },
+      "reserved_cash": 10061.71,
+      "risk_multiplier": 1.0,
+      "tolerance": "open-premium cap",
+      "two_lot_committed_premium": 38447.5,
+      "volatility_ratio": 1.181935
+    },
+    {
+      "adx": 30.662417,
+      "day_realised_singles": -765.59,
+      "final_lots": 1,
+      "held_premium": 10010.0,
+      "held_single_ids": [
+        58
+      ],
+      "id": 59,
+      "native_ceiling": 1,
+      "native_lots": 1,
+      "open_premium_cap": 37403.76,
+      "pool": 249358.43,
+      "prior_20_net": 19665.05,
+      "prior_20_sources": {
+        "N11_PAPER": 4,
+        "research_seed": 16
+      },
+      "reserved_cash": 9993.43,
+      "risk_multiplier": 1.0,
+      "tolerance": "one-lot ceiling",
+      "two_lot_committed_premium": 29893.5,
+      "volatility_ratio": 1.181935
+    }
+  ],
+  "scope": "Sizing and reservations conditional on the observed selected contract"
+}

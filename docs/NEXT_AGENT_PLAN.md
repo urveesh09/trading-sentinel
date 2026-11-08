@@ -1,3 +1,191 @@
+## November 8 - Momentum M01; next
+
+Done (Dev):
+- Diagnosis and the sealed Jan–Jul exam. No shipped rule has an edge, and the live MOM_SELECTIVE rule lost on unseen data.
+- The stocks-in-play breakout (A3) passed and runs as a paper shadow (`momentum_orb_shadow.py`, 15:05).
+- See [results](research/simulation/2026-11-08-momentum-m01/RESULTS.md).
+
+Next:
+- **Judge A3** after at least 30 sessions and 100 trades, against random names and against the paper book on the same days.
+  - Its edge is about ₹13 a trade on ₹10,000 slots.
+  - It lost on Aug–Nov.
+  - Never call it proven.
+- **Unseen data:** none is left for Momentum. Score new ideas only on sessions from Nov 9 on.
+- **Owner's calls:**
+  - whether Momentum paper entries should switch from MOM_SELECTIVE to A3 after the shadow;
+  - the short side (first-bar reversal or weakness), which needs margin for intraday shorting;
+  - anything real-money.
+
+## November 8 - Penny clock review complete; source and forward evidence next
+
+Reviewed parent 4e69c8e and retained its useful clock/recovery fixes. Additional
+regressions and evidence are in [review](research/penny/2026-11-08-clock-fix-review/REPORT.md).
+Missing entry observations release only paper reservations and leave the full
+capital/P&L path incomplete. Real modeled OPEN exposure still holds cash.
+Smart entry switch defaults false, visibility capture remains. Verify an actual
+indicative auction source before enabling it; legacy after-auction references
+are not executable orders. Overnight needs actual 15:51 receipts: the historical
+15:32 baseline cannot prove 2 executable partial entries. Forward fill/profit
+qualification remains open. No F&O work resumed or Production code changed.
+
+## November 8 - Penny auction forward: Production clock fixes; next
+
+Done (Dev):
+- The post-close and auction clock rules follow the real Kite packets.
+- `NO_EVIDENCE` replaces the permanent UNRESOLVED.
+- The 15:51 decision needs no 15:50 trade.
+- Smart's pre-open visibility is recorded.
+
+See the [review](research/penny/2026-11-08-auction-forward/PRODUCTION_CLOCK_REVIEW.md).
+
+Next:
+- **First MATCH reads (09:12):** check the `runs` payloads. Does the quote show `ohlc.open` and the auction volume before 09:15? Which `last_trade_time` does the auction trade carry?
+- **15:51 and 16:03 depth:** does the post-close book show its resting orders at the close?
+  - If it does, a time-priority fill (resting sells first, then later volume after the buyers ahead) can replace 1% of later volume.
+  - At 1%, 8 of the 10 real Nov 5–6 picks are refused.
+- **Smart:** with no visible pre-open price, the Smart arms make no picks. A new decision source needs research first; the preselected-limit design already failed (Nov 4).
+- **Owner's call before promotion:** Classic MIS/CNC new entries default off in `6af2f08`.
+
+## November 8 - Penny auction forward implementation and evidence boundary
+
+The owner authorized development/testing after the Dev Penny review. Implemented
+funded pre-auction Smart close/morning comparisons and post-close overnight V2/V3
+books, preserving the older reference books. Classic MIS/CNC new entries default
+retired, with separate restore switches; position exits and shadows continue.
+See [plan](research/penny/2026-11-08-auction-forward/PLAN.md) and
+[verification/report](research/penny/2026-11-08-auction-forward/REPORT.md).
+
+Next evidence: at least 30 resolved Smart pairs and 30 comparable overnight
+nights. Retain unknowns and capacity refusals in the denominator. Compare
+same-entry net/ex-best winner and losses, without promoting capacity proxies
+to fills. The old target-exit candidate remains unqualified. No old exam is
+reopened. Real-order evidence and GitHub promotion need owner instruction.
+F&O goal remains stopped. Unrelated uncommitted research and owner edits stay.
+
+## November 8 - N012-A on paper (owner's call); next
+
+Done:
+- N08-C4 (the check gives the card's stop).
+- N012-A2: 27 neighbours, frozen, scored. N012-A kept.
+- N012-A in the engine (`fno_trend_lock.py`, on for N11 paper positions).
+- See the [study](research/simulation/2026-11-08-fno-n012-a2/RESULTS.md).
+
+Next:
+- **Forward evidence.** From the first session after the deploy, compare the paper book's closed N11 trades against what the native lock would have done. `fno_exit_paths` records each look's parameters, but a trade the trend lock held past the native exit has the native exit inside its recorded path, and the reverse case does not. Count both before claiming either way. Panel E / the January 29, 2027 review from EXAM_2022_H1.md still applies.
+- **Sealed exam.** NIFTY January–May 2022 stays sealed. It needs Q1 2022 downloaded through the breeze skill, or the owner declaring Q1 unavailable before April–May is opened.
+- **SENSEX.** The Oct 2024–Jun 2025 history is unseen, but it has zero OI on every minute and thin futures volume. A SENSEX replay needs its own written OI and volume rule first.
+- Do not tune the trend lock on seen windows again. One step tighter already loses on 2026.
+
+## November 6 - N08 partner fixes (Dev only; deploy needs the owner's word)
+
+Done in Dev ([record](PARTNER_NOV06_FIXES_N08.md)):
+- C1: the card's stop in the PLAN for a buy on the card.
+- C2: card follow-ups that check what is held.
+- C3: an own-stop sale is not "a wobble" in the review.
+- L1: within-plan wording for a stop moved down.
+- C4 (Nov 8): the pre-buy check gives the card's stop inside a card window.
+
+Next:
+- After deploy, on the first card day, confirm that a card buy's PLAN says "on the HH:MM card" and that `partner_advisory_updates` shows `partner_holds_none` for an option not held.
+
+## November 6 opening-drive storage
+
+Dev batches cold opening-drive persistence before the regular signal pass. The five focused suites passed 153 checks and local benchmarks matched every stored row. The full Dev engine suite completed with 6,246 passed and four skipped. Review the GitHub promotion path before any rollout. Rollback is the isolated revert. See [scope and parity](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).
+
+## November 5 regular F&O held-spread evidence
+
+The Dev recorder and export contract are implemented and off by default. Freeze the held observation mode before scoring any future panel. Establish native paper settlement parity and usable end-to-end quote coverage first. Delayed exit outcomes can remain unavailable once native management stops collecting a closed position. The next rollout decision concerns paper evidence only. The rollback is `FNO_DR_EXIT_PATH_RECORDING=false` or the isolated GitHub revert. See [scope, commands and validation](research/simulation/2026-11-05-fno-n12/FORWARD_SPREAD_EVIDENCE.md).
+
+## November 5 multi-lot spread replay verification
+
+The defined-risk exit research verifier now prices fees using each exact bound leg’s full quantity. The three-lot November 5 paper row exposed the mismatch with the operational cost calculation. The focused verifier, spread book and sizing suite passed 38 tests. Preserve the first study and bind a new manifest before comparing historical exits. See [research correction](research/simulation/2026-11-05-fno-n12/ROUND11_COST_FIX.md). No runtime caller, configuration, migration, authority or deployment change.
+
+## November 5 regular F&O N012 research
+
+The [strict trend replay](research/simulation/2026-11-05-fno-n12/TREND_HELD_REPLAY.md) passed synthetic native parity and execution checks. The legacy November 5 rows lack the required receipt fields. Bind a prospective held and continuation cohort before market scoring, and keep its fixed-entry results separate from the shared-wallet panel.
+
+The [N11 held quote evidence extension](research/simulation/2026-11-05-fno-n12/DIRECTIONAL_QUOTE_EVIDENCE.md) passed Dev regression checks. Qualify the recorded depth and clocks plus any required continuation quotes before forward scoring. Run the 2022 exam on its verified pre-extension source `67dfc35` and the 2021 reclaim test on `1f4bfb2`.
+
+The [shock-repair frequency check](research/simulation/2026-11-05-fno-n12/SHOCK_REPAIR_RESULTS.md) failed at 23 against the frozen minimum of 30. Preserve the rejection and keep the standalone reclaim and N012-A market exams separate.
+
+The [paired reclaim decision study](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_STRESS.md) passed symmetric cost and decision-gate rehearsal. Obtain the sealed standalone verdict on the earlier pinned source, then bind independently qualified forward quotes, schedules and common spread events before running the paired study on market evidence.
+
+The [paired reclaim comparison](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_PAIRED.md) records changed native and earned tickets and reconciles both wallets in synthetic runs. The next scored comparison needs the standalone verdict, independently qualified forward inputs, and frozen symmetric cost stress and gates.
+
+The [shared-wallet rehearsal](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_SHARED.md) now exercises reclaim in the native cash and loss ledger. Before an economic run, require the standalone result, exact paired quote and spread coverage, and a trace of changed native trades. Bind the standalone 2021 archive on its earlier pinned source.
+
+The [2021 validation runner](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_2021.md) passed synthetic replay against both native controls. Bind the August–December 2021 NIFTY archive and July futures warm-up after owner acquisition, then run the sealed comparison once. Keep the 2022 exam separate.
+
+The [standalone minute adapter](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_MINUTE.md) passed the actual historical reader on synthetic SQLite inputs. Freeze the matching N11 and N11T runs, complete calendar and provenance, and one-shot evaluation before opening the 2021 outcomes.
+
+The [prior-range standalone execution](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_EXECUTION.md) passed synthetic checks. Prepare the untouched 2021 runner with an explicit candle execution model and matched N11T before reading validation outcomes. Keep the 2022 A exam independent.
+
+The [prior-range frequency gate](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_COUNT.md) passed at 85 signals. Freeze the standalone entry, exit and risk contract before the separate 2021 holdout. Keep the 2022 A exam unchanged.
+
+Count the [prior-session range reclaim](research/simulation/2026-11-05-fno-n12/PRIOR_RANGE_RECLAIM.md) on the four frozen development windows. Require 30 signals before the standalone price study. Keep the original 2022 A exam and proposed 2021 challenger holdout separate.
+
+The [2022 data-source review](research/simulation/2026-11-05-fno-n12/EXAM_DATA_SOURCES.md) leaves the guarded Breeze path first. If the owner uses an alternate source, qualify contract and clock parity on a seen date and freeze one common data provenance plan before opening the exam.
+
+The [paired N11T and N012-A directional driver](research/simulation/2026-11-05-fno-n12/PAIRED_REPLAY.md) is ready for qualified tapes. The synthetic case proves that exit timing changes later SENSEX access. Real comparison still requires complete scan and held clocks and separate spread replay for a combined book. Keep the 2022 exam and forward rollout sequence in force.
+
+The [Round 22 attribution](research/simulation/2026-11-05-fno-n12/ROUND22_ATTRIBUTION.md) completes the three worst-session trace requested in the advisory. Preserve the rejection of both arms. Check future additions first as independent sleeves, then attribute each shared-wallet displacement or size change.
+
+The [historical one-lot shadow check](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#historical-one-lot-shadow-path-slice) resolved two of 18 representative NIFTY paths. Keep the unresolved paths and full gate history out of portfolio scores. Exact contemporaneous chain and held quotes remain necessary before joining the older shared-wallet replay.
+
+The [point-in-time N11 gate](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#point-in-time-n11-gate-slice) matched five observed directional gates and six shadow entry flags. The older 31 quote dates have zero overlapping logged volatility readings. A historical run needs causal volatility inputs and its own fully evidenced one-lot shadow, alongside shared spread and held quotes.
+
+Keep [November 6](research/simulation/2026-11-05-fno-n12/NOV6.md) as a separate post-freeze observation with zero paired directional trades. It verifies spread cash and the booked reserve for that date. It does not qualify the historical combined control or open the sealed exam.
+
+The [earned-lot replay](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#earned-lot-mechanics-slice) passed 151 focused checks. Three observed two-lot parents had no futures mark at the add threshold. Continue with causal gate inputs, spread cash and reserve chronology, and qualifying exact bid and ask packets before any combined result.
+
+The [shared-wallet directional adapter](research/simulation/2026-11-05-fno-n12/DEPLOYED_CONTROL.md#chronological-shared-wallet-mechanics-slice) passed thirteen synthetic cases and 146 focused checks overall. Connect qualified held quote paths, native N11 gate and earned-lot evidence, and spread exposure and settlements before a combined historical replay. Keep that work in Dev research and preserve the sealed exam.
+
+Continue from the [N012 research checkpoint](research/simulation/2026-11-05-fno-n12/CHECKPOINT.md). The [development closeout](research/simulation/2026-11-05-fno-n12/CLOSEOUT.md) ends candidate mining on the seen windows. Round 36 is paused at SENSEX data inventory. The historical two-venue control needs qualified time-matched SENSEX quote and open-interest evidence. Operational analytics add 37 sampled OI dates in 2026. On 17 archived dual-eligible dates, 241 of 1,020 entry checkpoints have synchronized full ladders and enough two-lot depth. At 39 reconstructed native signal checkpoints, 27 had usable entries and no two-lot path met the 90-second coverage test through hard flat. Seek additional held-contract evidence before any portfolio result. Keep those separate from the five Production exit and selected-contract sizing matches. Exact strike selection still requires the original decision chain. The one B screen dropped B, leaving A as the sole challenger under the [frozen January–May 2022 exam](research/simulation/2026-11-05-fno-n12/EXAM_2022_H1.md). Before reading unseen prices, freeze completed request keys, dataset coverage, runner and scorer identities. The one-shot scoring runner passes the actual adapter on synthetic data. The source preparer captures scoped request and clock metadata before price access. Q1 needs a completed full guard check. The April-May metadata audit found four incomplete front-futures sessions, including the April 29 and May 31 regular sessions common to both windows. The Dev data recovery handoff lists four unused guarded request keys for owner-maintainer review. Require clean coverage before proceeding. A forward comparison must also preserve the selected contract after a native exit whenever the frozen A remains open. The older 200-session gate can reach at most 194 on the presently reported coverage. Keep ₹250,000 paper and ₹15,000 one-lot trial evidence separate. Forward paper qualification follows only after the sealed exam passes. Work in Dev research only. Roll back by retiring the research arm. There is no migration or rollout.
+
+## November 5 E03.2 dated-contract fix and refusal evidence
+
+The expiry trend book now uses the instrument master's Contract.name in contract selection and the pending fill. The old field raised AttributeError on the replay's first qualifying setup. The tests now use real Contract records for Nifty and Sensex. E03.2 stores per-session signal, contract and pending-fill counts in its existing state and reports passed signals and paper plans in its no-trade summary.
+
+The November 5 Sensex control had no qualifying setup and no paper ticket. The code defect is separate from that day's signal refusal. The trend-exit, banking, sizing and breakout variants remain research. See `docs/research/simulation/2026-11-05-fno-expiry-followup/PLAN.md`.
+
+The expiry suite passed 111 checks. Dev only. No new schema, configuration, schedule or trade authority. Roll back the code through GitHub if needed. The previous reader tolerates the extra state keys. Forward qualification remains open.
+
+## November 5 - N07 partner profit protection (Dev only)
+
+`docs/PARTNER_PROFIT_PROTECTION_PLAN.md` records the observed giveback,
+implementation, tests and rollout boundary. After material booked profit,
+show a suggested 90% floor and accept `protect AMOUNT` / `protect auto` for
+the current session. Include held and proposed plan losses in CHECK, and
+brief advice on PLAN/ADDED when risk threatens the floor or the relevant
+futures trend is adverse. Completed five-minute structure plus a fresh
+trade supports a directional reading. Missing evidence stays unverified.
+The active floor replaces overlapping giveback steps. Fresh full-depth
+marks can trigger it while positions are open. Existing loss alerts remain.
+Advice only. Rollback `PARTNER_WATCH_PROFIT_PROTECTION_ENABLED=false`.
+Existing watch state/outbox, no schema change or new scheduler job.
+Final partner/surface group 665 passed, exit 0. Atlas 304 modules. Production
+398d44a assessed read-only. Local Dev commit, no push or deployment.
+
+## November 4 night - Rollout receipt (Production 398d44a, PR #132)
+
+- The owner's word: "deploy". PR #132 merged `67f42a3` (N06c), the auditor's review docs `78f0fad` and the
+  last receipt, as `398d44a`, at 16:58 UTC (22:28 IST).
+- **Before merge:** the whole engine suite on a clean checkout of `67f42a3`: 3,199 + 3,036 passed, 4 skipped,
+  `pytest_exit=0` each. No gateway, agent or compose changes.
+- **Deploy:** Production fast-forwarded and the release stamped. python-engine, node-gateway and agent were built
+  one at a time and recreated; nginx restarted. `.env` untouched. No full data backup, as before.
+- **Verification:** `scripts/verify_deployment.py` exit 0, verified_at 2026-11-04T17:12:03Z. Local and public
+  `/api/health` 200. No error lines in the engine log since start. In the image: `broken_text`,
+  `infer_underlying`, `QUIET_GONE`; no `quiet_keyboard`; `PARTNER_WATCH_BROKEN_ENABLED` defaults true, with no
+  `.env` override.
+- [ ] Nov 5, read-only:
+  - the watch-on message is two lines plus the records and the SENSEX expiry line;
+  - no PLAN or NO_STOP carries a button;
+  - a bare "76700 ce" is answered as a check;
+  - any BROKEN row was sent once a trade, with its choices;
+  - no SENTINEL buy for a trade already closed;
+  - no `partner_sentinel_*_failed` lines in the engine log.
+
 ## November 4 night - N06c: no Quiet, short messages, choices in rupees, BROKEN, the check by the option alone (Dev only)
 
 Owner, after the audit of N06/N06b:

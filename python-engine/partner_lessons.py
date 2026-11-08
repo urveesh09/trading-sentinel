@@ -57,8 +57,8 @@ LESSON_PRIORITY = (
     "QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS", "UNUSUAL_SIZE", "ENTRY_ABOVE_LIMIT", "CHASED_SPIKE",
     "HELD_PAST_STOP", "STOP_CANCELLED", "STOP_LOWERED", "NO_STOP_ORDER", "AVERAGED_DOWN", "OFF_CARD",
     "GAVE_BACK_PROFIT", "OVERTRADING", "INSUFFICIENT_FUNDS", "PRICE_RAISED_TO_FILL", "LATE_ENTRY",
-    "AFTER_CARD_CLOSED", "ENTRY_UNDER_STOP", "HELD_OVERNIGHT", "STOP_WIDER_THAN_CARD", "GAVE_BACK_AFTER_TARGET",
-    "EARLY_EXIT", "HELD_PAST_SQUARE_OFF",
+    "AFTER_CARD_CLOSED", "ENTRY_UNDER_STOP", "HELD_OVERNIGHT", "STOP_WIDER_THAN_CARD", "STOP_TIGHTER_THAN_CARD",
+    "GAVE_BACK_AFTER_TARGET", "EARLY_EXIT", "HELD_PAST_SQUARE_OFF",
 )
 # [O21-PX] The rules each trade is checked against. A rule is broken by any
 # of its flags; "rules kept" counts kept checks, not money.
@@ -66,7 +66,8 @@ CHECKS = (
     ("card", "Traded a card", ("OFF_CARD",)),
     ("entry", "Entered as planned", ("ENTRY_ABOVE_LIMIT", "LATE_ENTRY", "AFTER_CARD_CLOSED", "ENTRY_UNDER_STOP",
                                      "CHASED_SPIKE", "PRICE_RAISED_TO_FILL")),
-    ("stop", "Stop placed and kept", ("NO_STOP_ORDER", "STOP_WIDER_THAN_CARD", "STOP_CANCELLED", "STOP_LOWERED")),
+    ("stop", "Stop placed and kept", ("NO_STOP_ORDER", "STOP_WIDER_THAN_CARD", "STOP_TIGHTER_THAN_CARD",
+                                      "STOP_CANCELLED", "STOP_LOWERED")),
     ("exit", "Exited by the plan", ("HELD_PAST_STOP", "EARLY_EXIT", "GAVE_BACK_AFTER_TARGET", "GAVE_BACK_PROFIT",
                                     "HELD_PAST_SQUARE_OFF", "HELD_OVERNIGHT")),
     ("calm", "Calm after a loss", ("QUICK_REENTRY_AFTER_LOSS", "SIZE_UP_AFTER_LOSS")),

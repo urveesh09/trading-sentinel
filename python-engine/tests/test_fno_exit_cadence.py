@@ -112,6 +112,24 @@ def test_each_look_is_one_line_written_off_the_exit_path():
     assert fno_exit_paths.stats()["written"] == 1
 
 
+def test_directional_receipt_preserves_missing_provider_time_depth_and_future():
+    position = _Position()
+    position.qty, position.lot_size, position.expiry, position.strategy = 65, 65, "2026-10-27", "N11_EFF"
+    receipt = fno_exit_paths.QuoteReceipt(NOW, {"timestamp": "bad", "depth": {"buy": [{"quantity": 65}]}})
+    receipts = fno_exit_paths.DirectionalReceipts(receipt, None)
+    assert fno_exit_paths.record(NOW, "FNO_PAPER", position, bid=0, ask=0, ltp=219.2, fut=None,
+                                 decision=_Decision(), receipts=receipts)
+    assert fno_exit_paths.flush()
+    [look] = _lines()
+    evidence = look["quote_evidence"]
+    assert evidence["future"] is None
+    assert evidence["option"]["provider_at"] is evidence["option"]["bid_qty"] is None
+    assert evidence["option"]["provider_time_error"] == "unparseable_provider_timestamp"
+    other_source = fno_exit_paths.line_for(NOW, "FNO_LIVE", position, bid=0, ask=0, ltp=219.2, fut=None,
+                                          decision=_Decision(), receipts=receipts)
+    assert "quote_evidence" not in json.loads(other_source)
+
+
 def test_the_settings_ride_on_a_positions_first_look_and_a_digest_on_every_look():
     params = {**CONFIRMED, "FNO_HARD_FLAT_MIN": 910}
     assert _record(params) and _record(params, at=NOW + timedelta(seconds=10)) and fno_exit_paths.flush()

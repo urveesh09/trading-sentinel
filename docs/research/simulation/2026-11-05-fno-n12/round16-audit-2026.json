@@ -1,0 +1,71 @@
+{
+  "refusals": [
+    {
+      "at": "2026-01-19T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2026-01-20",
+      "full_reserve": 11407.7128510445,
+      "opening_width": 120.5,
+      "pair_ask": 167.5,
+      "strike": 25600,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2026-02-02T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2026-02-03",
+      "full_reserve": 17682.05331406292,
+      "opening_width": 222.20000000000073,
+      "pair_ask": 263.79999999999995,
+      "strike": 24850,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2026-04-06T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2026-04-07",
+      "full_reserve": 26718.927895793502,
+      "opening_width": 184.10000000000218,
+      "pair_ask": 402.5,
+      "strike": 22700,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2026-07-20T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2026-07-21",
+      "full_reserve": 11632.494518722731,
+      "opening_width": 128.0,
+      "pair_ask": 170.95,
+      "strike": 24200,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2026-09-21T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2026-09-22",
+      "full_reserve": 9625.74803626201,
+      "opening_width": 58.900000000001455,
+      "pair_ask": 140.15,
+      "strike": 23400,
+      "wallet_bound": 9000.0,
+      "width_failed": true
+    },
+    {
+      "at": "2026-10-26T11:00:59+05:30",
+      "cash_failed": true,
+      "expiry": "2026-10-27",
+      "full_reserve": 16812.24599130803,
+      "opening_width": 345.40000000000146,
+      "pair_ask": 250.45,
+      "strike": 22650,
+      "wallet_bound": 9000.0,
+      "width_failed": false
+    }
+  ],
+  "source_receipt_sha256": "f0c0fc3a2e6d9855fca01de789262bc37a732461d599175257a6b5c838a7fd49"
+}

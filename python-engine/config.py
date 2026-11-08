@@ -326,6 +326,8 @@ class Settings(BaseSettings):
     # >= 0.3% ahead of NIFTY and above yesterday's high (momentum_selective).
     # Oct 7's IRCON (-Rs 507) is the kind it refuses. Off = shipped entries.
     MOMENTUM_SELECTIVE_ENTRY_ENABLED: bool = True
+    # [M01] Paper shadow of the stocks-in-play opening-range breakout, replayed at 15:05 from cached bars.
+    MOMENTUM_ORB_SHADOW_ENABLED: bool = True
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
     MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
@@ -895,6 +897,14 @@ class Settings(BaseSettings):
     # real Penny orders. Production explicitly opts in with
     # PENNY_LIVE_TRADING=true after its capital and broker checks are ready.
     PENNY_LIVE_TRADING:            bool  = False
+    # Retire only Classic new entries. Held exits and independent paper controls continue.
+    PENNY_CLASSIC_MIS_ENTRIES_ENABLED: bool = False
+    PENNY_CLASSIC_CNC_ENTRIES_ENABLED: bool = False
+    # Funded auction comparisons only. No broker orders or changes to legacy books.
+    PENNY_AUCTION_FORWARD_ENABLED: bool = True
+    # LTP is not a verified pre-open indicative price. Keep observation on,
+    # but require explicit research opt-in for the conditional Smart entry arms.
+    PENNY_SMART_AUCTION_ENTRIES_ENABLED: bool = False
     PENNY_DISABLE_TICKERS:         str   = ""         # comma-separated manual kill-switch
     PENNY_LOG_CSV_PATH:            str   = "/data/penny_signals.csv"
     PENNY_ENTRY_FILL_TIMEOUT_SEC:  float = 60.0      # max wait for LIMIT entry to fill before cancel
@@ -1255,9 +1265,21 @@ class Settings(BaseSettings):
     # this many seconds after the first one (0 = the first look sells, as
     # before). Protective stops stay immediate. fno_exit_rules.
     FNO_PROFIT_LOCK_CONFIRM_SEC: float = 8.0
+    # [N012-A, owner Nov 8] The trend-aware profit lock on the paper F&O main book (fno_trend_lock.py): the
+    # front future's last three completed 5-minute buckets widen the lock's kept share while the trend supports
+    # the trade and tighten it while the trend opposes it. Paper N11 positions only, never real money.
+    # Research and the choice of numbers: docs/research/simulation/2026-11-08-fno-n012-a2 (N012-A2).
+    FNO_TREND_LOCK_ENABLED: bool = True
+    FNO_TREND_LOCK_SUPPORT_KEEP: float = 0.35
+    FNO_TREND_LOCK_ADVERSE_KEEP: float = 0.65
+    FNO_TREND_LOCK_TRAIL_KEEP: float = 0.60     # <= 0: no lock switched on during a trail
     # [SX-F1] Keep every exit check of a held option (fno_exit_paths.py) so
     # exit rules can be replayed at the live clock. Research only.
     FNO_EXIT_PATH_RECORDING: bool = True
+    # Opt-in exact receipt clocks and displayed size for N11 paper exit research.
+    FNO_N012_FORWARD_EVIDENCE: bool = False
+    # Reuse the defined-risk paper manager's existing held-leg quote batch.
+    FNO_DR_EXIT_PATH_RECORDING: bool = False
     # [SX-P2 2026-10-21] Run PEN_SMART_V2 (penny_smart_v2.py: wider,
     # noise-aware stop and a three-close thesis failure) beside V1 as its own
     # Rs 2,000 paper book. Research only; V1 is unchanged.
@@ -1507,6 +1529,8 @@ class Settings(BaseSettings):
     # [N06c] BROKEN: one message when a trade's price goes under its plan stop with no stop of the partner's own at
     # or above it, with what selling all or half gives now. False: never sent.
     PARTNER_WATCH_BROKEN_ENABLED: bool = True
+    # [N07] Advisory floor, combined planned risk and current futures context.
+    PARTNER_WATCH_PROFIT_PROTECTION_ENABLED: bool = True
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True

@@ -279,6 +279,7 @@ def _best_bid(quote):
 
 async def run_preopen(kite, db_path: Optional[str] = None, now: Optional[datetime] = None) -> dict:
     """09:07: record the pre-open evidence and decide SV3_PREOPEN on the indicative price."""
+    injected_now = now
     db_path = db_path or settings.DB_PATH
     now = now or datetime.now(IST)
     today = now.date().isoformat()
@@ -323,6 +324,11 @@ async def run_preopen(kite, db_path: Optional[str] = None, now: Optional[datetim
                    "eligible": sum(eligible(c) for c in cands), "picks": [c.ticker for c in picks],
                    "thin_refused": len(refused), "capital": round(cap, 2), "cash_in_use": held_over}
         _record_run(conn, today, "PREOPEN", summary, now)
+    try:
+        from penny_auction_forward import capture_smart
+        capture_smart(db_path, quotes_u, medians, thin, injected_now or datetime.now(IST))
+    except Exception as exc:
+        logger.warning("penny_auction_smart_capture_failed err=%s", type(exc).__name__)
     logger.info("penny_smart_v3_preopen %s", summary)
     return summary
 

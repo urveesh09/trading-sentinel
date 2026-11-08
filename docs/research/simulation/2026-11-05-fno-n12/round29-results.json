@@ -1,0 +1,92 @@
+{
+  "coverage": {
+    "matched_positive_volume": 224
+  },
+  "share_of_target_from_all_matched_crossing_pct": 15.029299671528314,
+  "totals": {
+    "charges": 18223.869125830326,
+    "crossing": 7939.750000000015,
+    "crossing_positive_volume": 7939.750000000015,
+    "extra": 56885.0,
+    "gross": 339251.25,
+    "net": 264142.381
+  },
+  "twenty_percent_target_increment": 52828.476200000005,
+  "windows": {
+    "2022": {
+      "exceptions": [],
+      "parent_trades": 28,
+      "ticket_coverage": {
+        "matched_positive_volume": 28
+      },
+      "totals": {
+        "charges": 1943.2895678784698,
+        "crossing": 702.0000000000034,
+        "crossing_positive_volume": 702.0000000000034,
+        "extra": 5955.0,
+        "gross": -2704.000000000001,
+        "net": -10602.289700000001
+      }
+    },
+    "2023": {
+      "exceptions": [],
+      "parent_trades": 28,
+      "ticket_coverage": {
+        "matched_positive_volume": 29
+      },
+      "totals": {
+        "charges": 1902.726082234415,
+        "crossing": 578.4999999999973,
+        "crossing_positive_volume": 578.4999999999973,
+        "extra": 6160.0,
+        "gross": -3474.249999999999,
+        "net": -11536.976099999998
+      }
+    },
+    "2024": {
+      "exceptions": [],
+      "parent_trades": 29,
+      "ticket_coverage": {
+        "matched_positive_volume": 36
+      },
+      "totals": {
+        "charges": 3129.4157609611952,
+        "crossing": 1472.2500000000068,
+        "crossing_positive_volume": 1472.2500000000068,
+        "extra": 10390.0,
+        "gross": 108559.75,
+        "net": 95040.3342
+      }
+    },
+    "2025": {
+      "exceptions": [],
+      "parent_trades": 73,
+      "ticket_coverage": {
+        "matched_positive_volume": 74
+      },
+      "totals": {
+        "charges": 5968.4304272765,
+        "crossing": 2583.7500000000014,
+        "crossing_positive_volume": 2583.7500000000014,
+        "extra": 17965.0,
+        "gross": 87412.0,
+        "net": 63478.5696
+      }
+    },
+    "2026": {
+      "exceptions": [],
+      "parent_trades": 51,
+      "ticket_coverage": {
+        "matched_positive_volume": 57
+      },
+      "totals": {
+        "charges": 5280.007287479745,
+        "crossing": 2603.2500000000055,
+        "crossing_positive_volume": 2603.2500000000055,
+        "extra": 16415.0,
+        "gross": 149457.75,
+        "net": 127762.743
+      }
+    }
+  }
+}

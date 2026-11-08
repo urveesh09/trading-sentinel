@@ -1,0 +1,83 @@
+{
+  "evidence_sha256": "c814a8a840629eda9012d161c3e4ea53ee17916c09d3f9977263875e41ad62ed",
+  "historical_days_with_observed_volatility": 0,
+  "historical_market_days": 31,
+  "matched_shadow_entry_ids": [
+    23,
+    24,
+    25,
+    92,
+    93,
+    94
+  ],
+  "native_closes": 6,
+  "need": 20,
+  "observed_entries": [
+    {
+      "above_line": true,
+      "id": 55,
+      "paper_count": 25,
+      "paper_count_without_seeds": 3,
+      "paper_positive": true,
+      "paper_positive_without_seeds": false,
+      "paper_sum": 19159.125554128914,
+      "stand_aside": false,
+      "vol_up": true,
+      "volatility_recorded_at": "2026-11-03T09:31:10.770739+05:30"
+    },
+    {
+      "above_line": true,
+      "id": 56,
+      "paper_count": 25,
+      "paper_count_without_seeds": 3,
+      "paper_positive": true,
+      "paper_positive_without_seeds": false,
+      "paper_sum": 19159.125554128914,
+      "stand_aside": false,
+      "vol_up": true,
+      "volatility_recorded_at": "2026-11-04T09:30:38.114383+05:30"
+    },
+    {
+      "above_line": true,
+      "id": 57,
+      "paper_count": 25,
+      "paper_count_without_seeds": 3,
+      "paper_positive": true,
+      "paper_positive_without_seeds": false,
+      "paper_sum": 19159.125554128914,
+      "stand_aside": false,
+      "vol_up": true,
+      "volatility_recorded_at": "2026-11-05T09:30:22.470659+05:30"
+    },
+    {
+      "above_line": true,
+      "id": 58,
+      "paper_count": 25,
+      "paper_count_without_seeds": 3,
+      "paper_positive": true,
+      "paper_positive_without_seeds": false,
+      "paper_sum": 19159.125554128914,
+      "stand_aside": false,
+      "vol_up": true,
+      "volatility_recorded_at": "2026-11-05T09:30:22.470659+05:30"
+    },
+    {
+      "above_line": true,
+      "id": 59,
+      "paper_count": 26,
+      "paper_count_without_seeds": 4,
+      "paper_positive": true,
+      "paper_positive_without_seeds": false,
+      "paper_sum": 19665.053675655334,
+      "stand_aside": false,
+      "vol_up": true,
+      "volatility_recorded_at": "2026-11-05T09:30:22.470659+05:30"
+    }
+  ],
+  "observed_volatility_dates": 5,
+  "production_release": "398d44adeffa26a6314250858bcf2ee6eb7a2f71",
+  "scope_end": "2026-11-06T15:50:00+05:30",
+  "scope_start": "2026-11-02T09:15:00+05:30",
+  "seed_closes": 22,
+  "stand_ratio": 0.9
+}

@@ -1,0 +1,52 @@
+{
+  "candidate_decisions": {
+    "COMPRESSION_STRADDLE": "Prior native entry and dated expiry four days away",
+    "CONTEXT_GATE": "Above native low-volatility line",
+    "CONTEXT_RELEASE": "Above native low-volatility line",
+    "STOP_BREAK": "No qualifying underlying stop in observed book"
+  },
+  "nifty_gate": {
+    "above_line": 1,
+    "atr_pct": 1.2411575189118096,
+    "recorded_at": "2026-11-05T09:30:22.470659+05:30",
+    "session_date": "2026-11-05",
+    "usual": 1.0501067785094729,
+    "vol_up": 1
+  },
+  "paper_singles": [
+    {
+      "entry_time": "2026-11-05T09:45:24.000601+05:30",
+      "exit_reason": "time_stop",
+      "exit_time": "2026-11-05T11:00:33.143581+05:30",
+      "expiry": "2026-11-09",
+      "id": 57,
+      "pnl": -765.5909993772185
+    },
+    {
+      "entry_time": "2026-11-05T10:51:28.081144+05:30",
+      "exit_reason": "profit_lock",
+      "exit_time": "2026-11-05T12:03:23.274723+05:30",
+      "expiry": "2026-11-09",
+      "id": 58,
+      "pnl": 1028.7017482368344
+    },
+    {
+      "entry_time": "2026-11-05T11:30:27.756350+05:30",
+      "exit_reason": "trail_stop",
+      "exit_time": "2026-11-05T14:20:43.232655+05:30",
+      "expiry": "2026-11-09",
+      "id": 59,
+      "pnl": 4558.072901342427
+    }
+  ],
+  "production_head": "398d44ad",
+  "reported_defined_risk_net": 2545.91,
+  "reported_nifty_singles_net": 4821.18,
+  "scope": "Observed gates and native settlements only",
+  "session": "2026-11-05",
+  "sources": [
+    "fno_n11_gate",
+    "fno_positions",
+    "round9-nov5.json"
+  ]
+}

@@ -1,0 +1,36 @@
+........................................................................ [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 20%]
+........................................................................ [ 27%]
+........................................................................ [ 33%]
+............................................................s........... [ 40%]
+........................................................................ [ 47%]
+........................................................................ [ 54%]
+........................................................................ [ 60%]
+........................................................................ [ 67%]
+........................................................................ [ 74%]
+........................................................................ [ 81%]
+........................................................................ [ 87%]
+........................................................................ [ 94%]
+..........................................................               [100%]
+============================== warnings summary ===============================
+python-engine\winvenv\Lib\site-packages\starlette\routing.py:657: 1 warning
+python-engine/tests/test_penny_health.py: 2 warnings
+python-engine/tests/test_penny_main_integration.py: 11 warnings
+  C:\Users\Urveesh\Desktop\trading-sentinel\python-engine\winvenv\Lib\site-packages\starlette\routing.py:657: DeprecationWarning: async generator function lifespans are deprecated, use an @contextlib.asynccontextmanager function instead
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1065 passed, 1 skipped, 14 warnings in 87.82s (0:01:27)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Urveesh\AppData\Local\Programs\Python\Python311\Lib\logging\__init__.py", line 1113, in emit
+    stream.write(msg + self.terminator)
+ValueError: I/O operation on closed file.
+Call stack:
+  File "C:\Users\Urveesh\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1811, in call_exception_handler
+    self.default_exception_handler(context)
+  File "C:\Users\Urveesh\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1785, in default_exception_handler
+    logger.error('\n'.join(log_lines), exc_info=exc_info)
+Message: "Task exception was never retrieved\nfuture: <Task finished name='penny_ledger_write' coro=<test_record_close_ledger_write_failure_does_not_propagate.<locals>.broken_writer() done, defined at C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\tests\\test_penny_risk.py:357> exception=RuntimeError('simulated DB outage')>"
+Arguments: ()

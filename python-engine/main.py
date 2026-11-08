@@ -502,6 +502,9 @@ async def run_penny_connors_scan():
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("penny_connors_scan_skip reason=non_trading_day")
         return
+    if not settings.PENNY_CLASSIC_CNC_ENTRIES_ENABLED:
+        logger.info("penny_connors_scan_skip reason=classic_cnc_entries_retired")
+        return
     # [FIX-PHASE3-AUDIT 2026-07-09] No-token guard -- same rationale as
     # run_penny_scanner_once (2026-07-09 missed-login incident).
     if not kite.access_token:
@@ -2226,6 +2229,10 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(run_momentum_shadow_terminal, 'cron', day_of_week='mon-fri', hour=16, minute=5,
                       kwargs={"pass_name": "retry"}, id="momentum_shadow_terminal_retry", max_instances=1,
                       coalesce=True, misfire_grace_time=1800)
+    # [M01] Stocks-in-play breakout paper shadow, from the bars the scans cached (no Kite call).
+    from momentum_orb_shadow import run_momentum_orb_shadow
+    scheduler.add_job(run_momentum_orb_shadow, 'cron', day_of_week='mon-fri', hour=15, minute=5,
+                      id="momentum_orb_shadow", max_instances=1, coalesce=True, misfire_grace_time=1800)
 
     scheduler.add_job(kite.clear_intraday_cache, 'cron', hour=0, minute=5, id="intraday_cache_cleanup")
 

@@ -1,0 +1,39 @@
+{
+  "export_manifest": "8411f16cd034ad7ab5cde936a92c46148ce7ad70effd71bcb2428880d887bfe3",
+  "official_calendar": {
+    "2026-10-29": [
+      "2026-10-28",
+      "e305565a840a9b4d2e721df6a393140d0088d8b4b438d2d71fbea028dc405439"
+    ],
+    "2026-10-30": [
+      "2026-10-29",
+      "cb2dc239fad84efa1977c4925b3f0c4882fc8e94426dc94e9bb73cc608de7054"
+    ],
+    "2026-11-02": [
+      "2026-10-30",
+      "99da5162c5e18aa4f79183a0c546780d07d5c1dedfbbcb5f1a0fbf55af28158b"
+    ],
+    "2026-11-03": [
+      "2026-11-02",
+      "0d8f21ca5c748f4c83e4a6a86e1248e82c2d7ff9b99dc94bd8fc4c0949eb793c"
+    ],
+    "2026-11-04": [
+      "2026-11-03",
+      "5863a084668731f524dd2a07a197045bab78b4707811ba0e435be5b511166d44"
+    ],
+    "2026-11-05": [
+      "2026-11-04",
+      "d6b839d45cc135d59caa76082f170355c28390f36c0221c5768c3d005f28fafa"
+    ]
+  },
+  "source": {
+    "../2026-11-05-fno-expiry-followup/regular_today.py": "9684ad004ce8e6a870318056bd1f6dd65d16f1a4799eeec64fe7a015a6ef9758",
+    "ROUND19_NOV5.md": "99ed349fa2e21f60bbef48bc020e9d50ee08801f54de25040ee3158678d72d8a",
+    "round18-forecasts.json": "0ca60d093972661d865095bab16a75cd88257eead5ccd3b3bc989195bb03116f",
+    "round18-freeze.json": "2390f8403bdde13ced143886de03cc67e5c927c0e0328710cd62b5751c90560c",
+    "round18.py": "98736acc9760a66cc8b54317d9fc1cc0bbf3e8fb5753fbbc65a53532a67f71e9",
+    "round19.py": "1fa5798bb1f559e380c22c3fc8d378c755cb6fbc2eb24f91231c6ed42328e47f",
+    "round19_nov5.py": "52a8aefc6525543960482b76fd47dfd2b393d98e6383a88ee982a0bc722cf262",
+    "round9-nov5.json": "da9971b56cea0a1fbbd8525403a008a617829f359cd413d36208ac12557ccf5c"
+  }
+}

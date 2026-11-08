@@ -1,0 +1,100 @@
+{
+  "baseline_single_net": 4821.18,
+  "conditional_candidate_single_net": 5479.67,
+  "day": "2026-11-05",
+  "forecast": {
+    "day": "2026-11-05",
+    "implied_log_forecast": -5.080055088276237,
+    "realized": 0.006116549135097122,
+    "realized_only_log_forecast": -4.769737662543603
+  },
+  "pair_gate": "prior native entry and four days to nearest expiry",
+  "paired_held": [
+    {
+      "baseline": {
+        "add": null,
+        "banked": null,
+        "exit": 136.55,
+        "exit_time": "2026-11-05T11:00:33.143581+05:30",
+        "net": -765.591,
+        "reason": "time_stop",
+        "status": "CLOSED",
+        "tail": false
+      },
+      "candidate": {
+        "add": null,
+        "banked": null,
+        "exit": 136.55,
+        "exit_time": "2026-11-05T11:00:33.143581+05:30",
+        "net": -765.591,
+        "reason": "time_stop",
+        "status": "CLOSED",
+        "tail": false
+      },
+      "id": 57,
+      "looks": 447,
+      "max_gap_seconds": 38.944047
+    },
+    {
+      "baseline": {
+        "add": null,
+        "banked": null,
+        "exit": 170.95,
+        "exit_time": "2026-11-05T12:03:23.274723+05:30",
+        "net": 1028.7017,
+        "reason": "profit_lock",
+        "status": "CLOSED",
+        "tail": false
+      },
+      "candidate": {
+        "add": null,
+        "banked": null,
+        "exit": 170.95,
+        "exit_time": "2026-11-05T12:03:23.274723+05:30",
+        "net": 1028.7017,
+        "reason": "profit_lock",
+        "status": "CLOSED",
+        "tail": false
+      },
+      "id": 58,
+      "looks": 433,
+      "max_gap_seconds": 14.795219
+    },
+    {
+      "baseline": {
+        "add": null,
+        "banked": null,
+        "exit": 224.3,
+        "exit_time": "2026-11-05T14:20:43.232655+05:30",
+        "net": 4558.0729,
+        "reason": "trail_stop",
+        "status": "CLOSED",
+        "tail": false
+      },
+      "candidate": {
+        "add": null,
+        "banked": null,
+        "exit": 234.45,
+        "exit_time": "2026-11-05T13:56:03.105300+05:30",
+        "net": 5216.5559,
+        "reason": "trail_stop",
+        "status": "CLOSED",
+        "tail": false
+      },
+      "id": 59,
+      "looks": 1021,
+      "max_gap_seconds": 40.095694
+    }
+  ],
+  "separate_recorded_spread_net": 2545.91,
+  "trail_scale": 0.8562792641619197,
+  "training_additions_after_oct28": [
+    "2026-10-29",
+    "2026-11-02",
+    "2026-11-04"
+  ],
+  "training_exclusions": {
+    "2026-10-30": "incomplete futures clocks",
+    "2026-11-03": "own expiry"
+  }
+}

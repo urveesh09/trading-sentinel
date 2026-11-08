@@ -14,7 +14,10 @@ async def get_edge_overnight_experiment(request: Request):
     _main = importlib.import_module("main")
     _main._check_internal_secret(request, "get_edge_overnight_experiment")
     from edge_overnight_paper import overnight_shadow_comparison
-    return overnight_shadow_comparison(settings.DB_PATH)
+    response = overnight_shadow_comparison(settings.DB_PATH)
+    from penny_auction_forward import comparison
+    response["auction_forward"] = comparison(settings.DB_PATH)
+    return response
 
 
 @router.get("/experiments/penny-smart")
@@ -32,7 +35,10 @@ async def get_penny_smart_v3_experiment(request: Request):
     _main = importlib.import_module("main")
     _main._check_internal_secret(request, "get_penny_smart_v3_experiment")
     from penny_smart_v3 import comparison
-    return comparison(settings.DB_PATH)
+    response = comparison(settings.DB_PATH)
+    from penny_auction_forward import comparison as forward_comparison
+    response["auction_forward"] = forward_comparison(settings.DB_PATH)
+    return response
 
 
 @router.get("/experiments/penny")

@@ -1,0 +1,117 @@
+{
+  "adverse_net": -9890.55,
+  "base_net": -8090.55,
+  "counts": {
+    "cash_limit": 40,
+    "n11t_already_entered": 25,
+    "own_expiry": 52,
+    "prior_or_open_marks_missing": 2,
+    "sessions": 248,
+    "settled": 9,
+    "signal": 49,
+    "small_opening_displacement": 120
+  },
+  "positions": [
+    {
+      "adverse_net": -486.94,
+      "ask": 68.45,
+      "base_net": -286.94,
+      "bid": 68.0,
+      "day": "2024-03-12",
+      "expiry": "2024-03-14",
+      "reservation": 4898.45,
+      "right": "CE",
+      "strike": 22450
+    },
+    {
+      "adverse_net": -2107.19,
+      "ask": 57.85,
+      "base_net": -1907.19,
+      "bid": 32.4,
+      "day": "2024-03-27",
+      "expiry": "2024-03-28",
+      "reservation": 4209.14,
+      "right": "CE",
+      "strike": 22200
+    },
+    {
+      "adverse_net": -585.42,
+      "ask": 54.95,
+      "base_net": -385.42,
+      "bid": 52.95,
+      "day": "2024-04-08",
+      "expiry": "2024-04-10",
+      "reservation": 4020.56,
+      "right": "CE",
+      "strike": 22750
+    },
+    {
+      "adverse_net": -729.91,
+      "ask": 66.4,
+      "base_net": -529.91,
+      "bid": 62.2,
+      "day": "2024-04-24",
+      "expiry": "2024-04-25",
+      "reservation": 4765.14,
+      "right": "CE",
+      "strike": 22400
+    },
+    {
+      "adverse_net": -184.23,
+      "ask": 40.65,
+      "base_net": 15.77,
+      "bid": 44.8,
+      "day": "2024-07-03",
+      "expiry": "2024-07-04",
+      "reservation": 3090.64,
+      "right": "CE",
+      "strike": 24350
+    },
+    {
+      "adverse_net": -1482.92,
+      "ask": 69.4,
+      "base_net": -1282.92,
+      "bid": 53.6,
+      "day": "2024-08-20",
+      "expiry": "2024-08-22",
+      "reservation": 4960.23,
+      "right": "CE",
+      "strike": 24750
+    },
+    {
+      "adverse_net": -558.06,
+      "ask": 66.85,
+      "base_net": -358.06,
+      "bid": 65.3,
+      "day": "2024-09-02",
+      "expiry": "2024-09-05",
+      "reservation": 4794.41,
+      "right": "CE",
+      "strike": 25350
+    },
+    {
+      "adverse_net": -830.37,
+      "ask": 65.8,
+      "base_net": -630.37,
+      "bid": 60.05,
+      "day": "2024-10-14",
+      "expiry": "2024-10-17",
+      "reservation": 4726.13,
+      "right": "CE",
+      "strike": 25250
+    },
+    {
+      "adverse_net": -2925.51,
+      "ask": 63.65,
+      "base_net": -2725.51,
+      "bid": 25.6,
+      "day": "2024-11-19",
+      "expiry": "2024-11-21",
+      "reservation": 4586.31,
+      "right": "CE",
+      "strike": 23750
+    }
+  ],
+  "signed_index_count": 49,
+  "signed_index_points": -268.0
+}

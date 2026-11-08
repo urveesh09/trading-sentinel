@@ -253,13 +253,6 @@ async def init_opening_drive_db(db_path: str) -> None:
         await db.commit()
 
 
-async def _record(db_path: str, day: date, value: float, source: str, now: datetime, underlying: str) -> None:
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute("INSERT OR IGNORE INTO fno_opening_drive(session_date,underlying,value,source,recorded_at) "
-                         "VALUES(?, ?, ?, ?, ?)", (day.isoformat(), underlying, float(value), source, now.isoformat()))
-        await db.commit()
-
-
 async def drive_history(db_path: str, day: date, underlying: str = "NIFTY") -> list:
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
@@ -285,11 +278,17 @@ async def drive_today(db_path: str, bars: Optional[pd.DataFrame], now: datetime,
         return None, None
     await init_opening_drive_db(db_path)
     closed = _closed(bars, now)
+    recorded_at = now.isoformat()
+    rows = []
     for earlier in sorted({d for d in closed.index.date if d < day}):
         past = opening_drive(closed, earlier, datetime.combine(earlier, datetime.min.time()) + timedelta(hours=16))
         if past is not None:
-            await _record(db_path, earlier, past, "backfill", now, underlying)
-    await _record(db_path, day, value, "live", now, underlying)
+            rows.append((earlier.isoformat(), underlying, float(past), "backfill", recorded_at))
+    rows.append((day.isoformat(), underlying, float(value), "live", recorded_at))
+    async with aiosqlite.connect(db_path) as db:
+        await db.executemany("INSERT OR IGNORE INTO fno_opening_drive(session_date,underlying,value,source,recorded_at) "
+                             "VALUES(?, ?, ?, ?, ?)", rows)
+        await db.commit()
     result = (value, drive_side(value, await drive_history(db_path, day, underlying)))
     for stale in [k for k in _TODAY if k[2] != day.isoformat()]:
         del _TODAY[stale]

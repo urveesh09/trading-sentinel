@@ -1,0 +1,78 @@
+{
+  "window": [
+    "2026-08-11",
+    "2026-11-06"
+  ],
+  "sessions": 57,
+  "arms": {
+    "A0_BASE_LIVE": {
+      "trades": 165,
+      "net": -13029.1,
+      "gross": -4910.7,
+      "costs": 8118.4,
+      "win": 0.273,
+      "avg_r": -0.111,
+      "net_ex_best_day": -14264.1,
+      "worst_day": -2282.2,
+      "max_dd": 13374.7,
+      "days": 44
+    },
+    "A1_SELECTIVE_LIVE": {
+      "trades": 8,
+      "net": -187.5,
+      "gross": 209.3,
+      "costs": 396.8,
+      "win": 0.375,
+      "avg_r": 0.02,
+      "net_ex_best_day": -865.0,
+      "worst_day": -687.5,
+      "max_dd": 1445.8,
+      "days": 6
+    },
+    "A2_SELECTIVE_VWAP": {
+      "trades": 8,
+      "net": 33.0,
+      "gross": 429.8,
+      "costs": 396.8,
+      "win": 0.625,
+      "avg_r": 0.055,
+      "net_ex_best_day": -712.8,
+      "worst_day": -687.5,
+      "max_dd": 1286.9,
+      "days": 6
+    },
+    "A3_ORB_TOP5_VWAP": {
+      "trades": 155,
+      "net": -2531.3,
+      "gross": -1011.1,
+      "costs": 1520.2,
+      "win": 0.297,
+      "avg_r": -0.016,
+      "net_ex_best_day": -3652.1,
+      "worst_day": -654.6,
+      "max_dd": 3671.8,
+      "days": 57
+    },
+    "NULL_ORB_RANDOM5_VWAP": {
+      "trades": 98,
+      "net": -2650.1,
+      "gross": -1688.5,
+      "costs": 961.5,
+      "win": 0.184,
+      "avg_r": -0.214,
+      "net_ex_best_day": -3320.1,
+      "worst_day": -542.6,
+      "max_dd": 3996.0,
+      "days": 49
+    }
+  },
+  "hypotheses": {
+    "stock_days": 25111,
+    "days": 53,
+    "mean_rest_pct": -0.0837,
+    "H1_top_vs_mean_pct": -0.0592,
+    "H1_top_positive_days": 23,
+    "H2_bottom_vs_mean_pct": 0.0931,
+    "H2_bottom_positive_days": 38
+  }
+}

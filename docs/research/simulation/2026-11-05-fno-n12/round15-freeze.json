@@ -1,0 +1,163 @@
+{
+  "book": {
+    "cfg": {
+      "FNO_MAX_LOTS": 2,
+      "FNO_MAX_LOTS_PROVEN": 2
+    },
+    "cost": [
+      200.0,
+      5.0
+    ],
+    "label": "N12|STOP_BREAK",
+    "members": [
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "SHIPPED",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "OR20",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "EFF",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "TPB",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:LOW",
+        "kind": "NAMED",
+        "name": "TPB",
+        "vwap_exit": "OFF"
+      },
+      {
+        "exit": "OWN",
+        "gate": "adx_abs30:HIGH",
+        "kind": "NAMED",
+        "name": "TPB",
+        "vwap_exit": "OFF"
+      }
+    ],
+    "n02_contract": "v1",
+    "n02_policy": "STATIC",
+    "n02_profile": "TPB_ONE",
+    "n03_context": "TPB_ONE",
+    "n03_contract": "v1",
+    "n03_sizing": "NORMAL",
+    "n03_variant": "RETEST",
+    "n04_context": "BALANCED_RETEST",
+    "n04_contract": "v1",
+    "n04_mode": "BASE",
+    "n05_context": "BALANCED_RETEST",
+    "n05_contract": "v1",
+    "n05_mode": "BASE",
+    "n07_contract": "v1",
+    "n07_mode": "PREMIUM_STALL",
+    "n08": {
+      "contract": "v1",
+      "exits": {
+        "EFF": {
+          "FNO_TRAIL_ATR_MULT": 2.0
+        },
+        "OR20": {
+          "FNO_TRAIL_ATR_MULT": 2.0
+        }
+      },
+      "low_last_minute": 840,
+      "low_two_lots_before": 720
+    },
+    "n09": {
+      "contract": "v1",
+      "vol_size": true
+    },
+    "n091": {
+      "contract": "v1",
+      "mode": "VOL_CLOCK"
+    },
+    "n10": {
+      "contract": "v1",
+      "eligibility": "RISK",
+      "entry": "NATIVE",
+      "flat_risk": 5000.0,
+      "max_total": 3,
+      "parent_min": 2,
+      "steps": [
+        [
+          1.0,
+          0.0
+        ]
+      ],
+      "vol": false
+    },
+    "n11": {
+      "add": "HONEST",
+      "contract": "v1",
+      "flat": 6250.0,
+      "k": 1.75,
+      "loss_one": true,
+      "stand": 20,
+      "stand_ratio": 0.9,
+      "true_risk": true
+    },
+    "n11t": {
+      "add": false,
+      "clamp": "SECOND_LOT",
+      "contract": "v4",
+      "limit": 6250.0,
+      "strict": true,
+      "when": [
+        "VOL",
+        "EV"
+      ]
+    },
+    "n12": "STOP_BREAK",
+    "o31": "N02|N05|NORMAL|BALANCED_RETEST|BASE"
+  },
+  "files": {
+    "../../../../python-engine/fno_entry_plan.py": "7285d2d739c4b9917c23bf0b49736119240c213bc01174d8dff1ca07350bf6bf",
+    "../../../../python-engine/fno_exit_rules.py": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467",
+    "../../../../python-engine/fno_n11.py": "fcc1517eab7a19e3ad557fd5ed730b691b8939728e0c23e012d17e4a18864c95",
+    "../../../../python-engine/fno_policy_replay.py": "fbef057ebe822731273c4b36a01f962cf2078e3306e8abed6293c3c1ce5eaa49",
+    "ROUND15.md": "e6f9e7feb5bd5bd38e82d3d647daef08eae813ceff820c5375910f033daa3a22",
+    "round1-freeze.json": "784391a46be45b90e07a9c4ef9eaebedc529f533fc80726050c2e583a5cb2624",
+    "round15.py": "c9f81469e5d2946f5bd60a3e99828dfc140eea8c1a01fb8d2ee0eb58045c2a1d",
+    "test_round15.py": "7e9d1397834569859fc90c8aa73122dc396ecf9219095d5d82dfac294acfa426"
+  },
+  "windows": {
+    "2022": [
+      "2022-06-01",
+      "2022-12-31"
+    ],
+    "2023": [
+      "2023-01-01",
+      "2023-12-31"
+    ],
+    "2024": [
+      "2024-01-01",
+      "2024-12-31"
+    ],
+    "2025": [
+      "2025-01-01",
+      "2025-12-31"
+    ],
+    "2026": [
+      "2026-01-01",
+      "2026-10-28"
+    ]
+  }
+}

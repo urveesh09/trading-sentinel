@@ -1,0 +1,146 @@
+{
+  "EARLY_GAP_HOLD": {
+    "annual_delta": {
+      "2022": -2467.94,
+      "2023": -6215.44,
+      "2024": -4747.97,
+      "2025": -2693.17,
+      "2026": -1278.7
+    },
+    "attribution": {
+      "2022": {
+        "direct_net": -3188.02,
+        "early_trades": 5,
+        "remaining_native_path_delta": 720.08
+      },
+      "2023": {
+        "direct_net": -42.71,
+        "early_trades": 8,
+        "remaining_native_path_delta": -6172.73
+      },
+      "2024": {
+        "direct_net": 437.07,
+        "early_trades": 4,
+        "remaining_native_path_delta": -5185.04
+      },
+      "2025": {
+        "direct_net": 2259.79,
+        "early_trades": 6,
+        "remaining_native_path_delta": -4952.96
+      },
+      "2026": {
+        "direct_net": -1278.71,
+        "early_trades": 2,
+        "remaining_native_path_delta": 0.01
+      }
+    },
+    "control": "N11T",
+    "control_max_drawdown_pct": 7.09309,
+    "control_net": 264142.37,
+    "control_worst_day": -5640.85,
+    "doubled_stress": "NOT_SCORED",
+    "gates": {
+      "20_percent_net_improvement": false,
+      "after_best_five_incremental_days": false,
+      "annual_net_floor": false,
+      "max_annual_closed_drawdown": true,
+      "no_unresolved_exposure": true,
+      "worst_day": true
+    },
+    "increment_after_best_five": -25610.41,
+    "max_drawdown_pct": 7.72844,
+    "net": 246739.15,
+    "net_target": 316970.84,
+    "paired_increment": -17403.24,
+    "provisional_development_pass": false,
+    "qualified": false,
+    "removed_days": [
+      [
+        "2023-02-07",
+        2635.4913
+      ],
+      [
+        "2023-02-28",
+        1835.8419999999999
+      ],
+      [
+        "2025-05-12",
+        1657.178372306405
+      ],
+      [
+        "2024-11-19",
+        1289.8557834994
+      ],
+      [
+        "2025-03-18",
+        788.8067168876697
+      ]
+    ],
+    "untouched_validation": "NOT_SCORED",
+    "worst_day": -5640.85
+  },
+  "EARLY_GAP_REPAIR": {
+    "annual_delta": {
+      "2022": 162.53,
+      "2023": 0.0,
+      "2024": -784.47,
+      "2025": 0.0,
+      "2026": -494.66
+    },
+    "attribution": {
+      "2022": {
+        "direct_net": 162.53,
+        "early_trades": 1,
+        "remaining_native_path_delta": 0.0
+      },
+      "2023": {
+        "direct_net": 0,
+        "early_trades": 0,
+        "remaining_native_path_delta": 0.0
+      },
+      "2024": {
+        "direct_net": -784.48,
+        "early_trades": 1,
+        "remaining_native_path_delta": 0.01
+      },
+      "2025": {
+        "direct_net": 0,
+        "early_trades": 0,
+        "remaining_native_path_delta": 0.0
+      },
+      "2026": {
+        "direct_net": -494.67,
+        "early_trades": 1,
+        "remaining_native_path_delta": 0.01
+      }
+    },
+    "control": "N11T",
+    "control_max_drawdown_pct": 7.09309,
+    "control_net": 264142.37,
+    "control_worst_day": -5640.85,
+    "doubled_stress": "NOT_SCORED",
+    "gates": {
+      "20_percent_net_improvement": false,
+      "after_best_five_incremental_days": false,
+      "annual_net_floor": true,
+      "max_annual_closed_drawdown": true,
+      "no_unresolved_exposure": true,
+      "worst_day": true
+    },
+    "increment_after_best_five": -1279.14,
+    "max_drawdown_pct": 7.09309,
+    "net": 263025.77,
+    "net_target": 316970.84,
+    "paired_increment": -1116.61,
+    "provisional_development_pass": false,
+    "qualified": false,
+    "removed_days": [
+      [
+        "2022-11-09",
+        162.5299652098211
+      ]
+    ],
+    "untouched_validation": "NOT_SCORED",
+    "worst_day": -5640.85
+  }
+}

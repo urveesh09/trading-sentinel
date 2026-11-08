@@ -1180,6 +1180,9 @@ class PennyScanner:
                     reject += 1
                     continue
 
+            if decision.get("accept") and not settings.PENNY_CLASSIC_MIS_ENTRIES_ENABLED:
+                decision = {**decision, "accept": False, "reject_reason": "classic_mis_entries_retired"}
+
             if not decision.get("accept"):
                 await log_penny_signal(
                     settings.DB_PATH, scan_id=scan_id, ticker=sym,

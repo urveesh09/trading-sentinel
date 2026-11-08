@@ -1,0 +1,1905 @@
+{
+  "criteria": {
+    "native_manage_gap_sec": 10,
+    "sample_gap_sec": 90,
+    "signal_clock": "one second after the 5m close with last causal same-day regime"
+  },
+  "days": {
+    "2026-09-10": {
+      "prior_adx_gate": {
+        "adx": 20.01141930814483,
+        "prior_day": "2026-09-09",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-24"
+          ],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": true
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-24"
+          ],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": true
+        }
+      }
+    },
+    "2026-09-11": {
+      "prior_adx_gate": {
+        "adx": 20.43086819996623,
+        "prior_day": "2026-09-10",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [
+            "2026-08-21",
+            "2026-08-24"
+          ],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": true
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [
+            "2026-08-21",
+            "2026-08-24"
+          ],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": true
+        }
+      }
+    },
+    "2026-09-15": {
+      "prior_adx_gate": {
+        "adx": 21.348698325633883,
+        "prior_day": "2026-09-11",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-09-16": {
+      "prior_adx_gate": {
+        "adx": 23.22862713860944,
+        "prior_day": "2026-09-15",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-09-17": {
+      "prior_adx_gate": {
+        "adx": 24.974275048499575,
+        "prior_day": "2026-09-16",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-09-21": {
+      "prior_adx_gate": {
+        "adx": 26.92788736923199,
+        "prior_day": "2026-09-18",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-09-22": {
+      "prior_adx_gate": {
+        "adx": 27.20156055888723,
+        "prior_day": "2026-09-21",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-09-23": {
+      "prior_adx_gate": {
+        "adx": 28.055446644820865,
+        "prior_day": "2026-09-22",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-09-24": {
+      "prior_adx_gate": {
+        "adx": 28.117192915586987,
+        "prior_day": "2026-09-23",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-09-24T11:50:01+05:30",
+              "bar": "2026-09-24 11:45:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 17512194,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 118.985954,
+                  "native_10sec_path": false,
+                  "observations": 190,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 215.736839,
+                  "native_10sec_path": false,
+                  "observations": 170,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 18924034,
+                "receipt": "2026-09-24T11:50:33.484483+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26SEP23250PE"
+              },
+              "minute": 710,
+              "regime": "REGIME_1_NORMAL",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB_LOW"
+            },
+            {
+              "at": "2026-09-24T11:55:01+05:30",
+              "bar": "2026-09-24 11:50:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 17512194,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 118.985954,
+                  "native_10sec_path": false,
+                  "observations": 185,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 215.736839,
+                  "native_10sec_path": false,
+                  "observations": 165,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 18924034,
+                "receipt": "2026-09-24T11:55:33.302728+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26SEP23250PE"
+              },
+              "minute": 715,
+              "regime": "REGIME_1_NORMAL",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB_LOW"
+            },
+            {
+              "at": "2026-09-24T12:00:01+05:30",
+              "bar": "2026-09-24 11:55:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "status": "no_sample_after_signal"
+              },
+              "minute": 720,
+              "regime": "REGIME_1_NORMAL",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB_LOW"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-09-25": {
+      "prior_adx_gate": {
+        "adx": 29.498260649685985,
+        "prior_day": "2026-09-24",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [
+            "2026-09-09"
+          ],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": true
+        }
+      }
+    },
+    "2026-09-28": {
+      "prior_adx_gate": {
+        "adx": 30.78068066068675,
+        "prior_day": "2026-09-25",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-09-28T09:55:01+05:30",
+              "bar": "2026-09-28 09:50:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 17512194,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 273.662059,
+                  "native_10sec_path": false,
+                  "observations": 279,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 331.455983,
+                  "native_10sec_path": false,
+                  "observations": 249,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 18918914,
+                "receipt": "2026-09-28T09:55:26.422244+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26SEP22950PE"
+              },
+              "minute": 595,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": false,
+              "strategy": "N11_OR20"
+            },
+            {
+              "at": "2026-09-28T10:25:01+05:30",
+              "bar": "2026-09-28 10:20:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 17512194,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 273.662059,
+                  "native_10sec_path": false,
+                  "observations": 250,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 273.662059,
+                  "native_10sec_path": false,
+                  "observations": 239,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 18918402,
+                "receipt": "2026-09-28T10:25:26.463051+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26SEP22900PE"
+              },
+              "minute": 625,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_SHIPPED"
+            },
+            {
+              "at": "2026-09-28T11:55:01+05:30",
+              "bar": "2026-09-28 11:50:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 17512194,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 273.662059,
+                  "native_10sec_path": false,
+                  "observations": 174,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 273.662059,
+                  "native_10sec_path": false,
+                  "observations": 167,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 18918402,
+                "receipt": "2026-09-28T11:55:26.284679+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26SEP22900PE"
+              },
+              "minute": 715,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_SHIPPED"
+            },
+            {
+              "at": "2026-09-28T13:35:01+05:30",
+              "bar": "2026-09-28 13:30:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 17512194,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 272.653632,
+                  "native_10sec_path": false,
+                  "observations": 87,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 272.653632,
+                  "native_10sec_path": false,
+                  "observations": 84,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 18918402,
+                "receipt": "2026-09-28T13:35:26.192621+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26SEP22900PE"
+              },
+              "minute": 815,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_SHIPPED"
+            },
+            {
+              "at": "2026-09-28T14:10:01+05:30",
+              "bar": "2026-09-28 14:05:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 17512194,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 272.398552,
+                  "native_10sec_path": false,
+                  "observations": 56,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 272.398552,
+                  "native_10sec_path": false,
+                  "observations": 54,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 18918402,
+                "receipt": "2026-09-28T14:10:25.818200+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26SEP22900PE"
+              },
+              "minute": 850,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [
+            "2026-09-09"
+          ],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-09-28T10:10:01+05:30",
+              "bar": "2026-09-28 10:05:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 281.788162,
+                  "native_10sec_path": false,
+                  "observations": 262,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 299.232907,
+                  "native_10sec_path": false,
+                  "observations": 247,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 227028741,
+                "receipt": "2026-09-28T10:10:26.157069+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0173900PE"
+              },
+              "minute": 610,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_SHIPPED"
+            },
+            {
+              "at": "2026-09-28T10:25:01+05:30",
+              "bar": "2026-09-28 10:20:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 281.788162,
+                  "native_10sec_path": false,
+                  "observations": 248,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 299.232907,
+                  "native_10sec_path": false,
+                  "observations": 234,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 227028741,
+                "receipt": "2026-09-28T10:25:25.435062+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0173900PE"
+              },
+              "minute": 625,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            },
+            {
+              "at": "2026-09-28T13:20:01+05:30",
+              "bar": "2026-09-28 13:15:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 272.610012,
+                  "native_10sec_path": false,
+                  "observations": 101,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 300.67472,
+                  "native_10sec_path": false,
+                  "observations": 92,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 227081221,
+                "receipt": "2026-09-28T13:20:26.171666+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0173800PE"
+              },
+              "minute": 800,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            }
+          ],
+          "truncated_input": true
+        }
+      }
+    },
+    "2026-09-29": {
+      "prior_adx_gate": {
+        "adx": 32.612627461272396,
+        "prior_day": "2026-09-28",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [
+            "2026-09-09"
+          ],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-09-29T09:55:01+05:30",
+              "bar": "2026-09-29 09:50:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 286.511532,
+                  "native_10sec_path": false,
+                  "observations": 275,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 326.272605,
+                  "native_10sec_path": false,
+                  "observations": 257,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 227088389,
+                "receipt": "2026-09-29T09:55:25.456200+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0173100PE"
+              },
+              "minute": 595,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": false,
+              "strategy": "N11_OR20"
+            }
+          ],
+          "truncated_input": true
+        }
+      }
+    },
+    "2026-09-30": {
+      "prior_adx_gate": {
+        "adx": 34.92986802463721,
+        "prior_day": "2026-09-29",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [
+            "2026-09-09"
+          ],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-09-30T12:05:01+05:30",
+              "bar": "2026-09-30 12:00:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 213.855249,
+                  "native_10sec_path": false,
+                  "observations": 170,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 213.979791,
+                  "native_10sec_path": false,
+                  "observations": 156,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 227007237,
+                "receipt": "2026-09-30T12:05:25.410319+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0173400CE"
+              },
+              "minute": 725,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_SHIPPED"
+            }
+          ],
+          "truncated_input": true
+        }
+      }
+    },
+    "2026-10-01": {
+      "prior_adx_gate": {
+        "adx": 36.78793874512776,
+        "prior_day": "2026-09-30",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-05": {
+      "prior_adx_gate": {
+        "adx": 38.87778728522002,
+        "prior_day": "2026-10-01",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-05T10:15:01+05:30",
+              "bar": "2026-10-05 10:10:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 12468226,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 70.94712,
+                  "native_10sec_path": false,
+                  "observations": 296,
+                  "sampled_90sec_path": true
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 125.342609,
+                  "native_10sec_path": false,
+                  "observations": 279,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 10422018,
+                "receipt": "2026-10-05T10:15:26.563387+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26O0622700PE"
+              },
+              "minute": 615,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-05T14:05:01+05:30",
+              "bar": "2026-10-05 14:00:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 65.637324,
+                  "native_10sec_path": false,
+                  "observations": 66,
+                  "sampled_90sec_path": true
+                },
+                "max_supported_lots": 1,
+                "option_token": 227570181,
+                "receipt": "2026-10-05T14:05:26.407277+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0873000PE"
+              },
+              "minute": 845,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            },
+            {
+              "at": "2026-10-05T14:10:01+05:30",
+              "bar": "2026-10-05 14:05:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 65.637324,
+                  "native_10sec_path": false,
+                  "observations": 61,
+                  "sampled_90sec_path": true
+                },
+                "max_supported_lots": 1,
+                "option_token": 227570181,
+                "receipt": "2026-10-05T14:10:26.721205+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0873000PE"
+              },
+              "minute": 850,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-06": {
+      "prior_adx_gate": {
+        "adx": 40.56884067699174,
+        "prior_day": "2026-10-05",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-07": {
+      "prior_adx_gate": {
+        "adx": 40.4446075214197,
+        "prior_day": "2026-10-06",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-07T10:05:01+05:30",
+              "bar": "2026-10-07 10:00:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 12468226,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 76.775592,
+                  "native_10sec_path": false,
+                  "observations": 306,
+                  "sampled_90sec_path": true
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 179.291631,
+                  "native_10sec_path": false,
+                  "observations": 287,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 11423490,
+                "receipt": "2026-10-07T10:05:26.155995+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26O1322750PE"
+              },
+              "minute": 605,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_OR20"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-07T10:05:01+05:30",
+              "bar": "2026-10-07 10:00:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 119.889394,
+                  "native_10sec_path": false,
+                  "observations": 305,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 240.013193,
+                  "native_10sec_path": false,
+                  "observations": 244,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 227614981,
+                "receipt": "2026-10-07T10:05:25.401881+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O0873100PE"
+              },
+              "minute": 605,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_OR20"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-08": {
+      "prior_adx_gate": {
+        "adx": 40.357954084413414,
+        "prior_day": "2026-10-07",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-08T10:35:01+05:30",
+              "bar": "2026-10-08 10:30:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 12468226,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 61.339653,
+                  "native_10sec_path": false,
+                  "observations": 276,
+                  "sampled_90sec_path": true
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 181.347511,
+                  "native_10sec_path": false,
+                  "observations": 238,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 11421442,
+                "receipt": "2026-10-08T10:35:26.132311+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26O1322550PE"
+              },
+              "minute": 635,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_OR20"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-09": {
+      "prior_adx_gate": {
+        "adx": 41.07381970333948,
+        "prior_day": "2026-10-08",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-09T12:00:01+05:30",
+              "bar": "2026-10-09 11:55:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "receipt": "2026-10-09T12:00:25.089189+05:30",
+                "status": "incomplete_verified_ladder"
+              },
+              "minute": 720,
+              "regime": "UNKNOWN",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            },
+            {
+              "at": "2026-10-09T12:10:01+05:30",
+              "bar": "2026-10-09 12:05:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "receipt": "2026-10-09T12:10:25.056036+05:30",
+                "status": "incomplete_verified_ladder"
+              },
+              "minute": 730,
+              "regime": "UNKNOWN",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-09T09:50:01+05:30",
+              "bar": "2026-10-09 09:45:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 120.029461,
+                  "native_10sec_path": false,
+                  "observations": 318,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 239.992616,
+                  "native_10sec_path": false,
+                  "observations": 268,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 281970437,
+                "receipt": "2026-10-09T09:50:28.068693+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O1572400CE"
+              },
+              "minute": 590,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": false,
+              "strategy": "N11_SHIPPED"
+            },
+            {
+              "at": "2026-10-09T12:10:01+05:30",
+              "bar": "2026-10-09 12:05:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 62.0471,
+                  "native_10sec_path": false,
+                  "observations": 181,
+                  "sampled_90sec_path": true
+                },
+                "held_2lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 182.030148,
+                  "native_10sec_path": false,
+                  "observations": 159,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 285412357,
+                "receipt": "2026-10-09T12:10:28.083378+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O1572500CE"
+              },
+              "minute": 730,
+              "regime": "UNKNOWN",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-12": {
+      "prior_adx_gate": {
+        "adx": 41.7385505969502,
+        "prior_day": "2026-10-09",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-12T10:05:01+05:30",
+              "bar": "2026-10-12 10:00:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 8731.928194,
+                  "native_10sec_path": false,
+                  "observations": 68,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 8731.928194,
+                  "native_10sec_path": false,
+                  "observations": 56,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 283307525,
+                "receipt": "2026-10-12T10:05:26.062925+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O1572800PE"
+              },
+              "minute": 605,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-13": {
+      "prior_adx_gate": {
+        "adx": 41.83680356875485,
+        "prior_day": "2026-10-12",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-13T09:50:01+05:30",
+              "bar": "2026-10-13 09:45:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 5702.429648,
+                  "native_10sec_path": false,
+                  "observations": 209,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 5702.429648,
+                  "native_10sec_path": false,
+                  "observations": 170,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 285597701,
+                "receipt": "2026-10-13T09:50:28.079337+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O1572700CE"
+              },
+              "minute": 590,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": false,
+              "strategy": "N11_SHIPPED"
+            },
+            {
+              "at": "2026-10-13T11:40:01+05:30",
+              "bar": "2026-10-13 11:35:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "receipt": "2026-10-13T11:40:27.539422+05:30",
+                "status": "incomplete_verified_ladder"
+              },
+              "minute": 700,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            },
+            {
+              "at": "2026-10-13T12:05:01+05:30",
+              "bar": "2026-10-13 12:00:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "receipt": "2026-10-13T12:05:25.554179+05:30",
+                "status": "incomplete_verified_ladder"
+              },
+              "minute": 725,
+              "regime": "UNKNOWN",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            },
+            {
+              "at": "2026-10-13T12:20:01+05:30",
+              "bar": "2026-10-13 12:15:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "receipt": "2026-10-13T12:20:34.424345+05:30",
+                "status": "incomplete_verified_ladder"
+              },
+              "minute": 740,
+              "regime": "UNKNOWN",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            },
+            {
+              "at": "2026-10-13T12:35:01+05:30",
+              "bar": "2026-10-13 12:30:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "receipt": "2026-10-13T12:35:32.808344+05:30",
+                "status": "incomplete_verified_ladder"
+              },
+              "minute": 755,
+              "regime": "UNKNOWN",
+              "retest_context_complete": true,
+              "strategy": "N11_SHIPPED"
+            },
+            {
+              "at": "2026-10-13T14:30:01+05:30",
+              "bar": "2026-10-13 14:25:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "receipt": "2026-10-13T14:30:27.338303+05:30",
+                "status": "incomplete_verified_ladder"
+              },
+              "minute": 870,
+              "regime": "UNKNOWN",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-14": {
+      "prior_adx_gate": {
+        "adx": 40.3821589421942,
+        "prior_day": "2026-10-13",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-14T13:00:01+05:30",
+              "bar": "2026-10-14 12:55:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "status": "no_sample_after_signal"
+              },
+              "minute": 780,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_OR20"
+            },
+            {
+              "at": "2026-10-14T13:55:01+05:30",
+              "bar": "2026-10-14 13:50:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "status": "no_sample_after_signal"
+              },
+              "minute": 835,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-14T11:55:01+05:30",
+              "bar": "2026-10-14 11:50:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "status": "no_sample_after_signal"
+              },
+              "minute": 715,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_EFF"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-15": {
+      "prior_adx_gate": {
+        "adx": 39.03141801312531,
+        "prior_day": "2026-10-14",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-16": {
+      "prior_adx_gate": {
+        "adx": 36.30320980554668,
+        "prior_day": "2026-10-15",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-16T10:55:01+05:30",
+              "bar": "2026-10-16 10:50:00",
+              "direction": "LONG",
+              "entry_evidence": {
+                "status": "no_sample_after_signal"
+              },
+              "minute": 655,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_SHIPPED"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-19": {
+      "prior_adx_gate": {
+        "adx": 34.041243870865614,
+        "prior_day": "2026-10-16",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-19T11:35:01+05:30",
+              "bar": "2026-10-19 11:30:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 1065.875038,
+                  "native_10sec_path": false,
+                  "observations": 163,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 1065.875038,
+                  "native_10sec_path": false,
+                  "observations": 143,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 288001541,
+                "receipt": "2026-10-19T11:35:27.911046+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O2274500PE"
+              },
+              "minute": 695,
+              "regime": "REGIME_1_NORMAL",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            },
+            {
+              "at": "2026-10-19T11:40:01+05:30",
+              "bar": "2026-10-19 11:35:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 95.8872,
+                  "native_10sec_path": false,
+                  "observations": 211,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 1,
+                "option_token": 288080901,
+                "receipt": "2026-10-19T11:40:48.258933+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26O2274400PE"
+              },
+              "minute": 700,
+              "regime": "REGIME_1_NORMAL",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-21": {
+      "prior_adx_gate": {
+        "adx": 31.707070371371138,
+        "prior_day": "2026-10-19",
+        "side": "HIGH"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-21T10:45:01+05:30",
+              "bar": "2026-10-21 10:40:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 12468226,
+                "held_1lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 7773.666046,
+                  "native_10sec_path": false,
+                  "observations": 97,
+                  "sampled_90sec_path": false
+                },
+                "held_2lot": {
+                  "flat_bid": false,
+                  "max_gap_sec": 7773.666046,
+                  "native_10sec_path": false,
+                  "observations": 89,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 13146882,
+                "receipt": "2026-10-21T10:45:29.338972+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26OCT23050PE"
+              },
+              "minute": 645,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_OR20"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-22": {
+      "prior_adx_gate": {
+        "adx": 29.866454601882385,
+        "prior_day": "2026-10-21",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-23": {
+      "prior_adx_gate": {
+        "adx": 28.796587381384224,
+        "prior_day": "2026-10-22",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-23T13:55:01+05:30",
+              "bar": "2026-10-23 13:50:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 12468226,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 75.907551,
+                  "native_10sec_path": false,
+                  "observations": 76,
+                  "sampled_90sec_path": true
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 136.635653,
+                  "native_10sec_path": false,
+                  "observations": 70,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 13142786,
+                "receipt": "2026-10-23T13:55:41.194462+05:30",
+                "status": "usable",
+                "symbol": "NIFTY26OCT22650PE"
+              },
+              "minute": 835,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB_LOW"
+            }
+          ],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [
+            {
+              "at": "2026-10-23T13:55:01+05:30",
+              "bar": "2026-10-23 13:50:00",
+              "direction": "SHORT",
+              "entry_evidence": {
+                "front_token": 221330181,
+                "held_1lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 80.924876,
+                  "native_10sec_path": false,
+                  "observations": 76,
+                  "sampled_90sec_path": true
+                },
+                "held_2lot": {
+                  "flat_bid": true,
+                  "max_gap_sec": 177.988558,
+                  "native_10sec_path": false,
+                  "observations": 62,
+                  "sampled_90sec_path": false
+                },
+                "max_supported_lots": 2,
+                "option_token": 222085381,
+                "receipt": "2026-10-23T13:55:38.488655+05:30",
+                "status": "usable",
+                "symbol": "SENSEX26OCT73400PE"
+              },
+              "minute": 835,
+              "regime": "REGIME_2_ELEVATED",
+              "retest_context_complete": true,
+              "strategy": "N11_TPB_LOW"
+            }
+          ],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-26": {
+      "prior_adx_gate": {
+        "adx": 27.871901137215286,
+        "prior_day": "2026-10-23",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-27": {
+      "prior_adx_gate": {
+        "adx": 27.01326468470206,
+        "prior_day": "2026-10-26",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [],
+          "missing_session_bar_minutes": [],
+          "own_expiry": true,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    },
+    "2026-10-28": {
+      "prior_adx_gate": {
+        "adx": 25.33386754520104,
+        "prior_day": "2026-10-27",
+        "side": "LOW"
+      },
+      "venues": {
+        "NIFTY": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        },
+        "SENSEX": {
+          "missing_prior_sessions": [],
+          "missing_regime_minutes": [
+            585
+          ],
+          "missing_session_bar_minutes": [],
+          "own_expiry": false,
+          "signals": [],
+          "truncated_input": false
+        }
+      }
+    }
+  },
+  "reference_sources_sha256": {
+    "config.py": "b527085d92dbfccddd0f90324aac2fbd6ca135bf7ad6a4ad1e92998880e67b97",
+    "fno_book.py": "f67ac9fd2ec6fa90bff617879c2d68d81632b3978dda117066934055e30b9577",
+    "fno_chain.py": "8fae8a8048e5700530b247921adf3c58df00eff0cee8682f11f3707eda07137c",
+    "fno_engine_mom.py": "0e2b68b78d13be43026e724be5b3b30a4d154187ec3f8f38aa51a73388303a12",
+    "fno_entry_plan.py": "7285d2d739c4b9917c23bf0b49736119240c213bc01174d8dff1ca07350bf6bf",
+    "fno_models.py": "6030f04a67a07ff5c779a9e314ef129bfce6e05af13f94153d3765da7da9b913",
+    "fno_shadow.py": "84db75c8c07ee71fb5b357a2f63f776ddd6ed815503a975ee6b770c2f27ee273",
+    "options_math.py": "cd62879d56020aa5533c2f19c50930501f296619b460a4538f76a75de10ef105"
+  },
+  "source_sha256": {
+    "control": "e11c44c3e012b0d95b52d010b916591e45e7b5759608f56644c1933fd8ce7a8c",
+    "daily": "6d1a293b6281e8beec3d860a431277eabbcdf0adfc05b6d83d26188eb63e3e84",
+    "scoped_signal_inputs": "3d147e8892a5885de03ae8a55a97c77f00593f32e3594ecb15688f66d95da244"
+  }
+}

@@ -97,6 +97,32 @@ async def test_today_is_recorded_once_and_kept_for_the_day(db_path):
     fno_book._TODAY.clear()
 
 
+@pytest.mark.asyncio
+async def test_opening_drive_batch_rolls_back_and_preserves_existing_rows_on_retry(db_path):
+    warmup = [d.date().isoformat() for d in pd.bdate_range(end="2026-06-30", periods=6)]
+    bars = _bars(ONE_WAY, prior=[*warmup, *PRIOR])
+    await fno_book.init_opening_drive_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("INSERT INTO fno_opening_drive VALUES(?, 'NIFTY', 0.2, 'original', 'x')", (PRIOR[0],))
+        await db.execute("CREATE TRIGGER fail_opening_drive BEFORE INSERT ON fno_opening_drive "
+                         "WHEN NEW.session_date='2026-07-10' BEGIN SELECT RAISE(ABORT, 'drive insert failure'); END")
+        await db.commit()
+    with pytest.raises(aiosqlite.IntegrityError, match="drive insert failure"):
+        await fno_book.drive_today(db_path, bars, at(9, 46))
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute("SELECT session_date,value,source FROM fno_opening_drive WHERE session_date "
+                                       "BETWEEN '2026-07-01' AND '2026-07-10' ORDER BY session_date")).fetchall()
+        assert rows == [(PRIOR[0], 0.2, "original")]
+        await db.execute("DROP TRIGGER fail_opening_drive")
+        await db.commit()
+    assert await fno_book.drive_today(db_path, bars, at(9, 46)) == (1.0, "HIGH")
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute("SELECT session_date,value,source FROM fno_opening_drive WHERE session_date "
+                                       "BETWEEN '2026-07-01' AND '2026-07-10' ORDER BY session_date")).fetchall()
+    assert rows == [(PRIOR[0], 0.2, "original"), *((day, 0.0, "backfill") for day in PRIOR[1:]),
+                    (TODAY.isoformat(), 1.0, "live")]
+
+
 # ---- the book -------------------------------------------------------------------------------------------------------
 
 def _sig(direction=None, reason=""):

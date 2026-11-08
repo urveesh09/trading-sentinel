@@ -973,6 +973,8 @@ async def test_live_dr_management_refreshes_after_snapshot(db_path, kite, monkey
     after = before + timedelta(seconds=2)
     clock = {"now": before}
     managed = []
+    captured = []
+    monkeypatch.setattr(settings, "FNO_DR_EXIT_PATH_RECORDING", True)
 
     class Clock(datetime):
         @classmethod
@@ -1007,8 +1009,15 @@ async def test_live_dr_management_refreshes_after_snapshot(db_path, kite, monkey
     monkeypatch.setattr(fo, "_management_quote", exact_quote)
     monkeypatch.setattr(dr, "open_structures", open_rows)
     monkeypatch.setattr(dr, "manage_dr_structures", manage)
+
+    def record(now, rows, snap, raw, *, received_at, closed):
+        assert managed == [after]  # Evidence is queued only after native management.
+        captured.append((now, received_at, rows[0]["id"], sorted(raw), closed))
+
+    monkeypatch.setattr(fo.fno_exit_paths, "record_defined_risk", record)
     await run_fno_tick(kite, db_path=db_path)
     assert managed == [after]
+    assert captured == [(after, after, 7, [1001, 1002], 0)]
 
 
 @pytest.mark.asyncio

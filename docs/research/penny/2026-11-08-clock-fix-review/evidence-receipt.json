@@ -1,0 +1,7 @@
+{
+  "production_export_sha256": "bcbf4e1683172de8276453565ab1e9bf3bc3100d902d3d4762886a526cefb698",
+  "postclose_rows": 20,
+  "preopen_rows": 125,
+  "preopen_unchanged": 125,
+  "scope": "Production read-only mode=ro/query_only transaction, no order/provider call"
+}

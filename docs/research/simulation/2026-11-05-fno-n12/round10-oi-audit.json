@@ -1,0 +1,25 @@
+{
+  "days": {
+    "2026-09-15": {
+      "prior_1_current_1": 5815,
+      "prior_0_current_1": 3,
+      "unusable:provider_quote_older_than_declared_maximum": 28,
+      "unusable:prices": 6
+    },
+    "2026-09-22": {
+      "prior_1_current_1": 5852
+    },
+    "2026-09-29": {
+      "prior_1_current_1": 5720
+    }
+  },
+  "archive_file_hashes": {
+    "quotes/2026-09-15/quotes-8d9d8b3d46be7ec8.jsonl.gz": "9a8449b188f9bd4add5e5b36e474c91a4bfa381c364a2f2508ecda46d3350f13",
+    "quotes/2026-09-15/quotes-8d9d8b3d46be7ec8.jsonl.manifest.json": "cfcca193ec97cfebbef19cb8bfc6090cb5b6116902b7f596f7970264fc156469",
+    "quotes/2026-09-22/quotes-e20873aac8452853.jsonl.gz": "184ac1275440b6dc9b26f32d78b8b2769210774b03afbd5cd631ed3404c5c468",
+    "quotes/2026-09-22/quotes-e20873aac8452853.jsonl.manifest.json": "bdbcc854a7925879cc9858195e09e6758d43195057b9d035251f5a7e3b742794",
+    "quotes/2026-09-29/quotes-8d6710b3850c1f92.jsonl.gz": "5331d95674217265cf04fc9b66151d14485797eb2a9a2c2d275627fed3ee6f4c",
+    "quotes/2026-09-29/quotes-8d6710b3850c1f92.jsonl.manifest.json": "7676d16801a6cdd798485c5a6686801ade137459ad7c4270f6e68b3417869b2d"
+  },
+  "archive_manifest_hash": "8411f16cd034ad7ab5cde936a92c46148ce7ad70effd71bcb2428880d887bfe3"
+}

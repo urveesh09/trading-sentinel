@@ -394,6 +394,9 @@ def calc_penny_costs(
     exit_price: float,
     shares: int,
     is_intraday: bool,
+    *,
+    rates: Optional[dict] = None,
+    honor_bypass: bool = True,
 ) -> float:
     """
     Round-trip Zerodha cost model for the penny subsystem.
@@ -401,6 +404,10 @@ def calc_penny_costs(
     Local implementation (does not import from engine.calc_zerodha_costs)
     per the isolation rule. Mirrors the engine's logic but uses
     PENNY_* settings instead of ZERODHA_*.
+
+    Optional explicit rates pin the same arithmetic to an entry-time schedule.
+    Forward evidence passes honor_bypass=False so paper fee waivers cannot
+    create a false profitable comparison. Existing callers retain defaults.
 
     Returns total cost in rupees (brokerage + STT + exchange + stamp +
     SEBI + GST, plus the DP charge on delivery).
@@ -428,9 +435,11 @@ def calc_penny_costs(
     it is; under-reporting them makes a losing strategy look profitable and
     corrupts the ledger it is measured against.
     """
-    from config import settings
-    if settings.PENNY_BROKERAGE_BYPASS:
-        if settings.PENNY_LIVE_TRADING:
+    from config import settings as configured_settings
+    from types import SimpleNamespace
+    settings = configured_settings if rates is None else SimpleNamespace(**rates)
+    if honor_bypass and configured_settings.PENNY_BROKERAGE_BYPASS:
+        if configured_settings.PENNY_LIVE_TRADING:
             logger.critical(
                 "penny_brokerage_bypass_ignored_on_live "
                 "reason=live_trading_is_on charging_real_costs=True "

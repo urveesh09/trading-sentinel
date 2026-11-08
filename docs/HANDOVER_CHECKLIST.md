@@ -1,3 +1,121 @@
+## November 8 - Momentum M01 breakout shadow
+
+- **Verify:**
+  - `pytest tests/test_momentum_orb_shadow.py` (5 checks, including parity with the research lab).
+  - The momentum, scheduler, surface and route group: 409 passed. The full engine suite: 6,333 passed, 4 skipped, exit 0.
+  - Research: `python runtime_parity.py` in the study folder (0 mismatched sessions over 200).
+- **Config:** new `MOMENTUM_ORB_SHADOW_ENABLED` (default true). New job `momentum_orb_shadow` at 15:05 Mon–Fri. New store `<DB_PATH>.momentum-orb-shadow.db`. No schema change to existing stores.
+- **Rollout:** after the first session, check that `/experiments/momentum` returns `orb_shadow.status=observed` with `sessions: 1`.
+- **Rollback:** set `MOMENTUM_ORB_SHADOW_ENABLED=false`, or revert the commit. The store can stay.
+
+## November 8 - Penny clock follow-up checks
+
+[Verification](research/penny/2026-11-08-clock-fix-review/verification.json):
+43 direct and 1,065 affected checks passed, one skipped, no source drift.
+Do not call the parent full suite a current-source result. Atlas 306 modules.
+Check missing-plus-later-closed decisions keep complete P&L null and that OPEN
+positions retain cash. Smart forward entry flag defaults false; observation
+continues. No old-store schema migration, real order, push or deployment.
+Preserve owner bytes and prior research. Actual 15:51/auction receipts and
+verified pre-open price semantics remain required for forward qualification.
+
+## November 8 - Penny auction forward clock fixes
+
+- **Verify:**
+  - `pytest tests/test_penny_auction_forward.py`: 35 checks. The 7 new ones fail on `6af2f08` and pass now.
+  - The penny, overnight, Smart, scheduler and surface group: 1,290 passed, 1 skipped.
+- **Config:** nothing new. Store rows can be `NO_EVIDENCE`, and old `UNRESOLVED` rows read the same way.
+- **API:** `comparison()` adds `no_evidence`, `refused`, `paired_smart.no_evidence_pairs` and `smart_preopen_price`. `complete_modeled_net` is null until a decision has closed.
+- **Rollback:** revert the commit. `PENNY_AUCTION_FORWARD_ENABLED=false` stops collection.
+
+## November 8 - Penny auction forward and Classic retirement verification
+
+Check the [report and commands](research/penny/2026-11-08-auction-forward/REPORT.md),
+tested-source hashes, full-suite exit and five additive scheduler jobs. New
+PENNY_AUCTION_FORWARD_ENABLED defaults true and creates only a sibling paper
+store. False stops collection without erasing evidence. Classic MIS/CNC entry
+switches default false; test restores are explicit, existing exits unchanged.
+No old-store migration or dependency change. API reads stay authenticated and
+read-only. Cash/quantity/clock/carry tests do not qualify profitability or fills.
+Dev only, no push/deployment or Production edit by this task. Preserve prior
+uncommitted Smart/Classic reports and the owner's original documentation bytes.
+
+## November 8 - N012-A trend lock (paper) and N08-C4
+
+- **Verify:**
+  - `pytest tests/test_fno_trend_lock.py` (22 checks, including research parity and the exit loop), `tests/test_nov06_partner_fixes.py` (14) and the F&O and partner groups (828 and 675 passed).
+  - Research: `docs/research/simulation/2026-11-08-fno-n012-a2` (`N12_YEAR=<w> python n012a2.py`, then `python score.py`).
+- **Config:** new settings `FNO_TREND_LOCK_ENABLED` (default true), `FNO_TREND_LOCK_SUPPORT_KEEP` 0.35, `FNO_TREND_LOCK_ADVERSE_KEEP` 0.65 and `FNO_TREND_LOCK_TRAIL_KEEP` 0.60. No schema change.
+- **Rollout:** on the first session, check that N11 paper exits still record `profit_lock` / stop reasons and that no `FNO_LIVE` position's parameters changed.
+- **Rollback:** set `FNO_TREND_LOCK_ENABLED=false` in `.env` and recreate the engine, or revert the commit.
+
+## November 6 - N08 partner fixes
+
+- **Verify:** `pytest tests/test_nov06_partner_fixes.py` (14 checks) and the partner group.
+- **Rollout:** merge through GitHub. On the first card day, check `partner_watch_plan_versions` for `stop_basis` CARD on a card buy, and `partner_advisory_updates` for `partner_holds_none` rows.
+- **Rollback:** revert the commit.
+- **Status:** Dev only; Production `398d44a` is unchanged.
+
+## November 6 opening-drive storage
+
+Verify the single-transaction rollback test and matching NIFTY and SENSEX histories. The existing schema and cache are retained. The local benchmark covers cold SQLite persistence. See [evidence](research/simulation/2026-11-05-fno-n12/OPENING_DRIVE_BATCH.md).
+
+## November 5 regular F&O held-spread evidence
+
+Confirm the [scope and verification record](research/simulation/2026-11-05-fno-n12/FORWARD_SPREAD_EVIDENCE.md). Seven focused files passed 125 tests, including the synthetic three-lot clock and cash reconciliation. The atlas indexes 304 modules. The recorder is disabled by default. Dev only, with no migration, deployment or order authority. Production was read-only at `398d44ad`. Keep the November 5 spread exit counterfactual unavailable and treat any future scored run as a separate frozen study.
+
+## November 5 multi-lot spread replay verification
+
+The defined-risk exit research verifier now prices fees using each exact bound leg’s full quantity. The three-lot November 5 paper row exposed the mismatch with the operational cost calculation. The focused verifier, spread book and sizing suite passed 38 tests. Preserve the first study and bind a new manifest before comparing historical exits. See [research correction](research/simulation/2026-11-05-fno-n12/ROUND11_COST_FIX.md). No runtime caller, configuration, migration, authority or deployment change.
+
+## November 5 N012 evidence handoff
+
+Verify the [frozen N012 inputs and per-round results](research/simulation/2026-11-05-fno-n12/CHECKPOINT.md), the two wallet scopes and November 5 evidence receipt before continuing. Track rejected, incomplete and unseen windows separately. Confirm source, configuration and schema have no runtime change. Record exact Git identity and test results in the next checkpoint before choosing a forward candidate.
+
+## November 5 E03.2 dated-contract fix and refusal evidence
+
+The expiry trend book now uses the instrument master's Contract.name in contract selection and the pending fill. The old field raised AttributeError on the replay's first qualifying setup. The tests now use real Contract records for Nifty and Sensex. E03.2 stores per-session signal, contract and pending-fill counts in its existing state and reports passed signals and paper plans in its no-trade summary.
+
+The November 5 Sensex control had no qualifying setup and no paper ticket. The code defect is separate from that day's signal refusal. The trend-exit, banking, sizing and breakout variants remain research. See `docs/research/simulation/2026-11-05-fno-expiry-followup/PLAN.md`.
+
+The expiry suite passed 111 checks. Dev only. No new schema, configuration, schedule or trade authority. Roll back the code through GitHub if needed. The previous reader tolerates the extra state keys. Forward qualification remains open.
+
+## November 5 - N07 partner profit protection (Dev only)
+
+`docs/PARTNER_PROFIT_PROTECTION_PLAN.md` records the observed giveback,
+implementation, tests and rollout boundary. After material booked profit,
+show a suggested 90% floor and accept `protect AMOUNT` / `protect auto` for
+the current session. Include held and proposed plan losses in CHECK, and
+brief advice on PLAN/ADDED when risk threatens the floor or the relevant
+futures trend is adverse. Completed five-minute structure plus a fresh
+trade supports a directional reading. Missing evidence stays unverified.
+The active floor replaces overlapping giveback steps. Fresh full-depth
+marks can trigger it while positions are open. Existing loss alerts remain.
+Advice only. Rollback `PARTNER_WATCH_PROFIT_PROTECTION_ENABLED=false`.
+Existing watch state/outbox, no schema change or new scheduler job.
+Final partner/surface group 665 passed, exit 0. Atlas 304 modules. Production
+398d44a assessed read-only. Local Dev commit, no push or deployment.
+
+## November 4 night - Rollout receipt (Production 398d44a, PR #132)
+
+- The owner's word: "deploy". PR #132 merged `67f42a3` (N06c), the auditor's review docs `78f0fad` and the
+  last receipt, as `398d44a`, at 16:58 UTC (22:28 IST).
+- **Before merge:** the whole engine suite on a clean checkout of `67f42a3`: 3,199 + 3,036 passed, 4 skipped,
+  `pytest_exit=0` each. No gateway, agent or compose changes.
+- **Deploy:** Production fast-forwarded and the release stamped. python-engine, node-gateway and agent were built
+  one at a time and recreated; nginx restarted. `.env` untouched. No full data backup, as before.
+- **Verification:** `scripts/verify_deployment.py` exit 0, verified_at 2026-11-04T17:12:03Z. Local and public
+  `/api/health` 200. No error lines in the engine log since start. In the image: `broken_text`,
+  `infer_underlying`, `QUIET_GONE`; no `quiet_keyboard`; `PARTNER_WATCH_BROKEN_ENABLED` defaults true, with no
+  `.env` override.
+- [ ] Nov 5, read-only:
+  - the watch-on message is two lines plus the records and the SENSEX expiry line;
+  - no PLAN or NO_STOP carries a button;
+  - a bare "76700 ce" is answered as a check;
+  - any BROKEN row was sent once a trade, with its choices;
+  - no SENTINEL buy for a trade already closed;
+  - no `partner_sentinel_*_failed` lines in the engine log.
+
 ## November 4 night - N06c: no Quiet, short messages, choices in rupees, BROKEN, the check by the option alone (Dev only)
 
 Owner, after the audit of N06/N06b:

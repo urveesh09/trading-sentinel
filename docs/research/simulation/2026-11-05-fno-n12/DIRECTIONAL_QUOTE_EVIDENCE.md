@@ -1,0 +1,17 @@
+# Directional paper quote evidence
+
+## Plan before implementation
+
+The current single-leg exit-path file preserves the prices and decisions the native manager saw. Its rows do not bind the provider clocks, the displayed quantity, or the dated futures identity required to qualify a held option price for the frozen N012-A forward comparison. Extend the existing bounded recorder when `FNO_N012_FORWARD_EVIDENCE` is enabled, using only the responses the existing manager already fetched. Record the option receipt and top bid quantity, the actual matching venue's futures receipt and dated identity, and the held quantity and contract. Leave absent inputs explicit. Use the normal option record and export locations, with a versioned optional subrecord.
+
+Keep capture off by default. When enabled with `FNO_EXIT_PATH_RECORDING`, apply it only to N11 paper positions, including earned adds. Use the same nonblocking bounded recorder and existing data retention. Keep decisions, order paths, broker requests, schedule, and database schema outside the change. Verify old row parity, correct dual-venue futures selection, missing quote evidence, no extra request or broker order, and write/flush through the existing archive. Rollback sets `FNO_N012_FORWARD_EVIDENCE=false`. Deploy only through the owner's normal GitHub workflow.
+
+This held-path capture will qualify evidence only while a native position remains open. A prospective comparison where the challenger remains open after the native exit needs separately qualified continuation quotes. A full shared-wallet verdict also requires the admission scans, dated chains, independent N11 shadow history and spread events. The new subrecord supplies one prerequisite for evaluating the frozen strategy.
+
+## Verified behavior and rollout boundary
+
+The opt-in `quote_evidence` subrecord uses schema `fno_n11_paper_quote_look_v1`. Each option receipt preserves its top prices and displayed quantities, returned token, provider timestamp, last trade time and the local time when the existing read completed. Each futures receipt binds the dated symbol, venue, token and exact LTP to its own clocks. The outer row retains the legacy rounded values. A missing or malformed field stays absent or null. This schema records evidence for later qualification. A recorded quote alone supplies neither a verified fill nor an after-exit observation.
+
+The fast-exit SENSEX fixture followed the same stop and made exactly three existing quote requests with the switch enabled and disabled. With capture enabled, the archive associated the held option with the SENSEX future, recorded the displayed bid size and left an absent ask quantity unknown. The recorder fixture also checked missing futures and malformed provider time. The six focused engine files passed 134 tests covering these cases, the existing recorder, native orchestration, live execution boundaries, second lots and defined-risk recording. The atlas was regenerated for the three changed runtime sources.
+
+All 75 original January–May 2022 frozen source hashes match pre-change Dev commit `67dfc35`. The new disabled setting changes the configuration source hash, so use that pinned checkout for the 2022 exam and keep its qualified data with that run. Use the earlier `1f4bfb2` source for the standalone 2021 reclaim evaluation. This change is in Dev, the new switch defaults to false, and no settings were activated, market outcomes opened, broker orders placed, data migrated or Production changes made.

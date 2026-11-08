@@ -1,0 +1,74 @@
+{
+  "adverse_net": -1077.26,
+  "base_net": -77.26,
+  "counts": {
+    "cash_limit": 41,
+    "n11t_already_entered": 35,
+    "own_expiry": 43,
+    "prior_or_open_marks_missing": 7,
+    "prior_session_unavailable": 1,
+    "sessions": 203,
+    "settled": 5,
+    "signal": 46,
+    "small_opening_displacement": 71
+  },
+  "positions": [
+    {
+      "adverse_net": 113.25,
+      "ask": 25.75,
+      "base_net": 313.25,
+      "bid": 34.45,
+      "day": "2026-01-02",
+      "expiry": "2026-01-06",
+      "reservation": 2121.7,
+      "right": "CE",
+      "strike": 26400
+    },
+    {
+      "adverse_net": 90.22,
+      "ask": 48.9,
+      "base_net": 290.22,
+      "bid": 57.3,
+      "day": "2026-02-09",
+      "expiry": "2026-02-10",
+      "reservation": 3627.13,
+      "right": "CE",
+      "strike": 25900
+    },
+    {
+      "adverse_net": -359.05,
+      "ask": 59.45,
+      "base_net": -159.05,
+      "bid": 60.95,
+      "day": "2026-07-03",
+      "expiry": "2026-07-07",
+      "reservation": 4313.19,
+      "right": "CE",
+      "strike": 24350
+    },
+    {
+      "adverse_net": 78.9,
+      "ask": 38.1,
+      "base_net": 278.9,
+      "bid": 46.3,
+      "day": "2026-07-06",
+      "expiry": "2026-07-07",
+      "reservation": 2924.82,
+      "right": "CE",
+      "strike": 24450
+    },
+    {
+      "adverse_net": -1000.58,
+      "ask": 33.65,
+      "base_net": -800.58,
+      "bid": 25.2,
+      "day": "2026-08-03",
+      "expiry": "2026-08-04",
+      "reservation": 2635.44,
+      "right": "CE",
+      "strike": 24650
+    }
+  ],
+  "signed_index_count": 46,
+  "signed_index_points": 253.9
+}

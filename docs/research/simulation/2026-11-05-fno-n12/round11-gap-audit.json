@@ -1,0 +1,68 @@
+{
+  "fno_dr_positions:29": {
+    "day": "2026-10-07",
+    "held_observations": 0,
+    "max_gap_seconds": 7199.074,
+    "max_gap_interval": [
+      "2026-10-07T13:10:40.736258+05:30",
+      "2026-10-07T15:10:39.809987+05:30"
+    ],
+    "first_gap_seconds": 7199.074,
+    "closest_joint_receipt_to_close_seconds": 286.263853
+  },
+  "fno_dr_positions:30": {
+    "day": "2026-10-08",
+    "held_observations": 2,
+    "max_gap_seconds": 13431.163,
+    "max_gap_interval": [
+      "2026-10-08T05:56:25.419369+00:00",
+      "2026-10-08T15:10:16.582110+05:30"
+    ],
+    "first_gap_seconds": 8.63,
+    "closest_joint_receipt_to_close_seconds": 309.493979
+  },
+  "fno_dr_positions:31": {
+    "day": "2026-10-09",
+    "held_observations": 316,
+    "max_gap_seconds": 182.068,
+    "max_gap_interval": [
+      "2026-10-09T05:46:25.327257+00:00",
+      "2026-10-09T05:49:27.395380+00:00"
+    ],
+    "first_gap_seconds": 4.188,
+    "closest_joint_receipt_to_close_seconds": 2.955364
+  },
+  "fno_dr_positions:33": {
+    "day": "2026-10-15",
+    "held_observations": 1,
+    "max_gap_seconds": 13189.945,
+    "max_gap_interval": [
+      "2026-10-15T04:26:26.061226+00:00",
+      "2026-10-15T13:36:16.005738+05:30"
+    ],
+    "first_gap_seconds": 28.061,
+    "closest_joint_receipt_to_close_seconds": 6010.061471
+  },
+  "fno_dr_positions:36": {
+    "day": "2026-10-28",
+    "held_observations": 285,
+    "max_gap_seconds": 241.177,
+    "max_gap_interval": [
+      "2026-10-28T07:56:25.092120+00:00",
+      "2026-10-28T08:00:26.269456+00:00"
+    ],
+    "first_gap_seconds": 153.801,
+    "closest_joint_receipt_to_close_seconds": 1.980578
+  },
+  "fno_dr_positions:38": {
+    "day": "2026-11-05",
+    "held_observations": 0,
+    "max_gap_seconds": 19168.921,
+    "max_gap_interval": [
+      "2026-11-05T09:51:24.168796+05:30",
+      "2026-11-05T15:10:53.089594+05:30"
+    ],
+    "first_gap_seconds": 19168.921,
+    "closest_joint_receipt_to_close_seconds": 275.002935
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "base_head": "6f5c60a39cce47fc055c03f2338549bd1da8afa1",
+  "tested_source_files": 708,
+  "source_drift": [],
+  "engine_suite": {
+    "passed": 6314,
+    "skipped": 4,
+    "warnings": 53,
+    "seconds": 704.51,
+    "exit": 0
+  },
+  "focused_final": {
+    "passed": 72,
+    "exit": 0
+  },
+  "wider_affected": {
+    "passed": 1003,
+    "skipped": 1,
+    "exit": 0
+  },
+  "atlas_modules": 306,
+  "financial_qualification": "NOT_ESTABLISHED_FORWARD_OBSERVATIONS_REQUIRED",
+  "config": {
+    "PENNY_AUCTION_FORWARD_ENABLED": true,
+    "PENNY_CLASSIC_MIS_ENTRIES_ENABLED": false,
+    "PENNY_CLASSIC_CNC_ENTRIES_ENABLED": false
+  },
+  "migration": "new independent sibling store only",
+  "dependencies_changed": false,
+  "production_edits": false,
+  "Breeze_calls": 0,
+  "real_orders": 0,
+  "pushed_by_this_task": false,
+  "deployed_by_this_task": false,
+  "raw_initial_failure": {
+    "path": "_local/focused-initial-failure.txt",
+    "sha256": "b8d2d005c9a46b32216a574bce9ffbede683dbb8e093ea04605c938f944b5ed5",
+    "retained_byte_exact": true
+  }
+}

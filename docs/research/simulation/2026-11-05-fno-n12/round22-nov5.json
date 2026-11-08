@@ -1,0 +1,43 @@
+{
+  "candidate_orders": 0,
+  "held_ids_by_clock": {
+    "2026-11-05T10:15:59+05:30": [
+      57
+    ],
+    "2026-11-05T10:30:59+05:30": [
+      57
+    ],
+    "2026-11-05T10:45:59+05:30": [
+      57
+    ],
+    "2026-11-05T11:00:59+05:30": [
+      58
+    ],
+    "2026-11-05T11:15:59+05:30": [
+      58
+    ],
+    "2026-11-05T11:30:59+05:30": [
+      58,
+      59
+    ],
+    "2026-11-05T11:45:59+05:30": [
+      58,
+      59
+    ],
+    "2026-11-05T12:00:59+05:30": [
+      58,
+      59
+    ],
+    "2026-11-05T12:15:59+05:30": [
+      59
+    ],
+    "2026-11-05T12:30:59+05:30": [
+      59
+    ]
+  },
+  "observed_native_single_net": 4821.18,
+  "observed_separate_spread_net": 2545.91,
+  "refusal": "native NIFTY paper position open at every eligible clock",
+  "scope": "fixed observed admissions and 1-minute modeled action clock only",
+  "source_sha256": "0b413d985da17d3fece3e2f4f240a68a2d26fbbcbdcf9ffafe664acc83b90b59"
+}

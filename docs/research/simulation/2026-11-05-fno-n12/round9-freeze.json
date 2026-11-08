@@ -1,0 +1,23 @@
+{
+  "downside": "PLAN.md materiality and downside",
+  "variants": [
+    "N11",
+    "N11T",
+    "CALENDAR"
+  ],
+  "files": {
+    "ROUND9.md": "edc36c4110b4b5456d379ecf8a939483c8b8d7a88e3d9601269ea76cf326dc11",
+    "round9.py": "88cef4bd6b0115eb87a578f7809ca9af9d0040632034dbe77d042537b59a7ea3",
+    "round9_data.py": "ffba0fbd809e3e91e0743a5e8b3d2d2611c38700cff561c6f4fea1be226a1b99",
+    "round9_tape.py": "b51c5ccfb570a7f02bec281f5990c1badebc46f17129a046fe58d11cbbf5cb20",
+    "round1.py": "1f22841f2585dbc96af173d2fd06be1c7145d5c8929da00daa707145f8f5960b",
+    "round1-freeze.json": "b7af179b04021e000218006ee340bd18128927455c1b4272121e1d1c965b1dad",
+    "cross-index-coverage.json": "478c57a183e463728dc67960188f5eddd926c45ef1f6a93e886617355c7bedd8",
+    "_local/round9/manifest.json": "935bfdb971d443479417020fa6d46f72b9e3b3f94f3db834b973c37c19d6ba8a",
+    "_local/round9/catalogue.json": "656936e08ca85b84c3edad1e263513afd019743bbf2bf92c98f9767eecfea435"
+  },
+  "windows": [
+    "2025",
+    "2026"
+  ]
+}

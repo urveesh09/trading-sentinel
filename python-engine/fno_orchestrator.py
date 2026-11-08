@@ -41,6 +41,7 @@ import fno_live_test
 import fno_n11
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
+import fno_trend_lock
 import fno_exit_paths
 import fno_shadow
 from config import settings
@@ -427,6 +428,7 @@ async def _manage_open_positions(
     db_timing: Optional[dict] = None,
     action_clock: Optional[Callable[[], datetime]] = None,
     fut_prices: Optional[dict] = None,
+    directional_futures: Optional[dict[str, fno_exit_paths.QuoteReceipt]] = None,
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
     ladder. Returns records of closed positions.
@@ -470,6 +472,7 @@ async def _manage_open_positions(
     # through to the existing unpriced/hard-flat path; no mutation is wrapped.
     tokens = [p.token for p in positions_needing_exit_evaluation if p.token]
     quotes = {}
+    option_received_at = None
     if tokens:
         quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
         quote_started = monotonic()
@@ -477,6 +480,8 @@ async def _manage_open_positions(
             quotes, provider_timing = await asyncio.wait_for(
                 _management_quote(kite, tokens), timeout=quote_cap,
             )
+            if directional_futures is not None:
+                option_received_at = action_clock() if action_clock is not None else now_ist
             _record_management_read(
                 read_observations, f"exit_quotes:{source}", "COMPLETED", quote_started, quote_cap,
                 provider_timing=provider_timing,
@@ -502,6 +507,8 @@ async def _manage_open_positions(
             observation["oldest_exact_leg_quote_age_sec"] = age
             observation["quote_age_status"] = "PRESENT" if age is not None else "UNAVAILABLE"
 
+    if source == FnoSource.FNO_PAPER.value:
+        fno_trend_lock.forget_all_but(source, {(source, p.id) for p in positions})
     for p in positions_needing_exit_evaluation:
         if action_clock is not None:
             now_ist = action_clock()
@@ -559,6 +566,9 @@ async def _manage_open_positions(
                 (now_ist - datetime.fromisoformat(p.entry_time)).total_seconds() / 60.0, p.trail_active, bid, p.entry_premium, p.qty, p.lots,
                 (1 if p.direction == "LONG" else -1) * (position_fut - p.entry_underlying) / _risk if _risk > 0 else 0.0,
                 exchange=options_exchange_for((p.underlying or "NIFTY").upper()))
+        if fno_trend_lock.applies(source, pos_exec.paper_mode, p):
+            # [N012-A] The front future's 5-minute trend widens or tightens the profit lock (paper N11 only).
+            exit_params, _trend = fno_trend_lock.params_for(breach_key, p, exit_params, now_ist, position_fut)
         decision = evaluate_single_leg_exit(
             p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
             hard_flat=hard_flat, params=exit_params,
@@ -576,8 +586,15 @@ async def _manage_open_positions(
             _LOCK_BREACH_SINCE[breach_key] = decision.lock_breach_since
         else:
             _LOCK_BREACH_SINCE.pop(breach_key, None)
+        receipts = None
+        if (directional_futures is not None and source == FnoSource.FNO_PAPER.value and pos_exec.paper_mode
+                and (fno_n11.is_parent(p) or p.strategy == fno_n11.ADD)):
+            option_receipt = (fno_exit_paths.QuoteReceipt(option_received_at, q)
+                              if option_received_at is not None else None)
+            future_receipt = directional_futures.get((p.underlying or "NIFTY").upper())
+            receipts = fno_exit_paths.DirectionalReceipts(option_receipt, future_receipt)
         fno_exit_paths.record(now_ist, source, p, bid=bid, ask=ask, ltp=ltp, fut=position_fut,
-                              decision=decision,
+                              decision=decision, receipts=receipts,
                               params={**exit_params, "FNO_HARD_FLAT_MIN": int(settings.FNO_HARD_FLAT_MIN)})
         if decision.trail_newly_armed:
             logger.info(
@@ -1394,11 +1411,16 @@ async def _manage_single_leg_books(
     # ---- futures price for exit management ---------------------------
     stage_started = monotonic()
     fut_quote = {}
+    directional_futures = ({} if settings.FNO_N012_FORWARD_EVIDENCE and settings.FNO_EXIT_PATH_RECORDING
+                           and not settings.FNO_DISABLE_PAPER else None)
     fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
     try:
         fut_quote, provider_timing = await asyncio.wait_for(
             _management_quote(kite, [fut.token]), timeout=fut_quote_cap,
         )
+        if directional_futures is not None:
+            receipt_at = action_clock() if action_clock is not None else now_ist
+            directional_futures["NIFTY"] = fno_exit_paths.QuoteReceipt(receipt_at, fut_quote.get(fut.token) or {}, fut)
         _record_management_read(
             summary["management_read_outcomes"], "futures_quote", "COMPLETED",
             stage_started, fut_quote_cap, provider_timing=provider_timing,
@@ -1448,7 +1470,11 @@ async def _manage_single_leg_books(
         try:
             quote, _timing = await asyncio.wait_for(_management_quote(kite, [other.token]),
                                                     timeout=fut_quote_cap)
-            fut_prices[name] = float((quote.get(other.token) or {}).get("last_price") or 0.0) or None
+            packet = quote.get(other.token) or {}
+            if directional_futures is not None:
+                receipt_at = action_clock() if action_clock is not None else now_ist
+                directional_futures[name] = fno_exit_paths.QuoteReceipt(receipt_at, packet, other)
+            fut_prices[name] = float(packet.get("last_price") or 0.0) or None
         except Exception as exc:
             logger.error("fno_futures_quote_failed underlying=%s err=%s", name, str(exc))
             fut_prices[name] = None
@@ -1462,6 +1488,7 @@ async def _manage_single_leg_books(
                 read_observations=summary["management_read_outcomes"],
                 db_timing=summary["database_stage_timing"],
                 action_clock=action_clock, fut_prices=fut_prices,
+                directional_futures=directional_futures,
             )
         if live_managed:
             summary["exits"] += await _manage_open_positions(
@@ -1598,6 +1625,8 @@ async def run_fno_tick(
             # next Production trace able to distinguish an exit delay from a
             # speculative-entry delay.
             if open_dr:
+                record_dr = settings.FNO_DR_EXIT_PATH_RECORDING
+                raw_quotes, received_at = {}, None
                 snapshot_started = monotonic()
                 management_cap = _read_cap(settings.FNO_DR_MANAGEMENT_READ_MAX_SEC)
                 try:
@@ -1606,6 +1635,8 @@ async def run_fno_tick(
                         raw_quotes, provider_timing = await asyncio.wait_for(
                             _management_quote(kite, exact_tokens), timeout=management_cap,
                         )
+                        if record_dr:
+                            received_at = supplied_now_ist or datetime.now(IST)
                         dr_snap = _dr.exact_leg_snapshot_from_quotes(
                             open_dr, raw_quotes, now_ist, fut_price,
                         )
@@ -1648,11 +1679,15 @@ async def run_fno_tick(
                     summary["action_clock_ist"] = now_ist.isoformat()
                 # manage_dr_structures intentionally accepts ``None`` and
                 # fail-closes a hard-flat structure even without a quote.
-                summary["dr_exits"] = summary.get("dr_exits", 0) + \
-                    await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                dr_closed = await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                summary["dr_exits"] = summary.get("dr_exits", 0) + dr_closed
                 summary["stage_durations_sec"]["defined_risk_management"] = round(
                     monotonic() - management_started, 3
                 )
+                if record_dr:
+                    fno_exit_paths.record_defined_risk(
+                        now_ist, open_dr, dr_snap, raw_quotes, received_at=received_at, closed=dr_closed,
+                    )
 
             remaining_open_dr = await _timed_database_operation(
                 summary["database_stage_timing"], "defined_risk_open_read", _dr.open_structures(db_path),

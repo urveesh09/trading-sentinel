@@ -126,6 +126,11 @@ async def get_momentum_experiment(request: Request):
         "registry": registry,
         "comparison": {"variants": []},
     }
+    try:
+        import momentum_orb_shadow
+        response["orb_shadow"] = momentum_orb_shadow.comparison(settings.DB_PATH)
+    except Exception as exc:                 # [M01] evidence only; never breaks the shadow report
+        response["orb_shadow"] = {"status": "unavailable", "error": type(exc).__name__}
     if not enabled:
         return response
     try:

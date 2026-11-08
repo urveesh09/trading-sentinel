@@ -1,0 +1,49 @@
+{
+  "inputs": {
+    "2022": [
+      "503be69fc24881da59bc972116452ac519196b3ee848e0a865391774da43d9d3",
+      "41bd03dadaa1b297ff67955ec88b435a1f0df911aae90850f02382014baf033f"
+    ],
+    "2023": [
+      "57e10ab2c3ba0b47bab98ea334d82ec5a00901a1c2eb5478dd2d2145b1470097",
+      "e40fef86b46b17f07d31ba4f214e9c776eac1d4fee3cfc52f7cdfb43c5cc8a45"
+    ],
+    "2024": [
+      "0253b9742747845a1cf54d072cead99cd0369d9a93d477427f0f4e8b9f48bdd6",
+      "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9"
+    ],
+    "2025": [
+      "a13220d52ec3c5dff6a4960f9b9b656105d6288ad65ec3eeeb0fac077e794701",
+      "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d"
+    ],
+    "2026": [
+      "bbe3a6fe7e47ddc3e0fd59ee60762ccdf53221a3c9332d253952d412a0ac8d8d",
+      "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555"
+    ]
+  },
+  "option_cost_snapshot": {
+    "effective_date": "2026-04-01",
+    "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+    "rates": {
+      "brokerage_flat_per_order": 20.0,
+      "exchange_pct": 0.0003553,
+      "gst_pct": 0.18,
+      "ipft_pct": 1e-09,
+      "sebi_pct": 1e-06,
+      "stamp_duty_buy_pct": 3e-05,
+      "stt_sell_pct": 0.0015
+    },
+    "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01"
+  },
+  "source": {
+    "docs/research/fno/2026-10-29-year-genome/yeardata.py": "210ca611dd7a4da016176b0801438a4097d352842a234717a4cb3374c2976109",
+    "docs/research/simulation/2026-11-05-fno-n12/ROUND32.md": "85414eaeaf5eaab569ef4e9fde5f08b2bea781a7daf7d68e5c4a5ed42e2cd794",
+    "docs/research/simulation/2026-11-05-fno-n12/anatomy.py": "b36692b00d500dc3289ec752db7316f0bf93bc22c72e7bbaf595b2c8fe6d086c",
+    "docs/research/simulation/2026-11-05-fno-n12/round25.py": "b9f14e5550fd88b6b2169c64b0abbd8e3a9cb2161f4ef1e3385780f709dea16f",
+    "docs/research/simulation/2026-11-05-fno-n12/round29.py": "7c9082d06c0ff6b7b6cc5afc4f7c9cf303f33877922c01c66cbe775a007c8645",
+    "docs/research/simulation/2026-11-05-fno-n12/round32.py": "d2349d89f085cfc40f12e6eb3e4304b7ffe604c2bb3833eb3ba4d33262bc9a11",
+    "docs/research/simulation/2026-11-05-fno-n12/test_round32.py": "aec10977cccfda408e2364f52b0978b6c1ef5164b6b1f49e861e363adcbbbc1b",
+    "python-engine/cost_schedules.py": "b024dd54b340710a260ae681942f1146315beca0d7b22e3d26a88b4d7852b1c6",
+    "python-engine/fno_costs.py": "c148d3deadec3982b90ff617d0c9b3aec3e1794c69c48f69cc4aaaf9cb391e8a"
+  }
+}

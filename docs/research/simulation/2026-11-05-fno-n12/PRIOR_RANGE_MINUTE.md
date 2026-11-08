@@ -1,0 +1,17 @@
+# Prior-range one-minute execution model
+
+## Plan and acceptance checks
+
+Make the existing one-lot sleeve replayable from a qualified Dev one-minute dataset. Reuse YearData's observed contract identities and calibrated spread model, and the standalone sleeve's entry, exit and cash rules. Open only on the signal minute's completed close at second 59. The decision uses only five-minute bars completed before that minute. The selected option must have an observed positive-volume close in that exact minute. Keep the native selection from the as-of ladder and decline if its chosen contract does not trade on that minute. Candle volume is evidence of a trade. It gives no displayed liquidity. The adapter carries zero displayed depth and uses a separate modeled execution route.
+
+At each subsequent exact minute, apply stop, midpoint, premium protection and hard flat using the future close and the held option's modeled bid derived from its observed close. Require that exact held contract to have traded in that minute. A missing observation interrupts the path and withholds aggregate cash rather than settling through a gap. Keep native fees and run the standard and doubled stress costs in independent cash books. Caller supplies the exact dated session scope, earlier overlapping future, and qualified calendars, contract bars and regime source. The future validated runner needs a matching frozen N11T arm before any comparative claim.
+
+Test against a synthetic SQLite dataset read by the actual YearData adapter. Verify timestamp, non-stale selected and held options, cutoff, fees, stress, missing minutes and the unchanged quote route. Keep the 2021 and original 2022 prices sealed. No runtime, settings, migration or rollout. Rollback retires the isolated candle adapter.
+
+## Verified behavior and limits
+
+The original quote path still requires displayed depth. The candle path strips that field before native planning and independently checks raw positive volume for the exact selected option and dated future. It uses YearData's second-59 label as the convention for a completed one-minute bar. The quote is the existing modeled spread around that close. This is a bar execution assumption. It supplies neither exact quote times nor proven fills. The signal comes from the preceding completed five-minute bar. Exits use completed-minute checks, so the adapter makes no claim about the intraminute order of extremes.
+
+The replay validates the scored dates against the declared session sequence. It carries one cash book across dates within each stress case. A prior session more than four calendar days away is an explicit policy exclusion. Unavailable entry minutes and missing held futures or option trades produce coverage failures. The adapter stops on the first such path and withholds the window's aggregate result. A zero-volume entry on the selected, previously observed contract is a modeled non-fill. Standard and doubled cost runs each start afresh.
+
+Seven synthetic checks passed using the actual YearData SQLite reader, including a 50-unit dated fixture, the first entry clock, exact held identity, carried and zero-volume options, missing futures, stale futures and calendar scope. The focused suite passed 68 checks. The atlas remains at 304 modules. No 2021 or remaining 2022 prices were opened. A matched 2021 N11T run and frozen scoring protocol are still needed before attributing an improvement. Dev research only with no settings, migration, runtime or rollout changes.

@@ -1,0 +1,32 @@
+{
+  "day": "2026-11-05",
+  "export_manifest": "8411f16cd034ad7ab5cde936a92c46148ce7ad70effd71bcb2428880d887bfe3",
+  "fixed_strikes": [
+    24350,
+    24400,
+    24450
+  ],
+  "futures_marks": {
+    "09:29:00": [
+      24380.8,
+      37960.0
+    ],
+    "09:59:00": [
+      24427.9,
+      43095.0
+    ],
+    "10:01:00": [
+      24428.5,
+      15795.0
+    ],
+    "11:00:00": [
+      24411.5,
+      2405.0
+    ]
+  },
+  "option_expiry": "2026-11-09",
+  "possible_end_of_minute_snapshots": 0,
+  "required_end_of_minute_snapshots": 186,
+  "series_with_any_snapshot": 6,
+  "state": "UNAVAILABLE"
+}
