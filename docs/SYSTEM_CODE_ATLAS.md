@@ -890,7 +890,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 75), `_read_cap` (line 79), `_record_management_read` (line 84), `_timed_database_operation` (line 114), `_management_quote` (line 135), `_oldest_quote_age_sec` (line 151), `_settle_exit_receipt` (line 168), `_fno_pool_paper` (line 229), `_fno_pool_live` (line 234), `_live_leg_enabled` (line 240), `_live_orders_enabled` (line 245), `_live_leg_managed` (line 250), `_load_dr_entry_inputs` (line 268), `_fno_equity` (line 338), `_fno_halted` (line 344), `_fetch_futures_bars` (line 366), `_record_shadow_observation` (line 374), `_schedule_shadow_observation` (line 391), `_manage_open_positions` (line 424), `_exit_event_recorder` (line 782), `_find_tagged_order` (line 794), `_recover_tagged_exit` (line 824), `_executor_for_position` (line 852), `_broker_mis_held` (line 865), `_page_live_exit_once` (line 897), `_live_exit_not_filled` (line 910), `_follow_working_exit` (line 944), `_book_exit_fill` (line 972), `_try_entry_for_leg` (line 1017), `post_admission_entry_reject` (line 1365), `_insert_entry_position` (line 1383), `_manage_single_leg_books` (line 1394), `run_fno_tick` (line 1512), `_single_leg_entries` (line 1786), `fast_exit_has_work` (line 1988), `run_fno_fast_exit` (line 2005), `_bar_already_logged` (line 2047), `format_fno_telegram` (line 2069)
+Top-level declarations: `_now_min` (line 76), `_read_cap` (line 80), `_record_management_read` (line 85), `_timed_database_operation` (line 115), `_management_quote` (line 136), `_oldest_quote_age_sec` (line 152), `_settle_exit_receipt` (line 169), `_fno_pool_paper` (line 230), `_fno_pool_live` (line 235), `_live_leg_enabled` (line 241), `_live_orders_enabled` (line 246), `_live_leg_managed` (line 251), `_load_dr_entry_inputs` (line 269), `_fno_equity` (line 339), `_fno_halted` (line 345), `_fetch_futures_bars` (line 367), `_record_shadow_observation` (line 375), `_schedule_shadow_observation` (line 392), `_manage_open_positions` (line 425), `_exit_event_recorder` (line 788), `_find_tagged_order` (line 800), `_recover_tagged_exit` (line 830), `_executor_for_position` (line 858), `_broker_mis_held` (line 871), `_page_live_exit_once` (line 903), `_live_exit_not_filled` (line 916), `_follow_working_exit` (line 950), `_book_exit_fill` (line 978), `_try_entry_for_leg` (line 1023), `post_admission_entry_reject` (line 1371), `_insert_entry_position` (line 1389), `_manage_single_leg_books` (line 1400), `run_fno_tick` (line 1518), `_single_leg_entries` (line 1792), `fast_exit_has_work` (line 1994), `run_fno_fast_exit` (line 2011), `_bar_already_logged` (line 2053), `format_fno_telegram` (line 2075)
 
 Engine dependencies: `affordability`, `config`, `fno_adaptive_risk`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `fno_underlyings`, `kite_client`, `operator_alert`, `performance`
 
@@ -1015,6 +1015,16 @@ Top-level declarations: `Single` (line 71), `Spread` (line 83), `SignalOutcome` 
 Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_fno_spread_tilt.py`
+
+## `python-engine/fno_trend_lock.py`
+
+[N012-A] The trend-aware profit lock on the paper F&O main book. The N012 research's strongest priced change (Round 30 ``TREND_ONLY``, docs/research/simulation/2026-11-05-fno-n12): while an N11 paper position is held, the front future's last three completed 5-minute buckets and its current price say whether the trend SUPPORTS the trade (two bucket moves with it, the price not back under the last bucket close), opposes it (ADVERSE, the mirror) or neither (MIXED; UNKNOWN until three buckets are complete). Only the premium profit lock changes; structural stops, the trail, time stops and the hard flat are untouched: * SUPPORT, lock on: keep ``FNO_TREND_LOCK_SUPPORT_KEEP`` of the best gain (defau
+
+Top-level declarations: `Trend` (line 34), `trend_params` (line 67), `applies` (line 84), `params_for` (line 92), `forget` (line 102), `forget_all_but` (line 107)
+
+Engine dependencies: `config`, `fno_models`
+
+Related tests: `python-engine/tests/test_fno_trend_lock.py`
 
 ## `python-engine/fno_underlyings.py`
 

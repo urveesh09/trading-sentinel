@@ -41,6 +41,7 @@ import fno_live_test
 import fno_n11
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
+import fno_trend_lock
 import fno_exit_paths
 import fno_shadow
 from config import settings
@@ -506,6 +507,8 @@ async def _manage_open_positions(
             observation["oldest_exact_leg_quote_age_sec"] = age
             observation["quote_age_status"] = "PRESENT" if age is not None else "UNAVAILABLE"
 
+    if source == FnoSource.FNO_PAPER.value:
+        fno_trend_lock.forget_all_but(source, {(source, p.id) for p in positions})
     for p in positions_needing_exit_evaluation:
         if action_clock is not None:
             now_ist = action_clock()
@@ -563,6 +566,9 @@ async def _manage_open_positions(
                 (now_ist - datetime.fromisoformat(p.entry_time)).total_seconds() / 60.0, p.trail_active, bid, p.entry_premium, p.qty, p.lots,
                 (1 if p.direction == "LONG" else -1) * (position_fut - p.entry_underlying) / _risk if _risk > 0 else 0.0,
                 exchange=options_exchange_for((p.underlying or "NIFTY").upper()))
+        if fno_trend_lock.applies(source, pos_exec.paper_mode, p):
+            # [N012-A] The front future's 5-minute trend widens or tightens the profit lock (paper N11 only).
+            exit_params, _trend = fno_trend_lock.params_for(breach_key, p, exit_params, now_ist, position_fut)
         decision = evaluate_single_leg_exit(
             p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
             hard_flat=hard_flat, params=exit_params,

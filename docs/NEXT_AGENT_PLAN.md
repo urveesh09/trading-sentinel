@@ -1,3 +1,17 @@
+## November 8 - N012-A on paper (owner's call); next
+
+Done:
+- N08-C4 (the check gives the card's stop).
+- N012-A2: 27 neighbours, frozen, scored. N012-A kept.
+- N012-A in the engine (`fno_trend_lock.py`, on for N11 paper positions).
+- See the [study](research/simulation/2026-11-08-fno-n012-a2/RESULTS.md).
+
+Next:
+- **Forward evidence.** From the first session after the deploy, compare the paper book's closed N11 trades against what the native lock would have done. `fno_exit_paths` records each look's parameters, but a trade the trend lock held past the native exit has the native exit inside its recorded path, and the reverse case does not. Count both before claiming either way. Panel E / the January 29, 2027 review from EXAM_2022_H1.md still applies.
+- **Sealed exam.** NIFTY January–May 2022 stays sealed. It needs Q1 2022 downloaded through the breeze skill, or the owner declaring Q1 unavailable before April–May is opened.
+- **SENSEX.** The Oct 2024–Jun 2025 history is unseen, but it has zero OI on every minute and thin futures volume. A SENSEX replay needs its own written OI and volume rule first.
+- Do not tune the trend lock on seen windows again. One step tighter already loses on 2026.
+
 ## November 6 - N08 partner fixes (Dev only; deploy needs the owner's word)
 
 Done in Dev ([record](PARTNER_NOV06_FIXES_N08.md)):

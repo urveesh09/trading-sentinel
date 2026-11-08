@@ -1,3 +1,12 @@
+## November 8 - N012-A trend lock (paper) and N08-C4
+
+- **Verify:**
+  - `pytest tests/test_fno_trend_lock.py` (22 checks, including research parity and the exit loop), `tests/test_nov06_partner_fixes.py` (14) and the F&O and partner groups (828 and 675 passed).
+  - Research: `docs/research/simulation/2026-11-08-fno-n012-a2` (`N12_YEAR=<w> python n012a2.py`, then `python score.py`).
+- **Config:** new settings `FNO_TREND_LOCK_ENABLED` (default true), `FNO_TREND_LOCK_SUPPORT_KEEP` 0.35, `FNO_TREND_LOCK_ADVERSE_KEEP` 0.65 and `FNO_TREND_LOCK_TRAIL_KEEP` 0.60. No schema change.
+- **Rollout:** on the first session, check that N11 paper exits still record `profit_lock` / stop reasons and that no `FNO_LIVE` position's parameters changed.
+- **Rollback:** set `FNO_TREND_LOCK_ENABLED=false` in `.env` and recreate the engine, or revert the commit.
+
 ## November 6 - N08 partner fixes
 
 - **Verify:** `pytest tests/test_nov06_partner_fixes.py` (14 checks) and the partner group.

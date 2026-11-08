@@ -1,3 +1,30 @@
+## November 8 - N012-A trend lock on the paper F&O main book (owner's call); N012-A2 search
+
+**What runs.** `fno_trend_lock.py`, behind the switch `FNO_TREND_LOCK_ENABLED`, which defaults to on. It acts on N11 paper positions only: source `FNO_PAPER`, paper mode, every `N11_*` strategy including the earned `N11_ADD` lot. Real money (`FNO_LIVE`) and the one-lot paper reference (`fno_n11.manage_paper`) keep the native lock.
+
+**The rule.** Each look reads the position's front future: the last three completed 5-minute buckets plus the current price.
+- **SUPPORT:** two bucket moves with the trade, and the price at or above the last bucket close. Keep `FNO_TREND_LOCK_SUPPORT_KEEP` 0.35 of the best gain.
+- **ADVERSE:** the mirror. Keep `FNO_TREND_LOCK_ADVERSE_KEEP` 0.65, with the arm capped at 0.60 R. That cap never binds, because the native arm is 0.40 R.
+- **ADVERSE during a trail, with the lock off:** the lock switches on at 1.0 R and keeps `FNO_TREND_LOCK_TRAIL_KEEP` 0.60.
+- **Otherwise:** the native 0.50 keep.
+
+Stops, the trail, time stops and the hard flat are unchanged. The bucket state lives in memory per position. After a restart a position runs on the native lock until three buckets complete again, at most 15 minutes. The engine `Trend` and `trend_params` are the research's `regular_rules` line for line, checked by a test that loads the research source.
+
+**Why these numbers.** Study: `docs/research/simulation/2026-11-08-fno-n012-a2/`. Frozen at `4c8d607`, it ran 27 neighbours of N012-A on the five seen NIFTY windows, 135 replays.
+- N012-A was the best arm in every window: +₹4,051 over N11T, +₹710 without its five best days, worst day unchanged.
+- The SUPPORT keep changes no trade between 0.25 and 0.45.
+- All 12 arms at the N012-A tightness or gentler are positive. Every arm one step tighter (adverse keep 0.75 or trail keep 0.75) loses ₹6,887–16,651 in 2026.
+- The leave-one-window-out search scored −₹4,241, so the frozen rule kept N012-A.
+- It is unqualified, with a small in-sample gain. Forward paper is the evidence.
+
+**Limits.** The live loop looks every 10 seconds, against one look a minute in the replay. The new SENSEX history has zero OI on every minute, so the book cannot replay on it. The NIFTY Jan–May 2022 exam stays sealed.
+
+**Rollback:** `FNO_TREND_LOCK_ENABLED=false`.
+
+## November 8 - N08-C4 partner: the pre-buy check gives the card's stop
+
+A check (`check 79800 ce`) of a card's option inside its buy window gives the card's stop, target and buy-up-to price, the same plan as the PLAN after the buy. Outside the window it says it is not the card's trade. Record: [PARTNER_NOV06_FIXES_N08.md](PARTNER_NOV06_FIXES_N08.md).
+
 ## November 6 - N08 partner: one stop for a card buy; card follow-ups that know what is held (Dev only)
 
 [The N08 record](PARTNER_NOV06_FIXES_N08.md) has the Production evidence. A buy of a card's option inside its window now takes the card's stop and target in its PLAN. The N04-A lookup had never run: `_plan_job` required `size is None` and `_start_plan` always passes a size.

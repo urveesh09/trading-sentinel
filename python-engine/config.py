@@ -1255,6 +1255,14 @@ class Settings(BaseSettings):
     # this many seconds after the first one (0 = the first look sells, as
     # before). Protective stops stay immediate. fno_exit_rules.
     FNO_PROFIT_LOCK_CONFIRM_SEC: float = 8.0
+    # [N012-A, owner Nov 8] The trend-aware profit lock on the paper F&O main book (fno_trend_lock.py): the
+    # front future's last three completed 5-minute buckets widen the lock's kept share while the trend supports
+    # the trade and tighten it while the trend opposes it. Paper N11 positions only, never real money.
+    # Research and the choice of numbers: docs/research/simulation/2026-11-08-fno-n012-a2 (N012-A2).
+    FNO_TREND_LOCK_ENABLED: bool = True
+    FNO_TREND_LOCK_SUPPORT_KEEP: float = 0.35
+    FNO_TREND_LOCK_ADVERSE_KEEP: float = 0.65
+    FNO_TREND_LOCK_TRAIL_KEEP: float = 0.60     # <= 0: no lock switched on during a trail
     # [SX-F1] Keep every exit check of a held option (fno_exit_paths.py) so
     # exit rules can be replayed at the live clock. Research only.
     FNO_EXIT_PATH_RECORDING: bool = True
