@@ -1,3 +1,35 @@
+## November 8 (night) - Production deployed at `d763aee` (PR #133, owner: "deploy in prod")
+
+**Deployed:** the whole Dev branch, merged by PR #133 as `d763aee` into evolve/smart-strategies. Production was at `398d44a`. It contains:
+- the N08 partner fixes C1–C4 and L1;
+- the N012-A trend lock on paper N11 (`FNO_TREND_LOCK_ENABLED` true);
+- the Nov 5 partner profit protection (on by default);
+- the E03.2 dated-contract fix;
+- the penny forward auction book with its clock fixes. Smart auction entries are off, and Classic MIS/CNC new entries are off (penny is paper; `PENNY_LIVE_TRADING` false);
+- the Momentum M01 breakout paper shadow (`MOMENTUM_ORB_SHADOW_ENABLED` true). Momentum entries are unchanged.
+
+**Procedure** (runbooks):
+- **Read-only pre-check:** no open positions, no open F&O positions, all services healthy.
+- **Backup:** autoheal paused and the app trio stopped. Volume `production_trading-sentinel_trading_data`: 11,591 files, 8.23 GB.
+  - Inventory, tar and verify went into `%USERPROFILE%\sentinel-operations\backups\20261108-pre-d763aee\`.
+  - Result: `INTEGRITY_VERIFIED_CONSISTENCY_UNPROVEN`; 14 of 14 SQLite `integrity_check` ok.
+  - The quiescence receipt is kept in the same folder.
+- **Release:** fast-forward to `d763aee`, then each service built one at a time with `SENTINEL_RELEASE_SHA`/`SENTINEL_BUILD_UTC`. Then `up -d --no-deps --force-recreate`, nginx restarted and autoheal resumed.
+- **Verification:** all healthy after 30 s. `scripts/verify_deployment.py` passed, with the receipt in `%USERPROFILE%\sentinel-operations\release-receipts\d763aee...json`.
+
+**After the deploy:**
+- **Effective switches:**
+  - `OWNER_LIVE_ENTRY_HALT` true;
+  - `FNO_LIVE_TEST_ENABLED` false;
+  - `PENNY_LIVE_TRADING` false;
+  - `FNO_N012_FORWARD_EVIDENCE` false;
+  - `MOMENTUM_SELECTIVE_ENTRY_ENABLED` true.
+- **Jobs registered:** `momentum_orb_shadow` and the five `penny_auction_*` jobs.
+- **Health:** no startup errors; nginx 200.
+- **Next sessions:** Mon Nov 9 trades; Tue Nov 10 is a holiday.
+
+**Rollback:** revert `d763aee` through GitHub and redeploy, or use the switches above. The data backup is in the folder above.
+
 ## November 8 - Momentum M01; next
 
 Done (Dev):
