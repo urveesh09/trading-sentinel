@@ -1,0 +1,42 @@
+[
+  {
+    "command": "pytest test_penny_auction_forward.py test_penny_smart_v3.py test_penny_scanner.py -q --tb=short",
+    "result": "Initial 24 passed / 34 failures. New scheduler test returned None as a fake task, polluting test task registry. Test double corrected, no production task-manager change."
+  },
+  {
+    "command": "same three test files after fixture correction",
+    "result": "58 passed, 1 warning, exit 0"
+  },
+  {
+    "command": "Penny, overnight, Smart/Classic, calendar, scheduler and surface groups",
+    "result": "Initial 991 passed / 10 failed / 1 skipped. Legacy execution tests assumed Classic entries enabled. Updated their helper to explicitly opt in and added retirement integration coverage. Original failure retained in _local/focused-initial-failure.txt."
+  },
+  {
+    "command": "same affected groups after explicit legacy opt-in",
+    "result": "1003 passed, 1 skipped, 14 warnings, 85.21 seconds, exit 0. Later focused checks cover final additive recording/summary changes."
+  },
+  {
+    "command": "pytest test_penny_auction_forward.py test_penny_shadow_integration.py test_penny_risk.py test_main_surface_characterization.py -q --tb=short",
+    "result": "72 passed, 1 warning, 6.53 seconds, exit 0"
+  },
+  {
+    "command": "TS_UPDATE_GOLDEN=1 pytest test_main_surface_characterization.py -q",
+    "result": "2 passed, 2 skipped, exit 0. Deliberate five additive Penny jobs only in job golden and AST add_job census."
+  },
+  {
+    "command": "python docs/research/penny/2026-11-08-auction-forward/exercise.py",
+    "result": "Two synthetic tapes reconcile funded quantities, gross-fees-net, and UNKNOWN matching evidence. No financial qualification."
+  },
+  {
+    "command": "python scripts/build_system_code_atlas.py",
+    "result": "306 modules indexed"
+  },
+  {
+    "command": "python -m pytest python-engine/tests -q --tb=short",
+    "result": "6314 passed, 4 skipped, 53 warnings, 704.51 seconds, exit 0. 708 source hashes unchanged. Raw full-suite.txt and full-suite-exit.txt retained."
+  },
+  {
+    "command": "python exercise.py, including concurrent collector race",
+    "result": "Two tapes reconcile; missing matching evidence remains reserved/null; concurrent collectors return observed/repeat with one phase and two rows."
+  }
+]

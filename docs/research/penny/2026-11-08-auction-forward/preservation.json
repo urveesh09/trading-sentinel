@@ -1,0 +1,17 @@
+{
+  "docs/SYSTEM_GUIDE.md": {
+    "preexisting_worktree_bytes_preserved": true,
+    "preexisting_worktree_sha256": "fa20c1c98c818a7063b3c9bcf1ac018994f0dfbf562e7e851dd879ddcae181e4",
+    "staged_contains_only_own_prefix_plus_HEAD": true
+  },
+  "docs/NEXT_AGENT_PLAN.md": {
+    "preexisting_worktree_bytes_preserved": true,
+    "preexisting_worktree_sha256": "b420db24c64ceedf38d54e8f3d77979aab5cdff75a05dce1290940c79fbb09a9",
+    "staged_contains_only_own_prefix_plus_HEAD": true
+  },
+  "docs/HANDOVER_CHECKLIST.md": {
+    "preexisting_worktree_bytes_preserved": true,
+    "preexisting_worktree_sha256": "f34f0aa1d6b49f9277301aa2bc480e9ebe51fef7857ad00e2f95c702f7ec5797",
+    "staged_contains_only_own_prefix_plus_HEAD": true
+  }
+}

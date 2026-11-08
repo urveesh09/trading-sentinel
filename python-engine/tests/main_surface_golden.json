@@ -223,6 +223,46 @@
       "trigger": "cron[hour='15', minute='45']"
     },
     {
+      "func": "_run_penny_auction_forward_safe",
+      "id": "penny_auction_post_base",
+      "kwargs": [
+        "phase"
+      ],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='51']"
+    },
+    {
+      "func": "_run_penny_auction_forward_safe",
+      "id": "penny_auction_post_end",
+      "kwargs": [
+        "phase"
+      ],
+      "trigger": "cron[day_of_week='mon-fri', hour='16', minute='3']"
+    },
+    {
+      "func": "_run_penny_auction_forward_safe",
+      "id": "penny_auction_match",
+      "kwargs": [
+        "phase"
+      ],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='12']"
+    },
+    {
+      "func": "_run_penny_auction_forward_safe",
+      "id": "penny_auction_exit_intents",
+      "kwargs": [
+        "phase"
+      ],
+      "trigger": "cron[day_of_week='mon-fri', hour='9', minute='3']"
+    },
+    {
+      "func": "_run_penny_auction_forward_safe",
+      "id": "penny_auction_morning",
+      "kwargs": [
+        "phase"
+      ],
+      "trigger": "cron[day_of_week='mon-fri', hour='9-15', minute='*']"
+    },
+    {
       "func": "_run_penny_daily_attribution",
       "id": "penny_daily_attribution",
       "kwargs": [],

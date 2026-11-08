@@ -1,3 +1,15 @@
+## November 8 - Penny auction forward and Classic retirement verification
+
+Check the [report and commands](research/penny/2026-11-08-auction-forward/REPORT.md),
+tested-source hashes, full-suite exit and five additive scheduler jobs. New
+PENNY_AUCTION_FORWARD_ENABLED defaults true and creates only a sibling paper
+store. False stops collection without erasing evidence. Classic MIS/CNC entry
+switches default false; test restores are explicit, existing exits unchanged.
+No old-store migration or dependency change. API reads stay authenticated and
+read-only. Cash/quantity/clock/carry tests do not qualify profitability or fills.
+Dev only, no push/deployment or Production edit by this task. Preserve prior
+uncommitted Smart/Classic reports and the owner's original documentation bytes.
+
 ## November 8 - N012-A trend lock (paper) and N08-C4
 
 - **Verify:**

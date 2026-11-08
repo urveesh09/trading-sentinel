@@ -215,6 +215,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_penny_auction_forward_safe",
+    "id": "'penny_auction_' + phase.lower()",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_penny_daily_attribution",
     "id": "'penny_daily_attribution'",
     "trigger": "'cron'"

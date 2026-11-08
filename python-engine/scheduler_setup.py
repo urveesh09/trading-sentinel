@@ -1174,6 +1174,33 @@ def register_penny_scheduler_jobs(scheduler):
         id='smart_bid0930_evidence', max_instances=1, coalesce=True, misfire_grace_time=45,
     )
 
+    # [PENNY-AUCTION] Independent funded paper comparison. Each invocation
+    # checks the trading calendar and its own receipt window before any quote.
+    async def _run_penny_auction_forward_safe(phase: str):
+        if not settings.PENNY_AUCTION_FORWARD_ENABLED:
+            return
+        today = datetime.now(IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return
+        if not _main.kite.access_token:
+            return
+        try:
+            from penny_auction_forward import collect
+            await collect(_main.kite, phase)
+        except Exception as exc:
+            logger.error("penny_auction_forward_failed phase=%s err=%s", phase, type(exc).__name__)
+
+    for phase, hour, minute in (
+        ("EXIT_INTENTS", 9, 3), ("MATCH", 9, 12),
+        ("MORNING", "9-15", "*"), ("POST_BASE", 15, 51), ("POST_END", 16, 3),
+    ):
+        scheduler.add_job(
+            _run_penny_auction_forward_safe, "cron", day_of_week="mon-fri",
+            hour=hour, minute=minute, kwargs={"phase": phase},
+            id="penny_auction_" + phase.lower(), max_instances=1, coalesce=True,
+            misfire_grace_time=30,
+        )
+
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
     # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today

@@ -502,6 +502,9 @@ async def run_penny_connors_scan():
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("penny_connors_scan_skip reason=non_trading_day")
         return
+    if not settings.PENNY_CLASSIC_CNC_ENTRIES_ENABLED:
+        logger.info("penny_connors_scan_skip reason=classic_cnc_entries_retired")
+        return
     # [FIX-PHASE3-AUDIT 2026-07-09] No-token guard -- same rationale as
     # run_penny_scanner_once (2026-07-09 missed-login incident).
     if not kite.access_token:

@@ -1,3 +1,24 @@
+## November 8 - Penny funded auction forward books and Classic entry retirement
+
+Dev paper implementation: `penny_auction_forward.py`. Smart has paired Rs 2,000
+OPEN_CLOSE/OPEN_MORNING books with identical funded quantities fixed before
+09:08. Overnight V2/V3 have independent Rs 25,000 books, actual 15:20 inputs
+and quantities fixed at a fresh 15:51 supported-session price. Matching volume
+is observed before continuous trading; post-close capacity uses only later
+volume. Auction exits require a pre-open intention. Missing evidence reserves
+cash and withholds complete P&L; displayed depth and volume never prove fills.
+Entry-time Penny fee rates are frozen and paper fee bypasses ignored.
+
+Five additive calendar/token-gated jobs, independent sibling SQLite store,
+and additive `auction_forward` fields on existing authenticated experiments.
+PENNY_AUCTION_FORWARD_ENABLED defaults true, paper only. Classic MIS/CNC new
+entries default retired through separate PENNY_CLASSIC_*_ENTRIES_ENABLED
+switches (false); existing-position exits and independent shadows remain.
+Existing Smart V3/overnight results and native ledgers are preserved.
+No new alpha or historical profitability qualification. Verification, limitations
+and rollout/rollback: [report](research/penny/2026-11-08-auction-forward/REPORT.md).
+Dev only; no push/deployment, order, Breeze request or F&O strategy change.
+
 ## November 8 - N012-A trend lock on the paper F&O main book (owner's call); N012-A2 search
 
 **What runs.** `fno_trend_lock.py`, behind the switch `FNO_TREND_LOCK_ENABLED`, which defaults to on. It acts on N11 paper positions only: source `FNO_PAPER`, paper mode, every `N11_*` strategy including the earned `N11_ADD` lot. Real money (`FNO_LIVE`) and the one-lot paper reference (`fno_n11.manage_paper`) keep the native lock.

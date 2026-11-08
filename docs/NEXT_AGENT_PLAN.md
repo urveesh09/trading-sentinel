@@ -1,3 +1,19 @@
+## November 8 - Penny auction forward implementation and evidence boundary
+
+The owner authorized development/testing after the Dev Penny review. Implemented
+funded pre-auction Smart close/morning comparisons and post-close overnight V2/V3
+books, preserving the older reference books. Classic MIS/CNC new entries default
+retired, with separate restore switches; position exits and shadows continue.
+See [plan](research/penny/2026-11-08-auction-forward/PLAN.md) and
+[verification/report](research/penny/2026-11-08-auction-forward/REPORT.md).
+
+Next evidence: at least 30 resolved Smart pairs and 30 comparable overnight
+nights. Retain unknowns and capacity refusals in the denominator. Compare
+same-entry net/ex-best winner and losses, without promoting capacity proxies
+to fills. The old target-exit candidate remains unqualified. No old exam is
+reopened. Real-order evidence and GitHub promotion need owner instruction.
+F&O goal remains stopped. Unrelated uncommitted research and owner edits stay.
+
 ## November 8 - N012-A on paper (owner's call); next
 
 Done:

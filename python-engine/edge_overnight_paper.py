@@ -1094,6 +1094,13 @@ async def run_overnight_entry(kite, db_path: Optional[str] = None, now: Optional
     except Exception as exc:
         logger.warning('overnight_shortlist_evidence_failed err=%s', type(exc).__name__)
 
+    try:
+        from penny_auction_forward import capture_overnight
+        capture_overnight(db_path, day=today, decided=decided, picks=scan["positions"],
+                          nights=nights, features=features, fillers=fillers, late=late)
+    except Exception as exc:
+        logger.warning("penny_auction_overnight_capture_failed err=%s", type(exc).__name__)
+
     summary = {"date": today, "phase": "ENTRY", "universe": len(tickers), "quoted": len(bars_today),
                "candidates": len(scan["candidates"]), "opened": opened, "skipped": skipped,
                "equity": state["equity"], "cash_after": round(cash, 4), "fill_contract": ENTRY_FILL_CONTRACT,

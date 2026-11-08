@@ -1,0 +1,98 @@
+{
+  "scope": "Dev Penny research SQLite schema inventory only, excluding Production and external data folders",
+  "databases": [
+    {
+      "path": "docs\\research\\penny\\2026-11-04-overnight-enrichment\\_local\\older\\yahoo.sqlite",
+      "tables": [
+        {
+          "name": "ohlcv_cache",
+          "sql": "CREATE TABLE ohlcv_cache(ticker,date,open,high,low,close,volume,PRIMARY KEY(ticker,date))"
+        }
+      ]
+    },
+    {
+      "path": "docs\\research\\penny\\2026-11-04-overnight-v2\\_local\\yahoo\\yahoo.sqlite",
+      "tables": [
+        {
+          "name": "ohlcv_cache",
+          "sql": "CREATE TABLE ohlcv_cache(ticker TEXT,date TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,date))"
+        }
+      ]
+    },
+    {
+      "path": "docs\\research\\penny\\2026-11-04-smart-classic-enrichment\\_local\\cross-name\\bars.sqlite",
+      "tables": [
+        {
+          "name": "intraday_cache",
+          "sql": "CREATE TABLE intraday_cache(ticker,interval,datetime,open,high,low,close,volume,PRIMARY KEY(ticker,interval,datetime))"
+        }
+      ]
+    },
+    {
+      "path": "docs\\research\\penny\\2026-11-04-strategy-search\\_local\\production-cash.sqlite",
+      "tables": [
+        {
+          "name": "ohlcv_cache",
+          "sql": "CREATE TABLE ohlcv_cache (ticker TEXT,date TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL)"
+        },
+        {
+          "name": "intraday_cache",
+          "sql": "CREATE TABLE intraday_cache (ticker TEXT,interval TEXT,datetime TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL)"
+        }
+      ]
+    },
+    {
+      "path": "docs\\research\\penny\\2026-11-04-strategy-search\\_local\\public\\public.sqlite",
+      "tables": [
+        {
+          "name": "intraday_cache",
+          "sql": "CREATE TABLE intraday_cache(ticker TEXT,interval TEXT,datetime TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,interval,datetime))"
+        },
+        {
+          "name": "ohlcv_cache",
+          "sql": "CREATE TABLE ohlcv_cache(ticker TEXT,date TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,date))"
+        }
+      ]
+    },
+    {
+      "path": "docs\\research\\penny\\2026-11-04-strategy-search\\_local\\research.sqlite",
+      "tables": [
+        {
+          "name": "ohlcv_cache",
+          "sql": "CREATE TABLE ohlcv_cache(ticker TEXT,date TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,date))"
+        },
+        {
+          "name": "intraday_cache",
+          "sql": "CREATE TABLE intraday_cache(ticker TEXT,interval TEXT,datetime TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,interval,datetime))"
+        }
+      ]
+    },
+    {
+      "path": "docs\\research\\penny\\2026-11-04-strategy-search\\basis-v2\\_local\\research.sqlite",
+      "tables": [
+        {
+          "name": "ohlcv_cache",
+          "sql": "CREATE TABLE ohlcv_cache(ticker TEXT,date TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,date))"
+        },
+        {
+          "name": "intraday_cache",
+          "sql": "CREATE TABLE intraday_cache(ticker TEXT,interval TEXT,datetime TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,interval,datetime))"
+        }
+      ]
+    },
+    {
+      "path": "docs\\research\\penny\\2026-11-04-strategy-search\\smart-v2\\_local\\research.sqlite",
+      "tables": [
+        {
+          "name": "ohlcv_cache",
+          "sql": "CREATE TABLE ohlcv_cache(ticker TEXT,date TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,date))"
+        },
+        {
+          "name": "intraday_cache",
+          "sql": "CREATE TABLE intraday_cache(ticker TEXT,interval TEXT,datetime TEXT,open REAL,high REAL,low REAL,close REAL,volume REAL,PRIMARY KEY(ticker,interval,datetime))"
+        }
+      ]
+    }
+  ],
+  "conclusion": "The inspected research SQLite schemas contain no recorded penny_auction_forward sources/intents/runs. Existing daily/minute replays cannot establish this policy own-auction fills. No fresh historical profit verdict is asserted. JSON archives outside this schema inventory were not exhaustively searched."
+}
