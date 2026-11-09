@@ -394,6 +394,69 @@ async def test_a_break_is_never_told_without_its_losing_run_message(watch, kite,
     assert json.loads(await pw._get_state(db, f"break:{DAY}:NIFTY"))["state"] == "UNSENT"
 
 
+@pytest.fixture
+def owner(monkeypatch):
+    """[N09b] The owner's chat (operator_alert), faked: what was told, and whether the gateway takes it."""
+    monkeypatch.setattr(settings, "PARTNER_WATCH_OWNER_HEADSUP_ENABLED", True)
+    told, accept = [], [True]
+
+    async def notify(message, *, event="operator_alert"):
+        told.append((event, message))
+        return accept[0]
+
+    monkeypatch.setattr("operator_alert.notify_operator", notify)
+    yield told, accept
+
+
+@pytest.mark.asyncio
+async def test_the_owner_gets_one_heads_up_a_day_after_four_losses_in_a_row(watch, kite, owner):
+    told, _accept = owner
+    await _login()
+    market = _market(D(10, 20))
+    await pw.watch_tick(D(9, 59, 55), market=market)
+    for n, (buy, sell) in enumerate(((0, 2), (3, 5), (6, 8), (9, 11), (12, 14))):
+        kite["orders"] += [_o(f"1{n}1", "BUY", D(10, buy), average_price=80.0),
+                           _o(f"1{n}2", "SELL", D(10, sell), average_price=79.0)]
+        await pw.watch_tick(D(10, sell, 5), market=market)
+        await pw.settle()
+        assert len(told) == (0 if n < 3 else 1)                  # the 4th loss in a row, once
+    event, text = told[0]
+    assert event == "partner_headsup"
+    assert text.splitlines() == [
+        "🤝 Partner heads-up · 10:11",
+        "4 losses in a row since 10:02 · 4 buys today, 3 within 2 min of a loss.",
+        "A call may help: on Nov 9 their buying slowed from about 11 an hour to 5 after yours."]
+    assert "₹" not in text and "%" not in text                    # no money figures
+    assert all(m["kind"] != "watch_headsup" for m in watch)      # nothing to the partner
+    pw.reset()                                                    # a restart sends no second one
+    await pw.watch_tick(D(10, 15), market=market)
+    await pw.settle()
+    assert len(told) == 1
+
+
+@pytest.mark.asyncio
+async def test_the_heads_up_on_a_deep_day_and_a_failed_send_is_tried_again(watch, kite, owner):
+    told, accept = owner
+    accept[0] = False
+    await _login()
+    market = _market(D(10, 20))
+    await pw.watch_tick(D(9, 59, 55), market=market)
+    kite["orders"] = [_o("101", "BUY", D(10, 0), average_price=80.0), _o("102", "SELL", D(10, 5), average_price=50.0)]
+    await pw.watch_tick(D(10, 5, 5), market=market)
+    await pw.settle()
+    assert len(told) == 1                                         # tried, not taken
+    await pw.watch_tick(D(10, 7), market=market)
+    await pw.settle()
+    assert len(told) == 1                                         # not before 5 minutes
+    accept[0] = True
+    await pw.watch_tick(D(10, 10, 10), market=market)
+    await pw.settle()
+    assert len(told) == 2 and told[1][1].splitlines()[1] == "The day is past −20% of their cash · 1 buy today."
+    await pw.watch_tick(D(10, 16), market=market)
+    await pw.settle()
+    assert len(told) == 2
+
+
 @pytest.mark.asyncio
 async def test_the_evening_note_gets_the_days_habits(tmp_path, monkeypatch, coach):
     db = str(tmp_path / "evening.db")

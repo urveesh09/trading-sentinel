@@ -1,3 +1,21 @@
+## November 9 - N09b owner heads-up; N09 goes to the Production branch (merge only, not deployed)
+
+**Behaviour** (`PARTNER_WATCH_OWNER_HEADSUP_ENABLED`, default true; conftest sets it false):
+- **Trigger:** `partner_watch._owner_headsup`, beside the tick, sends at most once a day to the owner's own chat through `operator_alert.notify_operator` (event `partner_headsup`). It fires when `losing_run` reaches `HEADSUP_RUN` (4), or when the day's loss passes `HEADSUP_DAY_SHARE` (20%) of the cash.
+- **Text:** counts and times only, no money figures. The owner said on Nov 9: "don't report me the number".
+- **Once a day:** the day is marked in `partner_watch_state` as `headsup:{day}` only after the gateway takes the message, so a restart does not send a second one. A failed send is tried again 5 minutes later.
+- **The partner's messages are unchanged.**
+
+**Why:**
+- **What happened:** on Nov 9 the owner heard only when the partner called, hours in. After the owner's call the buying slowed from about 11 an hour to 5, sizes fell to 4–7% of the cash, and the pre-buy check was used (12:24).
+- **The owner's words:** "keep a heads up to me, though I doubt every time I can help it's important".
+
+**Verification:**
+- `tests/test_partner_coach_n09.py`: 18 passed, covering the heads-up after the 4th loss once a day and over a restart, the deep-day reason, and a retry after a failed send.
+- Full suite: 6,351 passed, 4 skipped (11 min 46 s).
+
+**Release:** on the owner's word ("commit the code and merge in prod remote branch ... just the deployment in local keep that waiting"), N09 and N09b go to `evolve/smart-strategies` by pull request. Production's working copy is not pulled, built or restarted. Deployment waits for the owner. Rollback: `PARTNER_WATCH_COACH_ENABLED=false` and `PARTNER_WATCH_OWNER_HEADSUP_ENABLED=false`.
+
 ## November 9 - N09 partner coach: a plan before the open, the partner's own rule, a losing run with something to wait for (Dev only)
 
 **Why:**

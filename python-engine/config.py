@@ -1536,6 +1536,9 @@ class Settings(BaseSettings):
     # a losing-run message with a five-minute range to wait for and one message when it breaks, and the day's
     # habits in the evening note. Messages only. False: the watch as N08.
     PARTNER_WATCH_COACH_ENABLED: bool = True
+    # [N09b 2026-11-09] Once a day, a heads-up to the owner's own chat (operator alert, no money figures) when the
+    # partner has 4 losses in a row or the day is past -20% of their cash. The partner's messages are unchanged.
+    PARTNER_WATCH_OWNER_HEADSUP_ENABLED: bool = True
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True

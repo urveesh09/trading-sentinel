@@ -2926,6 +2926,9 @@ class _State:
     break_checked: Optional[datetime] = None          # the five-minute boundary last looked at
     break_task: Optional[asyncio.Task] = None
     coach_bars: dict = field(default_factory=dict)    # future symbol -> (five-minute boundary, candles)
+    headsup_day: Optional[str] = None                 # [N09b] the day the owner's heads-up went
+    headsup_task: Optional[asyncio.Task] = None
+    headsup_retry_at: Optional[datetime] = None
 
 
 _state = _State()
@@ -2937,7 +2940,8 @@ def reset() -> None:
     The outbox is in the database: what is still due is sent from the next
     book read, rebuilt."""
     global _state
-    for task in [*_state.plan_tasks.values(), _state.looks_task, _state.gameplan_task, _state.break_task]:
+    for task in [*_state.plan_tasks.values(), _state.looks_task, _state.gameplan_task, _state.break_task,
+                 _state.headsup_task]:
         if task is not None and not task.done():
             try:
                 task.cancel()
@@ -2953,7 +2957,7 @@ async def settle() -> None:
     loop = asyncio.get_running_loop()
     for _round in range(20):
         tasks = [t for t in [*_state.plan_tasks.values(), _state.looks_task, _state.gameplan_task,
-                             _state.break_task, _outbox["task"]]
+                             _state.break_task, _state.headsup_task, _outbox["task"]]
                  if t is not None and not t.done() and t.get_loop() is loop]
         if not tasks:
             return
@@ -3384,6 +3388,9 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     # 4c. [N09] The coach: the morning plan, the partner's own rule, a losing run, a range break.
     if coach:
         out.extend(await _coach_items(db_path, day, now, trips, so_far))
+    # 4d. [N09b] Once a day, a heads-up to the owner (not the partner) when the day turns bad.
+    if _headsup_on():
+        _owner_headsup(db_path, day, now, trips, so_far)
     # The view every message is built from; then the outbox goes.
     _state.view = View(day=day, at=now, rows=rows, trips=trips, holdings=holdings, covers=covers,
                        gtts=_state.gtts if _gtts_fresh(now, GTT_REFRESH) else None, positions=_state.positions,
@@ -5608,6 +5615,70 @@ async def _break_job(db_path: str, day: str, now: datetime) -> None:
             _kick()
     except Exception as exc:              # a break not looked at now is looked at on the next bar
         logger.warning("partner_watch_break_failed err=%s", type(exc).__name__)
+
+
+# --- [N09b] the owner's heads-up ---------------------------------------------------------------------------------
+# Nov 9: the owner heard of the partner's morning only when the partner called, hours in. After the owner's call the
+# buying slowed from about 11 an hour to 5, the sizes fell to 4-7% of the cash and the pre-buy check was used for the
+# first time in days. One message a day to the owner's own chat (operator_alert), with no money figures (owner:
+# "don't report me the number"); the partner's messages are unchanged.
+
+HEADSUP_RUN = 4                         # losses in a row
+HEADSUP_DAY_SHARE = 0.20                # or the day's loss past this share of the cash
+HEADSUP_RETRY = timedelta(minutes=5)    # a send that failed is tried again this much later
+
+
+def _headsup_on() -> bool:
+    return bool(getattr(settings, "PARTNER_WATCH_OWNER_HEADSUP_ENABLED", False))
+
+
+def headsup_text(now: datetime, trips: list, so_far: Optional[dict], cash: Optional[float]) -> Optional[str]:
+    """The owner's heads-up, or None while the day has not turned: HEADSUP_RUN losses in a row, or the day's loss
+    past HEADSUP_DAY_SHARE of the cash. Counts and times only."""
+    run = losing_run(trips)
+    reasons = []
+    if len(run) >= HEADSUP_RUN:
+        reasons.append(f"{len(run)} losses in a row since {_hhmm(run[0].closed_at)}")
+    if so_far is not None and cash and so_far["net"] <= -HEADSUP_DAY_SHARE * cash:
+        reasons.append(f"the day is past −{HEADSUP_DAY_SHARE:.0%} of their cash")
+    if not reasons:
+        return None
+    today = [t for t in trips if not t.carried]
+    quick = sum(1 for t in today if (_after_loss(t, trips) or {}).get("minutes", 99) < 2)
+    first = reasons[0][0].upper() + " · ".join(reasons)[1:]
+    facts = (f"{len(today)} buy{'s' if len(today) != 1 else ''} today"
+             + (f", {quick} within 2 min of a loss" if quick else ""))
+    return (f"🤝 Partner heads-up · {_hhmm(now)}\n{first} · {facts}.\n"
+            "A call may help: on Nov 9 their buying slowed from about 11 an hour to 5 after yours.")
+
+
+def _owner_headsup(db_path: str, day: str, now: datetime, trips: list, so_far: Optional[dict]) -> None:
+    if _state.headsup_day == day or (_state.headsup_task is not None and not _state.headsup_task.done()):
+        return
+    if _state.headsup_retry_at is not None and now < _state.headsup_retry_at:
+        return
+    text = headsup_text(now, trips, so_far, _state.cash)
+    if text is not None:
+        _state.headsup_task = background_tasks.spawn(_send_headsup(db_path, day, now, text),
+                                                     name="partner_watch_headsup")
+
+
+async def _send_headsup(db_path: str, day: str, now: datetime, text: str) -> None:
+    """Once a day: the day is marked only once the gateway took the message (a restart sends no second one)."""
+    try:
+        if await _get_state(db_path, f"headsup:{day}"):
+            _state.headsup_day = day
+            return
+        from operator_alert import notify_operator
+        if await notify_operator(text, event="partner_headsup"):
+            await _set_state(db_path, f"headsup:{day}", now.isoformat(), now)
+            _state.headsup_day = day
+            logger.info("partner_watch_headsup_sent day=%s", day)
+        else:
+            _state.headsup_retry_at = now + HEADSUP_RETRY
+    except Exception as exc:              # never the tick; tried again later
+        _state.headsup_retry_at = now + HEADSUP_RETRY
+        logger.warning("partner_watch_headsup_failed err=%s", type(exc).__name__)
 
 
 _BUILDERS = {
