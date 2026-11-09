@@ -1,3 +1,11 @@
+## November 9 - PR #134 merged to the Production branch as `4e2eb94` (not deployed)
+
+- **Merged:** N09 (`6bd9c84`) and N09b (`26c55cd`), with the Nov 8 deploy record (`1904a28`), went into `evolve/smart-strategies` by PR #134, on the owner's word: "commit the code and merge in prod remote branch".
+- **Not deployed:** Production's working copy is still at `d763aee`. Nothing was pulled, built or restarted. The owner will say when to deploy, then the usual runbook runs (backup, fast-forward, build one service at a time, recreate, nginx restart, `verify_deployment.py`).
+- **On deployment:**
+  - Write the forward session dates into `docs/research/partner/2026-11-09-n09-coach/SCORECARD.md` first.
+  - Check that `PARTNER_WATCH_COACH_ENABLED` and `PARTNER_WATCH_OWNER_HEADSUP_ENABLED` read true in the engine.
+
 ## November 9 - N09b owner heads-up; N09 goes to the Production branch (merge only, not deployed)
 
 **Behaviour** (`PARTNER_WATCH_OWNER_HEADSUP_ENABLED`, default true; conftest sets it false):
