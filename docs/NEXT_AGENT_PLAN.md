@@ -1,3 +1,34 @@
+## November 9 - N09c card-rule study: the partner's card failed its frozen test (research only)
+
+**Question:** can the system help the partner earn, and where do their suggestions come from?
+- **Sources (all in-house):**
+  - **Buy cards:** `partner_orchestrator` → `fno_signal_scan` → `evaluate_fno_mom`, the shipped opening-range break, held to the index target, the index stop or 15:15.
+  - **"🤖 Sentinel bought…":** the paper N11 book and the expiry book (`partner_sentinel`).
+- **Forward, Production read-only:**
+  - **Cards since Oct 1:** 9 of 18 at target.
+  - **Partner trades in a live card's direction:** 62 trades, 48% won, against 33% for their other 271.
+  - **N11 paper since Oct 27:** −₹7,650.
+  - **Charges:** 47% of the partner's 10-session loss. Their trades lose before charges too.
+
+**Study** (`docs/research/partner/2026-11-09-card-rule/`, freeze `c2b3adb5`, results `1e601a3b`):
+- **Rule:** the card rule unchanged (index stop, sale at the index target, else the 15:10 flat), per lot on NIFTY 2024, 2025 and Jan–Oct 2026, against 20 random-entry books with the same exits.
+- **Replay stack:** the current engine files. It reproduced the O30c `BASE|UNION_ADX` nets exactly.
+- **Result: FAIL.**
+  - Per year: 2024 +13,700, 2025 +2,168, 2026 −8,036.
+  - At +₹200 a trade: −56,568. Without the best day: −4,841.
+  - 322 trades, 34–40% won, wins about ₹2,800 a lot against losses about ₹1,650. That is about break-even.
+  - The forward cards were a good month, not an edge.
+- **Card exits against the book's exits:** better only in 2024.
+
+**What follows:**
+- The partner is not coached to lean on the card. The card-led watch (N09c-W) is not built.
+- The card stays research-only and keeps counting forward.
+- Jan–May 2022 was not read; it stays the N012 exam.
+
+**Verification:** `test_lab_x.py` 5 passed; the January 2026 smoke checked exit reasons only.
+
+**Status:** Dev commits only. No runtime, setting, migration, order or deployment change. Production stays at `d763aee`, and the Production branch at `4e2eb94`.
+
 ## November 9 - PR #134 merged to the Production branch as `4e2eb94` (not deployed)
 
 - **Merged:** N09 (`6bd9c84`) and N09b (`26c55cd`), with the Nov 8 deploy record (`1904a28`), went into `evolve/smart-strategies` by PR #134, on the owner's word: "commit the code and merge in prod remote branch".
