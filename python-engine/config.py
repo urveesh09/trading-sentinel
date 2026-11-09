@@ -1531,6 +1531,14 @@ class Settings(BaseSettings):
     PARTNER_WATCH_BROKEN_ENABLED: bool = True
     # [N07] Advisory floor, combined planned risk and current futures context.
     PARTNER_WATCH_PROFIT_PROTECTION_ENABLED: bool = True
+    # [N09 2026-11-09] The coach (partner_watch, partner_habits): a 09:05 plan with the partner's own record and a
+    # rule they choose (reminded once, never enforced), short buy and day messages ("more" sends the full plan),
+    # a losing-run message with a five-minute range to wait for and one message when it breaks, and the day's
+    # habits in the evening note. Messages only. False: the watch as N08.
+    PARTNER_WATCH_COACH_ENABLED: bool = True
+    # [N09b 2026-11-09] Once a day, a heads-up to the owner's own chat (operator alert, no money figures) when the
+    # partner has 4 losses in a row or the day is past -20% of their cash. The partner's messages are unchanged.
+    PARTNER_WATCH_OWNER_HEADSUP_ENABLED: bool = True
     # [O21-ON 2026-10-21] Forward shadows of the EDGE overnight paper book
     # (edge_overnight_paper.OVERNIGHT_SHADOWS): research only, own cash.
     EDGE_OVERNIGHT_SHADOWS_ENABLED: bool = True

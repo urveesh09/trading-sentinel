@@ -98,6 +98,10 @@ def patch_settings(monkeypatch, tmp_path):
     # [N06] The partner watch's Sentinel advice adds lines to its messages. The watch's tests pin the texts as they
     # were; tests of the advice switch it on themselves (tests/test_partner_sentinel.py).
     monkeypatch.setattr(settings, "PARTNER_SENTINEL_ADVICE_ENABLED", False)
+    # [N09] The coach shortens the watch's PLAN and DAY texts and adds its own; the older tests pin the texts as
+    # they were. Tests of the coach switch it on themselves (tests/test_partner_coach_n09.py).
+    monkeypatch.setattr(settings, "PARTNER_WATCH_COACH_ENABLED", False)
+    monkeypatch.setattr(settings, "PARTNER_WATCH_OWNER_HEADSUP_ENABLED", False)    # [N09b] its tests switch it on
     for name in ("TELEGRAM_BOT_TOKEN", "PARTNER_TELEGRAM_BOT_TOKEN"):        # [O26c] never the real bots
         monkeypatch.setattr(settings, name, f"test-{name.lower()}")
     for name in ("TELEGRAM_CHAT_ID", "PARTNER_TELEGRAM_CHAT_ID"):

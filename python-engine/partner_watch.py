@@ -338,7 +338,9 @@ PROFIT_MARKET_TIMEOUT = 1.0
 FUTURE_BARS_DAYS = 21                      # as the F&O engine (fno_orchestrator.RVOL_FETCH_CALENDAR_DAYS)
 TICK = 0.05
 # [N06] SENTINEL / SENTINEL_EXIT: the Sentinel's own main trades as advice (partner_sentinel), fixed texts.
-ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK", "CHECK", "SENTINEL", "SENTINEL_EXIT")
+ALWAYS_SENT = ("WATCH_ON", "PROMPT", "RECONNECT", "BLIND", "BACK", "CHECK", "SENTINEL", "SENTINEL_EXIT",
+               # [N09] fixed texts: the morning plan, the partner's own rule, a range break, the full plan on request
+               "GAMEPLAN", "RULE", "BREAK", "MORE", "GOOD")
 GUARD_TOLERANCE = 0.005                    # a stop within 0.5% under the buy price still guards it
 QUIET_PREFIX = "watch"
 # Kite states in which an SL order still waits to protect (a modify in flight included).
@@ -349,14 +351,15 @@ COVERED = ("FULL", "PARTIAL")
 LIFETIME_SEC = {"PLAN": 180, "ADDED": 180, "NO_STOP": 900, "PARTIAL": 900, "REMOVED": 900, "UNFILLED": 120,
                 "LOWERED": 120, "REFUSED": 300, "BROKEN": 120, "CLOSE": 1200, "WATCH_ON": 600, "PROMPT": 1800, "RECONNECT": 1800,
                 "EXCESS": 900, "ORPHAN": 900, "PRODUCT": 900, "BLIND": 600, "BACK": 300, "CHECK": 120, "DAY": 600,
-                "SENTINEL": 120, "SENTINEL_EXIT": 900}
+                "SENTINEL": 120, "SENTINEL_EXIT": 900,
+                "GAMEPLAN": 1800, "RULE": 300, "STREAK": 180, "BREAK": 180, "MORE": 120, "GOOD": 300}
 MAX_ATTEMPTS = 4
 RETRY_GAP = timedelta(seconds=10)
 # [O24d] The outbox sends the most urgent first.
 PRIORITY = {"UNFILLED": 0, "BROKEN": 1, "REMOVED": 1, "LOWERED": 1, "REFUSED": 1, "EXCESS": 1, "ORPHAN": 1, "PRODUCT": 1,
             "BLIND": 1, "CHECK": 1, "NO_STOP": 2, "PARTIAL": 2, "DAY": 2, "ADDED": 3,
             "PLAN": 3, "CLOSE": 4, "BACK": 4, "WATCH_ON": 5, "PROMPT": 5, "RECONNECT": 5, "SENTINEL": 2,
-            "SENTINEL_EXIT": 2}
+            "SENTINEL_EXIT": 2, "MORE": 1, "RULE": 2, "STREAK": 2, "BREAK": 2, "GAMEPLAN": 4, "GOOD": 4}
 SENT, DONE, RETRY, MUTED, WAIT, LATER = "SENT", "DONE", "RETRY", "MUTED", "WAIT", "LATER"
 QUEUED = "queued"
 REFRESHING = "refreshing"                 # [O25M] a CHECK being worked out again: still due until replaced
@@ -2913,6 +2916,19 @@ class _State:
     blind: dict = field(default_factory=dict)         # [O24f] read -> the failure the partner was told of (BLIND)
     trip_sigs: dict = field(default_factory=dict)     # [O26] trip key -> what its stored row was written from
     above: set = field(default_factory=set)           # [N06c] episodes whose price was read over their plan stop
+    # [N09] the coach: the partner's own rule for the day, the record before today, armed range breaks
+    rule_day: Optional[str] = None
+    rule: Optional[dict] = None                       # {"trades": n | None, "stop": share | None}; {} = no rule
+    habits: Optional[tuple] = None                    # (day, partner_habits.record before it)
+    gameplan_task: Optional[asyncio.Task] = None
+    breaks_day: Optional[str] = None
+    breaks: dict = field(default_factory=dict)        # underlying -> the armed break (``_arm_break``)
+    break_checked: Optional[datetime] = None          # the five-minute boundary last looked at
+    break_task: Optional[asyncio.Task] = None
+    coach_bars: dict = field(default_factory=dict)    # future symbol -> (five-minute boundary, candles)
+    headsup_day: Optional[str] = None                 # [N09b] the day the owner's heads-up went
+    headsup_task: Optional[asyncio.Task] = None
+    headsup_retry_at: Optional[datetime] = None
 
 
 _state = _State()
@@ -2924,7 +2940,8 @@ def reset() -> None:
     The outbox is in the database: what is still due is sent from the next
     book read, rebuilt."""
     global _state
-    for task in [*_state.plan_tasks.values(), _state.looks_task]:
+    for task in [*_state.plan_tasks.values(), _state.looks_task, _state.gameplan_task, _state.break_task,
+                 _state.headsup_task]:
         if task is not None and not task.done():
             try:
                 task.cancel()
@@ -2939,7 +2956,8 @@ async def settle() -> None:
     messages being sent (tests, shutdown)."""
     loop = asyncio.get_running_loop()
     for _round in range(20):
-        tasks = [t for t in [*_state.plan_tasks.values(), _state.looks_task, _outbox["task"]]
+        tasks = [t for t in [*_state.plan_tasks.values(), _state.looks_task, _state.gameplan_task,
+                             _state.break_task, _state.headsup_task, _outbox["task"]]
                  if t is not None and not t.done() and t.get_loop() is loop]
         if not tasks:
             return
@@ -3347,8 +3365,13 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     if _profit_on() and so_far is not None and so_far["best"] > 0:
         await _load_profit_choice(db_path, day)
         profit = _profit_floor(so_far, trips)
-    if so_far is not None and so_far["step"] > 0:
-        out.append((f"day:{day}:{so_far['step']}", "DAY", None, {"step": so_far["step"]}, so_far["at"], None))
+    # [N09] With the coach, only the steps in COACH_DAY_STEPS are told (20%, 40%, 60%): the losing run and the
+    # partner's own rule come first, and six identical updates on Nov 9 were read as noise.
+    coach = _coach_on()
+    told = (coach_step(so_far["step"]) if coach else so_far["step"]) if so_far is not None else 0
+    if told > 0:
+        out.append((f"day:{day}:{told}", "DAY", None, {"step": told, **({"coach": True} if coach else {})},
+                    so_far["at"], None))
     # [N07] While a profit floor is active, measure further warnings from that floor.
     # This catches a breached floor between the legacy cash-loss steps and avoids duplicate DAY messages.
     if profit is not None and so_far["net"] >= 0:
@@ -3362,6 +3385,12 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
                     {"giveback": so_far["giveback"], "best_at": so_far["best_at"].isoformat()}, so_far["at"], None))
     # 4b. [N06] The Sentinel's own main trades as advice: its buys while fresh, its sales after a buy that was told.
     out.extend(await _sentinel_items(db_path, day, now, holdings))
+    # 4c. [N09] The coach: the morning plan, the partner's own rule, a losing run, a range break.
+    if coach:
+        out.extend(await _coach_items(db_path, day, now, trips, so_far))
+    # 4d. [N09b] Once a day, a heads-up to the owner (not the partner) when the day turns bad.
+    if _headsup_on():
+        _owner_headsup(db_path, day, now, trips, so_far)
     # The view every message is built from; then the outbox goes.
     _state.view = View(day=day, at=now, rows=rows, trips=trips, holdings=holdings, covers=covers,
                        gtts=_state.gtts if _gtts_fresh(now, GTT_REFRESH) else None, positions=_state.positions,
@@ -3952,6 +3981,8 @@ def _after_loss(trip: Trip, trips: list) -> Optional[dict]:
     out = {"loss": -result, "at": _hhmm(last.closed_at), "minutes": minutes}
     if trip.bought > last.bought:
         out["bigger"] = f"{trip.bought} after {last.bought}"
+    if last.buy_value:
+        out["last_value"] = round(last.buy_value, 2)  # [N09] what the lost trade was worth: "4× its size"
     return out
 
 
@@ -4423,6 +4454,13 @@ async def _b_plan(db_path: str, context: dict, view: View, now: datetime):
                      usual=context.get("usual"), quote=quote, now=now, set_at=set_at, card=context.get("card"),
                      card_relation_=context.get("card_relation"), size_note=size_note, size_tail=size_tail,
                      after_tail=after_tail)
+    if _coach_on():
+        # [N09] The short plan goes; the full one is kept for "more".
+        await _keep_full_plan(db_path, view.day, holding, text, now)
+        text = short_plan_text(holding, plan, lots=context.get("lots"),
+                               bought=(context["bought"], context["bought_px"]), cover=cover,
+                               after_loss=context.get("after_loss"), usual=context.get("usual"), quote=quote, now=now,
+                               set_at=set_at, card=context.get("card"), card_relation_=context.get("card_relation"))
     note = await _profit_risk_note(view, now, holding)
     return (f"{note}\n{text}" if note else text), plan_summary(plan, quote, cover, now), None
 
@@ -4856,6 +4894,11 @@ async def _b_day(db_path: str, context: dict, view: View, now: datetime):
             return None  # the active floor replaces the prior giveback message
         return (day_text(so_far, _state.cash, giveback=True),
                 f"day so far {_signed(so_far['net'])}, {_amt(so_far['given'])} under its best", None)
+    if context.get("coach"):
+        # [N09] Still at that told step (a later one has its own message), in two lines.
+        if coach_step(so_far["step"]) != context.get("step"):
+            return None
+        return short_day_text(so_far, _state.cash), f"day so far {_signed(so_far['net'])}", None
     if so_far["step"] != context.get("step"):
         return None
     return day_text(so_far, _state.cash), f"day so far {_signed(so_far['net'])}", None
@@ -4949,9 +4992,699 @@ async def _sentinel_items(db_path: str, day: str, now: datetime, holdings: list)
     return items
 
 
+# ---------------------------------------------------------------------------
+# [N09 2026-11-09] The coach: a plan before the open with the partner's own rule, a losing run with something to
+# wait for, short buy and day messages, the full plan on request (partner_habits: the record)
+# ---------------------------------------------------------------------------
+# Nov 9: 31 buys from 09:15 to 12:04, 25 of 30 closed trades lost, while the watch sent 59 messages (PLANs of six to
+# eight lines after each buy, six identical DAY updates) and the 09:50 plan came after 11 trades. The partner's
+# record over 10 sessions: mornings ended down on 8; trades closed within 2 minutes won 14%, trades held 15-60
+# minutes 49%. The coach says that record before the open, lets them choose their own rule and reminds them of it
+# once, and after a losing run gives them a level to wait for. Nothing is blocked, placed or recommended.
+
+GAMEPLAN_FROM_MIN = 9 * 60             # the 09:00 prompt job sends it (the watch's ticks start at 09:15)
+GAMEPLAN_UNTIL_MIN = 11 * 60
+EARLY_END_MIN = 10 * 60
+COACH_DAY_STEPS = (2, 4, 6)             # DAY_STEPs of the day's loss that are told (20%, 40%, 60% of cash)
+STREAK_AT = (2, 4)                      # losses in a row that are told
+STREAK_GAP = timedelta(minutes=10)      # a later size is told only this long after the run's first told loss
+                                        # (Nov 9: the 2nd loss at 09:26 and the 4th at 09:27 would be two messages)
+RANGE_BARS = 6                          # the five-minute bars a range is read over (30 minutes)
+RANGE_MIN_BARS = 2
+COACH_MARKET_TIMEOUT = 1.5
+BREAK_SETTLE = timedelta(seconds=5)     # a five-minute bar is looked at this long after it ends
+BREAK_UNTIL_MIN = 15 * 60 + 15
+RULE_TRADES = 3
+RULE_STOP = 0.10
+RULE_CHOICES = {"T3": {"trades": RULE_TRADES, "stop": None}, "S10": {"trades": None, "stop": RULE_STOP},
+                "BOTH": {"trades": RULE_TRADES, "stop": RULE_STOP}, "NONE": {"trades": None, "stop": None}}
+MORE_WORDS = ("more", "details")
+WATCH_ON_COACH_TEXT = ("✅ Trade watch on until {close}: missing or moved stops, refused orders, a trade under its "
+                       "plan stop, a losing run, the day's loss at 20/40/60% of cash. Messages only.\n"
+                       "🔎 Before a buy, send the option, e.g. 76700 ce.")
+RULE_HELP = ("🧭 Send rule 3 (trades before 10:00), rule 10% (stop the day at −10% of cash), rule 3 10% for both, or "
+             "rule none.")
+
+
+def _coach_on() -> bool:
+    return bool(getattr(settings, "PARTNER_WATCH_COACH_ENABLED", False))
+
+
+def coach_step(step: int) -> int:
+    """The told step for a day's loss ``step`` (in DAY_STEPs): the largest of COACH_DAY_STEPS reached, or 0."""
+    return max((s for s in COACH_DAY_STEPS if s <= step), default=0)
+
+
+def _minute(at: datetime) -> int:
+    local = at.astimezone(IST)
+    return local.hour * 60 + local.minute
+
+
+def losing_run(trips: list) -> list:
+    """Today's trades closed at a loss since the last close that was not a loss, in close order; [] when the
+    latest close was not a loss."""
+    closed = sorted((t for t in trips if not t.carried and t.closed_at is not None and t.realised() is not None),
+                    key=lambda t: (t.closed_at, t.key))
+    run: list = []
+    for trip in reversed(closed):
+        if trip.realised() >= 0:
+            break
+        run.append(trip)
+    return run[::-1]
+
+
+def streak_size(run: list) -> int:
+    """The told size of a losing run: the largest of STREAK_AT it has reached (0 under the first), a later size
+    only once its loss came STREAK_GAP after the loss that reached the first size."""
+    first = STREAK_AT[0]
+    sizes = [k for k in STREAK_AT if k <= len(run)
+             and (k == first or run[k - 1].closed_at - run[first - 1].closed_at >= STREAK_GAP)]
+    return max(sizes, default=0)
+
+
+def _floor_times(value: float) -> int:
+    return int(math.floor(value + 1e-9))
+
+
+def _plan_warning(plan: Plan, *, card: Optional[dict], on_card: bool, relation: Optional[str], paid: float,
+                  bought_px: float, after_loss: Optional[dict], usual: Optional[float]) -> str:
+    """The short plan's one warning, the strongest: the card (paid over its limit, or not its trade); a buy at
+    least twice the size of the trade just lost; a buy far over the partner's usual share; minutes after a
+    loss. Sizes are rounded down, so "4×" is at least four times."""
+    from partner_insights import USUAL_SIZE_MULT
+    import partner_habits
+    if on_card:
+        limit = card.get("buy_limit")
+        if limit and bought_px > float(limit) + 1e-9:
+            return f"⚠️ You paid {_px(bought_px)}; the card said buy up to {_px(float(limit))}."
+    elif card is not None and relation:
+        return _card_note(card, relation)
+    last = (after_loss or {}).get("last_value")
+    if after_loss and last and paid >= partner_habits.BIG_MULT * last:
+        return (f"⚠️ {_floor_times(paid / last)}× the size of the trade you just lost (−{_amt(after_loss['loss'])}), "
+                f"{after_loss['minutes']} min after it.")
+    if usual and plan.cash and paid / plan.cash > USUAL_SIZE_MULT * usual:
+        return f"⚠️ {_pct_down(paid / plan.cash)} of your cash in this trade: much more than your usual {usual:.0%}."
+    if after_loss:
+        return f"⚠️ {after_loss['minutes']} min after a −{_amt(after_loss['loss'])} loss."
+    return ""
+
+
+def short_plan_text(position, plan: Plan, *, lots: Optional[int], bought: Optional[tuple] = None,
+                    cover: Optional[Cover] = None, after_loss: Optional[dict] = None, usual: Optional[float] = None,
+                    quote: Optional[dict] = None, now: Optional[datetime] = None, set_at: Optional[datetime] = None,
+                    card: Optional[dict] = None, card_relation_: Optional[str] = None) -> str:
+    """[N09] The PLAN in at most four lines: the buy; its stop and the loss there (the card's target too, on a
+    card buy); one warning (``_plan_warning``); what to do about the stop (``stop_advice``). The full plan
+    (``plan_text``) is sent on "more"."""
+    name = _name(position)
+    bought_qty, bought_px = bought or (plan.qty, plan.entry)
+    size = f"{lots} lot{'s' if lots != 1 else ''} ({bought_qty})" if lots else f"{bought_qty}"
+    on_card = card is not None and plan.stop_basis == "CARD"
+    lines = [f"🟢 You bought {name} · {size} at {_px(bought_px)}" + (f" on the {card['at']} card" if on_card else "")]
+    share = _share(plan.loss, plan.cash)
+    state = level_state(plan.stop, quote, now)
+    warning = _plan_warning(plan, card=card, on_card=on_card, relation=card_relation_, paid=bought_qty * bought_px,
+                            bought_px=bought_px, after_loss=after_loss, usual=usual)
+    if (state == "VALID" and (cover is None or cover.state == "ABSENT") and plan.stop_basis in ("INDEX", "SWING")
+            and not on_card):
+        # The common case in one line: nothing protects it yet and the price was just read over the stop.
+        lines.append(f"🛑 Place an SL sell now: trigger {_px(plan.stop)}, limit a little under it. If it sells there: "
+                     f"about −{_amt(plan.loss)} with charges{share}.")
+        return "\n".join(lines + ([warning] if warning else []))
+    if state == "CROSSED":
+        lines.append(f"🛑 The price ({_px(quote['ltp'])}) is already under the plan stop {_px(plan.stop)}, the level "
+                     f"where this trade is wrong.{_sell_now(position, quote, plan.cash)}")
+    elif on_card:
+        line = f"🛑 Card stop {_px(plan.stop)}: about −{_amt(plan.loss)} with charges{share} if it sells there."
+        if card.get("target"):
+            low, high = card.get("target_low"), float(card["target"])
+            line += f" 🎯 Card target ≈₹{float(low):,.0f}–{high:,.0f}." if low else f" 🎯 Card target ≈₹{high:,.0f}."
+        lines.append(line)
+    elif plan.stop is not None and plan.stop_basis in ("INDEX", "SWING"):
+        lines.append(f"🛑 Plan stop {_px(plan.stop)}: about −{_amt(plan.loss)} with charges{share} if it sells "
+                     f"there.")
+    else:
+        lines.append("🛑 " + _no_level_line(position, plan, cover, share))
+    if warning:
+        lines.append(warning)
+    advice = stop_advice(position, plan, cover, quote, now=now, set_at=set_at)
+    if advice:
+        lines.append(advice)
+    return "\n".join(lines)
+
+
+def short_day_text(day: dict, cash: float) -> str:
+    """[N09] The day's loss in two lines (three with options held from an earlier day)."""
+    from partner_coach import REENTRY_WINDOW_MIN
+    counts = []
+    if day["closed"]:
+        counts.append(f"{day['closed']} closed, {day['lost']} lost")
+    if day.get("charges"):
+        counts.append(f"charges ≈{_amt(day['charges'])}")
+    lines = [f"📉 Today so far: {_signed(day['net'])} after charges, {_pct_down(day['share'])} of your cash"
+             + "".join(f" · {part}" for part in counts) + "."]
+    if day.get("held"):
+        lines.append(f"{day['held']} held from an earlier day and sold today: {_signed(day['held_sum'])} against "
+                     f"what you paid.")
+    if day["quick"]:
+        lines.append(f"{day['quick']} of them bought within {REENTRY_WINDOW_MIN} min of a losing exit: "
+                     f"{_signed(day['quick_sum'])} together.")
+    return "\n".join(lines)
+
+
+async def _keep_full_plan(db_path: str, day: str, holding, text: str, now: datetime) -> None:
+    await _set_state(db_path, f"plan_long:{day}",
+                     json.dumps({"name": _name(holding), "at": _hms(now), "text": text}), now)
+
+
+# --- the partner's own rule -----------------------------------------------------------------------------------
+
+def rule_label(rule: Optional[dict]) -> str:
+    parts = []
+    if rule and rule.get("trades"):
+        parts.append(f"{rule['trades']} trades before 10:00")
+    if rule and rule.get("stop"):
+        parts.append(f"stop at −{rule['stop']:.0%} of cash")
+    return " · ".join(parts) if parts else "no rule"
+
+
+def parse_rule(text: str) -> Optional[dict]:
+    """"rule 3", "rule 10%", "rule 3 10%", "rule 3 trades", "rule none" -> {"trades", "stop"}; None when unclear.
+    Trades 1-20 before 10:00; a stop of 1-50% of the day's cash."""
+    words = text.strip().lower().replace("−", "-").split()[1:]
+    if not words:
+        return None
+    if words in (["none"], ["off"], ["no"]):
+        return {"trades": None, "stop": None}
+    trades = stop = None
+    for word in words:
+        percent = re.fullmatch(r"-?(\d{1,2})%", word)
+        count = re.fullmatch(r"(\d{1,2})", word)
+        if percent and stop is None and 1 <= int(percent[1]) <= 50:
+            stop = int(percent[1]) / 100
+        elif count and trades is None and 1 <= int(count[1]) <= 20:
+            trades = int(count[1])
+        elif word not in ("trades", "trade", "and", "before", "10:00"):
+            return None
+    return {"trades": trades, "stop": stop} if (trades or stop) else None
+
+
+def rule_set_text(rule: dict) -> str:
+    if not rule.get("trades") and not rule.get("stop"):
+        return "✅ No rule today. The watch goes on as usual."
+    return (f"✅ Today's rule: {rule_label(rule)}. Your choice: I'll remind you once when you reach it; nothing is "
+            f"blocked.")
+
+
+def rule_trades_text(count: int, chosen: int) -> str:
+    return f"🧭 Trade {count} before 10:00: your rule this morning was {chosen}. Your call from here."
+
+
+def rule_stop_text(day: dict, stop: float) -> str:
+    return (f"🧭 Today is at {_signed(day['net'])} after charges, {_pct_down(day['share'])} of your cash: past the "
+            f"−{stop:.0%} you chose this morning. Your call from here.")
+
+
+async def _save_rule(db_path: str, day: str, rule: dict, now: datetime) -> None:
+    await _set_state(db_path, f"rule:{day}", json.dumps(rule), now)
+    _state.rule_day, _state.rule = day, rule
+
+
+async def _load_rule(db_path: str, day: str) -> None:
+    if _state.rule_day == day:
+        return
+    try:
+        saved = await _get_state(db_path, f"rule:{day}")
+        rule = json.loads(saved) if saved else None
+    except (sqlite3.Error, ValueError):
+        return                            # read again on a later tick
+    _state.rule_day, _state.rule = day, rule if isinstance(rule, dict) else None
+
+
+async def _tap_rule(db_path: str, ymd: str, code: str, now: datetime) -> str:
+    """A tap on the morning plan's buttons (``watch:rule:YYYYMMDD:CODE``): saved for that day only, confirmed in
+    the chat; the tap's answer is the same line."""
+    now = now.astimezone(IST)
+    rule = RULE_CHOICES.get(code)
+    if rule is None:
+        return "Unknown button."
+    if ymd != now.strftime("%Y%m%d"):
+        return "That plan was for an earlier day."
+    day = now.date().isoformat()
+    await init_partner_watch_db(db_path)
+    _state.clock = _state.clock or (now, _time.monotonic())
+    await _save_rule(db_path, day, dict(rule), now)
+    text = rule_set_text(rule)
+    await _say(db_path, f"rule_set:{day}:{now.isoformat()}", day, "RULE", text, now)
+    logger.info("partner_watch_rule source=button rule=%s", code)
+    return text[:190]
+
+
+async def _answer_rule(db_path: str, text: str, now: datetime, key: str, asked_at: Optional[datetime]) -> str:
+    now = now.astimezone(IST)
+    day = now.date().isoformat()
+    await init_partner_watch_db(db_path)
+    _state.clock = _state.clock or (now, _time.monotonic())
+    rule = parse_rule(text)
+    if asked_at is not None and asked_at.astimezone(IST).date() != now.date():
+        reply = "🧭 Send today's rule again. That one was for an earlier day."
+    elif rule is None:
+        reply = RULE_HELP
+    else:
+        await _save_rule(db_path, day, rule, now)
+        reply = rule_set_text(rule)
+    await _say(db_path, key, day, "RULE", reply, now, event_at=asked_at)
+    logger.info("partner_watch_rule source=text parsed=%s", rule is not None)
+    return "rule"
+
+
+async def _answer_more(db_path: str, now: datetime, key: str, asked_at: Optional[datetime]) -> str:
+    """"more": the full plan of the latest buy, as it was worked out for its PLAN (its prices are that time's)."""
+    now = now.astimezone(IST)
+    day = now.date().isoformat()
+    await init_partner_watch_db(db_path)
+    _state.clock = _state.clock or (now, _time.monotonic())
+    try:
+        raw = await _get_state(db_path, f"plan_long:{day}")
+        saved = json.loads(raw) if raw else None
+    except (sqlite3.Error, ValueError):
+        saved = None
+    if not isinstance(saved, dict) or not saved.get("text"):
+        reply = "📋 No buy today yet: the full plan comes with the first one."
+    else:
+        reply = f"📋 The full plan for your {saved['name']} buy, as worked out at {saved['at']}:\n{saved['text']}"
+    await _say(db_path, key, day, "MORE", reply, now, event_at=asked_at)
+    return "more"
+
+
+# --- the morning plan -----------------------------------------------------------------------------------------
+
+async def _record_today(db_path: str, day: str) -> dict:
+    """The partner's record over the sessions before ``day`` (partner_habits), read once a day."""
+    import partner_habits
+    if _state.habits is not None and _state.habits[0] == day:
+        return _state.habits[1]
+    try:
+        rec = await asyncio.to_thread(partner_habits.record_before, db_path, day)
+    except Exception as exc:              # no record: its lines are left out, never the message
+        logger.warning("partner_watch_habits_failed err=%s", type(exc).__name__)
+        return {}
+    _state.habits = (day, rec)
+    return rec
+
+
+def _expiry_lines(today: date) -> list:
+    """Which index's weekly options expire today, from today's instrument book (none said when it is not
+    today's): Nov 9, NIFTY's Tuesday expiry moved to Monday for a holiday."""
+    lines = []
+    try:
+        from fno_underlyings import get_instruments_for
+        for name in ("NIFTY", "SENSEX"):
+            book = get_instruments_for(name)
+            if book.ready(today) and book.is_expiry_day(today):
+                lines.append(f"⏳ {name} options expire today: without a move they lose value fast.")
+    except Exception as exc:
+        logger.warning("partner_watch_gameplan_expiry_failed err=%s", type(exc).__name__)
+    return lines
+
+
+def gameplan_text(today: date, expiry: list, record_line: str) -> str:
+    lines = [f"🧭 Plan for today · {today:%a %d %b}", *expiry]
+    if record_line:
+        lines.append(record_line)
+    lines.append("Pick a rule for today: your choice, and I'll remind you once when you reach it. Buy messages are "
+                 "short now: send more for the full plan.")
+    return "\n".join(lines)
+
+
+def rule_keyboard(today: date) -> dict:
+    ymd = today.strftime("%Y%m%d")
+
+    def button(label: str, code: str) -> dict:
+        return {"text": label, "callback_data": f"{QUIET_PREFIX}:rule:{ymd}:{code}"}
+
+    return {"inline_keyboard": [[button(f"{RULE_TRADES} trades before 10:00", "T3"),
+                                 button(f"Stop at −{RULE_STOP:.0%} today", "S10")],
+                                [button("Both", "BOTH"), button("No rule today", "NONE")]]}
+
+
+async def send_gameplan(now: Optional[datetime] = None) -> bool:
+    """[N09] The morning plan, once a day: from the 09:00 prompt job, after a later login, or (missed) from the
+    first ticks, between 09:00 and 11:00. Whether it was put in the outbox now."""
+    now = (now or datetime.now(IST)).astimezone(IST)
+    if not (enabled() and _coach_on()) or not GAMEPLAN_FROM_MIN <= _minute(now) < GAMEPLAN_UNTIL_MIN:
+        return False
+    if not await _is_trading_day(now):
+        return False
+    db_path = settings.DB_PATH
+    await init_partner_watch_db(db_path)
+    _state.clock = _state.clock or (now, _time.monotonic())
+    return await _send_gameplan(db_path, now.date().isoformat(), now)
+
+
+async def _send_gameplan(db_path: str, day: str, now: datetime) -> bool:
+    import partner_habits
+    if f"gameplan:{day}" in _state.enqueued:
+        return False
+    try:
+        today = date.fromisoformat(day)
+        record_line = partner_habits.record_line(await _record_today(db_path, day) or {})
+        text = gameplan_text(today, _expiry_lines(today), record_line)
+        if await _enqueue(db_path, f"gameplan:{day}", day, "GAMEPLAN", None, now,
+                          context={"text": text, "summary": "plan for today", "keyboard": rule_keyboard(today)}):
+            await _wait_within([_kick()], DELIVERY_INLINE_SEC, _time.monotonic() + DELIVERY_INLINE_SEC)
+            return True
+    except Exception as exc:              # the plan is left out today, never the job or the tick
+        logger.warning("partner_watch_gameplan_failed err=%s", type(exc).__name__)
+    return False
+
+
+# --- the items a tick adds -------------------------------------------------------------------------------------
+
+async def _coach_items(db_path: str, day: str, now: datetime, trips: list, so_far: Optional[dict]) -> list:
+    """The morning plan (started beside the tick, once a day, 09:05-11:00); the partner's own rule reminded once
+    each; a losing run at STREAK_AT; and an armed range break looked at once a five-minute bar."""
+    items: list = []
+    minute = _minute(now)
+    if (GAMEPLAN_FROM_MIN <= minute < GAMEPLAN_UNTIL_MIN and f"gameplan:{day}" not in _state.enqueued
+            and (_state.gameplan_task is None or _state.gameplan_task.done())):
+        _state.gameplan_task = background_tasks.spawn(_send_gameplan(db_path, day, now),
+                                                      name="partner_watch_gameplan")
+    await _load_rule(db_path, day)
+    rule = _state.rule if _state.rule_day == day else None
+    today = [t for t in trips if not t.carried]
+    if rule and rule.get("trades"):
+        early = sorted((t for t in today if _minute(t.first_at) < EARLY_END_MIN), key=lambda t: t.first_at)
+        if len(early) >= rule["trades"]:
+            items.append((f"rule:{day}:trades", "RULE", None,
+                          {"text": rule_trades_text(len(early), rule["trades"]), "summary": "own rule: trades"},
+                          early[rule["trades"] - 1].first_at, None))
+    if (rule and rule.get("stop") and so_far is not None and _state.cash
+            and so_far["net"] <= -rule["stop"] * _state.cash):
+        items.append((f"rule:{day}:stop", "RULE", None,
+                      {"text": rule_stop_text(so_far, rule["stop"]), "summary": "own rule: day stop"},
+                      so_far["at"], None))
+    run = losing_run(trips)
+    k = streak_size(run)
+    if k:
+        key = f"streak:{day}:{run[0].key}:{k}"
+        items.append((key, "STREAK", None, {"first": run[0].key, "n": k, "key": key}, run[k - 1].closed_at, None))
+    good = first_good_hold(trips)
+    if good is not None and f"good:{day}" not in _state.enqueued:
+        record = await _record_today(db_path, day)
+        items.append((f"good:{day}", "GOOD", None, {"text": good_text(good, record), "summary": "a patient win"},
+                      good.closed_at, None))
+    _check_breaks(db_path, day, now)
+    return items
+
+
+GOOD_HOLD = timedelta(minutes=15)
+
+
+def first_good_hold(trips: list) -> Optional[Trip]:
+    """Today's first trade closed in profit after being held GOOD_HOLD or longer: the partner's best pattern in
+    their own record (15-60 minutes won 49% against 14% under 2 minutes, 10 sessions to Nov 9)."""
+    done = sorted((t for t in trips if not t.carried and t.closed_at is not None and (t.realised() or 0) > 0
+                   and t.closed_at - t.first_at >= GOOD_HOLD), key=lambda t: t.closed_at)
+    return done[0] if done else None
+
+
+def good_text(trip: Trip, record: Optional[dict]) -> str:
+    """[N09] Said once a day, as it happens: what went right, in their own numbers when the record supports them."""
+    import partner_habits
+    minutes = int((trip.closed_at - trip.first_at).total_seconds() // 60)
+    move = (trip.exit / trip.entry - 1) if trip.entry and trip.exit else None
+    head = (f"✅ {_option(trip.tradingsymbol)}: held {minutes} min, {_signed(trip.realised())} after charges"
+            + (f" ({move:+.0%})." if move is not None else "."))
+    rec = record or {}
+    if partner_habits.hold_part(rec):
+        wins, n = rec["long"]
+        return head + f" That's your strongest pattern: trades you hold 15–60 min won {round(100 * wins / n)}%."
+    return head + " Giving it time worked here."
+
+
+# --- a losing run, and the range to wait for -------------------------------------------------------------------
+
+def five_minute_range(bars, now: datetime) -> Optional[dict]:
+    """The high and low of today's last RANGE_BARS completed five-minute bars (at least RANGE_MIN_BARS), and the
+    start of the next bar (a break is read from there). Bars are indexed by naive IST bar start."""
+    if bars is None or len(bars) == 0:
+        return None
+    local = now.astimezone(IST).replace(tzinfo=None)
+    opened = local.replace(hour=9, minute=15, second=0, microsecond=0)
+    frame = bars[~bars.index.duplicated(keep="last")].sort_index()
+    done = frame[(frame.index >= opened) & (frame.index + timedelta(minutes=5) <= local)].tail(RANGE_BARS)
+    if len(done) < RANGE_MIN_BARS:
+        return None
+    low, high = float(done["low"].min()), float(done["high"].max())
+    if not (math.isfinite(low) and math.isfinite(high) and 0 < low <= high):
+        return None
+    return {"low": low, "high": high, "bars": len(done),
+            "after": (done.index[-1] + timedelta(minutes=5)).isoformat()}
+
+
+def first_break(bars, now: datetime, arm: dict) -> Optional[dict]:
+    """The first completed five-minute bar from the arm's ``after`` that closed outside its range."""
+    if bars is None or len(bars) == 0:
+        return None
+    local = now.astimezone(IST).replace(tzinfo=None)
+    after = datetime.fromisoformat(arm["after"])
+    frame = bars[~bars.index.duplicated(keep="last")].sort_index()
+    for start, bar in frame[(frame.index >= after) & (frame.index + timedelta(minutes=5) <= local)].iterrows():
+        close = float(bar["close"])
+        if not math.isfinite(close):
+            continue
+        if close > arm["high"] or close < arm["low"]:
+            return {"side": "UP" if close > arm["high"] else "DOWN", "close": close,
+                    "end": start + timedelta(minutes=5)}
+    return None
+
+
+def break_text(arm: dict, hit: dict) -> str:
+    where = "above" if hit["side"] == "UP" else "below"
+    return (f"🔔 {arm['label']}: the 5-min bar to {hit['end']:%H:%M} closed at {hit['close']:,.0f}, {where} the "
+            f"{arm['low']:,.0f}–{arm['high']:,.0f} range I sent at {arm['told_at']}. The range has broken "
+            f"{'upward' if hit['side'] == 'UP' else 'downward'}.")
+
+
+async def _coach_candles(future, now: datetime):
+    """The future's five-minute candles, read once a five-minute bar (``Market.candles``, as the profit floor
+    reads them); None when they do not come in COACH_MARKET_TIMEOUT."""
+    boundary = _profit_boundary(now)
+    saved = _state.coach_bars.get(future.tradingsymbol)
+    if saved is not None and saved[0] == boundary:
+        return saved[1]
+    market = _state.market
+    if market is None:
+        return None
+    try:
+        bars = await asyncio.wait_for(
+            market.candles(future, "5minute", now - timedelta(minutes=5 * (RANGE_BARS + 2)), now),
+            COACH_MARKET_TIMEOUT)
+    except Exception as exc:
+        logger.info("partner_watch_coach_bars_unavailable err=%s", type(exc).__name__)
+        return None
+    _state.coach_bars[future.tradingsymbol] = (boundary, bars)
+    return bars
+
+
+async def _coach_range(trip, now: datetime) -> Optional[dict]:
+    parsed = zerodha.parse_option_symbol(trip.tradingsymbol)
+    contract = contract_of(trip.exchange, trip.tradingsymbol) if parsed else None
+    future = contract.front_future(now.date()) if contract is not None else None
+    if future is None:
+        return None
+    found = five_minute_range(await _coach_candles(future, now), now)
+    if found is None:
+        return None
+    return {**found, "underlying": parsed["underlying"], "label": f"{parsed['underlying']} fut",
+            "exchange": trip.exchange, "option": trip.tradingsymbol}
+
+
+def _next_boundary(now: datetime) -> datetime:
+    return _profit_boundary(now) + timedelta(minutes=5)
+
+
+async def _b_streak(db_path: str, context: dict, view: View, now: datetime):
+    """[N09] A losing run: its losses, the last 30 minutes' range of that index's future with a message promised
+    on a five-minute close outside it (``_arm_break``), and the partner's hold-time record when it meets its
+    sample. Not sent once a win (or another run) has followed."""
+    import partner_habits
+    run = losing_run(view.trips)
+    if not run or run[0].key != context.get("first") or len(run) < int(context.get("n") or 0):
+        return None
+    when = (f"({', '.join(_hhmm(t.closed_at) for t in run)})" if len(run) <= 3
+            else f"since {_hhmm(run[0].closed_at)}")
+    lines = [f"⏸ {len(run)} losses in a row {when}."]
+    found = await _coach_range(run[-1], now)
+    if found is not None:
+        lines.append(f"{found['label']} {found['low']:,.0f}–{found['high']:,.0f} over the last {5 * found['bars']} "
+                     f"min (5-min bars): no break yet. I'll message you when a 5-min bar closes outside it.")
+        await _arm_break(db_path, view.day, found, context.get("key"), now)
+    else:
+        lines.append(f"The next 5-min bar closes at {_hhmm(_next_boundary(now))}.")
+    hold = partner_habits.hold_line(await _record_today(db_path, view.day) or {})
+    if hold:
+        lines.append(hold)
+    return "\n".join(lines), f"{len(run)} losses in a row", None
+
+
+async def _arm_break(db_path: str, day: str, found: dict, streak_key: Optional[str], now: datetime) -> None:
+    """Promise a break message on this range (one per index, the newest range replacing an older one). It goes only
+    once the losing-run message that promised it was sent."""
+    arm = {"underlying": found["underlying"], "label": found["label"], "exchange": found["exchange"],
+           "option": found["option"], "low": found["low"], "high": found["high"], "after": found["after"],
+           "streak": streak_key, "armed_at": now.isoformat(), "told_at": _hhmm(now), "state": "ARMED"}
+    await _load_breaks(db_path, day)      # the other index's arm, kept over a restart
+    await _set_state(db_path, f"break:{day}:{found['underlying']}", json.dumps(arm), now)
+    _state.breaks[found["underlying"]] = arm
+
+
+async def _load_breaks(db_path: str, day: str) -> None:
+    if _state.breaks_day == day:
+        return
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute("SELECT key, value FROM partner_watch_state WHERE key LIKE ?",
+                                       (f"break:{day}:%",))).fetchall()
+    breaks = {}
+    for _key, value in rows:
+        try:
+            arm = json.loads(value)
+        except ValueError:
+            continue
+        if isinstance(arm, dict) and arm.get("underlying"):
+            breaks[arm["underlying"]] = arm
+    _state.breaks_day, _state.breaks = day, breaks
+
+
+async def _end_break(db_path: str, day: str, arm: dict, state: str, now: datetime) -> None:
+    arm["state"] = state
+    await _set_state(db_path, f"break:{day}:{arm['underlying']}", json.dumps(arm), now)
+
+
+async def _promise_state(db_path: str, key: Optional[str]) -> str:
+    """SENT, WAITING or GONE: whether the losing-run message that promised a break was sent."""
+    if not key:
+        return "GONE"
+    async with aiosqlite.connect(db_path) as db:
+        row = await (await db.execute("SELECT sent, outcome FROM partner_watch_messages WHERE message_key=?",
+                                      (key,))).fetchone()
+    if row is None:
+        return "WAITING"
+    if row[0]:
+        return "SENT"
+    return "GONE" if row[1] in ("expired", "superseded") else "WAITING"
+
+
+def _check_breaks(db_path: str, day: str, now: datetime) -> None:
+    """Once a five-minute bar has ended, the armed breaks are looked at beside the tick."""
+    if _state.break_task is not None and not _state.break_task.done():
+        return
+    boundary = _profit_boundary(now)
+    if _state.break_checked == boundary or now - boundary < BREAK_SETTLE:
+        return
+    _state.break_checked = boundary
+    _state.break_task = background_tasks.spawn(_break_job(db_path, day, now), name="partner_watch_break")
+
+
+async def _break_job(db_path: str, day: str, now: datetime) -> None:
+    try:
+        await _load_breaks(db_path, day)
+        for underlying, arm in list(_state.breaks.items()):
+            if arm.get("state") != "ARMED":
+                continue
+            if _minute(now) >= BREAK_UNTIL_MIN:
+                await _end_break(db_path, day, arm, "EXPIRED", now)
+                continue
+            promise = await _promise_state(db_path, arm.get("streak"))
+            if promise != "SENT":
+                if promise == "GONE":
+                    await _end_break(db_path, day, arm, "UNSENT", now)
+                continue
+            contract = contract_of(arm["exchange"], arm["option"])
+            future = contract.front_future(now.date()) if contract is not None else None
+            hit = first_break(await _coach_candles(future, now), now, arm) if future is not None else None
+            if hit is None:
+                continue
+            text = break_text(arm, hit)
+            await _enqueue(db_path, f"break:{day}:{underlying}:{arm['armed_at']}", day, "BREAK", None, now,
+                           context={"text": text, "summary": text.split(":", 1)[0][:120]},
+                           event_at=IST.localize(hit["end"]))
+            await _end_break(db_path, day, arm, "FIRED", now)
+            _kick()
+    except Exception as exc:              # a break not looked at now is looked at on the next bar
+        logger.warning("partner_watch_break_failed err=%s", type(exc).__name__)
+
+
+# --- [N09b] the owner's heads-up ---------------------------------------------------------------------------------
+# Nov 9: the owner heard of the partner's morning only when the partner called, hours in. After the owner's call the
+# buying slowed from about 11 an hour to 5, the sizes fell to 4-7% of the cash and the pre-buy check was used for the
+# first time in days. One message a day to the owner's own chat (operator_alert), with no money figures (owner:
+# "don't report me the number"); the partner's messages are unchanged.
+
+HEADSUP_RUN = 4                         # losses in a row
+HEADSUP_DAY_SHARE = 0.20                # or the day's loss past this share of the cash
+HEADSUP_RETRY = timedelta(minutes=5)    # a send that failed is tried again this much later
+
+
+def _headsup_on() -> bool:
+    return bool(getattr(settings, "PARTNER_WATCH_OWNER_HEADSUP_ENABLED", False))
+
+
+def headsup_text(now: datetime, trips: list, so_far: Optional[dict], cash: Optional[float]) -> Optional[str]:
+    """The owner's heads-up, or None while the day has not turned: HEADSUP_RUN losses in a row, or the day's loss
+    past HEADSUP_DAY_SHARE of the cash. Counts and times only."""
+    run = losing_run(trips)
+    reasons = []
+    if len(run) >= HEADSUP_RUN:
+        reasons.append(f"{len(run)} losses in a row since {_hhmm(run[0].closed_at)}")
+    if so_far is not None and cash and so_far["net"] <= -HEADSUP_DAY_SHARE * cash:
+        reasons.append(f"the day is past −{HEADSUP_DAY_SHARE:.0%} of their cash")
+    if not reasons:
+        return None
+    today = [t for t in trips if not t.carried]
+    quick = sum(1 for t in today if (_after_loss(t, trips) or {}).get("minutes", 99) < 2)
+    first = reasons[0][0].upper() + " · ".join(reasons)[1:]
+    facts = (f"{len(today)} buy{'s' if len(today) != 1 else ''} today"
+             + (f", {quick} within 2 min of a loss" if quick else ""))
+    return (f"🤝 Partner heads-up · {_hhmm(now)}\n{first} · {facts}.\n"
+            "A call may help: on Nov 9 their buying slowed from about 11 an hour to 5 after yours.")
+
+
+def _owner_headsup(db_path: str, day: str, now: datetime, trips: list, so_far: Optional[dict]) -> None:
+    if _state.headsup_day == day or (_state.headsup_task is not None and not _state.headsup_task.done()):
+        return
+    if _state.headsup_retry_at is not None and now < _state.headsup_retry_at:
+        return
+    text = headsup_text(now, trips, so_far, _state.cash)
+    if text is not None:
+        _state.headsup_task = background_tasks.spawn(_send_headsup(db_path, day, now, text),
+                                                     name="partner_watch_headsup")
+
+
+async def _send_headsup(db_path: str, day: str, now: datetime, text: str) -> None:
+    """Once a day: the day is marked only once the gateway took the message (a restart sends no second one)."""
+    try:
+        if await _get_state(db_path, f"headsup:{day}"):
+            _state.headsup_day = day
+            return
+        from operator_alert import notify_operator
+        if await notify_operator(text, event="partner_headsup"):
+            await _set_state(db_path, f"headsup:{day}", now.isoformat(), now)
+            _state.headsup_day = day
+            logger.info("partner_watch_headsup_sent day=%s", day)
+        else:
+            _state.headsup_retry_at = now + HEADSUP_RETRY
+    except Exception as exc:              # never the tick; tried again later
+        _state.headsup_retry_at = now + HEADSUP_RETRY
+        logger.warning("partner_watch_headsup_failed err=%s", type(exc).__name__)
+
+
 _BUILDERS = {
     "PLAN": _b_plan, "ADDED": _b_added, "UNFILLED": _b_unfilled, "LOWERED": _b_lowered, "REFUSED": _b_refused,
     "CLOSE": _b_close, "EXCESS": _b_excess, "ORPHAN": _b_orphan, "PRODUCT": _b_product, "DAY": _b_day,
+    "STREAK": lambda *args: _b_streak(*args),
     "NO_STOP": lambda *args: _b_cover("NO_STOP", *args),
     "BROKEN": lambda *args: _b_broken(*args),
     "PARTIAL": lambda *args: _b_cover("PARTIAL", *args),
@@ -5397,6 +6130,10 @@ async def answer_check(db_path: str, text: str, now: datetime, *, key: str, aske
         return "not_check"
     if _profit_on() and re.match(r"^protect(?:\s|$)", text.strip(), re.I):
         return await _answer_profit_choice(db_path, text, now, key, asked_at)
+    if _coach_on() and re.match(r"^rule(?:\s|$)", text.strip(), re.I):
+        return await _answer_rule(db_path, text, now, key, asked_at)
+    if _coach_on() and text.strip().lower() in MORE_WORDS:
+        return await _answer_more(db_path, now, key, asked_at)
     parsed = parse_check(text)
     if parsed is None:
         return "not_check"
@@ -5458,11 +6195,13 @@ async def on_login(now: Optional[datetime] = None) -> None:
     if minute < zerodha.CLOSE_MIN and await _is_trading_day(now):
         close = f"{zerodha.CLOSE_MIN // 60}:{zerodha.CLOSE_MIN % 60:02d}"
         _state.clock = (now, _time.monotonic())
-        text = WATCH_ON_TEXT.format(close=close)
+        text = (WATCH_ON_COACH_TEXT if _coach_on() else WATCH_ON_TEXT).format(close=close)
         extra = await _morning_lines(db_path, day, now)
         if extra:
             text += "\n" + "\n".join(extra)
         await _say(db_path, f"on:{day}:{now.isoformat()}", day, "WATCH_ON", text, now)
+        if _coach_on():
+            await send_gameplan(now)      # [N09] a login after 09:00 and before 11:00 (once a day)
 
 
 async def _morning_lines(db_path: str, day: str, now: datetime) -> list:
@@ -5487,6 +6226,8 @@ async def watch_prompt(now: Optional[datetime] = None) -> dict:
     now = (now or datetime.now(IST)).astimezone(IST)
     if not enabled():
         return {"status": "SKIPPED", "reason": "disabled"}
+    if _coach_on():
+        await send_gameplan(now)          # [N09] the morning plan, before the open, logged in or not
     if zerodha.connected(now):
         return {"status": "SKIPPED", "reason": "connected"}
     if not await _is_trading_day(now):
@@ -5516,6 +6257,8 @@ async def handle_button(db_path: str, data: str, now: datetime) -> Optional[str]
     """[N06c] A tap on an old "Quiet today" button (``watch:quiet:YYYYMMDD``): it changes nothing now, and the
     answer says so; None when the button is not the watch's."""
     parts = str(data or "").split(":")
+    if len(parts) == 4 and parts[0] == QUIET_PREFIX and parts[1] == "rule":
+        return await _tap_rule(db_path, parts[2], parts[3], now)      # [N09] the morning plan's buttons
     if len(parts) != 3 or parts[0] != QUIET_PREFIX or parts[1] != "quiet":
         return None
     logger.info("partner_watch_old_quiet_tap data=%s", data)
