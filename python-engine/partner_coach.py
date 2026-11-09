@@ -1377,6 +1377,30 @@ def render_coach_note(view: dict, day: str) -> Optional[str]:
     return render_note(day_review(view, day))
 
 
+async def habit_lines(db_path: str, day: str) -> list:
+    """[N09] The day's habits for the evening note, from the trade watch's stored trades (partner_habits): the
+    habits, the best trade, one thing to try tomorrow; on the week's last session, this week against last.
+    [] when nothing is stored or it cannot be read (the note goes without it)."""
+    import asyncio
+    import market_calendar
+    import partner_habits
+    from partner_watch import _option
+    try:
+        rows = await asyncio.to_thread(partner_habits.load_rows, db_path, day, day)
+        lowered = (await asyncio.to_thread(partner_habits.load_lowered, db_path, day, day)).get(day, 0)
+        lines = partner_habits.evening_lines(rows, lowered, _option)
+        today = date.fromisoformat(day)
+        following = await market_calendar.next_trading_day(today, db_path)
+        if lines and following.isocalendar()[:2] != today.isocalendar()[:2]:
+            line = partner_habits.week_line(*await asyncio.to_thread(partner_habits.weeks, db_path, day))
+            if line:
+                lines.append(line)
+        return lines
+    except Exception as exc:
+        logger.warning("partner_coach_habits_failed err=%s", type(exc).__name__)
+        return []
+
+
 async def partner_coach_eod(now: Optional[datetime] = None) -> dict:
     """Freeze today's card prices, then send the note when trades were reported.
 
@@ -1400,6 +1424,10 @@ async def partner_coach_eod(now: Optional[datetime] = None) -> dict:
     text = render_coach_note(view, day)
     if text is None:
         return {"frozen": frozen, "note": "no_reported_trades"}
+    if getattr(settings, "PARTNER_WATCH_COACH_ENABLED", False):
+        habits = await habit_lines(db_path, day)
+        if habits:
+            text = text + "\n" + "\n".join(habits)
     keyboard = zerodha.review_keyboard("📒 Open full review")
     # [O25M] send_daily: a send that provably never left goes again (daily_retry_tick), one that may have
     # arrived never does.

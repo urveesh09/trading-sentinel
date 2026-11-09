@@ -262,7 +262,9 @@ def _hhmm(value) -> str:
 
 def _dte_note(dte: Optional[int]) -> str:
     if dte == 0:
-        return "expiry today, scalp only"
+        # [N09] Was "scalp only": quick in-and-out trading is what lost on Nov 9, and the partner's record has
+        # trades held 15-60 minutes winning 49% against 14% for those closed within 2 minutes.
+        return "expiry today: time value melts fast"
     if dte == 1:
         return "expiry tomorrow, don't hold overnight"
     return ""
@@ -369,7 +371,9 @@ def render_buyer_update_not_held(view: dict, event_type: str, *, underlying: str
 
 def _premium_read(iv_read: str) -> str:
     return {"CHEAP": "premium cheap 🟢", "FAIR": "premium fair",
-            "RICH": "premium rich, take profits quickly"}.get(iv_read, "")
+            # [N09] Was "take profits quickly", against the evening lesson of Nov 5 and Nov 6 (sold before the
+            # card's exit, which came with the option up 60-99%).
+            "RICH": "premium rich (options cost more than usual)"}.get(iv_read, "")
 
 
 def render_buyer_brief(day_label: str, rows: list[dict], *, crisis: bool, events_note: str = "") -> str:

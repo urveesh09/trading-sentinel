@@ -1,3 +1,63 @@
+## November 9 - N09 partner coach: a plan before the open, the partner's own rule, a losing run with something to wait for (Dev only)
+
+**Why:**
+- **What happened:** on Nov 9 the partner made 31 buys between 09:15 and 12:04, and 25 of the 30 that closed lost. By noon the watch had sent 59 messages, mostly six-to-eight-line PLANs after each buy, plus six identical DAY updates. The 09:50 plan came after 11 trades and said "scalp only".
+- **Their record** (Production, read-only, 10 sessions from Oct 27): mornings ended down on 8. Trades closed within 2 minutes won 14% (n=35); trades held 15–60 minutes won 49% (n=104).
+- **The owner:** "help them grow almost every day ... not just a caution machine".
+- The study is `docs/research/partner/2026-11-09-n09-coach/PLAN.md`.
+
+**Behaviour** (`PARTNER_WATCH_COACH_ENABLED`, default true; false gives N08):
+- **GAMEPLAN** (`partner_watch.send_gameplan`, key `gameplan:{day}`, once a day). It is sent from the 09:00 `partner_watch_prompt` job, logged in or not. A login before 11:00 or the first ticks send it if that was missed.
+  - It has the expiry line (today's instrument book only) and `partner_habits.record_line`. The record line obeys a frozen sample: at least 5 sessions and 15 trades in each hold bucket.
+  - It carries buttons `watch:rule:YYYYMMDD:{T3,S10,BOTH,NONE}` (`handle_button` → `_tap_rule`, confirmed with `rule_set:`). Typed `rule 3`, `rule 10%`, `rule 3 10%` and `rule none` work the same (`parse_rule`). The rule is kept in `partner_watch_state` as `rule:{day}`.
+- **RULE:** said once at the Nth buy before 10:00 (`rule:{day}:trades`), and once when the day's result reaches the chosen share of cash (`rule:{day}:stop`). Nothing is blocked.
+- **PLAN:** `short_plan_text`, four lines at most:
+  - When nothing protects the trade and the price is fresh, the SL action and the loss are one line.
+  - At most one warning (`_plan_warning`), in this order: the card; at least 2× the trade just lost (`_after_loss.last_value`, rounded down); much over the usual share; minutes after a loss.
+  - The full `plan_text` is kept as `plan_long:{day}`; `more` or `details` sends it (MORE).
+- **DAY:** loss steps are told only at `COACH_DAY_STEPS` (2, 4, 6 = 20/40/60% of cash), with `short_day_text`. Give-back and profit-floor messages are unchanged.
+- **STREAK** (built at send):
+  - `losing_run` and `streak_size` decide it: told at 2 losses in a row, and at 4 only 10+ minutes after the 2nd (`STREAK_GAP`). The key is `streak:{day}:{first}:{k}`.
+  - It shows the last 30 minutes of 5-minute bars of that index's future (`five_minute_range`, via `Market.candles`, 1.5 s timeout) and the hold record.
+  - It arms `break:{day}:{underlying}`. It is not sent once a win has followed.
+- **BREAK:**
+  - Checked by `_check_breaks` beside the tick, once every 5-minute boundary plus 5 s.
+  - It fires once, on the first completed close outside the armed range, and only when the STREAK that promised it was sent; if that STREAK expired or was superseded, the arm becomes UNSENT.
+  - It expires at 15:15.
+- **GOOD:** once a day (`good:{day}`), the first trade closed in profit after 15 minutes or more (`first_good_hold`, `good_text`). It adds their 15–60 minute win rate when the record supports it.
+- **Evening:** `partner_coach.habit_lines` is appended to the coach note:
+  - the day's habits and the best trade;
+  - one thing for tomorrow (`partner_habits.costliest`, ties broken by the fixed `TAGS` order);
+  - on the week's last session, this week against last.
+- **Wording:**
+  - The brief now says "expiry today: time value melts fast" (was "scalp only") and "premium rich (options cost more than usual)" (was "take profits quickly").
+  - With the coach on, WATCH_ON uses `WATCH_ON_COACH_TEXT`.
+- **Unchanged:** LOWERED, ADDED, REFUSED, the protection messages, the Sentinel's own trades and the cards. There is no new scheduler job, no migration and no order path.
+
+**Measured on Nov 9's stored messages** (to 12:05):
+- PLAN dropped from 6.6 to 3.8 lines on average (−41% text, before the one-line common case).
+- DAY dropped from 6 messages to 3.
+- 7 losing-run messages are added, with at most one break each. In total, text falls by about a fifth.
+
+**Scorecard** (frozen, `docs/research/partner/2026-11-09-n09-coach/SCORECARD.md`): the 10-session baseline against the first 10 Production sessions with N09.
+- N09 counts as changing the habits if at least 4 of 6 habit measures move 20% or more the better way.
+- It makes no profit claim.
+- Nov 9's baseline row is read again after its close.
+
+**Verification:**
+- `tests/test_partner_coach_n09.py`: 16 passed.
+- The existing partner suites pass with the coach off (conftest sets it false, as for `PARTNER_SENTINEL_ADVICE_ENABLED`).
+- Full suite: 6,348 passed, 4 skipped (11 min 42 s), run before the GOOD message was added. The 387 partner tests then passed on the final code.
+- Atlas: 308 modules.
+
+**Status and rollback:** Dev only (this commit, on `codex/production-correction-hedge-p0`); deploying needs the owner's word. Roll back with `PARTNER_WATCH_COACH_ENABLED=false`.
+
+**Next (N09):**
+1. After Nov 9's close, read the full Nov 9 row into `SCORECARD.md` (read-only) before any deployment.
+2. Deploy only on the owner's word. Write the forward session dates into `SCORECARD.md` before the first of them.
+3. Judge after 10 Production sessions by the frozen rule. Do not retune the coach on those sessions.
+4. Owner's call: moving the Sentinel's own paper trades from the day to the evening note.
+
 ## November 8 (night) - Production deployed at `d763aee` (PR #133, owner: "deploy in prod")
 
 **Deployed:** the whole Dev branch, merged by PR #133 as `d763aee` into evolve/smart-strategies. Production was at `398d44a`. It contains:
