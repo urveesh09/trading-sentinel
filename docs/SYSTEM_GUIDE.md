@@ -1,3 +1,39 @@
+## November 10 - Deployed: Production `65677dc6` (PR #135, with PR #134's N09 coach)
+
+**What was deployed:**
+- The owner's word, Nov 10: "deploy that too in pro".
+- PR #135 (`codex/production-correction-hedge-p0` at `439b3db7` → `evolve/smart-strategies`) was merged as `65677dc6`.
+- The release carries:
+  - the N09 coach and N09b owner heads-up (PR #134);
+  - the N10 plan-stop fix;
+  - the N09c research files and the N09 scorecard docs.
+- The only runtime code is `python-engine`. There is no schema change, migration or `.env` edit.
+
+**Backup** (`%USERPROFILE%\sentinel-operations\backups\20261110-pre-65677dc\`, after hours on a market holiday):
+- **Quiescence:** autoheal and the three app services were stopped, and no Sentinel positions were open (read-only check).
+- **Contents:** an inventory, `data.tar` (8.42 GB) and an integrity receipt: `INTEGRITY_VERIFIED_CONSISTENCY_UNPROVEN`, 11,884 files.
+- **What went wrong:** the session's memory monitor stopped the tar's client shell. The tar container ran on and exited 0, and the verify step then ran in a detached container. This is written in the quiescence receipt.
+
+**Deploy (runbook):**
+- Fast-forward `d763aeeb` → `65677dc6`.
+- Built node-gateway, python-engine and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-10T16:56:53Z`.
+- Recreated all three, then restarted nginx.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\65677dc6….json`, all three at `65677dc6`.
+
+**After:**
+- All services healthy; nginx `/api/health` 200; autoheal started again.
+- In the engine:
+  - `PARTNER_WATCH_COACH_ENABLED` True;
+  - `PARTNER_WATCH_OWNER_HEADSUP_ENABLED` True;
+  - `SWING_MIN_WINDOWS` 3;
+  - `partner_habits` `n09-habits-v1`.
+- The gateway logged one `market_hours_holidays_fetch_error` at startup, because the engine was not listening yet. Its built-in calendar mirrors `market_calendar`, and `/holidays` answers now.
+
+**Next:**
+- **Nov 11 (step 5 of the runbook):** a next-session check of the 09:00 GAMEPLAN, the first plans (the futures stop until about 09:30), and NIFTY and SENSEX quotes, separately.
+- **N09 scorecard:** forward window Nov 11 – Nov 25, judged after its 10th session.
+- **Rollback:** redeploy `d763aeeb` by the same runbook. No migration needs undoing.
+
 ## November 10 - N10 partner plan stop: no "normal swing" from the two windows after the open (Dev)
 
 **Problem (Production read-only, Nov 9):**
