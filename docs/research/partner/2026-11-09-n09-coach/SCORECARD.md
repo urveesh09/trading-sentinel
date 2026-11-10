@@ -23,6 +23,8 @@ Each session is read from `partner_watch_trips` (trades opened that session; opt
 
 - **Baseline:** the 10 sessions Oct 27 – Nov 9, 2026 (already stored; Nov 9 read after its close).
 - **Forward:** the first 10 sessions after N09 runs in Production. The dates are written here at deployment, before the first of them.
+  - **Written Nov 10, 2026, at the deployment (evening, a market holiday):** Nov 11, 12, 13, 16, 17, 18, 19, 20, 23 and 25. Nov 24 is a holiday (`market_calendar`).
+  - If the coach switch does not read on in Production before Nov 11, the window moves to the first 10 sessions after it does. That change is written here.
 
 ## The rule (frozen)
 
@@ -30,7 +32,7 @@ N09 **changed the habits** if at least 4 of the 6 judged measures (`early`, `qui
 
 Red sessions and the day results are reported beside the habits and not judged alone. A change in habits with more red days is reported as exactly that.
 
-## Baseline (read from Production, read-only, Nov 9 12:40 IST; Nov 9 still trading)
+## Baseline (read from Production, read-only; Nov 9 re-read in full on Nov 10 after the close)
 
 | Session | buys | early | quick re-buys | big after loss | quick-exit share | median hold (min) | stops lowered | day |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
@@ -43,9 +45,21 @@ Red sessions and the day results are reported beside the habits and not judged a
 | Nov 4 | 29 | 10 | 11 | 1 | 0.172 | 8.5 | 10 | down |
 | Nov 5 | 48 | 11 | 13 | 7 | 0.146 | 7.0 | 11 | up |
 | Nov 6 | 39 | 13 | 17 | 2 | 0.077 | 8.9 | 10 | up |
-| Nov 9 (to 12:40) | 32 | 12 | 15 | 1 | 0.226 | 6.8 | 8 | down |
+| Nov 9 | 40 | 12 | 17 | 2 | 0.200 | 7.8 | 11 | down |
 
-The Nov 9 row is replaced by the full session after its close, before the baseline means are written. Means over the 10 rows as of 12:40: buys 35.4, early 9.6, quick re-buys 12.8, big after loss 2.7, quick-exit share 0.098, median hold 9.9 min, stops lowered 12.0, red sessions 5 of 10.
+**Nov 9 row.** It is the full session, from `partner_habits.py --from 2026-10-27 --to 2026-11-09`, read on Nov 10. The other nine rows are unchanged from the 12:40 read. The 12:40 read of Nov 9 itself was 32 · 12 · 15 · 1 · 0.226 · 6.8 · 8.
+
+**Baseline means (10 sessions):**
+- buys 36.2 · early 9.6 · quick re-buys 13.0 · big after loss 2.8 · quick-exit share 0.095 · median hold 10.0 min · stops lowered 12.3;
+- red sessions 5 of 10.
+
+**The 20% lines this gives** (the frozen rule, worked out):
+- early ≤ 7.68;
+- quick re-buys ≤ 10.4;
+- big after loss ≤ 2.24;
+- quick-exit share ≤ 0.076;
+- median hold ≥ 12.0 min;
+- stops lowered ≤ 9.84.
 
 ## Record behind the morning plan (same data)
 

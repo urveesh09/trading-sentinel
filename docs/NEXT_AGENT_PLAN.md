@@ -1,3 +1,79 @@
+## November 10 - N10 partner plan stop: no "normal swing" from the two windows after the open (Dev)
+
+**Problem (Production read-only, Nov 9):**
+- **The trade.** At 09:27 the partner bought NIFTY 24750 CE, 4 lots at ₹248.01 (69% of their cash).
+  - The PLAN said "Plan stop ₹138.15: one normal 5-minute swing (₹109.85) under your price", about −31% of their cash at that stop.
+  - The Sentinel's own futures stop (1.5 ATR, NIFTY future 24,914) priced the option at ₹190.40. The swing rule widened it.
+- **Why the swing was wrong.** `option_swing` takes the median of the complete 5-minute windows since the open. At 09:27 there were two, so the "median" was their average, and the first of the two was the open's own fall.
+- **What it cost.**
+  - The partner sold at ₹169.68 at 09:41, about −₹20.5k.
+  - The ₹190.40 stop was crossed at 09:40:41. Had it filled near its trigger, the loss would have been about −₹15k.
+  - Holding to ₹138.15 would probably have cost about −₹28.7k.
+  - The partner's point, that following the Sentinel would have lost more, was right.
+- **The same flaw at 09:28.** On NIFTY 25150 CE the plan said "swing as big as its price, no stop". The futures stop was ₹28.05, crossed at 09:40:06; the partner sold at ₹22.
+- **History.** 7 of 389 plans since Oct 26 were bought 09:25–09:29 with a SWING or NONE stop. On their recorded quotes, the futures stop:
+  - never touched the two winners (Nov 6);
+  - was crossed before the partner's own lower exit on three losers (Oct 30 SENSEX 72000 PE, and both Nov 9 trades);
+  - changes nothing on the other two.
+
+**Change:**
+- `partner_watch.option_swing` needs `SWING_MIN_WINDOWS = 3` complete 5-minute windows. It used to need 10 bars, which meant two windows.
+- Before about 09:30 there is no swing, and the futures stop stands. Pre-buy checks and card plans use the same function.
+
+**Contracts:**
+- No setting, schema, migration or message-wording change.
+- Only plans for buys in the first 15 minutes after the open change, plus options with fewer than 15 one-minute bars in the 30 minutes before the buy.
+
+**Verification:**
+- New test `test_no_swing_from_two_windows_after_the_open_the_futures_stop_stands`. Under the old rule it fails (stop ₹150 from a swing of ₹80).
+- `tests/test_partner*.py`: 680 passed.
+- Full suite: 6352 passed, 4 skipped (11 min 13 s).
+- Atlas regenerated.
+
+**Status:**
+- Dev commit only.
+- It reaches Production with the next merge and deploy, which need the owner's word. Production is at `d763aee`, and the Production branch at `4e2eb94`.
+- Rollback: revert the commit.
+
+## November 9 - N09c card-rule study: the partner's card failed its frozen test (research only)
+
+**Question:** can the system help the partner earn, and where do their suggestions come from?
+- **Sources (all in-house):**
+  - **Buy cards:** `partner_orchestrator` → `fno_signal_scan` → `evaluate_fno_mom`, the shipped opening-range break, held to the index target, the index stop or 15:15.
+  - **"🤖 Sentinel bought…":** the paper N11 book and the expiry book (`partner_sentinel`).
+- **Forward, Production read-only:**
+  - **Cards since Oct 1:** 9 of 18 at target.
+  - **Partner trades in a live card's direction:** 62 trades, 48% won, against 33% for their other 271.
+  - **N11 paper since Oct 27:** −₹7,650.
+  - **Charges:** 47% of the partner's 10-session loss. Their trades lose before charges too.
+
+**Study** (`docs/research/partner/2026-11-09-card-rule/`, freeze `c2b3adb5`, results `1e601a3b`):
+- **Rule:** the card rule unchanged (index stop, sale at the index target, else the 15:10 flat), per lot on NIFTY 2024, 2025 and Jan–Oct 2026, against 20 random-entry books with the same exits.
+- **Replay stack:** the current engine files. It reproduced the O30c `BASE|UNION_ADX` nets exactly.
+- **Result: FAIL.**
+  - Per year: 2024 +13,700, 2025 +2,168, 2026 −8,036.
+  - At +₹200 a trade: −56,568. Without the best day: −4,841.
+  - 322 trades, 34–40% won, wins about ₹2,800 a lot against losses about ₹1,650. That is about break-even.
+  - The forward cards were a good month, not an edge.
+- **Card exits against the book's exits:** better only in 2024.
+
+**What follows:**
+- The partner is not coached to lean on the card. The card-led watch (N09c-W) is not built.
+- The card stays research-only and keeps counting forward.
+- Jan–May 2022 was not read; it stays the N012 exam.
+
+**Verification:** `test_lab_x.py` 5 passed; the January 2026 smoke checked exit reasons only.
+
+**Status:** Dev commits only. No runtime, setting, migration, order or deployment change. Production stays at `d763aee`, and the Production branch at `4e2eb94`.
+
+## November 9 - PR #134 merged to the Production branch as `4e2eb94` (not deployed)
+
+- **Merged:** N09 (`6bd9c84`) and N09b (`26c55cd`), with the Nov 8 deploy record (`1904a28`), went into `evolve/smart-strategies` by PR #134, on the owner's word: "commit the code and merge in prod remote branch".
+- **Not deployed:** Production's working copy is still at `d763aee`. Nothing was pulled, built or restarted. The owner will say when to deploy, then the usual runbook runs (backup, fast-forward, build one service at a time, recreate, nginx restart, `verify_deployment.py`).
+- **On deployment:**
+  - Write the forward session dates into `docs/research/partner/2026-11-09-n09-coach/SCORECARD.md` first.
+  - Check that `PARTNER_WATCH_COACH_ENABLED` and `PARTNER_WATCH_OWNER_HEADSUP_ENABLED` read true in the engine.
+
 ## November 9 - N09b owner heads-up; N09 goes to the Production branch (merge only, not deployed)
 
 **Behaviour** (`PARTNER_WATCH_OWNER_HEADSUP_ENABLED`, default true; conftest sets it false):

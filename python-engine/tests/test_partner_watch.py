@@ -273,6 +273,32 @@ def test_a_stop_inside_the_options_normal_swing_moves_one_swing_under_the_price(
     assert plan.loss_pct > 0.10
 
 
+def _opening_bars(until_minute: int) -> list:
+    """[N10] An option's 1-minute bars from 09:15 to 09:``until_minute``: the open's first five minutes 120 high to
+    low, the next five 40, then 30."""
+    out = []
+    for m in range(15, until_minute + 1):
+        span = 120.0 if m < 20 else 40.0 if m < 25 else 30.0
+        out.append((D(9, m).replace(tzinfo=None), 230.0, 230.0 + span / 2, 230.0 - span / 2, 230.0))
+    return out
+
+
+def test_no_swing_from_two_windows_after_the_open_the_futures_stop_stands():
+    """[N10] Nov 9 09:27, NIFTY 24750 CE bought at ₹248.01: the futures stop was ₹190.40, but the 'normal swing' was
+    the average of the open's two 5-minute windows (₹109.85), so the plan stop came out at ₹138.15, wider than the
+    partner's own exit. A swing needs three windows; before 09:30 the futures stop stands."""
+    now, bought = D(9, 27, 40), D(9, 27, 25)
+    bars = _opening_bars(26)                               # 09:15-09:26: two complete windows (120, 40)
+    assert pw.option_swing(bars, bought)[0] is None         # was (120 + 40) / 2 = 80
+    plan = pw.build_plan(entry=230.0, qty=260, exchange="NFO", opt_type="CE", strike=22450.0,
+                         expiry=date(2026, 10, 27), now=now, bought_at=bought, cash=92941.5, option_bars=bars,
+                         fut_bars=_futures(now, rising=True), fut_price=22651.0, option_mid=230.0)
+    assert plan.swing is None and plan.stop_basis == "INDEX" and plan.stop == plan.index_stop_option
+    assert 0 < 230.0 - plan.stop < 80.0                     # the old 'swing' stop would have been ₹150
+    # From 09:30 three windows give a real median, and the open's own window no longer sets it.
+    assert pw.option_swing(_opening_bars(29), D(9, 30, 10))[0] == 40.0
+
+
 def test_a_plan_stop_the_price_is_already_under_is_never_offered_as_a_stop():
     """[O24c] Audit D: bought at ₹100, the option at ₹20 now, no futures read: the swing stop (₹90) is already
     crossed, so the message says so and what selling at the bid gives, and asks for no SL at ₹90."""

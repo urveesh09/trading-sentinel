@@ -218,6 +218,8 @@ The plan, computed once per buy (``build_plan``, pure)
   - When that stop is inside the option's normal 5-minute swing W (the
     median 5-minute high-low of the 30 minutes before the buy), normal moves
     would take it out. The stop is then P - W, and the message says so.
+    [N10] W needs three complete 5-minute windows; before that (the first
+    15 minutes after the open) there is no W and the futures stop stands.
   - Loss at the stop: (P - stop) x qty plus the round trip's charges
     (partner_coach.round_trip_costs), as a share of the day's cash: a fact,
     not a limit. [O24-SZ] The partner sizes as they choose, so the message
@@ -328,7 +330,9 @@ TICK_SAMPLES = 6000                        # [O24g] timings kept per process and
 CLOSE_WARN_MIN = 15 * 60 + 20
 SWING_LOOKBACK_MIN = 30
 SWING_WINDOW_MIN = 5
-SWING_MIN_BARS = 10
+# [N10] A median needs at least three windows. Nov 9 09:27: two windows after the open (its first 5-minute fall
+# among them) put a NIFTY 24750 CE's plan stop at ₹138.15, under the futures stop's ₹190.40.
+SWING_MIN_WINDOWS = 3
 RUN_LOOKBACK_MIN = 15
 COUNT_FROM_TRADE = 5
 # [O26] The day so far (DAY) is told each time the day's loss passes another step of this share of the day's cash.
@@ -975,15 +979,15 @@ class Plan:
 def option_swing(bars: list, bought_at: datetime) -> tuple[Optional[float], Optional[float]]:
     """(W, low) from 1-minute bars [(ts naive IST, o, h, l, c)]: W = the
     median high-low of the 5-minute windows in the 30 minutes before the
-    buy's minute (None under 10 bars); low = the lowest low in the 15 minutes
+    buy's minute (None under three complete windows: [N10] in the first 15
+    minutes after the open a "median" of two windows was their average, the
+    open's own move half of it); low = the lowest low in the 15 minutes
     before it, the start of the run to the buy."""
     start = bought_at.astimezone(IST).replace(tzinfo=None, second=0, microsecond=0)
     prior = [b for b in bars if start - timedelta(minutes=SWING_LOOKBACK_MIN) <= b[0] < start]
-    swing = None
-    if len(prior) >= SWING_MIN_BARS:
-        windows = [prior[i:i + SWING_WINDOW_MIN] for i in range(0, len(prior), SWING_WINDOW_MIN)]
-        ranges = [max(b[2] for b in w) - min(b[3] for b in w) for w in windows if len(w) == SWING_WINDOW_MIN]
-        swing = round(statistics.median(ranges), 2) if ranges else None
+    windows = [prior[i:i + SWING_WINDOW_MIN] for i in range(0, len(prior), SWING_WINDOW_MIN)]
+    ranges = [max(b[2] for b in w) - min(b[3] for b in w) for w in windows if len(w) == SWING_WINDOW_MIN]
+    swing = round(statistics.median(ranges), 2) if len(ranges) >= SWING_MIN_WINDOWS else None
     recent = [b for b in bars if start - timedelta(minutes=RUN_LOOKBACK_MIN) <= b[0] < start]
     low = min((b[3] for b in recent), default=None)
     return swing, low if low and low > 0 else None
