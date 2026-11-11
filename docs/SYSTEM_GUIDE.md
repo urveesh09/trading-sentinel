@@ -1,3 +1,23 @@
+## November 11 - N13 (research, Dev only): the main F&O book against its shadows; keep the profit lock
+
+- **Forward, Nov 3-11** (Production read-only): the paper main book made -₹2,997 over 10 trades (NIFTY +₹4,056, SENSEX -₹7,053 over 6 trades). The one-lot N11 record made +₹12,883 over 5, and panel B's TPB-alone arm +₹9,820 over 5.
+- **Where the main book lost ground:**
+  - the SENSEX legs, which the research never priced (zero OI history);
+  - Nov 11: the 14:10 NIFTY OR20 put was refused `trades_per_day` after two SENSEX entries (the record made +₹4,577 on it);
+  - Nov 5: OR20's lock sold a runner at 12:03, on a 10-second dip (the record trailed it to 14:22: +₹6,095 against +₹1,029).
+- **Not a mistake:** Nov 9's TPB put was refused `expiry_day_block`, which follows the owner's rule.
+- **Frozen study** `docs/research/simulation/2026-11-11-fno-n13/` (freeze `421068e4`, which re-froze `630f7b88` with no arm scored under the first; results `a0e80121`): the lock switched off per strategy and in full, on the five seen NIFTY windows, against N012-A.
+  - N012-A is picked in every held-out window.
+  - The lock off entirely costs ₹6,955 against N012-A, with a worst fall of 7.50% against 6.97%.
+  - **N012-A stays.**
+- **The gap is between the live book and its research, not in the rules:**
+  - The live lock looks every 10 s, while the research and the one-lot record look once a minute. Live, the lock sold 19% of paper trades since Oct 1, against 7.7% in research.
+  - SENSEX shares NIFTY's 3 trades a day.
+- **Candidate fixes (the owner's call; nothing built or deployed):**
+  - (a) the paper N11 lock judged on one look a minute, without confirmation, as researched; stops and the trail stay on 10-second looks. Score it first as a declared `fno_exit_cadence` arm (its rule: at least 20 scored trades, and a live lock changes only with the owner).
+  - (b) NIFTY keeps its own 3 trades a day, and SENSEX becomes a shadow, or gets a separate allowance that never blocks NIFTY.
+- The sealed Jan-May 2022 exam stays sealed. TPB-alone is judged by panel B's own rule on Nov 27.
+
 ## November 11 - N11: the partner's 08:00 login reminder, and the owner's 07:00 nudge after a late boot (Dev)
 
 **What happened on Nov 11** (Production `65677dc6`, read-only):
