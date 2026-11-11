@@ -320,12 +320,7 @@ async def premarket_login_nudge() -> None:
     now = datetime.now(IST)
     if not await _main.is_trading_day(now.date(), settings.DB_PATH):
         return
-    if token_is_fresh_today():
-        logger.info("premarket_login_nudge_skipped reason=token_already_fresh")
-    else:
-        from operator_alert import notify_operator
-        await notify_operator(login_nudge_text(last_universe_refresh(), pending_tasks(), owner_login_url()),
-                              event="premarket_login_nudge")
+    await _owner_nudge()
     # The partner's reminder is independent: the owner's login state never decides it, and its failure
     # never touches the owner's.
     try:
@@ -336,35 +331,79 @@ async def premarket_login_nudge() -> None:
         logger.error("partner_login_reminder_failed err=%s", type(exc).__name__)
 
 
+_nudge_lock = asyncio.Lock()
+
+
+async def _owner_nudge() -> str:
+    """[N11 2026-11-11] The owner's morning login nudge, at most once a day (``nudged`` in the day's bootstrap
+    state, so a restart does not repeat it), never when today's token is held. The 07:00 cron sends it, and the
+    5-minute retry tick when that run was missed: the scheduler keeps its jobs in memory, so an engine that starts
+    after 07:00 (the PC booted at 07:07 on Nov 9 and 07:18 on Nov 11) never ran the 07:00 job, and the owner had
+    no nudge while the partner's catch-up still went. The gateway retries an accepted alert itself, so an alert
+    the gateway accepted is not sent again."""
+    async with _nudge_lock:
+        state = _load_state()
+        if state.get("nudged"):
+            return "already_nudged"
+        if token_is_fresh_today():
+            logger.info("premarket_login_nudge_skipped reason=token_already_fresh")
+            return "token_fresh"
+        from operator_alert import notify_operator
+        accepted = await notify_operator(login_nudge_text(last_universe_refresh(), pending_tasks(),
+                                                          owner_login_url()), event="premarket_login_nudge")
+        if accepted:
+            state = _load_state()
+            state["nudged"] = datetime.now(IST).isoformat()
+            _save_state(state)
+        return "nudged" if accepted else "nudge_failed"
+
+
 # The retry tick's quiet outcomes: nothing was sent and nothing is wrong.
 _RETRY_QUIET = ("already_reminded", "already_logged_in", "retry_later", "in_progress", "not_configured",
-                "partner_disabled", "outside_window")
+                "partner_disabled", "outside_window", "too_soon")
 
 
 async def login_reminder_retry_tick() -> None:
     """[O25M 2026-10-25] Every 5 minutes in the partner reminder's window (07:00-08:30 on trading days): the
     partner's reminder again. A send that provably did not leave is retried (bounded), and a reminder the 07:00
     run missed (an engine restart at 07:00) is sent; one delivered or possibly delivered is never repeated
-    (partner_broker_sync.morning_login_reminder). The owner's nudge is not repeated: the gateway retries an
-    accepted alert itself."""
+    (partner_broker_sync.morning_login_reminder).
+
+    [N11 2026-11-11] Also, in the same window, the owner's nudge when the 07:00 run never happened (``_owner_nudge``,
+    once a day), but not once the 08:00 bootstrap's deferral alert has said the same thing; and from 08:00 to 08:45
+    the partner's second reminder (partner_broker_sync.second_login_reminder)."""
     import partner_broker_sync
 
     now = datetime.now(IST)
     start, end = partner_broker_sync.reminder_window(now)
-    if not start <= now <= end:
+    second_start, second_end = partner_broker_sync.second_reminder_window(now)
+    if not (start <= now <= end or second_start <= now <= second_end):
         return
     import main as _main
 
     if not await _main.is_trading_day(now.date(), settings.DB_PATH):
         return
-    try:
-        outcome = await partner_broker_sync.morning_login_reminder(now)
-    except Exception as exc:
-        logger.error("partner_login_reminder_failed err=%s", type(exc).__name__)
-        return
-    if outcome.get("status") not in _RETRY_QUIET:
-        logger.info("partner_login_reminder_retry status=%s attempts=%s", outcome.get("status"),
-                    outcome.get("attempts"))
+    if start <= now <= end and _reminder_sent_for != now.date().isoformat():
+        try:
+            nudge = await _owner_nudge()
+            if nudge == "nudged":
+                logger.info("premarket_login_nudge_caught_up at=%s", now.strftime("%H:%M"))
+        except Exception as exc:
+            logger.error("premarket_login_nudge_failed err=%s", type(exc).__name__)
+    reminders = []
+    if start <= now <= end:
+        reminders.append(("first", partner_broker_sync.morning_login_reminder))
+    if second_start <= now <= second_end:
+        reminders.append(("second", partner_broker_sync.second_login_reminder))
+    for which, remind in reminders:
+        try:
+            outcome = await remind(now)
+        except Exception as exc:
+            logger.error("partner_login_reminder_failed which=%s err=%s", which, type(exc).__name__)
+            continue
+        if outcome.get("status") not in _RETRY_QUIET:
+            logger.info("partner_login_reminder_retry which=%s status=%s attempts=%s", which, outcome.get("status"),
+                        outcome.get("attempts"))
 
 
 def owner_login_url() -> str | None:

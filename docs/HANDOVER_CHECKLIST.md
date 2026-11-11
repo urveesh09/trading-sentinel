@@ -1,3 +1,46 @@
+## November 11 - N11: the partner's 08:00 login reminder, and the owner's 07:00 nudge after a late boot (Dev)
+
+**What happened on Nov 11** (Production `65677dc6`, read-only):
+- The partner said they did not get the messages that used to stop their losses.
+- The trade watch never connected that day. Its 4,624 ticks from 07:19 to 15:40 were all `SKIPPED:not_connected`. There was no `login:2026-11-11` row and no partner order was read.
+- The only partner messages were the 07:20 login reminder, the 09:00 GAMEPLAN and the 09:00 watch PROMPT. The bot's inbox shows no partner tap or reply since Nov 9.
+- The public tunnel's own request list (since 07:20) has the owner's Kite login at 07:50 and no `/api/partner-kite/callback` at all. No partner login reached the system.
+- The PC was shut down from the Start menu at 23:41 on Nov 10 and booted at 07:18 on Nov 11. The containers started at 07:19.
+
+**Was it the N09/N10 release?** No.
+- The watch skips every tick before any plan, stop or coach code while `partner_broker_sync.connected()` is False, and the partner never logged in.
+- `watch_prompt` sent its PROMPT after the N09 GAMEPLAN, as designed.
+
+**Why the owner's 07:00 message went missing:**
+- The scheduler keeps its jobs in memory, so a 07:00 cron job is never made up after the engine starts later. `misfire_grace_time` only covers a running scheduler.
+- The PC booted at 07:07 on Nov 9, 08:09 on Nov 10 (a holiday) and 07:18 on Nov 11. Before that, it booted between 05:52 and 07:00 on trading days.
+- The partner's reminder has a 5-minute catch-up tick, so it still went (07:10, 07:20). The owner's nudge had none: a test even pinned "the owner's nudge is not repeated by it".
+
+**The change (owner, Nov 11: "setup a reminder for them at 8am as well to login if they have not … i dont recieve the message to login in the morning at 7am that I used to"):**
+- `partner_broker_sync.second_login_reminder`: from 08:00 to 08:45, once a day (`login_reminder_2`, the same `send_daily` claims and retries), only while no partner login is held. It always comes at least 30 minutes after the first reminder's last send, because a late boot sends the 07:00 one late.
+  - Text: "🔑 You are not logged in to Zerodha yet today (Wed 11 Nov). Until you log in, the trade watch is off: no buy plans, stop checks or loss warnings. Tap the button below." It carries the partner's own login button.
+- `daily_bootstrap._owner_nudge`: the owner's nudge is now once a day (`nudged` in `/data/daily_bootstrap_state.json`), under a lock.
+  - The 07:00 cron sends it. The 5-minute `login_reminder_retry_tick` also sends it when that run was missed, from 07:00 to 08:30, while no fresh owner token is held, and never after the 08:00 bootstrap's deferral alert.
+  - An alert the gateway refused is tried again on the next tick.
+- `login_reminder_retry_tick` runs the first reminder in 07:00-08:30 and the second in 08:00-08:45. Its cron already covers hours 7-9 every 5 minutes, so there is no new job and no new setting.
+- Messages only. There is no schema change, migration or `.env` edit. The evening review link and the 09:00 PROMPT are unchanged.
+
+**Verification:**
+- `tests/test_login_reminder.py`: 18 tests, 5 of them new. The Nov 11 replay boots at 07:18 and runs every tick from 07:20 to 08:45 with a restart at 07:30: the owner gets one nudge and the partner the 07:20 reminder and the 08:00 one.
+- 2 assertions were updated: the owner's nudge is now once a day and is caught up after a missed 07:00.
+- In a temporary worktree at `e0b2384e`, the 7 new or changed tests fail on the old code.
+- Bootstrap, scheduler and nudge-text tests: 65 passed.
+- Full suite: see the commit's verification line.
+
+**Rollout and rollback:**
+- Dev only until the owner merges and deploys.
+- Rollback: redeploy `65677dc6`.
+- The owner's lasting fix is outside the code: keep the PC on overnight, or boot it before about 06:50 on trading days. While it is off, the partner's early Kite login lands on a dead tunnel, and every reminder waits for the boot.
+
+**Not done (owner's call):**
+- A message at the 09:15 open when the watch is still off.
+- An owner heads-up when the partner has not logged in by 09:00.
+
 ## November 10 - Deployed: Production `65677dc6` (PR #135, with PR #134's N09 coach)
 
 **What was deployed:**
