@@ -30,7 +30,8 @@
 - 2 assertions were updated: the owner's nudge is now once a day and is caught up after a missed 07:00.
 - In a temporary worktree at `e0b2384e`, the 7 new or changed tests fail on the old code.
 - Bootstrap, scheduler and nudge-text tests: 65 passed.
-- Full suite: see the commit's verification line.
+- Full suite: 6,357 passed, 4 skipped (11 min 52 s).
+- Commit `fdaaa0b8`, pushed to `codex/production-correction-hedge-p0`. Not merged or deployed.
 
 **Rollout and rollback:**
 - Dev only until the owner merges and deploys.
