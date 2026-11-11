@@ -11,6 +11,9 @@ On those looks it keeps its best and checks its floor, and fires on the first lo
 rule; no confirmation). Between them, the lock neither moves its best nor sells. The stops, the trail, the time stop,
 the premium backstop and the 15:10 flat still read every look. 0 or absent: ``evaluate_single_leg_exit`` unchanged.
 The ladder itself (``fno_exit_rules``) is untouched, and many frozen studies bind it.
+
+Off by default (FNO_N13_LOCK_LOOK_SEC 0): its declared forward check on the recorded live looks did not pass
+(docs/research/simulation/2026-11-11-fno-n13/FORWARD_CADENCE.md). It is re-scored on new sessions first.
 """
 from __future__ import annotations
 

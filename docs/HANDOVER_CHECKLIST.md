@@ -1,3 +1,37 @@
+## November 11 - N13 build (Dev): the N11 paper main book trades NIFTY only; the lock-on-a-minute switch is built but off
+
+Owner, Nov 11: "Go on do it and test if it works good else continue".
+
+**1. NIFTY only (`FNO_N13_MAIN_UNDERLYINGS`, default `"NIFTY"`). ON.**
+- `fno_orchestrator._single_leg_entries`: under `FNO_BOOK=N11`, another underlying's fired N11 signal stops before the chain snapshot. It is logged once per bar in `fno_signals` (`leg` FNO_PAPER, `n13_shadow:<strategy>`) and never traded. So it takes none of NIFTY's 3 trades a day, its 2 positions or its premium.
+- The expiry book (`EXPIRY_PAPER_UNDERLYINGS`), analytics, the research archive and the real-money test (NFO only) are unchanged.
+- Rollback: `FNO_N13_MAIN_UNDERLYINGS=NIFTY,SENSEX`.
+- **Test** (forward only; SENSEX cannot be replayed, zero OI history):
+  - Since Oct 1 the paper book's SENSEX trades were 12, with 3 winners, −₹10,596, against NIFTY's 15 at +₹2,966.
+  - Since N11 (Nov 2), SENSEX was 6 trades and 0 winners, −₹7,053.
+  - SENSEX caused one NIFTY refusal (Nov 11, 14:10, `trades_per_day`; +₹4,577 in the one-lot record).
+
+**2. The lock on one look a minute (`fno_lock_cadence.py`, `FNO_PROFIT_LOCK_LOOK_SEC` via `FNO_N13_LOCK_LOOK_SEC`). Built, OFF (0).**
+- How it works:
+  - It wraps `fno_exit_rules.evaluate_single_leg_exit` unchanged; about 24 frozen studies bind that file.
+  - On paper N11 positions the lock keeps its best and checks its floor only on looks ≥55 s apart, and sells on the first look under the floor. Stops, the trail, the time stop, the backstop and the 15:10 flat read every look.
+  - It is never used for real money.
+- **Declared forward check** (`FORWARD_CADENCE.md`, committed `4f56244a` before the run; result `forward-cadence.json`), on the recorded live looks from Oct 27 to Nov 11:
+  - 14 of 19 exits were reproduced, and only 2 changed.
+  - Position 48 (SENSEX, Oct 28) was ₹202.62 worse.
+  - Position 58 (Nov 5 OR20) is unresolved. The archive has a 231 s gap at 13:47:54, against the 180 s rule; the arm was at ₹303.30 with floor ₹228.65 and the trail on. For reference only, not counted: the one-lot record trailed it to ₹252.20 at 14:22.
+  - **Not passed, so the switch stays 0.**
+  - Re-score on sessions from Nov 12 with the same rule once there are ≥20 scored trades. The live looks are recorded already, so nothing needs to run in Production.
+
+**Tests and verification:**
+- `tests/test_fno_lock_cadence.py`: 9 new tests. They cover the Nov 5 pattern (the 10 s cadence sells, the minute cadence holds); stops, backstop and hard flat on every look; paper N11 only; and the orchestrator loop.
+- The SENSEX signal is logged once per bar as a shadow, with no snapshot and no entry, and trades again on rollback.
+- `tests/test_fno_trend_lock.py` pins the 10 s cadence for its native-against-trend walk (its last two looks are 10 s apart).
+- F&O subset: 878 passed before the pin. Full suite: 6,366 passed, 4 skipped (11 min 28 s).
+- The atlas was regenerated (309 modules).
+
+**Status:** Dev only, not deployed. Deployment needs the owner's word. The partner, expiry and penny books are untouched.
+
 ## November 11 - N13 (research, Dev only): the main F&O book against its shadows; keep the profit lock
 
 - **Forward, Nov 3-11** (Production read-only): the paper main book made -₹2,997 over 10 trades (NIFTY +₹4,056, SENSEX -₹7,053 over 6 trades). The one-lot N11 record made +₹12,883 over 5, and panel B's TPB-alone arm +₹9,820 over 5.

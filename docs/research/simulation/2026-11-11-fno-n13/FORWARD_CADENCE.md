@@ -19,3 +19,24 @@ After the live exit, both arms continue on the archive's quotes of the same cont
 - The paired difference is MINUTE minus CURRENT over positions both arms resolve. Unresolved MINUTE positions are listed and never priced.
 - The agreed bar for changing a live lock rule is at least 20 scored trades (`fno_exit_cadence`). This window cannot reach it. It is reported as forward evidence, and the owner's "go on do it" is the decision.
 - **The MINUTE arm counts as working** if it is not worse than CURRENT on the paired difference and no scored position loses more than ₹1,000 against CURRENT. If it is worse, the switch stays in Dev at 0 (the old cadence), and the work continues.
+
+## Result (run Nov 11, `forward-cadence.json`)
+
+One correction was made before the run, and it changed no rule: the script's path to `python-engine` was one folder short (`parents[2]` → `parents[3]`), so the first launch failed on import.
+
+| | Count |
+|---|---:|
+| Closed paper positions, Oct 27 – Nov 11 | 19 |
+| Skipped: settings not recorded with a look (`settings_unbound`) | 5 |
+| Scored (CURRENT reproduces the live exit) | 14 |
+| Both arms resolved | 13 |
+| MINUTE unresolved | 1 |
+| Changed by MINUTE | 2 |
+| **Paired difference, MINUTE − CURRENT** | **−₹202.62** |
+
+- **Position 48** (SENSEX 73200 CE, Oct 28): live lock +₹177.78; MINUTE sold later at −₹24.84.
+- **Position 58** (NIFTY 24350 CE, Nov 5): live lock +₹1,028.70. MINUTE holds, and is still open when the archive's quotes of the contract stop at 13:47:54. The next quote is at 13:51:45, a 231-second gap against the 180-second limit. At 13:47:54 its bid and best were ₹303.30, its lock floor ₹228.65, and its trail was active. It is unresolved, and the rule never prices it. For reference only, not counted: the one-lot record, which looks about once a minute under the same OR20 exits, sold the same contract at 14:22:52 on its trail at ₹252.20.
+
+**Verdict by the declared rule: not passed** (the paired difference is below zero). `FNO_N13_LOCK_LOOK_SEC` stays 0 in Dev, so the old 10-second cadence is unchanged. The evidence is two changed trades, so it is thin either way. The archive cutoff is the declared rule and is not loosened for this window.
+
+**Next:** re-run `forward_cadence.py` on sessions from Nov 12 onward, with the same arms and the same rule, once the window holds at least 20 scored trades. The live looks keep being recorded, and nothing needs to run in Production.

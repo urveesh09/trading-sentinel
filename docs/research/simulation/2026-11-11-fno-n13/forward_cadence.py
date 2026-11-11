@@ -17,7 +17,7 @@ from datetime import date
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parents[2] / "python-engine"))
+sys.path.insert(0, str(HERE.parents[3] / "python-engine"))
 
 import fno_exit_cadence as C  # noqa: E402
 import fno_lock_cadence as L  # noqa: E402

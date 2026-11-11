@@ -42,6 +42,7 @@ import fno_n11
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_trend_lock
+import fno_lock_cadence
 import fno_exit_paths
 import fno_shadow
 from config import settings
@@ -421,6 +422,8 @@ def _schedule_shadow_observation(
 
 # [SX-F1] (source, position id) -> first look under the profit-lock floor.
 _LOCK_BREACH_SINCE: dict = {}
+# [N13] (source, position id) -> the lock's last look on its one-a-minute clock (fno_lock_cadence; paper N11 only).
+_LOCK_LOOK_AT: dict = {}
 
 async def _manage_open_positions(
     kite, db_path: str, source: str, executor: FnoExecutor,
@@ -569,12 +572,20 @@ async def _manage_open_positions(
         if fno_trend_lock.applies(source, pos_exec.paper_mode, p):
             # [N012-A] The front future's 5-minute trend widens or tightens the profit lock (paper N11 only).
             exit_params, _trend = fno_trend_lock.params_for(breach_key, p, exit_params, now_ist, position_fut)
-        decision = evaluate_single_leg_exit(
+        if fno_lock_cadence.applies(source, pos_exec.paper_mode, p):
+            # [N13] The lock reads one look a minute, as every N11 study did; stops and the trail read every look.
+            exit_params[fno_lock_cadence.LOOK_KEY] = float(settings.FNO_N13_LOCK_LOOK_SEC)
+        decision, lock_look_at = fno_lock_cadence.evaluate(
             p, now_ist=now_ist, fut_price=position_fut, exit_px_basis=exit_px_basis,
             hard_flat=hard_flat, params=exit_params,
             lock_breach_since=_LOCK_BREACH_SINCE.get(breach_key),
+            lock_look_at=_LOCK_LOOK_AT.get(breach_key),
         )
         exit_reason = decision.exit_reason
+        if lock_look_at is not None and not exit_reason:
+            _LOCK_LOOK_AT[breach_key] = lock_look_at
+        else:
+            _LOCK_LOOK_AT.pop(breach_key, None)
         if not exit_reason and p.strategy == fno_n11.ADD and not await fno_n11.parent_open(db_path, source, p.bar_ts):
             exit_reason = "n11_with_first"   # [N11] An earned lot leaves with the lots it was earned on.
         if not exit_reason and source == FnoSource.FNO_LIVE.value and \
@@ -1869,6 +1880,19 @@ async def _single_leg_entries(
             )
         return f"no_signal:{sig.reject_reason}", bars
 
+    if fno_book.mode() == fno_book.N11_BOOK and not n13_main_underlying(name):
+        # [N13] The N11 main book enters only the underlyings its research priced. This one's signal is a shadow:
+        # logged once per bar with its strategy, never traded, so it takes none of NIFTY's trades, positions or premium.
+        shadow(db_path, bars, regime, now_ist)
+        if not await _bar_already_logged(db_path, sig.bar_ts, underlying=name):
+            await log_fno_signal(
+                db_path, scan_id=scan_id, leg=FnoSource.FNO_PAPER.value, accepted=False,
+                reject_reason=f"n13_shadow:{sig.strategy or 'SHIPPED'}", bar_ts=sig.bar_ts, underlying=name,
+                direction=sig.direction.value, regime=regime, fut_price=sig.close, or_high=sig.or_high,
+                or_low=sig.or_low, atr=sig.atr, rvol=sig.rvol, ema_fast=sig.ema_fast, ema_slow=sig.ema_slow,
+            )
+        return "n13_shadow_underlying", bars
+
     # Signal fired: snapshot the chain once, then run both legs off it.
     # A fired signal is a pending entry decision: management lane, and this
     # tick's futures price (when it is this book's future) anchors the window.
@@ -2048,6 +2072,12 @@ async def run_fno_fast_exit(kite, db_path: Optional[str] = None, now_ist: Option
     )
     summary["note"] = "managed"
     return summary
+
+
+def n13_main_underlying(name: str) -> bool:
+    """[N13] True when the N11 main paper book may enter ``name`` (FNO_N13_MAIN_UNDERLYINGS; empty = every one)."""
+    names = {n.strip().upper() for n in str(settings.FNO_N13_MAIN_UNDERLYINGS or "").split(",") if n.strip()}
+    return not names or str(name or "").strip().upper() in names
 
 
 async def _bar_already_logged(db_path: str, bar_ts: str, underlying: Optional[str] = None) -> bool:
