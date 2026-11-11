@@ -25,18 +25,32 @@ Where the main book lost ground against the one-lot record:
 
 Ten trades decide nothing. History has overruled forward impressions before: EFF lost every forward trade, but removing it cost ₹24,157 on the researched years (`docs/FNO_FINAL_STRATEGY_2026-10-31.md`). The forward panel's TPB arm is judged by its own frozen rule on Nov 27, and N13 does not act on it.
 
-## What can be tested on history: where the lock arms
+## What can be tested on history: is the lock worth keeping?
 
-N08 found locks small and mixed: "best +4,214, and worse in 2025". N012-A2 moved only the trend rule's keep fractions, never the arm. N13 moves one number, the premium-R gain at which the native lock arms. Each arm keeps N012-A's trend rule exactly (`regular_rules.trend_params`).
+**Correction before scoring (re-frozen).** The first freeze (`630f7b88`) moved the global lock's arm, assuming every position locks at 0.40 R. Its centre arm then failed to reproduce Round 30 on 2025 (₹66,485.53 against ₹65,415.09), and the runner stopped before any other arm ran. A diagnostic run of the unchanged centre (which reproduced ₹65,415.09 exactly) counted the lock settings it sees:
+- 5,310 looks with no lock;
+- 589 at 0.80 R (OR20);
+- 147 at 0.40 R (the shipped break).
 
-| Arm | The lock arms at | Note |
+`fno_book.EXIT_OVERRIDES` says the same: OR20 arms at 0.80 R; the shipped break uses the global 0.40 R; EFF, TPB and the earned lot have none. Research and engine agree. No arm was scored under the first freeze.
+
+**The Nov 5 exit is a cadence gap, not a setting gap.** The engine's recorded checks (`/data/research/fno_exit_paths/2026-11-05.jsonl`, position 58) show what happened:
+- OR20's lock saw a best bid of ₹189.70 and set its floor at ₹171.85.
+- It saw ₹170.35 at 12:03:13 and sold at 12:03:23 (₹170.95) after its 8-second confirmation.
+- The one-lot record looks at most once a minute (`fno_n11.paper_tick`), as these one-minute replays do. It never saw a bid under its floor and trailed the same contract to 14:22 (₹252.20).
+
+The live lock looks every 10 seconds, so it catches higher bests and shorter dips than anything it was researched on.
+
+The question history can answer is whether the lock earns its keep at all on the researched cadence. If it does not, switching it off also removes the cadence gap.
+
+| Arm | Locks off for | Note |
 |---|---|---|
-| `ARM0.40` | 0.40 R | **N012-A, the centre.** It must reproduce Round 30 `TREND_ONLY` exactly in every window. |
-| `ARM0.70` | 0.70 R | ADVERSE trend still caps the arm at 0.60 (N012-A's rule). |
-| `ARM1.00` | 1.00 R | Same cap. |
-| `LOCK_OFF` | never | No profit lock at all, native or trend-made. Stops, trail, time stops and the 15:10 flat are unchanged. |
+| `CENTRE` | none | **N012-A.** It must reproduce Round 30 `TREND_ONLY` exactly in every window. |
+| `OR20_OFF` | OR20 | OR20's native lock and the trend-made lock for its positions. |
+| `SHIPPED_OFF` | the shipped break | Same. |
+| `LOCK_OFF` | every strategy | No profit lock at all, native or trend-made. |
 
-Everything else is the Round 30 lab unchanged: N11T entries, sizing, the earned lot and tolerance, stops, costs (₹200 + ₹5 a lot), and the one-minute candle model. The data is the five seen NIFTY windows: Jun–Dec 2022, 2023, 2024, 2025 and Jan–Oct 2026. Each window starts with a fresh ₹2,50,000.
+Stops, trail, time stops and the 15:10 flat are unchanged. A look's strategy is read from its lock parameters: 0.80 R is OR20 and 0.40 R the shipped break. Everything else is the Round 30 lab unchanged: N11T entries, sizing, the earned lot and tolerance, stops, costs (₹200 + ₹5 a lot), and the one-minute candle model. The data is the five seen NIFTY windows: Jun–Dec 2022, 2023, 2024, 2025 and Jan–Oct 2026. Each window starts with a fresh ₹2,50,000.
 
 ## The rule (frozen in `freeze.json` before any arm other than the centre is run)
 
@@ -51,7 +65,7 @@ The final pick replaces N012-A only if all five checks hold:
 2. The pick's increment without its five best incremental days beats N012-A's ₹710.38.
 3. Its worst day and its largest annual closed drawdown are no worse than N012-A's (−₹5,640.85, 6.97%).
 4. No window loses more than ₹2,500 against N11T.
-5. Its neighbours on the arm line (0.40, 0.70, 1.00, off) have a positive mean increment.
+5. Its neighbours (the arms one strategy away) have a positive mean increment.
 
 If any check fails, N012-A stays and the Nov 5 case is recorded as one trade, not a rule.
 
@@ -62,7 +76,7 @@ If any check fails, N012-A stays and the Nov 5 case is recorded as one trade, no
 
 ## Rollout and rollback
 
-Research is Dev only. No engine file, setting, schema or Production change. If an arm is adopted, a runtime change would be a separate, tested switch (`FNO_PROFIT_LOCK_ARM_R` already exists), deployed only on the owner's word. Rollback is the old value.
+Research is Dev only. No engine file, setting, schema or Production change. If an arm is adopted, the runtime change is the lock switched off in `fno_book.EXIT_OVERRIDES` for those strategies, tested against this rule and deployed only on the owner's word. If none is adopted, the cadence gap stays open, and the candidate fix is to judge the lock on one look a minute, as researched. Rollback is the old value.
 
 ## Run
 

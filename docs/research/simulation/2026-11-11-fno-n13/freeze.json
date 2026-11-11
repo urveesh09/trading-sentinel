@@ -1,11 +1,17 @@
 {
  "arms": {
-  "ARM0.40": 0.4,
-  "ARM0.70": 0.7,
-  "ARM1.00": 1.0,
-  "LOCK_OFF": null
+  "CENTRE": [],
+  "LOCK_OFF": [
+   "ALL"
+  ],
+  "OR20_OFF": [
+   "OR20"
+  ],
+  "SHIPPED_OFF": [
+   "SHIPPED"
+  ]
  },
- "centre_is_n012a": "ARM0.40",
+ "centre_is_n012a": "CENTRE",
  "frozen_before_scoring": true,
  "guard_worst_day_rupees": 500.0,
  "n012a_reference": {
@@ -14,14 +20,19 @@
   "total_increment": 4051.45,
   "worst_day": -5640.85
  },
+ "refrozen": {
+  "previous_freeze": "630f7b88",
+  "reason": "the first arms moved every position's lock arm; the centre failed to reproduce Round 30 on 2025 (66,485.53 vs 65,415.09) before any other arm ran; nothing was scored"
+ },
  "rule": "N012-A2 five checks (PLAN.md); adopt only if the final pick is not the centre and all pass",
  "source_sha256": {
   "docs/research/simulation/2026-11-05-fno-expiry-followup/regular_rules.py": "6b9fbf5a4dc271e5d3cf3d8e21ffc02ec1661a3afb02fa772974efcf55a06fb0",
   "docs/research/simulation/2026-11-05-fno-n12/round1.py": "1f22841f2585dbc96af173d2fd06be1c7145d5c8929da00daa707145f8f5960b",
   "docs/research/simulation/2026-11-05-fno-n12/round24.py": "0f1c90d161af96bd5a9a652e3dc6e2d2e217dacae16bbc164b5a189fbe8075a7",
   "docs/research/simulation/2026-11-05-fno-n12/round30.py": "77edab4a822548a86faafac69c93c35aafe43319e51120e47342fe48b71db617",
-  "docs/research/simulation/2026-11-11-fno-n13/n13.py": "df0e47908fcbdbebc8e341a8cd426d578a01e079af85a95f8b75228ad2e694bf",
-  "docs/research/simulation/2026-11-11-fno-n13/n13_grid.py": "1c68397d2c8acdb66f37b6d7171c912e09199eddaf46d740a5662597e051cf39",
+  "docs/research/simulation/2026-11-11-fno-n13/PLAN.md": "5007e381c3f88157076f3d10c404c5023b03b6683104343cc3a8d93c188fb0dc",
+  "docs/research/simulation/2026-11-11-fno-n13/n13.py": "6782b4bd6006d4c13763609a8ccfcf8ab537ebe32bc43b7747b89c39ff0d5611",
+  "docs/research/simulation/2026-11-11-fno-n13/n13_grid.py": "1f14665e260b45c70a755f11e7cb4055ce75aa02b95c93a44e1ff17a0a35683d",
   "docs/research/simulation/2026-11-11-fno-n13/score.py": "4956590431e03a52d781db42cf0298720e417b34d5baf006e852940f077692c8",
   "python-engine/fno_exit_rules.py": "05e9a2910bc7fdc8a76f822b385df8687c55e58b03b9e0cf2d5b025588bb8467"
  },

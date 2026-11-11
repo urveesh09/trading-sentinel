@@ -1,9 +1,10 @@
-"""N13: where the paper main book's profit lock arms, on the five seen NIFTY windows (Round 30 lab over N11T).
+"""N13: is the paper main book's profit lock worth keeping, on the five seen NIFTY windows (Round 30 lab over N11T)?
 
-Forward motive (Production, Nov 5): the native lock (arm 0.40 R, keep 0.50) sold a NIFTY OR20 call at 12:03 for
-+Rs 1,029; the one-lot paper record held the same entry on its trail to 14:22 for +Rs 6,095. One case decides
-nothing; this tests the lock's arm on every seen window. Each arm is N012-A's exact Round 30 TrendReplay with one
-number changed (n13_grid). Run with N12_YEAR set; resumable, one JSON per arm and window in _local.
+Forward motive (Production, Nov 5): OR20's native lock (arm 0.80 R, keep 0.50), looking every 10 s, sold a NIFTY call
+at 12:03 for +Rs 1,029 on a 10-second dip under its floor; the one-lot paper record, looking once a minute like these
+replays, held the same contract on its trail to 14:22 for +Rs 6,095. One case decides nothing; this tests switching
+the lock off, per strategy and in full, on every seen window. Each arm is N012-A's exact Round 30 TrendReplay with the
+locks of a set of strategies off (n13_grid). Run with N12_YEAR set; resumable, one JSON per arm and window in _local.
 """
 from contextlib import contextmanager
 import hashlib
@@ -26,11 +27,23 @@ r, Y = R.r, R.Y
 OUT = HERE / "_local" / r.YEAR
 
 
-def params_for(arm):
+def strategy_of(params):
+    """Which native lock a look's parameters carry: OR20 (0.80 R), SHIPPED (the global 0.40 R) or none."""
+    if not params.get("FNO_PROFIT_LOCK_ENABLED"):
+        return None
+    arm = round(float(params.get("FNO_PROFIT_LOCK_ARM_R", 0.0)), 6)
+    return {0.8: "OR20", 0.4: "SHIPPED"}.get(arm, "OTHER")
+
+
+def params_for(off):
+    every = "ALL" in off
+
     def chosen(params, position, trend):
-        if arm is None:                                   # LOCK_OFF: no profit lock, native or trend-made
+        if every:                                         # LOCK_OFF: no profit lock, native or trend-made
             return {**params, "FNO_PROFIT_LOCK_ENABLED": False}
-        return trend_params({**params, "FNO_PROFIT_LOCK_ARM_R": arm}, position, trend)
+        if strategy_of(params) in off:                    # this strategy's native and trend-made lock both off
+            return {**params, "FNO_PROFIT_LOCK_ENABLED": False}
+        return trend_params(params, position, trend)
     return chosen
 
 
@@ -98,7 +111,7 @@ def main(budget_sec=480.0):
     for name, expected in freeze["source_sha256"].items():
         got = hashlib.sha256((r.ROOT / name).read_bytes()).hexdigest()
         assert got == expected, (name, got)
-    assert list(freeze["arms"]) == list(LINE) and freeze["arms"] == {k: ARMS[k] for k in LINE}
+    assert sorted(freeze["arms"]) == sorted(LINE) and all(freeze["arms"][k] == list(ARMS[k]) for k in LINE)
     r.verify_freeze()
     r.f.Z.N.B.O27F.deny_network()
     r.f.Z.N.B.L._init()

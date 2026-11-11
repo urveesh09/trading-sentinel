@@ -1,20 +1,26 @@
 """The frozen N13 arms (shared by the runner and the scorer; no lab imports).
 
-One number moves: where the native profit lock arms, in premium-R (N11T: 0.40). Every arm keeps N012-A's trend rule
-(regular_rules.trend_params: SUPPORT keep 0.35; ADVERSE arm min(0.60, arm) and keep 0.65; ADVERSE during a trail with
-the lock off switches it on at 1.0 R keeping 0.60). LOCK_OFF has no profit lock at all, native or trend-made.
-The line is ordered: a pick's neighbours are the arms next to it.
+In N11T only two strategies carry a native profit lock (fno_book.EXIT_OVERRIDES): OR20 arms at 0.80 R and the
+shipped break at the global 0.40 R; EFF, TPB and the earned lot have none. N012-A's trend rule
+(regular_rules.trend_params) also switches a lock on during an adverse trail for any strategy. Each arm turns locks off
+for a set of strategies, the trend-made lock included; the others keep N012-A exactly. A pick's neighbours differ from
+it by one strategy.
 """
 
-LINE = ("ARM0.40", "ARM0.70", "ARM1.00", "LOCK_OFF")
-ARMS = {"ARM0.40": 0.40, "ARM0.70": 0.70, "ARM1.00": 1.00, "LOCK_OFF": None}
-CENTER = "ARM0.40"           # N012-A exactly (Round 30 TREND_ONLY)
+STRATEGIES = ("OR20", "SHIPPED")
+ARMS = {"CENTRE": (), "OR20_OFF": ("OR20",), "SHIPPED_OFF": ("SHIPPED",), "LOCK_OFF": ("ALL",)}
+LINE = tuple(ARMS)
+CENTER = "CENTRE"            # N012-A exactly (Round 30 TREND_ONLY)
+
+
+def _set(name):
+    off = ARMS[name]
+    return set(STRATEGIES) if "ALL" in off else set(off)
 
 
 def neighbours(name):
-    i = LINE.index(name)
-    return [LINE[j] for j in (i - 1, i + 1) if 0 <= j < len(LINE)]
+    return [n for n in ARMS if len(_set(n) ^ _set(name)) == 1]
 
 
 def distance(name):
-    return abs(LINE.index(name) - LINE.index(CENTER))
+    return len(_set(name))
