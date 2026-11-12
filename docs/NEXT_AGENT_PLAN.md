@@ -1,3 +1,15 @@
+## November 12 - SN16–SN18 (research, Dev only): each idea scored at every wallet (A ₹15k, B ₹20k, C ₹30k sized, growth caps)
+
+**Study:** `docs/research/fno/2026-11-12-sn16/`. The benchmark reproduces in every wallet.
+
+| Idea | Result |
+|---|---|
+| **SN16:** keep N11 winners past its clock with a 3-ATR index trail | A +₹1,13,567; C +₹2,10,231; growth after 3 steps +₹2,40,189 (+₹38.6k). Held out it helps only the growing wallet (+₹2,37,980 against +₹2,01,565) |
+| **SN17:** re-enter after winners | Loses at every wallet |
+| **SN18:** size by days to expiry | Worse than the volatility rule |
+
+**Status:** research only.
+
 ## November 12 - SN10–SN15 (research, Dev only): six iterations; wallet size and volatility sizing help, everything else doesn't
 
 **Summary:** `docs/research/fno/2026-11-12-sn15/README.md` (`dc008ce4`).
