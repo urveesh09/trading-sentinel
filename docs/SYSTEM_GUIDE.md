@@ -1,3 +1,31 @@
+## November 13 (night of Nov 12) - Deployed: Production `82b08371` (PR #137: SN Gold v5 paper module)
+
+**Authority:** the owner's word, Nov 12 night: "push that merge that and deploy it in production ... restart and rebuild everything right away"; and "if you think 30,000 starting amount is better than I am fine with that".
+
+**Release:** PR #137 (`codex/production-correction-hedge-p0` at `bae3a524` → `evolve/smart-strategies`), merged as `82b08371`.
+- Runtime: `python-engine` only (`sn_gold.py`, `config.py` `SN_GOLD_*`, two guarded hooks in `fno_orchestrator.py`).
+- New tables only. No migration, no `.env` edit.
+- **Paper, no orders.**
+
+**Backup:** none, by the owner's rule (code-only release; new tables only).
+
+**Deploy (runbook):**
+- Fast-forward to `82b08371`.
+- Built python-engine, node-gateway and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-12T17:45:01Z`.
+- Stopped autoheal, force-recreated all three, restarted nginx, started autoheal.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\82b08371….json`.
+
+**After (inside the engine):**
+- `SN_GOLD_ENABLED` True, start ₹30,000, 3 steps, day loss 0.20, stand 0.85, ITM by money per lot 17,500 / 20,000, scale-in at 1 ATR, extend at +25% with 3 ATR.
+- `FNO_BOOK` N11; `FNO_LIVE_TEST_ENABLED` False.
+- Gateway, agent and autoheal healthy; the engine and nginx were finishing start-up at the check.
+
+**Next (Nov 13):**
+- On the first N11 paper signal, check `sn_gold_positions` (or an `sn_gold_skips` reason) and the owner's buy message.
+- After 15:20, check `sn_gold_days` and the summary message.
+
+**Rollback:** `SN_GOLD_ENABLED=false` and recreate the engine, or redeploy `3ece6a8b`.
+
 ## November 13 - SN Gold v5 paper module (Dev, for deploy on the owner's word): `python-engine/sn_gold.py`
 
 **The owner, Nov 13:** "whatever configuration ... of the best Gold that we have set it up to run tomorrow as an independent module ... push that merge that and deploy it in production ... restart and rebuild everything right away". Starting amount and refill rules were left to the agent.
