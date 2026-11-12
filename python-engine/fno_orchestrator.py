@@ -39,6 +39,7 @@ import fno_book
 import fno_broker_backstop
 import fno_live_test
 import fno_n11
+import sn_gold
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_trend_lock
@@ -1522,6 +1523,12 @@ async def _manage_single_leg_books(
                 equity_reader=lambda: _fno_equity(db_path, FnoSource.FNO_PAPER.value), read_quote=_management_quote))
         except Exception as exc:
             logger.error("fno_n11_tick_failed err=%s", str(exc), exc_info=True)
+        # [SN Gold v5] After N11's record has moved this tick, so it follows N11's exits. Paper only, never an order.
+        if settings.SN_GOLD_ENABLED:
+            try:
+                await sn_gold.tick(kite, db_path, now=now_ist, fut_prices=fut_prices, read_quote=_management_quote)
+            except Exception as exc:
+                logger.error("sn_gold_tick_failed err=%s", str(exc), exc_info=True)
 
     return fut_price, now_ist
 
@@ -1913,10 +1920,17 @@ async def _single_leg_entries(
     # [N11] Every NIFTY signal goes on the paper record first, whatever the book then does with it.
     if (sig.strategy or "").startswith(fno_n11.PREFIX) and name == "NIFTY":
         try:
-            await fno_n11.record_paper_signal(db_path, kite, sig, snap, regime, now_ist, is_trading_day=is_trading_day,
-                                              is_expiry_day=book.is_expiry_day(now_ist.date()), pool=_fno_pool_paper())
+            recorded = await fno_n11.record_paper_signal(db_path, kite, sig, snap, regime, now_ist, is_trading_day=is_trading_day,
+                                                         is_expiry_day=book.is_expiry_day(now_ist.date()), pool=_fno_pool_paper())
         except Exception as exc:
+            recorded = False
             logger.error("fno_n11_paper_signal_failed err=%s", str(exc), exc_info=True)
+        # [SN Gold v5] The small-wallet paper book takes its entry off the same record and the same snapshot. Paper only.
+        if recorded and settings.SN_GOLD_ENABLED:
+            try:
+                await sn_gold.on_paper_signal(db_path, sig, snap, now_ist, kite=kite)
+            except Exception as exc:
+                logger.error("sn_gold_entry_failed err=%s", str(exc), exc_info=True)
     if not settings.FNO_DISABLE_PAPER:
         paper_equity = await _fno_equity(db_path, FnoSource.FNO_PAPER.value)
         if await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts, underlying=name):

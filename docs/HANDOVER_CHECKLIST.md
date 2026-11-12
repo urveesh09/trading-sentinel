@@ -1,3 +1,29 @@
+## November 13 - SN Gold v5 paper module (Dev, for deploy on the owner's word): `python-engine/sn_gold.py`
+
+**The owner, Nov 13:** "whatever configuration ... of the best Gold that we have set it up to run tomorrow as an independent module ... push that merge that and deploy it in production ... restart and rebuild everything right away". Starting amount and refill rules were left to the agent.
+
+**What runs:** SN Gold v5 (research `docs/research/fno/sn-gold/SN_GOLD_V5.json`), on **paper only**, beside the main book. The owner-facing rules are in `docs/SN_GOLD.md`.
+- **Entries:** N11's live paper-record signals (NIFTY), plus R0.85's extra signals (stand-aside at 0.85 against N11's 0.9), taken from the same chain snapshot when N11 records them. One position at a time.
+- **Size and strike:**
+  - lots = floor(W / 15k), halved on N11's low-volatility days;
+  - the deepest in-the-money strike every lot fits (by wallet per lot);
+  - a 20% day stop.
+- **Scale-in:** once, at a 1-ATR future move, to the full wallet inside the day room.
+- **Exits:** with N11's paper lot; winners ≥ +25% kept on a 3-ATR trail to 15:10; failsafe 15:15.
+- **ATR:** from Kite 1-minute candles of the front future (completed minutes).
+- **Wallet:** ₹30,000 (the owner left the amount to the agent; SN70/SN71); losing days refilled; +50% after net profit = wallet, at most 3 times (₹1,01,250); booked after 15:20.
+- **Messages:** owner messages fire-and-forget.
+- **Tables:** `sn_gold_positions`, `_days`, `_wallet`, `_skips`, `_bars` (new tables only).
+- **Settings:** `SN_GOLD_*` in `config.py`; off with `SN_GOLD_ENABLED=false`.
+- **Hooks:** two guarded hooks in `fno_orchestrator.py`, after `fno_n11.record_paper_signal` and after `fno_n11.tick`.
+
+**Verification:**
+- `tests/test_sn_gold.py`: 20 passed.
+- The full suite: 6,385 passed, 4 skipped (exit 0, 11:39).
+- Atlas regenerated.
+
+**Rollback:** `SN_GOLD_ENABLED=false` and recreate the engine, or redeploy the previous release. No existing table changes.
+
 ## November 13 - SN51–SN75 (research, Dev only): SN Gold v5, frozen beside v3/v4
 
 **Study:** `docs/research/fno/2026-11-13-sn51/` (README, lab built from frozen v4; `d1d5f2ba`). Frozen in `docs/research/fno/sn-gold/` with verifiers (v3, v4 and v5 all reproduce) and tags `sn-gold-v3`, `-v4`, `-v5`.
