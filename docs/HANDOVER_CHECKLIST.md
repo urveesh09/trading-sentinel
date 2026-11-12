@@ -1,3 +1,15 @@
+## November 12 - SN08 (research, Dev only): N11's quality rules relaxed - every relaxation loses; benchmark stays
+
+**Study:** `docs/research/fno/2026-11-12-sn08/`.
+- **Setup:** N11 through its lab chain with the stretched skip, the low-day direction rule and the 14:00 cutoff relaxed (8 books × 4 years).
+- **In the ₹15,000 wallet:**
+  - all relaxed: −₹23,477, trading on 250 days;
+  - the best relaxation (LATE): +₹97,851;
+  - the benchmark: +₹1,11,995.
+- **Held out:** the benchmark is picked every year. N11's quality rules are its edge.
+
+**Status:** research only.
+
 ## November 12 - SN07 (research, Dev only): the real N11 with big-money rules off; zero-delay entry - benchmark stays
 
 **Study:** `docs/research/fno/2026-11-12-sn07/` (`a746c705`).
