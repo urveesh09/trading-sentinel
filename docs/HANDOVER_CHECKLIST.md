@@ -1,3 +1,20 @@
+## November 13 - SN31–SN50 (research, Dev only): SN Gold v4; v3 and v4 frozen with verifiers and tags
+
+**Study:** `docs/research/fno/2026-11-13-sn31/` (lab copy, README; `84930331`).
+- **Freeze:** `docs/research/fno/sn-gold/` holds `gold_v3.py`/`gold_v4.py` (frozen harness copies), `SN_GOLD_V3.json`/`SN_GOLD_V4.json`, `verify_gold.py`/`verify_gold_v4.py` (both reproduce) and the tags `sn-gold-v3`/`sn-gold-v4`.
+- **v4 = v3 + in-the-money depth by money per lot** (< ₹17.5k 1, < ₹20k 2, else 3):
+  - A +₹1,30,530 (unchanged), B +₹1,59,282 (held-out pick every fold), C +₹2,27,949, G3 +₹3,26,853, G5 +₹5,45,819;
+  - ≥ v3 at +₹300 and +₹400 stress.
+- **Plateaus:** v3's extension and volatility parameters sit on plateaus.
+- **Rejected:** more scale-ins, restricted scale-ins, intraday-volatility sizing, trades-per-day caps.
+- **Risk:**
+  - one year at ₹15k: median +₹31,369, a 4.7% chance of a losing year, refill median ₹24,154;
+  - removing the 10 best days of 742 leaves +₹30,055, so profit is concentrated in a few days;
+  - 2023 losses are TPB's.
+- **Owner levers:** step after 50% profit gives G3 +₹3,53,995 with the same worst day; ×2 steps are bigger but riskier.
+
+**Status:** research only. The forward check is `sn-gold/FORWARD_V4.md` (from Nov 13).
+
 ## November 12 - SN19–SN30 (research, Dev only): SN Gold → v3; ITM-when-affordable and scale-in kept, eight ideas rejected
 
 **Study:** `docs/research/fno/2026-11-12-sn19/` (`gold.py` harness, README, `FORWARD.md`; `c3d0d767`). Every idea is scored at every wallet with per-year tables.
