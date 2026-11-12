@@ -1,3 +1,28 @@
+## November 12 - SN02 (research, Dev only): N11's entries in the ₹15,000 wallet; the 10% cap is the wrong shape
+
+**The owner's follow-up:** "Get it profitable", learn from N08–N012, with any data granularity. And "if at a certain point we stop increasing the wallet … and just continuously farm" the minimum, does that help?
+
+**Study:** `docs/research/fno/2026-11-12-sn02/` (`4dbbc169`). Exploratory and in-sample: no freeze before the runs, all years seen.
+- **Parity:** N11's stored one-year replays (`2026-11-02-fno-n11`, book N11), played in the SN01 simulator, match its entry and exit prices exactly.
+- **One lot in a fixed ₹15,000 wallet, N11's own exits,** the strike 1 step out of the money when a lot costs over ₹15,000, ₹3,000 day limit:
+  - +₹1,06,990 over four years at +₹205 per lot per trade;
+  - by year: 2023 −7,059, 2024 +35,618, 2025 +34,109, 2026 +44,322.
+- **Selling at the ₹1,500 target cuts that to +₹11,240.** The lock is the least bad overlay (+₹59,287 at a trail of 1.0 × target). N11's profit is in a few big winners.
+- **Buying both a call and a put:** none of 648 combinations is positive in every year, even at +₹0. Dead.
+- **Wallet:**
+  - farming ₹15,000 forever made +₹1,11,995, worst day −₹2,998;
+  - growing at most 2 steps made +₹2,39,621, worst day −₹6,751;
+  - unlimited growth reaches 59 lots and is not believable.
+- **2023 was the hardest stretch, not the easiest.** SN01 never grew the wallet at realistic costs, so growth was not why it lost.
+- **Forward so far** (looked at, so not counted): the main paper book's NIFTY N11 trades Nov 2–11 were about +₹141 per lot over 7 trades.
+
+**Frozen forward check:** `FORWARD.md`.
+- Sessions from Nov 13, from Production's existing one-lot record `fno_n11_paper` plus the quote archive for the out-of-the-money substitute.
+- PASS at ≥ 20 trades when net > 0 and net without the best trade > 0. That takes about 3–4 months.
+- No runtime change is needed.
+
+**Status:** research only. Real money only after a PASS and on the owner's word.
+
 ## November 12 - SN01 (research, Dev only): a ₹15,000 fixed wallet for a 10% day - NOT PROVEN
 
 **The owner's idea, in their words:**
