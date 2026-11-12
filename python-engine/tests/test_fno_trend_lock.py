@@ -96,7 +96,7 @@ def _row(**over):
     return row
 
 
-async def _walk(tmp_path, monkeypatch, enabled):
+async def _walk(tmp_path, monkeypatch, enabled, look_sec=0.0, looks=None):
     """A held N11 call whose future rises bucket after bucket (SUPPORT), then a give-back to ₹228: the native lock
     (keep 0.50 of the ₹60 gain, floor ₹230) sells; the trend lock (keep 0.35, floor ₹221) holds."""
     from unittest.mock import AsyncMock, MagicMock
@@ -104,7 +104,12 @@ async def _walk(tmp_path, monkeypatch, enabled):
     from fno_orchestrator import _manage_open_positions
     monkeypatch.setattr(settings, "FNO_TREND_LOCK_ENABLED", enabled)
     monkeypatch.setattr(settings, "FNO_HARD_FLAT_MIN", 15 * 60 + 10)
+    # [N13] This walk compares the trend lock with the native lock on 10-second looks (its last two are 10 s apart),
+    # so it pins that cadence; the one-a-minute cadence is tests/test_fno_lock_cadence.py.
+    monkeypatch.setattr(settings, "FNO_N13_LOCK_LOOK_SEC", look_sec)
     tl._TRENDS.clear()
+    import fno_orchestrator
+    fno_orchestrator._LOCK_LOOK_AT.clear()
     tmp_path.mkdir(parents=True, exist_ok=True)
     db = str(tmp_path / "fno.db")
     from performance import init_ledger
@@ -114,8 +119,9 @@ async def _walk(tmp_path, monkeypatch, enabled):
     kite = MagicMock()
     executor = FnoExecutor(kite, paper_mode=True, source_tag="FNO_PAPER")
     closed = []
-    looks = [(NOW + timedelta(minutes=m, seconds=50), 22610.0 + 10 * (m // 5), 240.0) for m in range(16)]
-    looks += [(NOW + timedelta(minutes=16), 22640.0, 228.0), (NOW + timedelta(minutes=16, seconds=10), 22640.0, 228.0)]
+    if looks is None:
+        looks = [(NOW + timedelta(minutes=m, seconds=50), 22610.0 + 10 * (m // 5), 240.0) for m in range(16)]
+        looks += [(NOW + timedelta(minutes=16), 22640.0, 228.0), (NOW + timedelta(minutes=16, seconds=10), 22640.0, 228.0)]
     for at, fut, bid in looks:
         kite.get_quote = AsyncMock(return_value={4242: {"last_price": bid, "depth": {"buy": [{"price": bid}]}}})
         closed += await _manage_open_positions(kite, db, "FNO_PAPER", executor, at, fut_price=fut,

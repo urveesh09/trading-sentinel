@@ -1,0 +1,497 @@
+{
+ "summary": {
+  "window": [
+   "2026-10-27",
+   "2026-11-11"
+  ],
+  "closed": 19,
+  "skipped": {
+   "settings_unbound": 5
+  },
+  "baseline_mismatch": 0,
+  "scored": 14,
+  "both_resolved": 13,
+  "minute_unresolved": 1,
+  "changed": 1,
+  "delta_vs_current": -202.62,
+  "lock_positions_scored": 6
+ },
+ "positions": [
+  {
+   "id": 46,
+   "symbol": "SENSEX26OCT73400PE",
+   "strategy": null,
+   "underlying": "SENSEX",
+   "lock_on": true,
+   "live": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-10-27T14:34:49.755272+05:30",
+    "exit_premium": 440.65,
+    "net_pnl": -1213.9395051109602
+   },
+   "current": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-10-27T14:34:49.755272+05:30",
+    "exit_premium": 440.65,
+    "net_pnl": -1213.94,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-10-27T14:34:49.755272+05:30",
+    "exit_premium": 440.65,
+    "net_pnl": -1213.94,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 53,
+    "archive_after": 66
+   },
+   "reproduces": true
+  },
+  {
+   "id": 47,
+   "symbol": "SENSEX26OCT72800PE",
+   "strategy": null,
+   "underlying": "SENSEX",
+   "lock_on": true,
+   "live": {
+    "exit_reason": "premium_backstop",
+    "exit_at": "2026-10-28T10:52:28.098225+05:30",
+    "exit_premium": 362.4,
+    "net_pnl": -2528.887552812801
+   },
+   "current": {
+    "exit_reason": "premium_backstop",
+    "exit_at": "2026-10-28T10:52:28.098225+05:30",
+    "exit_premium": 362.4,
+    "net_pnl": -2528.89,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "premium_backstop",
+    "exit_at": "2026-10-28T10:52:28.098225+05:30",
+    "exit_premium": 362.4,
+    "net_pnl": -2528.89,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 184,
+    "archive_after": 113
+   },
+   "reproduces": true
+  },
+  {
+   "id": 48,
+   "symbol": "SENSEX26OCT73200CE",
+   "strategy": null,
+   "underlying": "SENSEX",
+   "lock_on": true,
+   "live": {
+    "exit_reason": "profit_lock",
+    "exit_at": "2026-10-28T13:37:47.458868+05:30",
+    "exit_premium": 437.55,
+    "net_pnl": 177.77987687674
+   },
+   "current": {
+    "exit_reason": "profit_lock",
+    "exit_at": "2026-10-28T13:37:47.458868+05:30",
+    "exit_premium": 437.55,
+    "net_pnl": 177.78,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "profit_lock",
+    "exit_at": "2026-10-28T13:49:26.184079+05:30",
+    "exit_premium": 427.4,
+    "net_pnl": -24.84,
+    "observed_by": "ARCHIVE"
+   },
+   "looks": {
+    "live": 27,
+    "archive_after": 123
+   },
+   "reproduces": true
+  },
+  {
+   "id": 49,
+   "symbol": "NIFTY26N0322900CE",
+   "strategy": "EFF",
+   "underlying": "NIFTY",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "time_stop",
+    "exit_at": "2026-10-29T11:30:30.860560+05:30",
+    "exit_premium": 128.5,
+    "net_pnl": -1058.699188554075
+   },
+   "current": {
+    "exit_reason": "time_stop",
+    "exit_at": "2026-10-29T11:30:30.860560+05:30",
+    "exit_premium": 128.5,
+    "net_pnl": -1058.7,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "time_stop",
+    "exit_at": "2026-10-29T11:30:30.860560+05:30",
+    "exit_premium": 128.5,
+    "net_pnl": -1058.7,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 360,
+    "archive_after": 250
+   },
+   "reproduces": true
+  },
+  {
+   "id": 50,
+   "symbol": "NIFTY26N0322950PE",
+   "strategy": "EFF",
+   "underlying": "NIFTY",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-10-29T13:34:12.089201+05:30",
+    "exit_premium": 180.4,
+    "net_pnl": -2455.0724111345794
+   },
+   "current": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-10-29T13:34:12.089201+05:30",
+    "exit_premium": 180.4,
+    "net_pnl": -2455.07,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-10-29T13:34:12.089201+05:30",
+    "exit_premium": 180.4,
+    "net_pnl": -2455.07,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 255,
+    "archive_after": 127
+   },
+   "reproduces": true
+  },
+  {
+   "id": 51,
+   "symbol": "NIFTY26N0322900CE",
+   "strategy": "TPB",
+   "underlying": "NIFTY",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "hard_flat_1510",
+    "exit_at": "2026-10-29T15:10:01.713032+05:30",
+    "exit_premium": 178.0,
+    "net_pnl": 3953.932819795865
+   },
+   "current": {
+    "exit_reason": "hard_flat_1510",
+    "exit_at": "2026-10-29T15:10:01.713032+05:30",
+    "exit_premium": 178.0,
+    "net_pnl": 3953.93,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "hard_flat_1510",
+    "exit_at": "2026-10-29T15:10:01.713032+05:30",
+    "exit_premium": 178.0,
+    "net_pnl": 3953.93,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 772,
+    "archive_after": 31
+   },
+   "reproduces": true
+  },
+  {
+   "id": 52,
+   "symbol": "NIFTY26N0323400PE",
+   "strategy": "N11_EFF",
+   "underlying": "NIFTY",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-02T12:11:58.807648+05:30",
+    "exit_premium": 124.15,
+    "net_pnl": -2521.187586410535
+   },
+   "current": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-02T12:11:58.807648+05:30",
+    "exit_premium": 124.15,
+    "net_pnl": -2521.19,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-02T12:11:58.807648+05:30",
+    "exit_premium": 124.15,
+    "net_pnl": -2521.19,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 128,
+    "archive_after": 209
+   },
+   "reproduces": true
+  },
+  {
+   "id": 53,
+   "symbol": "NIFTY26N0323350CE",
+   "strategy": "N11_TPB",
+   "underlying": "NIFTY",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-02T12:55:08.807111+05:30",
+    "exit_premium": 47.3,
+    "net_pnl": -727.5422711891651
+   },
+   "current": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-02T12:55:08.807111+05:30",
+    "exit_premium": 47.3,
+    "net_pnl": -727.54,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-02T12:55:08.807111+05:30",
+    "exit_premium": 47.3,
+    "net_pnl": -727.54,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 297,
+    "archive_after": 166
+   },
+   "reproduces": true
+  },
+  {
+   "id": 54,
+   "symbol": "NIFTY26N0323400CE",
+   "strategy": "N11_TPB",
+   "underlying": "NIFTY",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "premium_backstop",
+    "exit_at": "2026-11-02T12:32:59.151840+05:30",
+    "exit_premium": 44.7,
+    "net_pnl": -1049.0365216174898
+   },
+   "current": {
+    "exit_reason": "premium_backstop",
+    "exit_at": "2026-11-02T12:32:59.151840+05:30",
+    "exit_premium": 44.7,
+    "net_pnl": -1049.04,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "premium_backstop",
+    "exit_at": "2026-11-02T12:32:59.151840+05:30",
+    "exit_premium": 44.7,
+    "net_pnl": -1049.04,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 119,
+    "archive_after": 188
+   },
+   "reproduces": true
+  },
+  {
+   "id": 55,
+   "symbol": "SENSEX26N0576600CE",
+   "strategy": "N11_EFF",
+   "skipped": "settings_unbound"
+  },
+  {
+   "id": 56,
+   "symbol": "SENSEX26N0577000CE",
+   "strategy": "N11_EFF",
+   "skipped": "settings_unbound"
+  },
+  {
+   "id": 57,
+   "symbol": "NIFTY26N0924400CE",
+   "strategy": "N11_OR20",
+   "underlying": "NIFTY",
+   "lock_on": true,
+   "live": {
+    "exit_reason": "time_stop",
+    "exit_at": "2026-11-05T11:00:33.143581+05:30",
+    "exit_premium": 136.55,
+    "net_pnl": -765.5909993772185
+   },
+   "current": {
+    "exit_reason": "time_stop",
+    "exit_at": "2026-11-05T11:00:33.143581+05:30",
+    "exit_premium": 136.55,
+    "net_pnl": -765.59,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "time_stop",
+    "exit_at": "2026-11-05T11:00:33.143581+05:30",
+    "exit_premium": 136.55,
+    "net_pnl": -765.59,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 447,
+    "archive_after": 281
+   },
+   "reproduces": true
+  },
+  {
+   "id": 58,
+   "symbol": "NIFTY26N0924350CE",
+   "strategy": "N11_OR20",
+   "underlying": "NIFTY",
+   "lock_on": true,
+   "live": {
+    "exit_reason": "profit_lock",
+    "exit_at": "2026-11-05T12:03:23.274723+05:30",
+    "exit_premium": 170.95,
+    "net_pnl": 1028.7017482368344
+   },
+   "current": {
+    "exit_reason": "profit_lock",
+    "exit_at": "2026-11-05T12:03:23.274723+05:30",
+    "exit_premium": 170.95,
+    "net_pnl": 1028.7,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": null,
+    "unresolved": true,
+    "last_look": "2026-11-05T13:47:54.217169+05:30"
+   },
+   "looks": {
+    "live": 433,
+    "archive_after": 105
+   },
+   "reproduces": true
+  },
+  {
+   "id": 59,
+   "symbol": "NIFTY26N0924400CE",
+   "strategy": "N11_TPB",
+   "underlying": "NIFTY",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "trail_stop",
+    "exit_at": "2026-11-05T14:20:43.232655+05:30",
+    "exit_premium": 224.3,
+    "net_pnl": 4558.072901342427
+   },
+   "current": {
+    "exit_reason": "trail_stop",
+    "exit_at": "2026-11-05T14:20:43.232655+05:30",
+    "exit_premium": 224.3,
+    "net_pnl": 4558.07,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "trail_stop",
+    "exit_at": "2026-11-05T14:20:43.232655+05:30",
+    "exit_premium": 224.3,
+    "net_pnl": 4558.07,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 1021,
+    "archive_after": 80
+   },
+   "reproduces": true
+  },
+  {
+   "id": 60,
+   "symbol": "SENSEX26N1281000PE",
+   "strategy": "N11_SHIPPED",
+   "underlying": "SENSEX",
+   "lock_on": true,
+   "live": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-09T11:33:18.825904+05:30",
+    "exit_premium": 693.0,
+    "net_pnl": -1807.7857313886395
+   },
+   "current": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-09T11:33:18.825904+05:30",
+    "exit_premium": 693.0,
+    "net_pnl": -1807.79,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-09T11:33:18.825904+05:30",
+    "exit_premium": 693.0,
+    "net_pnl": -1807.79,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 76,
+    "archive_after": 248
+   },
+   "reproduces": true
+  },
+  {
+   "id": 61,
+   "symbol": "SENSEX26N1281000PE",
+   "strategy": "N11_SHIPPED",
+   "skipped": "settings_unbound"
+  },
+  {
+   "id": 62,
+   "symbol": "NIFTY26N1725450PE",
+   "strategy": "N11_EFF",
+   "skipped": "settings_unbound"
+  },
+  {
+   "id": 63,
+   "symbol": "SENSEX26N1282300CE",
+   "strategy": "N11_OR20",
+   "skipped": "settings_unbound"
+  },
+  {
+   "id": 64,
+   "symbol": "SENSEX26N1282400CE",
+   "strategy": "N11_TPB",
+   "underlying": "SENSEX",
+   "lock_on": false,
+   "live": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-11T12:11:13.759317+05:30",
+    "exit_premium": 366.45,
+    "net_pnl": -1685.7242249292203
+   },
+   "current": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-11T12:11:13.759317+05:30",
+    "exit_premium": 366.45,
+    "net_pnl": -1685.72,
+    "observed_by": "LIVE_LOOP"
+   },
+   "minute": {
+    "exit_reason": "underlying_stop",
+    "exit_at": "2026-11-11T12:11:13.759317+05:30",
+    "exit_premium": 366.45,
+    "net_pnl": -1685.72,
+    "observed_by": "LIVE_LOOP"
+   },
+   "looks": {
+    "live": 204,
+    "archive_after": 83
+   },
+   "reproduces": true
+  }
+ ]
+}

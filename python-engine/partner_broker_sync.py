@@ -1320,6 +1320,55 @@ async def morning_login_reminder(now: Optional[datetime] = None) -> dict:
     return {"status": status} if status == "already_reminded" else {**out, "status": status}
 
 
+# [N11 2026-11-11] The owner: "set up a reminder for them at 8am as well to login if they have not". Nov 11 the
+# partner had the 07:20 reminder and the 09:00 watch prompt, never logged in, and traded with the watch off all
+# day (4,624 ticks "not_connected", no plan, stop or loss message).
+LOGIN_REMINDER_2_KIND = "login_reminder_2"
+LOGIN_REMINDER_2_HOUR, LOGIN_REMINDER_2_MINUTE = 8, 0
+LOGIN_REMINDER_2_WINDOW_MIN = 45               # 08:00 to 08:45, before the 09:00 watch prompt
+LOGIN_REMINDER_GAP_MIN = 30                    # never within 30 min of the first one (a late start sends it late)
+
+
+def second_reminder_text(now: datetime) -> str:
+    """[N11] The 08:00 message: still not logged in, and what that costs them today."""
+    return (f"🔑 You are not logged in to Zerodha yet today ({now.astimezone(IST).strftime('%a %d %b')}).\n"
+            "Until you log in, the trade watch is off: no buy plans, stop checks or loss warnings. "
+            "Tap the button below.")
+
+
+def second_reminder_window(now: datetime) -> tuple:
+    start = now.astimezone(IST).replace(hour=LOGIN_REMINDER_2_HOUR, minute=LOGIN_REMINDER_2_MINUTE,
+                                        second=0, microsecond=0)
+    return start, start + timedelta(minutes=LOGIN_REMINDER_2_WINDOW_MIN)
+
+
+async def second_login_reminder(now: Optional[datetime] = None) -> dict:
+    """[N11] The partner's second login reminder, from 08:00 (daily_bootstrap.login_reminder_retry_tick, every 5
+    minutes): once a day, only while no login is held, and not within LOGIN_REMINDER_GAP_MIN of the first reminder's
+    last send (a PC that boots late sends the 07:00 one late). Same once-a-day sending as the first
+    (partner_orchestrator.send_daily). Messages only: the login is read-only."""
+    from partner_bot import partner_enabled
+    from partner_orchestrator import daily_tries, send_daily
+    now = (now or datetime.now(IST)).astimezone(IST)
+    if not configured():
+        return {"status": "not_configured"}
+    if not partner_enabled():
+        return {"status": "partner_disabled"}
+    if connected(now):
+        return {"status": "already_logged_in"}
+    start, end = second_reminder_window(now)
+    if not start <= now <= end:
+        return {"status": "outside_window"}
+    day = now.date().isoformat()
+    first = [t["at"] for t in await daily_tries(settings.DB_PATH, LOGIN_REMINDER_KIND, day) if t["at"] is not None]
+    if first and now - max(first) < timedelta(minutes=LOGIN_REMINDER_GAP_MIN):
+        return {"status": "too_soon"}
+    out = await send_daily(settings.DB_PATH, LOGIN_REMINDER_2_KIND, day, second_reminder_text(now), now,
+                           reply_markup=review_keyboard("🔑 Log in to Zerodha"), until=end)
+    status = _REMINDER_STATUS.get(out["status"], out["status"])
+    return {"status": status} if status == "already_reminded" else {**out, "status": status}
+
+
 async def partner_broker_eod(now: Optional[datetime] = None) -> dict:
     """The evening wrap (15:50), after the day's brief: read the book when a login is held,
     else send the review button once."""

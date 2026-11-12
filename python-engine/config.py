@@ -1273,6 +1273,19 @@ class Settings(BaseSettings):
     FNO_TREND_LOCK_SUPPORT_KEEP: float = 0.35
     FNO_TREND_LOCK_ADVERSE_KEEP: float = 0.65
     FNO_TREND_LOCK_TRAIL_KEEP: float = 0.60     # <= 0: no lock switched on during a trail
+    # [N13, owner Nov 11 "go on do it"] The paper N11 book run as it was researched (docs/research/simulation/
+    # 2026-11-11-fno-n13). The lock reads one look this many seconds apart, keeping its best and selling on the first
+    # look under its floor, as every N11 study and the one-lot record do (fno_lock_cadence). Stops and the trail still
+    # read every look. Paper N11 positions only, never real money. 0 = every look with the 8 s confirmation, as before.
+    # OFF (0) after its declared forward check (FORWARD_CADENCE.md): of 14 live paper exits it reproduced, it changed
+    # two; the resolved one was Rs 203 worse, the other (Nov 5's OR20) is unresolved at a 231 s archive gap. The rule
+    # says keep the old cadence; re-score on new sessions with the same rule (forward_cadence.py) before turning it on.
+    FNO_N13_LOCK_LOOK_SEC: float = 0.0
+    # [N13] The underlyings the N11 paper main book enters: the ones its research priced. Another underlying's N11 signal
+    # is logged once per bar as "n13_shadow:<strategy>" and is not traded, so it no longer takes NIFTY's trades a day,
+    # positions or premium. SENSEX lost all 6 of its main-book trades Nov 3-11 and cannot be replayed (zero OI history).
+    # Back to Oct 29: "NIFTY,SENSEX".
+    FNO_N13_MAIN_UNDERLYINGS: str = "NIFTY"
     # [SX-F1] Keep every exit check of a held option (fno_exit_paths.py) so
     # exit rules can be replayed at the live clock. Research only.
     FNO_EXIT_PATH_RECORDING: bool = True

@@ -1,3 +1,137 @@
+## November 11 - N13 build (Dev): the N11 paper main book trades NIFTY only; the lock-on-a-minute switch is built but off
+
+Owner, Nov 11: "Go on do it and test if it works good else continue".
+
+**1. NIFTY only (`FNO_N13_MAIN_UNDERLYINGS`, default `"NIFTY"`). ON.**
+- `fno_orchestrator._single_leg_entries`: under `FNO_BOOK=N11`, another underlying's fired N11 signal stops before the chain snapshot. It is logged once per bar in `fno_signals` (`leg` FNO_PAPER, `n13_shadow:<strategy>`) and never traded. So it takes none of NIFTY's 3 trades a day, its 2 positions or its premium.
+- The expiry book (`EXPIRY_PAPER_UNDERLYINGS`), analytics, the research archive and the real-money test (NFO only) are unchanged.
+- Rollback: `FNO_N13_MAIN_UNDERLYINGS=NIFTY,SENSEX`.
+- **Test** (forward only; SENSEX cannot be replayed, zero OI history):
+  - Since Oct 1 the paper book's SENSEX trades were 12, with 3 winners, −₹10,596, against NIFTY's 15 at +₹2,966.
+  - Since N11 (Nov 2), SENSEX was 6 trades and 0 winners, −₹7,053.
+  - SENSEX caused one NIFTY refusal (Nov 11, 14:10, `trades_per_day`; +₹4,577 in the one-lot record).
+
+**2. The lock on one look a minute (`fno_lock_cadence.py`, `FNO_PROFIT_LOCK_LOOK_SEC` via `FNO_N13_LOCK_LOOK_SEC`). Built, OFF (0).**
+- How it works:
+  - It wraps `fno_exit_rules.evaluate_single_leg_exit` unchanged; about 24 frozen studies bind that file.
+  - On paper N11 positions the lock keeps its best and checks its floor only on looks ≥55 s apart, and sells on the first look under the floor. Stops, the trail, the time stop, the backstop and the 15:10 flat read every look.
+  - It is never used for real money.
+- **Declared forward check** (`FORWARD_CADENCE.md`, committed `4f56244a` before the run; result `forward-cadence.json`), on the recorded live looks from Oct 27 to Nov 11:
+  - 14 of 19 exits were reproduced, and only 2 changed.
+  - Position 48 (SENSEX, Oct 28) was ₹202.62 worse.
+  - Position 58 (Nov 5 OR20) is unresolved. The archive has a 231 s gap at 13:47:54, against the 180 s rule; the arm was at ₹303.30 with floor ₹228.65 and the trail on. For reference only, not counted: the one-lot record trailed it to ₹252.20 at 14:22.
+  - **Not passed, so the switch stays 0.**
+  - Re-score on sessions from Nov 12 with the same rule once there are ≥20 scored trades. The live looks are recorded already, so nothing needs to run in Production.
+
+**Tests and verification:**
+- `tests/test_fno_lock_cadence.py`: 9 new tests. They cover the Nov 5 pattern (the 10 s cadence sells, the minute cadence holds); stops, backstop and hard flat on every look; paper N11 only; and the orchestrator loop.
+- The SENSEX signal is logged once per bar as a shadow, with no snapshot and no entry, and trades again on rollback.
+- `tests/test_fno_trend_lock.py` pins the 10 s cadence for its native-against-trend walk (its last two looks are 10 s apart).
+- F&O subset: 878 passed before the pin. Full suite: 6,366 passed, 4 skipped (11 min 28 s).
+- The atlas was regenerated (309 modules).
+
+**Status:** Dev only, not deployed. Deployment needs the owner's word. The partner, expiry and penny books are untouched.
+
+## November 11 - N13 (research, Dev only): the main F&O book against its shadows; keep the profit lock
+
+- **Forward, Nov 3-11** (Production read-only): the paper main book made -₹2,997 over 10 trades (NIFTY +₹4,056, SENSEX -₹7,053 over 6 trades). The one-lot N11 record made +₹12,883 over 5, and panel B's TPB-alone arm +₹9,820 over 5.
+- **Where the main book lost ground:**
+  - the SENSEX legs, which the research never priced (zero OI history);
+  - Nov 11: the 14:10 NIFTY OR20 put was refused `trades_per_day` after two SENSEX entries (the record made +₹4,577 on it);
+  - Nov 5: OR20's lock sold a runner at 12:03, on a 10-second dip (the record trailed it to 14:22: +₹6,095 against +₹1,029).
+- **Not a mistake:** Nov 9's TPB put was refused `expiry_day_block`, which follows the owner's rule.
+- **Frozen study** `docs/research/simulation/2026-11-11-fno-n13/` (freeze `421068e4`, which re-froze `630f7b88` with no arm scored under the first; results `a0e80121`): the lock switched off per strategy and in full, on the five seen NIFTY windows, against N012-A.
+  - N012-A is picked in every held-out window.
+  - The lock off entirely costs ₹6,955 against N012-A, with a worst fall of 7.50% against 6.97%.
+  - **N012-A stays.**
+- **The gap is between the live book and its research, not in the rules:**
+  - The live lock looks every 10 s, while the research and the one-lot record look once a minute. Live, the lock sold 19% of paper trades since Oct 1, against 7.7% in research.
+  - SENSEX shares NIFTY's 3 trades a day.
+- **Candidate fixes (the owner's call; nothing built or deployed):**
+  - (a) the paper N11 lock judged on one look a minute, without confirmation, as researched; stops and the trail stay on 10-second looks. Score it first as a declared `fno_exit_cadence` arm (its rule: at least 20 scored trades, and a live lock changes only with the owner).
+  - (b) NIFTY keeps its own 3 trades a day, and SENSEX becomes a shadow, or gets a separate allowance that never blocks NIFTY.
+- The sealed Jan-May 2022 exam stays sealed. TPB-alone is judged by panel B's own rule on Nov 27.
+
+## November 11 - N11: the partner's 08:00 login reminder, and the owner's 07:00 nudge after a late boot (Dev)
+
+**What happened on Nov 11** (Production `65677dc6`, read-only):
+- The partner said they did not get the messages that used to stop their losses.
+- The trade watch never connected that day. Its 4,624 ticks from 07:19 to 15:40 were all `SKIPPED:not_connected`. There was no `login:2026-11-11` row and no partner order was read.
+- The only partner messages were the 07:20 login reminder, the 09:00 GAMEPLAN and the 09:00 watch PROMPT. The bot's inbox shows no partner tap or reply since Nov 9.
+- The public tunnel's own request list (since 07:20) has the owner's Kite login at 07:50 and no `/api/partner-kite/callback` at all. No partner login reached the system.
+- The PC was shut down from the Start menu at 23:41 on Nov 10 and booted at 07:18 on Nov 11. The containers started at 07:19.
+
+**Was it the N09/N10 release?** No.
+- The watch skips every tick before any plan, stop or coach code while `partner_broker_sync.connected()` is False, and the partner never logged in.
+- `watch_prompt` sent its PROMPT after the N09 GAMEPLAN, as designed.
+
+**Why the owner's 07:00 message went missing:**
+- The scheduler keeps its jobs in memory, so a 07:00 cron job is never made up after the engine starts later. `misfire_grace_time` only covers a running scheduler.
+- The PC booted at 07:07 on Nov 9, 08:09 on Nov 10 (a holiday) and 07:18 on Nov 11. Before that, it booted between 05:52 and 07:00 on trading days.
+- The partner's reminder has a 5-minute catch-up tick, so it still went (07:10, 07:20). The owner's nudge had none: a test even pinned "the owner's nudge is not repeated by it".
+
+**The change (owner, Nov 11: "setup a reminder for them at 8am as well to login if they have not … i dont recieve the message to login in the morning at 7am that I used to"):**
+- `partner_broker_sync.second_login_reminder`: from 08:00 to 08:45, once a day (`login_reminder_2`, the same `send_daily` claims and retries), only while no partner login is held. It always comes at least 30 minutes after the first reminder's last send, because a late boot sends the 07:00 one late.
+  - Text: "🔑 You are not logged in to Zerodha yet today (Wed 11 Nov). Until you log in, the trade watch is off: no buy plans, stop checks or loss warnings. Tap the button below." It carries the partner's own login button.
+- `daily_bootstrap._owner_nudge`: the owner's nudge is now once a day (`nudged` in `/data/daily_bootstrap_state.json`), under a lock.
+  - The 07:00 cron sends it. The 5-minute `login_reminder_retry_tick` also sends it when that run was missed, from 07:00 to 08:30, while no fresh owner token is held, and never after the 08:00 bootstrap's deferral alert.
+  - An alert the gateway refused is tried again on the next tick.
+- `login_reminder_retry_tick` runs the first reminder in 07:00-08:30 and the second in 08:00-08:45. Its cron already covers hours 7-9 every 5 minutes, so there is no new job and no new setting.
+- Messages only. There is no schema change, migration or `.env` edit. The evening review link and the 09:00 PROMPT are unchanged.
+
+**Verification:**
+- `tests/test_login_reminder.py`: 18 tests, 5 of them new. The Nov 11 replay boots at 07:18 and runs every tick from 07:20 to 08:45 with a restart at 07:30: the owner gets one nudge and the partner the 07:20 reminder and the 08:00 one.
+- 2 assertions were updated: the owner's nudge is now once a day and is caught up after a missed 07:00.
+- In a temporary worktree at `e0b2384e`, the 7 new or changed tests fail on the old code.
+- Bootstrap, scheduler and nudge-text tests: 65 passed.
+- Full suite: 6,357 passed, 4 skipped (11 min 52 s).
+- Commit `fdaaa0b8`, pushed to `codex/production-correction-hedge-p0`. Not merged or deployed.
+
+**Rollout and rollback:**
+- Dev only until the owner merges and deploys.
+- Rollback: redeploy `65677dc6`.
+- The owner's lasting fix is outside the code: keep the PC on overnight, or boot it before about 06:50 on trading days. While it is off, the partner's early Kite login lands on a dead tunnel, and every reminder waits for the boot.
+
+**Not done (owner's call):**
+- A message at the 09:15 open when the watch is still off.
+- An owner heads-up when the partner has not logged in by 09:00.
+
+## November 10 - Deployed: Production `65677dc6` (PR #135, with PR #134's N09 coach)
+
+**What was deployed:**
+- The owner's word, Nov 10: "deploy that too in pro".
+- PR #135 (`codex/production-correction-hedge-p0` at `439b3db7` → `evolve/smart-strategies`) was merged as `65677dc6`.
+- The release carries:
+  - the N09 coach and N09b owner heads-up (PR #134);
+  - the N10 plan-stop fix;
+  - the N09c research files and the N09 scorecard docs.
+- The only runtime code is `python-engine`. There is no schema change, migration or `.env` edit.
+
+**Backup** (`%USERPROFILE%\sentinel-operations\backups\20261110-pre-65677dc\`, after hours on a market holiday):
+- **Quiescence:** autoheal and the three app services were stopped, and no Sentinel positions were open (read-only check).
+- **Contents:** an inventory, `data.tar` (8.42 GB) and an integrity receipt: `INTEGRITY_VERIFIED_CONSISTENCY_UNPROVEN`, 11,884 files.
+- **What went wrong:** the session's memory monitor stopped the tar's client shell. The tar container ran on and exited 0, and the verify step then ran in a detached container. This is written in the quiescence receipt.
+
+**Deploy (runbook):**
+- Fast-forward `d763aeeb` → `65677dc6`.
+- Built node-gateway, python-engine and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-10T16:56:53Z`.
+- Recreated all three, then restarted nginx.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\65677dc6….json`, all three at `65677dc6`.
+
+**After:**
+- All services healthy; nginx `/api/health` 200; autoheal started again.
+- In the engine:
+  - `PARTNER_WATCH_COACH_ENABLED` True;
+  - `PARTNER_WATCH_OWNER_HEADSUP_ENABLED` True;
+  - `SWING_MIN_WINDOWS` 3;
+  - `partner_habits` `n09-habits-v1`.
+- The gateway logged one `market_hours_holidays_fetch_error` at startup, because the engine was not listening yet. Its built-in calendar mirrors `market_calendar`, and `/holidays` answers now.
+
+**Next:**
+- **Nov 11 (step 5 of the runbook):** a next-session check of the 09:00 GAMEPLAN, the first plans (the futures stop until about 09:30), and NIFTY and SENSEX quotes, separately.
+- **N09 scorecard:** forward window Nov 11 – Nov 25, judged after its 10th session.
+- **Rollback:** redeploy `d763aeeb` by the same runbook. No migration needs undoing.
+
 ## November 10 - N10 partner plan stop: no "normal swing" from the two windows after the open (Dev)
 
 **Problem (Production read-only, Nov 9):**

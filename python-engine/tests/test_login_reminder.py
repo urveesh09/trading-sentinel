@@ -82,7 +82,7 @@ async def test_the_partner_is_reminded_once_a_day_and_never_when_already_logged_
     sent, _ = morning
     await boot.premarket_login_nudge()
     await boot.premarket_login_nudge()                                   # a second run the same morning
-    assert len(sent["partner"]) == 1 and len(sent["owner"]) == 2      # the owner's nudge has no once-a-day key
+    assert len(sent["partner"]) == 1 and len(sent["owner"]) == 1      # [N11] the owner's nudge is once a day too
     monkeypatch.setattr(pbs, "connected", lambda now=None: True)
     assert (await pbs.morning_login_reminder(MONDAY_7.replace(day=27)))["status"] == "already_logged_in"
     assert len(sent["partner"]) == 1
@@ -231,11 +231,12 @@ async def test_the_retry_tick_sends_a_reminder_a_restart_missed_and_reads_nothin
         monkeypatch.setattr(boot, "datetime", SimpleNamespace(now=lambda tz=None: moment,
                                                               fromisoformat=datetime.fromisoformat))
 
+    monkeypatch.setattr(boot, "_reminder_sent_for", None)
     at(_at(minutes=10))                     # the engine restarted at 07:00: the 07:00 run never happened
     await boot.login_reminder_retry_tick()
-    assert len(sent["partner"]) == 1 and sent["owner"] == []          # the owner's nudge is not repeated by it
+    assert len(sent["partner"]) == 1 and len(sent["owner"]) == 1      # [N11] the owner's missed nudge goes too
     reads = trading["calendar_reads"]
-    at(_at(minutes=95))
+    at(_at(minutes=110))                    # 08:50: past the 08:00 reminder's window as well
     await boot.login_reminder_retry_tick()
     assert trading["calendar_reads"] == reads and len(sent["partner"]) == 1
     trading["day"] = False
@@ -272,3 +273,106 @@ def test_the_owners_alert_log_says_whether_telegram_took_it_on_the_first_try():
     assert operator_alert._first_try(Answer({"success": True, "delivered": False})) is False
     assert operator_alert._first_try(Answer({"success": True})) is None
     assert operator_alert._first_try(Answer(ValueError("not json"))) is None
+
+
+# ---------------------------------------------------------------------------
+# [N11 2026-11-11] The 08:00 second reminder, and the owner's nudge after a late start
+# ---------------------------------------------------------------------------
+
+def _clock_at(monkeypatch, moment):
+    monkeypatch.setattr(boot, "datetime", SimpleNamespace(now=lambda tz=None: moment,
+                                                          fromisoformat=datetime.fromisoformat))
+
+
+@pytest.mark.asyncio
+async def test_the_partner_still_not_logged_in_at_eight_is_reminded_again_once(morning, monkeypatch):
+    sent, _ = morning
+    monkeypatch.setattr(boot, "_reminder_sent_for", None)
+    await boot.premarket_login_nudge()                                   # 07:00: owner + partner
+    for minutes in (5, 30, 55):                                          # 07:05 .. 07:55: nothing more
+        _clock_at(monkeypatch, _at(minutes=minutes))
+        await boot.login_reminder_retry_tick()
+    assert [k for _, k, _ in sent["partner"]] == ["login_reminder"] and len(sent["owner"]) == 1
+    for minutes in (60, 65, 90, 105):                                    # 08:00, 08:05, 08:30, 08:45
+        _clock_at(monkeypatch, _at(minutes=minutes))
+        await boot.login_reminder_retry_tick()
+    assert [k for _, k, _ in sent["partner"]] == ["login_reminder", "login_reminder_2"] and len(sent["owner"]) == 1
+    text, _, keyboard = sent["partner"][1]
+    assert text == ("🔑 You are not logged in to Zerodha yet today (Mon 26 Oct).\n"
+                    "Until you log in, the trade watch is off: no buy plans, stop checks or loss warnings. "
+                    "Tap the button below.")
+    [[button]] = keyboard["inline_keyboard"]
+    assert button == {"text": "🔑 Log in to Zerodha",
+                      "url": "https://kite.zerodha.com/connect/login?v=3&api_key=partnerkey"}
+
+
+@pytest.mark.asyncio
+async def test_no_second_reminder_after_a_login_outside_its_window_or_on_a_closed_day(morning, monkeypatch):
+    sent, trading = morning
+    eight = _at(minutes=60)
+    assert (await pbs.second_login_reminder(eight - timedelta(minutes=1)))["status"] == "outside_window"
+    assert (await pbs.second_login_reminder(eight + timedelta(minutes=46)))["status"] == "outside_window"
+    monkeypatch.setattr(pbs, "connected", lambda now=None: True)
+    assert (await pbs.second_login_reminder(eight))["status"] == "already_logged_in"
+    monkeypatch.setattr(pbs, "connected", lambda now=None: False)
+    trading["day"] = False
+    _clock_at(monkeypatch, eight)
+    await boot.login_reminder_retry_tick()
+    assert sent["partner"] == [] and sent["owner"] == []
+
+
+@pytest.mark.asyncio
+async def test_a_late_first_reminder_holds_the_second_back_for_thirty_minutes(morning, monkeypatch):
+    """A PC that boots at 07:40 sends the 07:00 reminder at 07:40: the 08:00 one waits until 08:10."""
+    sent, _ = morning
+    assert (await pbs.morning_login_reminder(_at(minutes=40)))["status"] == "reminded"
+    assert await pbs.second_login_reminder(_at(minutes=60)) == {"status": "too_soon"}
+    assert await pbs.second_login_reminder(_at(minutes=69)) == {"status": "too_soon"}
+    assert (await pbs.second_login_reminder(_at(minutes=70)))["status"] == "reminded"
+    assert await pbs.second_login_reminder(_at(minutes=75)) == {"status": "already_reminded"}
+    assert [k for _, k, _ in sent["partner"]] == ["login_reminder", "login_reminder_2"]
+
+
+@pytest.mark.asyncio
+async def test_nov11_a_pc_booted_at_0718_still_gives_the_owner_one_nudge_and_the_partner_two(morning, monkeypatch):
+    """[N11] Reproduced: Nov 11 the PC booted at 07:18 and the engine at 07:19, after the 07:00 job (the scheduler's
+    jobs are in memory, so a missed run is never made up). The partner's reminder went at 07:20 from the retry tick;
+    the owner had no nudge, and the partner never logged in. Now: the owner's nudge at 07:20, once, a restart and a
+    second tick included; the partner's second reminder at 08:00."""
+    sent, _ = morning
+    monkeypatch.setattr(boot, "_reminder_sent_for", None)
+    for minutes in range(20, 110, 5):                                    # every tick from 07:20 to 08:45
+        _clock_at(monkeypatch, _at(minutes=minutes))
+        if minutes == 30:
+            monkeypatch.setattr(boot, "_nudge_lock", asyncio.Lock())     # an engine restart at 07:30
+        await boot.login_reminder_retry_tick()
+    [(owner_text, event)] = sent["owner"]
+    assert event == "premarket_login_nudge" and owner_text.startswith("🔑 Good morning. Kite login needed for today")
+    assert [k for _, k, _ in sent["partner"]] == ["login_reminder", "login_reminder_2"]
+
+
+@pytest.mark.asyncio
+async def test_the_owners_catch_up_is_silent_with_todays_token_after_the_0800_alert_and_retries_a_refused_alert(
+        morning, monkeypatch):
+    sent, _ = morning
+    _clock_at(monkeypatch, _at(minutes=20))
+    monkeypatch.setattr(boot, "token_is_fresh_today", lambda: True)
+    await boot.login_reminder_retry_tick()
+    assert sent["owner"] == []
+    monkeypatch.setattr(boot, "token_is_fresh_today", lambda: False)
+    monkeypatch.setattr(boot, "_reminder_sent_for", _at(minutes=20).date().isoformat())   # 08:00 alert already out
+    await boot.login_reminder_retry_tick()
+    assert sent["owner"] == []
+    monkeypatch.setattr(boot, "_reminder_sent_for", None)
+    import operator_alert
+    answers = [False, True]
+
+    async def gateway(text, event="operator_alert"):
+        sent["owner"].append((text, event))
+        return answers.pop(0)
+
+    monkeypatch.setattr(operator_alert, "notify_operator", gateway)
+    for minutes in (25, 30, 35):
+        _clock_at(monkeypatch, _at(minutes=minutes))
+        await boot.login_reminder_retry_tick()
+    assert len(sent["owner"]) == 2                                       # refused at 07:25, accepted at 07:30, then none
