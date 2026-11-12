@@ -1,0 +1,3810 @@
+{
+ "variants": {
+  "SN Gold v4": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -21192,
+     "refilled": 42439,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5992
+    },
+    "2024": {
+     "net": 92170,
+     "refilled": 25583,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 57836,
+     "refilled": 62997,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -5992
+    },
+    "2026": {
+     "net": 99135,
+     "refilled": 47930,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 72295,
+     "refilled": 70713,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 109397,
+     "refilled": 52125,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 91027,
+     "refilled": 98269,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 174774,
+     "refilled": 76949,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 105095,
+     "refilled": 138619,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -11659
+    },
+    "2026": {
+     "net": 379672,
+     "refilled": 189374,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN53 2nd lot: vol AND writers agree (k15 thr0.0)": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -17360,
+     "refilled": 38357,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5995
+    },
+    "2024": {
+     "net": 95826,
+     "refilled": 20420,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 53115,
+     "refilled": 58035,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -5995
+    },
+    "2026": {
+     "net": 91770,
+     "refilled": 41375,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5996
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 65825,
+     "refilled": 67364,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 100309,
+     "refilled": 44824,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6742
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 75019,
+     "refilled": 90617,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 126187,
+     "refilled": 69035,
+     "won": 17,
+     "lost": 18,
+     "none": 125,
+     "worst": -10118
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 89737,
+     "refilled": 128898,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -11659
+    },
+    "2026": {
+     "net": 294098,
+     "refilled": 148087,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22732
+    }
+   }
+  },
+  "SN53 2nd lot: vol AND writers agree (k15 thr0.01)": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -15533,
+     "refilled": 34771,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5995
+    },
+    "2024": {
+     "net": 96415,
+     "refilled": 20167,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 48785,
+     "refilled": 56466,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -5995
+    },
+    "2026": {
+     "net": 75051,
+     "refilled": 41375,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5996
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 62531,
+     "refilled": 65795,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 84033,
+     "refilled": 44824,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6742
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 72248,
+     "refilled": 87354,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 101711,
+     "refilled": 69980,
+     "won": 16,
+     "lost": 19,
+     "none": 125,
+     "worst": -10118
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 85875,
+     "refilled": 125634,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -11659
+    },
+    "2026": {
+     "net": 238212,
+     "refilled": 148087,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22732
+    }
+   }
+  },
+  "SN53 2nd lot: vol AND writers agree (k6 thr0.0)": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -18518,
+     "refilled": 39515,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5995
+    },
+    "2024": {
+     "net": 91274,
+     "refilled": 23529,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 50265,
+     "refilled": 60185,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -5995
+    },
+    "2026": {
+     "net": 84746,
+     "refilled": 41375,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5996
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 64727,
+     "refilled": 67898,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 93526,
+     "refilled": 44824,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6742
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 80038,
+     "refilled": 92769,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 124079,
+     "refilled": 69035,
+     "won": 17,
+     "lost": 18,
+     "none": 125,
+     "worst": -10118
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 92780,
+     "refilled": 131495,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -11659
+    },
+    "2026": {
+     "net": 279051,
+     "refilled": 148087,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22732
+    }
+   }
+  },
+  "SN53 2nd lot: vol AND writers agree (k30 thr0.0)": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -17429,
+     "refilled": 36667,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5999
+    },
+    "2024": {
+     "net": 95826,
+     "refilled": 20420,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 42351,
+     "refilled": 56499,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -5995
+    },
+    "2026": {
+     "net": 91618,
+     "refilled": 40966,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 54478,
+     "refilled": 65828,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 99963,
+     "refilled": 44415,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 69585,
+     "refilled": 87279,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 123078,
+     "refilled": 69027,
+     "won": 16,
+     "lost": 19,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70576,
+     "refilled": 18654,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 73349,
+     "refilled": 90461,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 277610,
+     "refilled": 140515,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22732
+    }
+   }
+  },
+  "SN53 2nd lot: vol OR writers agree": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -24415,
+     "refilled": 45663,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5992
+    },
+    "2024": {
+     "net": 92170,
+     "refilled": 25583,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 54340,
+     "refilled": 68616,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -5992
+    },
+    "2026": {
+     "net": 99135,
+     "refilled": 47930,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 71415,
+     "refilled": 74404,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 109397,
+     "refilled": 52125,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 86680,
+     "refilled": 108297,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 174774,
+     "refilled": 76949,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 97728,
+     "refilled": 153032,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -15160
+    },
+    "2026": {
+     "net": 377670,
+     "refilled": 181859,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN54 2nd lot: every put, calls on vol days": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -30077,
+     "refilled": 51403,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5992
+    },
+    "2024": {
+     "net": 90562,
+     "refilled": 27191,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 72434,
+     "refilled": 73666,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -5994
+    },
+    "2026": {
+     "net": 95424,
+     "refilled": 51641,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 83877,
+     "refilled": 82663,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6741
+    },
+    "2026": {
+     "net": 105686,
+     "refilled": 55836,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 110524,
+     "refilled": 125008,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10112
+    },
+    "2026": {
+     "net": 166829,
+     "refilled": 84894,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 130116,
+     "refilled": 181173,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -19481
+    },
+    "2026": {
+     "net": 376095,
+     "refilled": 207367,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN54 2nd lot: puts on vol days only": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -16458,
+     "refilled": 37706,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5999
+    },
+    "2024": {
+     "net": 82524,
+     "refilled": 25061,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 57526,
+     "refilled": 62145,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -5995
+    },
+    "2026": {
+     "net": 100426,
+     "refilled": 44843,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5996
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70080,
+     "refilled": 19416,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 69416,
+     "refilled": 72430,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 110179,
+     "refilled": 49038,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6742
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70080,
+     "refilled": 19416,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 83988,
+     "refilled": 99356,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 175580,
+     "refilled": 70905,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -10118
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 70080,
+     "refilled": 19416,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 98057,
+     "refilled": 139706,
+     "won": 20,
+     "lost": 27,
+     "none": 147,
+     "worst": -11659
+    },
+    "2026": {
+     "net": 396238,
+     "refilled": 155473,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN55 2nd lot: vol AND ADX >= 25": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -26847,
+     "refilled": 40972,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5992
+    },
+    "2024": {
+     "net": 93513,
+     "refilled": 24408,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 52486,
+     "refilled": 60497,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -5992
+    },
+    "2026": {
+     "net": 87266,
+     "refilled": 41617,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 71496,
+     "refilled": 17925,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 69847,
+     "refilled": 65310,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 98764,
+     "refilled": 45066,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 71496,
+     "refilled": 17925,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 90063,
+     "refilled": 83375,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 149223,
+     "refilled": 66914,
+     "won": 16,
+     "lost": 19,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 71496,
+     "refilled": 17925,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 107070,
+     "refilled": 121225,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 322431,
+     "refilled": 156653,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22732
+    }
+   }
+  },
+  "SN55 2nd lot: vol AND ADX < 25": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -17197,
+     "refilled": 36117,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5999
+    },
+    "2024": {
+     "net": 72145,
+     "refilled": 15604,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -3223
+    },
+    "2025": {
+     "net": 52609,
+     "refilled": 56645,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -5999
+    },
+    "2026": {
+     "net": 76718,
+     "refilled": 40438,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5995
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 56203,
+     "refilled": 20668,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 46458,
+     "refilled": 68550,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6745
+    },
+    "2026": {
+     "net": 87580,
+     "refilled": 41933,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6745
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 56203,
+     "refilled": 20668,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 42303,
+     "refilled": 85966,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -8756
+    },
+    "2026": {
+     "net": 144416,
+     "refilled": 45768,
+     "won": 19,
+     "lost": 16,
+     "none": 125,
+     "worst": -10104
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 56203,
+     "refilled": 20668,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 42303,
+     "refilled": 85966,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -8756
+    },
+    "2026": {
+     "net": 205353,
+     "refilled": 108354,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN55 2nd lot: vol AND ADX >= 30": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -28857,
+     "refilled": 40972,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5992
+    },
+    "2024": {
+     "net": 97090,
+     "refilled": 23044,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 52080,
+     "refilled": 58227,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -5992
+    },
+    "2026": {
+     "net": 82982,
+     "refilled": 39823,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 71496,
+     "refilled": 17925,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 67690,
+     "refilled": 64656,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 95154,
+     "refilled": 43041,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 71496,
+     "refilled": 17925,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 85428,
+     "refilled": 81207,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 131476,
+     "refilled": 62705,
+     "won": 16,
+     "lost": 19,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 71496,
+     "refilled": 17925,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 100320,
+     "refilled": 118222,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 293049,
+     "refilled": 150996,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22732
+    }
+   }
+  },
+  "SN55 2nd lot: vol AND ADX < 30": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -8939,
+     "refilled": 25432,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 40593,
+     "refilled": 50531,
+     "won": 23,
+     "lost": 24,
+     "none": 147,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -15187,
+     "refilled": 36117,
+     "won": 5,
+     "lost": 17,
+     "none": 170,
+     "worst": -5999
+    },
+    "2024": {
+     "net": 68568,
+     "refilled": 16969,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -3607
+    },
+    "2025": {
+     "net": 53015,
+     "refilled": 58915,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -5999
+    },
+    "2026": {
+     "net": 81003,
+     "refilled": 42232,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5995
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 41587,
+     "refilled": 36226,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 56203,
+     "refilled": 20668,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 48614,
+     "refilled": 69204,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "worst": -6745
+    },
+    "2026": {
+     "net": 91190,
+     "refilled": 43958,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6745
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 56203,
+     "refilled": 20668,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 48632,
+     "refilled": 86441,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -8756
+    },
+    "2026": {
+     "net": 162163,
+     "refilled": 49978,
+     "won": 19,
+     "lost": 16,
+     "none": 125,
+     "worst": -10104
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8430,
+     "refilled": 23354,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 56203,
+     "refilled": 20668,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 48632,
+     "refilled": 86441,
+     "won": 21,
+     "lost": 26,
+     "none": 147,
+     "worst": -8756
+    },
+    "2026": {
+     "net": 236182,
+     "refilled": 112563,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN56 entries N11+R0.85": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -8160,
+     "refilled": 26866,
+     "won": 7,
+     "lost": 18,
+     "none": 167,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 44560,
+     "refilled": 36226,
+     "won": 22,
+     "lost": 21,
+     "none": 151,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -5604,
+     "refilled": 29321,
+     "won": 7,
+     "lost": 18,
+     "none": 167,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 43957,
+     "refilled": 50531,
+     "won": 24,
+     "lost": 24,
+     "none": 146,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -17856,
+     "refilled": 46329,
+     "won": 6,
+     "lost": 19,
+     "none": 167,
+     "worst": -5992
+    },
+    "2024": {
+     "net": 92170,
+     "refilled": 25583,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 61366,
+     "refilled": 62997,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -5992
+    },
+    "2026": {
+     "net": 99135,
+     "refilled": 47930,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -8160,
+     "refilled": 26866,
+     "won": 7,
+     "lost": 18,
+     "none": 167,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 44560,
+     "refilled": 36226,
+     "won": 22,
+     "lost": 21,
+     "none": 151,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -8160,
+     "refilled": 26866,
+     "won": 7,
+     "lost": 18,
+     "none": 167,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 75825,
+     "refilled": 70713,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 109397,
+     "refilled": 52125,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -8160,
+     "refilled": 26866,
+     "won": 7,
+     "lost": 18,
+     "none": 167,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 95115,
+     "refilled": 98269,
+     "won": 22,
+     "lost": 26,
+     "none": 146,
+     "worst": -10101
+    },
+    "2026": {
+     "net": 174774,
+     "refilled": 76949,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -8160,
+     "refilled": 26866,
+     "won": 7,
+     "lost": 18,
+     "none": 167,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 69482,
+     "refilled": 19938,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 112760,
+     "refilled": 138619,
+     "won": 22,
+     "lost": 26,
+     "none": 146,
+     "worst": -11659
+    },
+    "2026": {
+     "net": 379672,
+     "refilled": 189374,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN56 entries N11+N15": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -15374,
+     "refilled": 30297,
+     "won": 6,
+     "lost": 22,
+     "none": 164,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 44560,
+     "refilled": 36226,
+     "won": 22,
+     "lost": 21,
+     "none": 151,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -17131,
+     "refilled": 33623,
+     "won": 6,
+     "lost": 22,
+     "none": 164,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 43957,
+     "refilled": 50531,
+     "won": 24,
+     "lost": 24,
+     "none": 146,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -29383,
+     "refilled": 50631,
+     "won": 5,
+     "lost": 23,
+     "none": 164,
+     "worst": -5992
+    },
+    "2024": {
+     "net": 92170,
+     "refilled": 25583,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 61366,
+     "refilled": 62997,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -5992
+    },
+    "2026": {
+     "net": 99135,
+     "refilled": 47930,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -15374,
+     "refilled": 30297,
+     "won": 6,
+     "lost": 22,
+     "none": 164,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 44560,
+     "refilled": 36226,
+     "won": 22,
+     "lost": 21,
+     "none": 151,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -15374,
+     "refilled": 30297,
+     "won": 6,
+     "lost": 22,
+     "none": 164,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 57721,
+     "refilled": 19416,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 75825,
+     "refilled": 70713,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -6737
+    },
+    "2026": {
+     "net": 109397,
+     "refilled": 52125,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -15374,
+     "refilled": 30297,
+     "won": 6,
+     "lost": 22,
+     "none": 164,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 57721,
+     "refilled": 19416,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 80731,
+     "refilled": 94905,
+     "won": 22,
+     "lost": 26,
+     "none": 146,
+     "worst": -8756
+    },
+    "2026": {
+     "net": 174774,
+     "refilled": 76949,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -15374,
+     "refilled": 30297,
+     "won": 6,
+     "lost": 22,
+     "none": 164,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 57721,
+     "refilled": 19416,
+     "won": 14,
+     "lost": 11,
+     "none": 171,
+     "worst": -4970
+    },
+    "2025": {
+     "net": 77549,
+     "refilled": 98087,
+     "won": 22,
+     "lost": 26,
+     "none": 146,
+     "worst": -8756
+    },
+    "2026": {
+     "net": 346656,
+     "refilled": 176015,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -22740
+    }
+   }
+  },
+  "SN56 entries N11+NO_STAND": {
+   "A 15k 1 lot": {
+    "2023": {
+     "net": -30489,
+     "refilled": 60160,
+     "won": 12,
+     "lost": 41,
+     "none": 139,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 44560,
+     "refilled": 36226,
+     "won": 22,
+     "lost": 21,
+     "none": 151,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "B 20k 1 lot": {
+    "2023": {
+     "net": -29832,
+     "refilled": 63447,
+     "won": 12,
+     "lost": 41,
+     "none": 139,
+     "worst": -3994
+    },
+    "2024": {
+     "net": 65972,
+     "refilled": 14234,
+     "won": 15,
+     "lost": 10,
+     "none": 171,
+     "worst": -2685
+    },
+    "2025": {
+     "net": 43957,
+     "refilled": 50531,
+     "won": 24,
+     "lost": 24,
+     "none": 146,
+     "worst": -3997
+    },
+    "2026": {
+     "net": 61656,
+     "refilled": 32810,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -3991
+    }
+   },
+   "C 30k sized": {
+    "2023": {
+     "net": -42289,
+     "refilled": 83659,
+     "won": 11,
+     "lost": 42,
+     "none": 139,
+     "worst": -5995
+    },
+    "2024": {
+     "net": 92170,
+     "refilled": 25583,
+     "won": 13,
+     "lost": 12,
+     "none": 171,
+     "worst": -5991
+    },
+    "2025": {
+     "net": 61366,
+     "refilled": 62997,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -5992
+    },
+    "2026": {
+     "net": 99135,
+     "refilled": 47930,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -5994
+    }
+   },
+   "G0": {
+    "2023": {
+     "net": -30489,
+     "refilled": 60160,
+     "won": 12,
+     "lost": 41,
+     "none": 139,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 47279,
+     "refilled": 15931,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 44560,
+     "refilled": 36226,
+     "won": 22,
+     "lost": 21,
+     "none": 151,
+     "worst": -2996
+    },
+    "2026": {
+     "net": 50094,
+     "refilled": 22468,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "worst": -2994
+    }
+   },
+   "G2": {
+    "2023": {
+     "net": -30489,
+     "refilled": 60160,
+     "won": 12,
+     "lost": 41,
+     "none": 139,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 46959,
+     "refilled": 16316,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 54730,
+     "refilled": 66965,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -5853
+    },
+    "2026": {
+     "net": 109397,
+     "refilled": 52125,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -6740
+    }
+   },
+   "G3 (Gold)": {
+    "2023": {
+     "net": -30489,
+     "refilled": 60160,
+     "won": 12,
+     "lost": 41,
+     "none": 139,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 46959,
+     "refilled": 16316,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 54730,
+     "refilled": 66965,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -5853
+    },
+    "2026": {
+     "net": 174774,
+     "refilled": 76949,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -10119
+    }
+   },
+   "G5": {
+    "2023": {
+     "net": -30489,
+     "refilled": 60160,
+     "won": 12,
+     "lost": 41,
+     "none": 139,
+     "worst": -2998
+    },
+    "2024": {
+     "net": 46959,
+     "refilled": 16316,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "worst": -2997
+    },
+    "2025": {
+     "net": 54730,
+     "refilled": 66965,
+     "won": 23,
+     "lost": 25,
+     "none": 146,
+     "worst": -5853
+    },
+    "2026": {
+     "net": 287450,
+     "refilled": 120132,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "worst": -15158
+    }
+   }
+  }
+ },
+ "loyo": {
+  "A 15k 1 lot": {
+   "2023": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": -8160,
+    "refilled": 26866,
+    "won": 7,
+    "lost": 18,
+    "none": 167,
+    "worst": -2998,
+    "green": 7,
+    "red": 18
+   },
+   "2024": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 47279,
+    "refilled": 15931,
+    "won": 12,
+    "lost": 12,
+    "none": 172,
+    "worst": -2997,
+    "green": 12,
+    "red": 12
+   },
+   "2025": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 44560,
+    "refilled": 36226,
+    "won": 22,
+    "lost": 21,
+    "none": 151,
+    "worst": -2996,
+    "green": 22,
+    "red": 21
+   },
+   "2026": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 50094,
+    "refilled": 22468,
+    "won": 16,
+    "lost": 14,
+    "none": 130,
+    "worst": -2994,
+    "green": 16,
+    "red": 14
+   },
+   "sum": {
+    "net": 133773,
+    "red": 65,
+    "green": 57
+   }
+  },
+  "B 20k 1 lot": {
+   "2023": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": -5604,
+    "refilled": 29321,
+    "won": 7,
+    "lost": 18,
+    "none": 167,
+    "worst": -3994,
+    "green": 7,
+    "red": 18
+   },
+   "2024": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 65972,
+    "refilled": 14234,
+    "won": 15,
+    "lost": 10,
+    "none": 171,
+    "worst": -2685,
+    "green": 15,
+    "red": 10
+   },
+   "2025": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 43957,
+    "refilled": 50531,
+    "won": 24,
+    "lost": 24,
+    "none": 146,
+    "worst": -3997,
+    "green": 24,
+    "red": 24
+   },
+   "2026": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 61656,
+    "refilled": 32810,
+    "won": 18,
+    "lost": 17,
+    "none": 125,
+    "worst": -3991,
+    "green": 18,
+    "red": 17
+   },
+   "sum": {
+    "net": 165981,
+    "red": 69,
+    "green": 64
+   }
+  },
+  "C 30k sized": {
+   "2023": {
+    "pick": "SN54 2nd lot: every put, calls on vol days",
+    "net": -30077,
+    "refilled": 51403,
+    "won": 5,
+    "lost": 17,
+    "none": 170,
+    "worst": -5992,
+    "green": 5,
+    "red": 17
+   },
+   "2024": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 92170,
+    "refilled": 25583,
+    "won": 13,
+    "lost": 12,
+    "none": 171,
+    "worst": -5991,
+    "green": 13,
+    "red": 12
+   },
+   "2025": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 61366,
+    "refilled": 62997,
+    "won": 23,
+    "lost": 25,
+    "none": 146,
+    "worst": -5992,
+    "green": 23,
+    "red": 25
+   },
+   "2026": {
+    "pick": "SN56 entries N11+R0.85",
+    "net": 99135,
+    "refilled": 47930,
+    "won": 18,
+    "lost": 17,
+    "none": 125,
+    "worst": -5994,
+    "green": 18,
+    "red": 17
+   },
+   "sum": {
+    "net": 222594,
+    "red": 71,
+    "green": 59
+   }
+  },
+  "G3 (Gold)": {
+   "2023": {
+    "pick": "SN54 2nd lot: every put, calls on vol days",
+    "net": -8430,
+    "refilled": 23354,
+    "won": 6,
+    "lost": 16,
+    "none": 170,
+    "worst": -2998,
+    "green": 6,
+    "red": 16
+   },
+   "2024": {
+    "pick": "SN54 2nd lot: every put, calls on vol days",
+    "net": 69482,
+    "refilled": 19938,
+    "won": 13,
+    "lost": 12,
+    "none": 171,
+    "worst": -4970,
+    "green": 13,
+    "red": 12
+   },
+   "2025": {
+    "pick": "SN54 2nd lot: puts on vol days only",
+    "net": 83988,
+    "refilled": 99356,
+    "won": 20,
+    "lost": 27,
+    "none": 147,
+    "worst": -10101,
+    "green": 20,
+    "red": 27
+   },
+   "2026": {
+    "pick": "SN54 2nd lot: every put, calls on vol days",
+    "net": 166829,
+    "refilled": 84894,
+    "won": 18,
+    "lost": 17,
+    "none": 125,
+    "worst": -10119,
+    "green": 18,
+    "red": 17
+   },
+   "sum": {
+    "net": 311869,
+    "red": 72,
+    "green": 57
+   }
+  }
+ }
+}

@@ -1,0 +1,113 @@
+{
+ "F float from 15k": {
+  "2023": {
+   "net": -1109,
+   "refilled": 1334,
+   "won": 1,
+   "lost": 1,
+   "none": 190,
+   "worst": -1334
+  },
+  "2024": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 196,
+   "worst": 0
+  },
+  "2025": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 194,
+   "worst": 0
+  },
+  "2026": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 160,
+   "worst": 0
+  },
+  "final_equity": {
+   "net": 13891
+  }
+ },
+ "F float from 20k": {
+  "2023": {
+   "net": -5792,
+   "refilled": 6213,
+   "won": 1,
+   "lost": 4,
+   "none": 187,
+   "worst": -2276
+  },
+  "2024": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 196,
+   "worst": 0
+  },
+  "2025": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 194,
+   "worst": 0
+  },
+  "2026": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 160,
+   "worst": 0
+  },
+  "final_equity": {
+   "net": 14208
+  }
+ },
+ "F float from 30k": {
+  "2023": {
+   "net": -9563,
+   "refilled": 25445,
+   "won": 6,
+   "lost": 16,
+   "none": 170,
+   "worst": -4007
+  },
+  "2024": {
+   "net": 231142,
+   "refilled": 81413,
+   "won": 16,
+   "lost": 9,
+   "none": 171,
+   "worst": -44350
+  },
+  "2025": {
+   "net": 661857,
+   "refilled": 1381046,
+   "won": 23,
+   "lost": 24,
+   "none": 147,
+   "worst": -150999
+  },
+  "2026": {
+   "net": 12196430,
+   "refilled": 5745306,
+   "won": 18,
+   "lost": 17,
+   "none": 125,
+   "worst": -920642
+  },
+  "final_equity": {
+   "net": 13109866
+  }
+ }
+}

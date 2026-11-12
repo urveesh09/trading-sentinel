@@ -1,0 +1,224 @@
+{
+ "real account from 15k, sizing capped at 50625": {
+  "2023": {
+   "net": -7661,
+   "refilled": 17177,
+   "won": 5,
+   "lost": 14,
+   "none": 173,
+   "worst": -2038
+  },
+  "2024": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 196,
+   "worst": 0
+  },
+  "2025": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 194,
+   "worst": 0
+  },
+  "2026": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 160,
+   "worst": 0
+  },
+  "final_equity": {
+   "net": 7339
+  }
+ },
+ "real account from 15k, sizing capped at 113906": {
+  "2023": {
+   "net": -7661,
+   "refilled": 17177,
+   "won": 5,
+   "lost": 14,
+   "none": 173,
+   "worst": -2038
+  },
+  "2024": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 196,
+   "worst": 0
+  },
+  "2025": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 194,
+   "worst": 0
+  },
+  "2026": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 160,
+   "worst": 0
+  },
+  "final_equity": {
+   "net": 7339
+  }
+ },
+ "real account from 20k, sizing capped at 50625": {
+  "2023": {
+   "net": -12735,
+   "refilled": 23459,
+   "won": 5,
+   "lost": 17,
+   "none": 170,
+   "worst": -2402
+  },
+  "2024": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 196,
+   "worst": 0
+  },
+  "2025": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 194,
+   "worst": 0
+  },
+  "2026": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 160,
+   "worst": 0
+  },
+  "final_equity": {
+   "net": 7265
+  }
+ },
+ "real account from 20k, sizing capped at 113906": {
+  "2023": {
+   "net": -12735,
+   "refilled": 23459,
+   "won": 5,
+   "lost": 17,
+   "none": 170,
+   "worst": -2402
+  },
+  "2024": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 196,
+   "worst": 0
+  },
+  "2025": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 194,
+   "worst": 0
+  },
+  "2026": {
+   "net": 0,
+   "refilled": 0,
+   "won": 0,
+   "lost": 0,
+   "none": 160,
+   "worst": 0
+  },
+  "final_equity": {
+   "net": 7265
+  }
+ },
+ "real account from 30k, sizing capped at 50625": {
+  "2023": {
+   "net": -9563,
+   "refilled": 25445,
+   "won": 6,
+   "lost": 16,
+   "none": 170,
+   "worst": -4007
+  },
+  "2024": {
+   "net": 142833,
+   "refilled": 30150,
+   "won": 13,
+   "lost": 12,
+   "none": 171,
+   "worst": -7431
+  },
+  "2025": {
+   "net": 98448,
+   "refilled": 100909,
+   "won": 21,
+   "lost": 26,
+   "none": 147,
+   "worst": -10101
+  },
+  "2026": {
+   "net": 174774,
+   "refilled": 76949,
+   "won": 18,
+   "lost": 17,
+   "none": 125,
+   "worst": -10119
+  },
+  "final_equity": {
+   "net": 436492
+  }
+ },
+ "real account from 30k, sizing capped at 113906": {
+  "2023": {
+   "net": -9563,
+   "refilled": 25445,
+   "won": 6,
+   "lost": 16,
+   "none": 170,
+   "worst": -4007
+  },
+  "2024": {
+   "net": 216498,
+   "refilled": 54606,
+   "won": 14,
+   "lost": 11,
+   "none": 171,
+   "worst": -17276
+  },
+  "2025": {
+   "net": 227089,
+   "refilled": 236607,
+   "won": 21,
+   "lost": 26,
+   "none": 147,
+   "worst": -22724
+  },
+  "2026": {
+   "net": 391462,
+   "refilled": 192000,
+   "won": 18,
+   "lost": 17,
+   "none": 125,
+   "worst": -22740
+  },
+  "final_equity": {
+   "net": 855487
+  }
+ }
+}
