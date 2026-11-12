@@ -1,0 +1,823 @@
+{
+ "table": {
+  "benchmark": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34651
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "RED after +5%": {
+   "2023": {
+    "net": -10034,
+    "green": 10,
+    "red": 12,
+    "none": 170,
+    "refilled": 12458
+   },
+   "2024": {
+    "net": -669,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 12069
+   },
+   "2025": {
+    "net": -4038,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "refilled": 28689
+   },
+   "2026": {
+    "net": -279,
+    "green": 18,
+    "red": 12,
+    "none": 130,
+    "refilled": 14107
+   }
+  },
+  "EMA after +5%": {
+   "2023": {
+    "net": -10566,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "refilled": 13273
+   },
+   "2024": {
+    "net": 4203,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "refilled": 12272
+   },
+   "2025": {
+    "net": 778,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "refilled": 26578
+   },
+   "2026": {
+    "net": -1675,
+    "green": 18,
+    "red": 12,
+    "none": 130,
+    "refilled": 14772
+   }
+  },
+  "DD 3% after +5%": {
+   "2023": {
+    "net": -10922,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 13412
+   },
+   "2024": {
+    "net": 4475,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 12451
+   },
+   "2025": {
+    "net": 9853,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "refilled": 26782
+   },
+   "2026": {
+    "net": -3608,
+    "green": 15,
+    "red": 15,
+    "none": 130,
+    "refilled": 14744
+   }
+  },
+  "DD 5% after +5%": {
+   "2023": {
+    "net": -12207,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "refilled": 14680
+   },
+   "2024": {
+    "net": 6217,
+    "green": 11,
+    "red": 13,
+    "none": 172,
+    "refilled": 12789
+   },
+   "2025": {
+    "net": 14647,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "refilled": 27864
+   },
+   "2026": {
+    "net": -3404,
+    "green": 13,
+    "red": 17,
+    "none": 130,
+    "refilled": 16466
+   }
+  },
+  "DD 10% after +5%": {
+   "2023": {
+    "net": -12395,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 17935
+   },
+   "2024": {
+    "net": 6045,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 13630
+   },
+   "2025": {
+    "net": 15140,
+    "green": 17,
+    "red": 25,
+    "none": 152,
+    "refilled": 30874
+   },
+   "2026": {
+    "net": -5976,
+    "green": 10,
+    "red": 20,
+    "none": 130,
+    "refilled": 20050
+   }
+  },
+  "RED after +10%": {
+   "2023": {
+    "net": -7429,
+    "green": 12,
+    "red": 10,
+    "none": 170,
+    "refilled": 14770
+   },
+   "2024": {
+    "net": 8711,
+    "green": 16,
+    "red": 8,
+    "none": 172,
+    "refilled": 12011
+   },
+   "2025": {
+    "net": 6450,
+    "green": 27,
+    "red": 15,
+    "none": 152,
+    "refilled": 32142
+   },
+   "2026": {
+    "net": 15603,
+    "green": 21,
+    "red": 9,
+    "none": 130,
+    "refilled": 14273
+   }
+  },
+  "EMA after +10%": {
+   "2023": {
+    "net": -7121,
+    "green": 11,
+    "red": 11,
+    "none": 170,
+    "refilled": 14774
+   },
+   "2024": {
+    "net": 15023,
+    "green": 16,
+    "red": 8,
+    "none": 172,
+    "refilled": 12027
+   },
+   "2025": {
+    "net": 6389,
+    "green": 28,
+    "red": 14,
+    "none": 152,
+    "refilled": 31361
+   },
+   "2026": {
+    "net": 12725,
+    "green": 21,
+    "red": 9,
+    "none": 130,
+    "refilled": 14273
+   }
+  },
+  "DD 3% after +10%": {
+   "2023": {
+    "net": -7166,
+    "green": 12,
+    "red": 10,
+    "none": 170,
+    "refilled": 14770
+   },
+   "2024": {
+    "net": 14533,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 12053
+   },
+   "2025": {
+    "net": 15652,
+    "green": 28,
+    "red": 14,
+    "none": 152,
+    "refilled": 30431
+   },
+   "2026": {
+    "net": 15223,
+    "green": 21,
+    "red": 9,
+    "none": 130,
+    "refilled": 14273
+   }
+  },
+  "DD 5% after +10%": {
+   "2023": {
+    "net": -9378,
+    "green": 9,
+    "red": 13,
+    "none": 170,
+    "refilled": 15139
+   },
+   "2024": {
+    "net": 17313,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 12053
+   },
+   "2025": {
+    "net": 19810,
+    "green": 27,
+    "red": 15,
+    "none": 152,
+    "refilled": 29766
+   },
+   "2026": {
+    "net": 14344,
+    "green": 20,
+    "red": 10,
+    "none": 130,
+    "refilled": 14330
+   }
+  },
+  "DD 10% after +10%": {
+   "2023": {
+    "net": -11711,
+    "green": 7,
+    "red": 15,
+    "none": 170,
+    "refilled": 18048
+   },
+   "2024": {
+    "net": 12146,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "refilled": 13005
+   },
+   "2025": {
+    "net": 25279,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "refilled": 31886
+   },
+   "2026": {
+    "net": 14901,
+    "green": 15,
+    "red": 15,
+    "none": 130,
+    "refilled": 16266
+   }
+  },
+  "RED after +20%": {
+   "2023": {
+    "net": -12135,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20017
+   },
+   "2024": {
+    "net": 20534,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 14361
+   },
+   "2025": {
+    "net": 23048,
+    "green": 24,
+    "red": 18,
+    "none": 152,
+    "refilled": 32919
+   },
+   "2026": {
+    "net": 20026,
+    "green": 17,
+    "red": 13,
+    "none": 130,
+    "refilled": 20888
+   }
+  },
+  "EMA after +20%": {
+   "2023": {
+    "net": -11172,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20017
+   },
+   "2024": {
+    "net": 21829,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 14361
+   },
+   "2025": {
+    "net": 28818,
+    "green": 25,
+    "red": 17,
+    "none": 152,
+    "refilled": 32835
+   },
+   "2026": {
+    "net": 15582,
+    "green": 17,
+    "red": 13,
+    "none": 130,
+    "refilled": 20888
+   }
+  },
+  "DD 3% after +20%": {
+   "2023": {
+    "net": -10199,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 19962
+   },
+   "2024": {
+    "net": 21988,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 14361
+   },
+   "2025": {
+    "net": 30158,
+    "green": 25,
+    "red": 17,
+    "none": 152,
+    "refilled": 32835
+   },
+   "2026": {
+    "net": 18155,
+    "green": 17,
+    "red": 13,
+    "none": 130,
+    "refilled": 20888
+   }
+  },
+  "DD 5% after +20%": {
+   "2023": {
+    "net": -11519,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 19962
+   },
+   "2024": {
+    "net": 21115,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 14361
+   },
+   "2025": {
+    "net": 30852,
+    "green": 24,
+    "red": 18,
+    "none": 152,
+    "refilled": 32891
+   },
+   "2026": {
+    "net": 21953,
+    "green": 17,
+    "red": 13,
+    "none": 130,
+    "refilled": 20888
+   }
+  },
+  "DD 10% after +20%": {
+   "2023": {
+    "net": -13501,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20322
+   },
+   "2024": {
+    "net": 25098,
+    "green": 15,
+    "red": 9,
+    "none": 172,
+    "refilled": 14361
+   },
+   "2025": {
+    "net": 28578,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "refilled": 33271
+   },
+   "2026": {
+    "net": 14440,
+    "green": 17,
+    "red": 13,
+    "none": 130,
+    "refilled": 20888
+   }
+  },
+  "RED after +30%": {
+   "2023": {
+    "net": -9712,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "refilled": 20849
+   },
+   "2024": {
+    "net": 21290,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "refilled": 14851
+   },
+   "2025": {
+    "net": 23206,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34272
+   },
+   "2026": {
+    "net": 23974,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "EMA after +30%": {
+   "2023": {
+    "net": -10371,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "refilled": 20849
+   },
+   "2024": {
+    "net": 21001,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "refilled": 14851
+   },
+   "2025": {
+    "net": 31890,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "refilled": 34188
+   },
+   "2026": {
+    "net": 21087,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "DD 3% after +30%": {
+   "2023": {
+    "net": -9891,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "refilled": 20794
+   },
+   "2024": {
+    "net": 20807,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "refilled": 14851
+   },
+   "2025": {
+    "net": 33330,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "refilled": 34188
+   },
+   "2026": {
+    "net": 21959,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "DD 5% after +30%": {
+   "2023": {
+    "net": -11143,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "refilled": 20794
+   },
+   "2024": {
+    "net": 21108,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "refilled": 14851
+   },
+   "2025": {
+    "net": 37200,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34244
+   },
+   "2026": {
+    "net": 28317,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "DD 10% after +30%": {
+   "2023": {
+    "net": -13965,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "refilled": 21154
+   },
+   "2024": {
+    "net": 23311,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "refilled": 14851
+   },
+   "2025": {
+    "net": 32795,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34574
+   },
+   "2026": {
+    "net": 19750,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "RED after +50%": {
+   "2023": {
+    "net": -12359,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 20408,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 34057,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34651
+   },
+   "2026": {
+    "net": 30465,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "EMA after +50%": {
+   "2023": {
+    "net": -10851,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 20833,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 37768,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34651
+   },
+   "2026": {
+    "net": 29326,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "DD 3% after +50%": {
+   "2023": {
+    "net": -11250,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 20301,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 39487,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34651
+   },
+   "2026": {
+    "net": 33553,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "DD 5% after +50%": {
+   "2023": {
+    "net": -11454,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 20058,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 39639,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34651
+   },
+   "2026": {
+    "net": 36745,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "DD 10% after +50%": {
+   "2023": {
+    "net": -11685,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 19655,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 36885,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34651
+   },
+   "2026": {
+    "net": 32839,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  }
+ },
+ "loyo": {
+  "2023": {
+   "pick": "benchmark",
+   "net": -7059,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 20564
+  },
+  "2024": {
+   "pick": "benchmark",
+   "net": 35618,
+   "green": 12,
+   "red": 12,
+   "none": 172,
+   "refilled": 14915
+  },
+  "2025": {
+   "pick": "benchmark",
+   "net": 39114,
+   "green": 21,
+   "red": 21,
+   "none": 152,
+   "refilled": 34651
+  },
+  "2026": {
+   "pick": "benchmark",
+   "net": 44322,
+   "green": 16,
+   "red": 14,
+   "none": 130,
+   "refilled": 21505
+  },
+  "sum": {
+   "net": 111995,
+   "red": 63,
+   "green": 55
+  }
+ }
+}
