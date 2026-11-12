@@ -1,3 +1,17 @@
+## November 12 - SN06 (research, Dev only): N11's entry ingredients without big-money rules - NOT PROVEN; benchmark stays
+
+**What was searched** (`docs/research/fno/2026-11-12-sn06/`, freeze `77c3c49b`, results `aaa21833`):
+- 5-minute or 1-minute setups, the daily ADX gate (from all 966 trading days), the DMI direction and N11-style exits;
+- no stand-aside, kill switches or premium cap, trading on ≥ 25% of sessions;
+- 15,600 rule sets.
+
+**Results:**
+- **Held out:** 1 of 4 years positive, −₹62,251, against random behind the same gates at −₹1,50,624. It beats random, but it loses.
+- **The combination** (N11 on its days, SN06 on the rest): +₹2,00,937 in-sample, but **+₹68,243 held out**, below the benchmark's +₹1,11,995.
+- **Per-year wallet-stop tables** for the benchmark are in the README.
+
+**Status:** research only; the SN02 forward check from Nov 13 is unchanged.
+
 ## November 12 - SN04 + SN05 (research, Dev only): more trading days lose money; N11 alone stays best for ₹15,000
 
 **The owner's question:** why so many no-trade days? Make it active, not a filter system, and give the wallet stops per strategy.
