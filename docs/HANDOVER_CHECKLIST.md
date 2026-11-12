@@ -1,3 +1,22 @@
+## November 12 - SN04 + SN05 (research, Dev only): more trading days lose money; N11 alone stays best for ₹15,000
+
+**The owner's question:** why so many no-trade days? Make it active, not a filter system, and give the wallet stops per strategy.
+
+**SN04** (`docs/research/fno/2026-11-12-sn04/`, freeze `8bf68ae2`):
+- active entries (trading ≥ 50% of sessions) with N11-style index exits;
+- 15,600 rule sets;
+- held out: −₹1,51,769, against random entries with the same exits at −₹1,42,961. **NOT PROVEN.**
+- The edge is in N11's selection, not its exits.
+
+**SN05** (`docs/research/fno/2026-11-12-sn05/`, `1fc89f33`):
+- 136 library strategies (2024–2026) in the ₹15,000 wallet;
+- N11 alone made +₹1,19,054; the next best +₹20,426;
+- a greedy mix held out made +₹1,08,411, worse than N11 alone; random books were never added.
+- The wallet-stop tables for four N11 variants (steps 0–5) are in its `README.md`.
+- Benchmark A: step 0 +₹1,11,995 (refilled ₹91,635); step 3 +₹2,11,670 (refilled ₹1,93,352, worst day −₹10,117).
+
+**Status:** SN02 and its forward check from Nov 13 are unchanged. Research only.
+
 ## November 12 - SN03 (research, Dev only): 66 variants on the SN02 benchmark; none beats it held out
 
 **The owner's follow-up:** beat the benchmark, have fewer losing days, simulate stopping the wallet growth after the 3rd, 4th, 5th step and so on, try fast exits, report the days won, lost and empty and the refills, and use the latest Zerodha charges.
