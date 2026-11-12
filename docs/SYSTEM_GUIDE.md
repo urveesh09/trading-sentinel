@@ -1,3 +1,16 @@
+## November 12 - SN19–SN30 (research, Dev only): SN Gold → v3; ITM-when-affordable and scale-in kept, eight ideas rejected
+
+**Study:** `docs/research/fno/2026-11-12-sn19/` (`gold.py` harness, README, `FORWARD.md`; `c3d0d767`). Every idea is scored at every wallet with per-year tables.
+
+- **SN Gold** (owner's name): N11's entries and exits, winners past the clock kept with a 3-ATR index trail, volatility-halved lots, grow from ₹15k stopped after step 3. Result: +₹2,40,189.
+- **v2:** + one strike in the money when the wallet can pay (SN19b). The held-out pick in every fold for A/B/C; G3 +₹2,65,466.
+- **v3:** + scale-in of 1 lot at +10%, only when the whole position fits the day limit (SN28). G3 +₹3,25,635, the held-out pick in all 4 folds. Refilled ₹2,12,221; worst day −₹10,119.
+- **SN26:** v3 is still positive at +₹400 stress and with every entry 1 minute late.
+- **Rejected:** second chance after a loss, time-of-day / recent-form / gap sizing, hedges, debit spreads, scale-out. SN29 (all lots every day) is optional.
+- **Fix found:** the first scale-in could break the 20% day limit; it is now refused when the position doesn't fit.
+
+**Status:** research only. The v3 forward check (from Nov 13, ≥ 20 trades) is frozen in `sn19/FORWARD.md`.
+
 ## November 12 - SN16–SN18 (research, Dev only): each idea scored at every wallet (A ₹15k, B ₹20k, C ₹30k sized, growth caps)
 
 **Study:** `docs/research/fno/2026-11-12-sn16/`. The benchmark reproduces in every wallet.
