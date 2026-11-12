@@ -14,8 +14,8 @@
 |---|---:|---:|---:|---:|---:|---:|---|---:|
 | N11 (benchmark) | 181 | −7,059 | 35,618 | 39,114 | 44,322 | **1,11,995** | 55/63/624 | 91,635 |
 | S1 rules off | 244 | −30,644 | 35,618 | 40,991 | 44,322 | 90,287 | 64/90/588 | 1,29,693 |
-| S2 + 6 a day | 249 | −33,015 | 35,618 | 40,991 | 44,322 | 87,916 | | 1,32,065 |
-| S3 + 3 open | 250 | −33,015 | 35,618 | 40,991 | 44,322 | 87,916 | | 1,32,065 |
+| S2 + 6 a day | 249 | −33,015 | 35,618 | 40,991 | 44,322 | 87,916 | 64/90/588 | 1,32,065 |
+| S3 + 3 open | 250 | −33,015 | 35,618 | 40,991 | 44,322 | 87,916 | 64/90/588 | 1,32,065 |
 
 - **The extra trades are almost all from 2023,** where the stand-aside had held back 52 trades, and they lose.
 - **N11's no-trade days come from its setups not appearing,** not from its money rules. The stand-aside protects a small wallet too.

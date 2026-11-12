@@ -1,3 +1,13 @@
+## November 12 - SN07 (research, Dev only): the real N11 with big-money rules off; zero-delay entry - benchmark stays
+
+**Study:** `docs/research/fno/2026-11-12-sn07/` (`a746c705`).
+- **Setup:** the N11 lab chain (parity exact, all four years), with kill switches, drawdown halt, premium cap and stand-aside off, plus 6 trades a day and 3 open positions.
+- **In the ₹15,000 wallet:** +₹90,287 against the benchmark's +₹1,11,995. 63 more engine trades, almost all in 2023: 2023 went from −₹7,059 to −₹30,644.
+- **N11's no-trade days come from its setups not appearing,** not from its money rules.
+- **Entering at the 5-minute bar's closing minute** (no delay): +₹1,08,818, no gain. A 2-minute shift would be look-ahead and is invalid.
+
+**Status:** research only.
+
 ## November 12 - SN06 (research, Dev only): N11's entry ingredients without big-money rules - NOT PROVEN; benchmark stays
 
 **What was searched** (`docs/research/fno/2026-11-12-sn06/`, freeze `77c3c49b`, results `aaa21833`):
