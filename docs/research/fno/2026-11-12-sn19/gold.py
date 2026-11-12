@@ -91,7 +91,15 @@ def walk(S, rec, ask, lots, i, j_n11, d, v, room, wallet):
         if in_px is not None and tr[j] and bc[j] >= in_px:
             add_ask = M.ask_of(float(a[3][j]))
             if (open_lots + 1) * add_ask * M.LOT <= wallet:
-                held.append([add_ask, 1])
+                # the whole position must still fit the day's loss room at one stop price
+                pieces = held + [[add_ask, 1]]
+                q = sum(n for _e, n in pieces) * M.LOT
+                avg = sum(e * n for e, n in pieces) * M.LOT / q
+                fees = sum(cost(e, e, n * M.LOT, n) for e, n in pieces) + realized * 0
+                new_stop = M._ceil_tick(avg - (room - realized - fees) / q)
+                if new_stop < bc[j]:
+                    held.append([add_ask, 1])
+                    stop = max(stop, new_stop)
             in_px = None
         best_u = max(best_u, c[j]) if d > 0 else min(best_u, c[j])
         if ext:
