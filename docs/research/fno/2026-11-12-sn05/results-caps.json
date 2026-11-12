@@ -1,0 +1,550 @@
+{
+ "A. Benchmark (N11 entries + exits)|0": {
+  "total": 111995,
+  "steps": 0,
+  "final_wallet": 15000,
+  "step_days": [],
+  "green": 55,
+  "red": 63,
+  "none": 624,
+  "worst": -2998,
+  "fall": 11225,
+  "refilled": 91635
+ },
+ "A. Benchmark (N11 entries + exits)|1": {
+  "total": 109991,
+  "steps": 1,
+  "final_wallet": 22500,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ]
+  ],
+  "green": 58,
+  "red": 70,
+  "none": 614,
+  "worst": -4498,
+  "fall": 13410,
+  "refilled": 109777
+ },
+ "A. Benchmark (N11 entries + exits)|2": {
+  "total": 158636,
+  "steps": 2,
+  "final_wallet": 33750,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ]
+  ],
+  "green": 58,
+  "red": 70,
+  "none": 614,
+  "worst": -6744,
+  "fall": 21400,
+  "refilled": 162852
+ },
+ "A. Benchmark (N11 entries + exits)|3": {
+  "total": 211670,
+  "steps": 3,
+  "final_wallet": 50625,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2025-10-30",
+    50625
+   ]
+  ],
+  "green": 58,
+  "red": 70,
+  "none": 614,
+  "worst": -10117,
+  "fall": 21400,
+  "refilled": 193352
+ },
+ "A. Benchmark (N11 entries + exits)|4": {
+  "total": 272521,
+  "steps": 4,
+  "final_wallet": 75938,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2025-10-30",
+    50625
+   ],
+   [
+    "2026-03-23",
+    75938
+   ]
+  ],
+  "green": 58,
+  "red": 70,
+  "none": 614,
+  "worst": -15158,
+  "fall": 28341,
+  "refilled": 225122
+ },
+ "A. Benchmark (N11 entries + exits)|5": {
+  "total": 292818,
+  "steps": 5,
+  "final_wallet": 113906,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2025-10-30",
+    50625
+   ],
+   [
+    "2026-03-23",
+    75938
+   ],
+   [
+    "2026-10-08",
+    113906
+   ]
+  ],
+  "green": 58,
+  "red": 70,
+  "none": 614,
+  "worst": -15158,
+  "fall": 28341,
+  "refilled": 229766
+ },
+ "B. A without SHIPPED trades|0": {
+  "total": 113861,
+  "steps": 0,
+  "final_wallet": 15000,
+  "step_days": [],
+  "green": 56,
+  "red": 58,
+  "none": 628,
+  "worst": -2998,
+  "fall": 10813,
+  "refilled": 82896
+ },
+ "B. A without SHIPPED trades|1": {
+  "total": 110572,
+  "steps": 1,
+  "final_wallet": 22500,
+  "step_days": [
+   [
+    "2024-01-30",
+    22500
+   ]
+  ],
+  "green": 59,
+  "red": 65,
+  "none": 618,
+  "worst": -4498,
+  "fall": 13410,
+  "refilled": 101127
+ },
+ "B. A without SHIPPED trades|2": {
+  "total": 170063,
+  "steps": 2,
+  "final_wallet": 33750,
+  "step_days": [
+   [
+    "2024-01-30",
+    22500
+   ],
+   [
+    "2025-01-06",
+    33750
+   ]
+  ],
+  "green": 59,
+  "red": 65,
+  "none": 618,
+  "worst": -6744,
+  "fall": 21400,
+  "refilled": 151305
+ },
+ "B. A without SHIPPED trades|3": {
+  "total": 228908,
+  "steps": 3,
+  "final_wallet": 50625,
+  "step_days": [
+   [
+    "2024-01-30",
+    22500
+   ],
+   [
+    "2025-01-06",
+    33750
+   ],
+   [
+    "2025-02-11",
+    50625
+   ]
+  ],
+  "green": 59,
+  "red": 65,
+  "none": 618,
+  "worst": -10118,
+  "fall": 32669,
+  "refilled": 207645
+ },
+ "B. A without SHIPPED trades|4": {
+  "total": 305423,
+  "steps": 4,
+  "final_wallet": 75938,
+  "step_days": [
+   [
+    "2024-01-30",
+    22500
+   ],
+   [
+    "2025-01-06",
+    33750
+   ],
+   [
+    "2025-02-11",
+    50625
+   ],
+   [
+    "2026-03-13",
+    75938
+   ]
+  ],
+  "green": 59,
+  "red": 65,
+  "none": 618,
+  "worst": -15158,
+  "fall": 32669,
+  "refilled": 240108
+ },
+ "B. A without SHIPPED trades|5": {
+  "total": 343173,
+  "steps": 5,
+  "final_wallet": 113906,
+  "step_days": [
+   [
+    "2024-01-30",
+    22500
+   ],
+   [
+    "2025-01-06",
+    33750
+   ],
+   [
+    "2025-02-11",
+    50625
+   ],
+   [
+    "2026-03-13",
+    75938
+   ],
+   [
+    "2026-06-01",
+    113906
+   ]
+  ],
+  "green": 59,
+  "red": 65,
+  "none": 618,
+  "worst": -22730,
+  "fall": 41089,
+  "refilled": 267377
+ },
+ "C. A, puts only|0": {
+  "total": 91454,
+  "steps": 0,
+  "final_wallet": 15000,
+  "step_days": [],
+  "green": 46,
+  "red": 51,
+  "none": 645,
+  "worst": -2998,
+  "fall": 9073,
+  "refilled": 77216
+ },
+ "C. A, puts only|1": {
+  "total": 102100,
+  "steps": 1,
+  "final_wallet": 22500,
+  "step_days": [
+   [
+    "2024-11-12",
+    22500
+   ]
+  ],
+  "green": 49,
+  "red": 57,
+  "none": 636,
+  "worst": -4492,
+  "fall": 13410,
+  "refilled": 91976
+ },
+ "C. A, puts only|2": {
+  "total": 144599,
+  "steps": 2,
+  "final_wallet": 33750,
+  "step_days": [
+   [
+    "2024-11-12",
+    22500
+   ],
+   [
+    "2025-02-11",
+    33750
+   ]
+  ],
+  "green": 49,
+  "red": 57,
+  "none": 636,
+  "worst": -6744,
+  "fall": 21261,
+  "refilled": 132273
+ },
+ "C. A, puts only|3": {
+  "total": 180719,
+  "steps": 3,
+  "final_wallet": 50625,
+  "step_days": [
+   [
+    "2024-11-12",
+    22500
+   ],
+   [
+    "2025-02-11",
+    33750
+   ],
+   [
+    "2026-03-19",
+    50625
+   ]
+  ],
+  "green": 49,
+  "red": 57,
+  "none": 636,
+  "worst": -10099,
+  "fall": 21261,
+  "refilled": 146967
+ },
+ "C. A, puts only|4": {
+  "total": 220345,
+  "steps": 4,
+  "final_wallet": 75938,
+  "step_days": [
+   [
+    "2024-11-12",
+    22500
+   ],
+   [
+    "2025-02-11",
+    33750
+   ],
+   [
+    "2026-03-19",
+    50625
+   ],
+   [
+    "2026-10-05",
+    75938
+   ]
+  ],
+  "green": 49,
+  "red": 57,
+  "none": 636,
+  "worst": -10099,
+  "fall": 21261,
+  "refilled": 150367
+ },
+ "C. A, puts only|5": {
+  "total": 223108,
+  "steps": 5,
+  "final_wallet": 113906,
+  "step_days": [
+   [
+    "2024-11-12",
+    22500
+   ],
+   [
+    "2025-02-11",
+    33750
+   ],
+   [
+    "2026-03-19",
+    50625
+   ],
+   [
+    "2026-10-05",
+    75938
+   ],
+   [
+    "2026-10-21",
+    113906
+   ]
+  ],
+  "green": 49,
+  "red": 57,
+  "none": 636,
+  "worst": -10099,
+  "fall": 21261,
+  "refilled": 150367
+ },
+ "D. A + owner's 10%: no new trade once day >= +10% of wallet|0": {
+  "total": 106990,
+  "steps": 0,
+  "final_wallet": 15000,
+  "step_days": [],
+  "green": 55,
+  "red": 63,
+  "none": 624,
+  "worst": -2998,
+  "fall": 11225,
+  "refilled": 91635
+ },
+ "D. A + owner's 10%: no new trade once day >= +10% of wallet|1": {
+  "total": 105009,
+  "steps": 1,
+  "final_wallet": 22500,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ]
+  ],
+  "green": 58,
+  "red": 70,
+  "none": 614,
+  "worst": -4498,
+  "fall": 13410,
+  "refilled": 109777
+ },
+ "D. A + owner's 10%: no new trade once day >= +10% of wallet|2": {
+  "total": 151811,
+  "steps": 2,
+  "final_wallet": 33750,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ]
+  ],
+  "green": 59,
+  "red": 69,
+  "none": 614,
+  "worst": -6744,
+  "fall": 21400,
+  "refilled": 162019
+ },
+ "D. A + owner's 10%: no new trade once day >= +10% of wallet|3": {
+  "total": 194174,
+  "steps": 3,
+  "final_wallet": 50625,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2025-10-30",
+    50625
+   ]
+  ],
+  "green": 59,
+  "red": 69,
+  "none": 614,
+  "worst": -10117,
+  "fall": 21400,
+  "refilled": 192519
+ },
+ "D. A + owner's 10%: no new trade once day >= +10% of wallet|4": {
+  "total": 243569,
+  "steps": 4,
+  "final_wallet": 75938,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2025-10-30",
+    50625
+   ],
+   [
+    "2026-03-25",
+    75938
+   ]
+  ],
+  "green": 59,
+  "red": 69,
+  "none": 614,
+  "worst": -15158,
+  "fall": 28950,
+  "refilled": 224289
+ },
+ "D. A + owner's 10%: no new trade once day >= +10% of wallet|5": {
+  "total": 246331,
+  "steps": 5,
+  "final_wallet": 113906,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2025-10-30",
+    50625
+   ],
+   [
+    "2026-03-25",
+    75938
+   ],
+   [
+    "2026-10-21",
+    113906
+   ]
+  ],
+  "green": 59,
+  "red": 69,
+  "none": 614,
+  "worst": -15158,
+  "fall": 28950,
+  "refilled": 224289
+ }
+}

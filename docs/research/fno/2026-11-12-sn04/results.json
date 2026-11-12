@@ -1,0 +1,356 @@
+{
+ "loyo": {
+  "2023": {
+   "real": {
+    "genome": {
+     "backstop": 0.25,
+     "bias": "against_daily",
+     "families": [
+      {
+       "buf": 0.5,
+       "kind": "ORB",
+       "n": 10
+      }
+     ],
+     "last_entry": 330,
+     "max_trades": 1,
+     "null": false,
+     "offset": 0,
+     "start": 45,
+     "stop_k": 6.0,
+     "target_r": 1.0,
+     "time": 30,
+     "trail_k": 1.5,
+     "trail_r": 0.0
+    },
+    "heldout": {
+     "active": 104,
+     "green": 31,
+     "net": -34550.98,
+     "red": 73,
+     "refilled": 55029.3,
+     "sessions": 192,
+     "trades": 104,
+     "worst": -2471.73
+    },
+    "train_fitness": -29.3
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.35,
+     "bias": "puts",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.01,
+       "seed": 813602
+      }
+     ],
+     "last_entry": 255,
+     "max_trades": 3,
+     "null": true,
+     "offset": -1,
+     "start": 5,
+     "stop_k": 4.0,
+     "target_r": 0.0,
+     "time": 120,
+     "trail_k": 4.0,
+     "trail_r": 1.5
+    },
+    "heldout": {
+     "active": 127,
+     "green": 48,
+     "net": -8632.66,
+     "red": 79,
+     "refilled": 114016.67,
+     "sessions": 192,
+     "trades": 170,
+     "worst": -2998.95
+    },
+    "train_fitness": -73.7
+   }
+  },
+  "2024": {
+   "real": {
+    "genome": {
+     "backstop": 0.15,
+     "bias": "none",
+     "families": [
+      {
+       "buf": 0.5,
+       "kind": "PDX"
+      }
+     ],
+     "last_entry": 255,
+     "max_trades": 1,
+     "null": false,
+     "offset": 1,
+     "start": 5,
+     "stop_k": 1.5,
+     "target_r": 2.0,
+     "time": 45,
+     "trail_k": 3.0,
+     "trail_r": 0.0
+    },
+    "heldout": {
+     "active": 124,
+     "green": 40,
+     "net": -38742.09,
+     "red": 84,
+     "refilled": 83735.83,
+     "sessions": 196,
+     "trades": 124,
+     "worst": -2173.31
+    },
+    "train_fitness": -102.6
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.35,
+     "bias": "with_daily",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.005,
+       "seed": 276654
+      }
+     ],
+     "last_entry": 330,
+     "max_trades": 1,
+     "null": true,
+     "offset": -1,
+     "start": 30,
+     "stop_k": 2.0,
+     "target_r": 2.0,
+     "time": 30,
+     "trail_k": 4.0,
+     "trail_r": 0.5
+    },
+    "heldout": {
+     "active": 97,
+     "green": 31,
+     "net": -35092.18,
+     "red": 66,
+     "refilled": 62278.35,
+     "sessions": 196,
+     "trades": 97,
+     "worst": -2718.36
+    },
+    "train_fitness": -88.2
+   }
+  },
+  "2025": {
+   "real": {
+    "genome": {
+     "backstop": 0.25,
+     "bias": "against_daily",
+     "families": [
+      {
+       "k": 1,
+       "kind": "MOMO",
+       "vwap": false,
+       "z": 2.0
+      }
+     ],
+     "last_entry": 300,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 15,
+     "stop_k": 4.0,
+     "target_r": 2.0,
+     "time": 120,
+     "trail_k": 3.0,
+     "trail_r": 0.5
+    },
+    "heldout": {
+     "active": 145,
+     "green": 39,
+     "net": -65492.3,
+     "red": 106,
+     "refilled": 132589.57,
+     "sessions": 194,
+     "trades": 145,
+     "worst": -2994.76
+    },
+    "train_fitness": -24.7
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.15,
+     "bias": "puts",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.005,
+       "seed": 17527
+      }
+     ],
+     "last_entry": 330,
+     "max_trades": 3,
+     "null": true,
+     "offset": -1,
+     "start": 45,
+     "stop_k": 4.0,
+     "target_r": 3.0,
+     "time": 400,
+     "trail_k": 4.0,
+     "trail_r": 1.5
+    },
+    "heldout": {
+     "active": 92,
+     "green": 25,
+     "net": -65646.28,
+     "red": 67,
+     "refilled": 99072.8,
+     "sessions": 194,
+     "trades": 113,
+     "worst": -2997.63
+    },
+    "train_fitness": -76.4
+   }
+  },
+  "2026": {
+   "real": {
+    "genome": {
+     "backstop": 0.25,
+     "bias": "calls",
+     "families": [
+      {
+       "buf": 0.0,
+       "kind": "ORB",
+       "n": 10
+      }
+     ],
+     "last_entry": 300,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 45,
+     "stop_k": 2.0,
+     "target_r": 1.0,
+     "time": 15,
+     "trail_k": 3.0,
+     "trail_r": 0.5
+    },
+    "heldout": {
+     "active": 80,
+     "green": 37,
+     "net": -12983.69,
+     "red": 43,
+     "refilled": 41095.08,
+     "sessions": 160,
+     "trades": 80,
+     "worst": -1873.53
+    },
+    "train_fitness": -89.3
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.35,
+     "bias": "puts",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.01,
+       "seed": 813602
+      }
+     ],
+     "last_entry": 255,
+     "max_trades": 1,
+     "null": true,
+     "offset": -1,
+     "start": 5,
+     "stop_k": 1.5,
+     "target_r": 0.0,
+     "time": 120,
+     "trail_k": 3.0,
+     "trail_r": 0.0
+    },
+    "heldout": {
+     "active": 106,
+     "green": 22,
+     "net": -33590.27,
+     "red": 84,
+     "refilled": 90284.44,
+     "sessions": 160,
+     "trades": 106,
+     "worst": -2455.01
+    },
+    "train_fitness": -72.1
+   }
+  }
+ },
+ "final": {
+  "genome": {
+   "backstop": 0.15,
+   "bias": "calls",
+   "families": [
+    {
+     "buf": 0.25,
+     "kind": "ORB",
+     "n": 10
+    }
+   ],
+   "last_entry": 330,
+   "max_trades": 1,
+   "null": false,
+   "offset": 0,
+   "start": 45,
+   "stop_k": 4.0,
+   "target_r": 0.0,
+   "time": 15,
+   "trail_k": 1.5,
+   "trail_r": 0.5
+  },
+  "years": {
+   "2023": {
+    "active": 105,
+    "green": 37,
+    "net": -18111.86,
+    "red": 68,
+    "refilled": 35299.26,
+    "sessions": 192,
+    "trades": 105,
+    "worst": -1771.07
+   },
+   "2024": {
+    "active": 110,
+    "green": 38,
+    "net": -14659.26,
+    "red": 72,
+    "refilled": 56078.73,
+    "sessions": 196,
+    "trades": 110,
+    "worst": -2179.9
+   },
+   "2025": {
+    "active": 108,
+    "green": 45,
+    "net": -19688.7,
+    "red": 63,
+    "refilled": 46779.69,
+    "sessions": 194,
+    "trades": 108,
+    "worst": -2097.52
+   },
+   "2026": {
+    "active": 88,
+    "green": 37,
+    "net": -13235.31,
+    "red": 51,
+    "refilled": 49459.31,
+    "sessions": 160,
+    "trades": 88,
+    "worst": -1843.79
+   }
+  }
+ },
+ "checks": {
+  "heldout_positive": 0,
+  "heldout_sum": -151769,
+  "null_sum": -142961,
+  "final_years_positive": 0,
+  "verdict": "NOT PROVEN"
+ }
+}
