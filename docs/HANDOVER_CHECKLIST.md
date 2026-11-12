@@ -1,3 +1,18 @@
+## November 12 - SN10–SN15 (research, Dev only): six iterations; wallet size and volatility sizing help, everything else doesn't
+
+**Summary:** `docs/research/fno/2026-11-12-sn15/README.md` (`dc008ce4`).
+
+| Iteration | What | Result |
+|---|---|---|
+| SN10 | Expiry mornings on 10-second bars (56 days) | Not proven: the pick made −₹20,705 on Apr–Sep 2026 |
+| SN11 | Exit before the dip | Every variant worse; the benchmark is held out every year |
+| SN12 | Wallet size | ₹20k at 1 lot +₹1,24,093 (buys N11's own contract) |
+| SN13 | Second lot only on high-volatility days at ₹30k | +₹2,08,778, refill ₹1,55,737, 2023 −₹1,011; a 10% day limit is worse |
+| SN14 | Growth-cap tables per year | In the README |
+| SN15 | Forward check frozen | `sn15/FORWARD.md`: A ₹15k / B ₹20k / C ₹30k volatility-sized, from Nov 13, ≥ 20 trades, from `fno_n11_paper` |
+
+**Status:** research only. In-sample entries.
+
 ## November 12 - SN09 (research, Dev only): option open interest - NOT PROVEN; benchmark stays
 
 **Study:** `docs/research/fno/2026-11-12-sn09/` (freeze `627d8af8`).
