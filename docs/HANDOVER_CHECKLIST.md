@@ -1,3 +1,24 @@
+## November 13 - SN51–SN75 (research, Dev only): SN Gold v5, frozen beside v3/v4
+
+**Study:** `docs/research/fno/2026-11-13-sn51/` (README, lab built from frozen v4; `d1d5f2ba`). Frozen in `docs/research/fno/sn-gold/` with verifiers (v3, v4 and v5 all reproduce) and tags `sn-gold-v3`, `-v4`, `-v5`.
+
+- **v5 = v4 + R0.85's extra entries + scale-in at a 1-ATR index move + pyramid to the full wallet** (inside the day room). Net at the end:
+
+  | Wallet | v5 | v4 |
+  |---|---:|---:|
+  | A | +₹1,51,155 | +₹1,30,530 |
+  | B | +₹1,76,846 | |
+  | C | +₹2,80,508 | |
+  | G3 | +₹3,99,906 | +₹3,26,853 |
+
+- **Held out:** v5 is picked A 4/4, G3 4/4, B and C 3/4.
+- **Risk:** survives +₹400 stress, 1–2% premium slippage, 2-minute delays and partial fills. One year at ₹15k: median +₹36.5k, 3.5% losing years.
+- **Real account with no refills:** ₹30k never dies over 15 start quarters; ₹15k dies 3 times.
+- **Closed:** OI, ADX and recent-form sizing; day profit locks; a 30% day limit; 15:20 holds.
+- **No profit cap exists in Gold.** "Stop after k" caps size; uncapped growth is not achievable at real fills.
+
+**Status:** research only. Forward: `sn-gold/FORWARD_V5.md` (N11 signals only until R0.85 has a live record).
+
 ## November 13 - SN31–SN50 (research, Dev only): SN Gold v4; v3 and v4 frozen with verifiers and tags
 
 **Study:** `docs/research/fno/2026-11-13-sn31/` (lab copy, README; `84930331`).
