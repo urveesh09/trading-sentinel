@@ -1,3 +1,38 @@
+## November 12 - SN03 (research, Dev only): 66 variants on the SN02 benchmark; none beats it held out
+
+**The owner's follow-up:** beat the benchmark, have fewer losing days, simulate stopping the wallet growth after the 3rd, 4th, 5th step and so on, try fast exits, report the days won, lost and empty and the refills, and use the latest Zerodha charges.
+
+**Study:** `docs/research/fno/2026-11-12-sn03/` (`382ebcc5`).
+- **Charges:** checked against zerodha.com/charges on Nov 12; identical to `fno_costs`. Every result also carries +₹205 per lot per trade.
+- **The benchmark** (SN02: N11's entries and exits, one lot, ₹15,000, the out-of-the-money substitute):
+  - +₹1,11,995 over 742 sessions;
+  - 55 won, 63 lost, 624 with no trade;
+  - refilled ₹91,635; worst day −₹2,998.
+
+**Three rounds, each change chosen on three years and scored on the fourth:**
+- **Entry filters:** the best held-out was +₹1,08,692.
+- **Exit changes:** quick profits and breakeven stops add winning days but cut profit. Quick profit at +₹500 made 73 winning days and lost ₹25,412.
+- **N11's sister books** for more days: more losing days.
+- **No new trade once the day is up ₹1,500:** +₹1,06,990.
+- **Strike shifts and 2 lots:** no better held out.
+- **Confirming before buying:** misses the winners.
+- **Leaving trades that aren't working:** more losing days.
+- **The held-out picks** chose the benchmark, or something worse.
+
+**The wallet, stopped after step k** (1 lot per ₹15,000):
+- only 5 steps happened in four years;
+
+  | Stop after | Profit | Refilled | Worst day |
+  |---|---:|---:|---:|
+  | step 2 | +₹1,58,636 | ₹1,62,852 | −₹6,744 |
+  | step 3 | +₹2,11,670 | ₹1,93,352 | −₹10,117 |
+  | step 4 | +₹2,72,521 | ₹2,25,122 | −₹15,158 |
+  | step 5 | +₹2,92,818 | ₹2,29,766 | −₹15,158 |
+
+- 2023 lost money at every cap.
+
+**Status:** SN02 is unchanged. Its frozen forward check (`2026-11-12-sn02/FORWARD.md`, from Nov 13, ≥ 20 trades) is the only honest test. Research only.
+
 ## November 12 - SN02 (research, Dev only): N11's entries in the ₹15,000 wallet; the 10% cap is the wrong shape
 
 **The owner's follow-up:** "Get it profitable", learn from N08–N012, with any data granularity. And "if at a certain point we stop increasing the wallet … and just continuously farm" the minimum, does that help?
