@@ -1,3 +1,46 @@
+## November 12 - SN01 (research, Dev only): a ₹15,000 fixed wallet for a 10% day - NOT PROVEN
+
+**The owner's idea, in their words:**
+- "SN01 … specifically for the small amount … ₹15,000".
+- "Earn exactly 10% … post charges … we sell all … and end the trading … for the day".
+- "The risk amount will be 20% of the total wallet".
+- Profits are banked and losses refilled, so the wallet stays fixed.
+- The wallet grows 50% after 100% of it in profit, and the target grows 50% every 2 (or 3) steps.
+- The owner's lock idea: once past 10%, lock 10% with a stop and let it run.
+- SN01 runs beside the N11/N012 paper main book and does not replace it.
+
+**Study:** `docs/research/fno/2026-11-12-sn01/`. Freeze `ca045b3c` (PLAN.md, rule, simulator, budget, 15 tests), results `07e692bf`.
+- **Data:** NIFTY weekly options, 1-minute Breeze candles, 2023 – Oct 28 2026. That is 742 non-expiry sessions, all already seen.
+- **Search:** 21,066 rule sets:
+  - entries: ORB, MOMO, TPB, VWAPX, EMAX, FADE and PDX, alone or in pairs;
+  - settings: stop, target, time, trail, 1–20 trades a day, strike, lots, bias and lock.
+- **Checks:**
+  - leave-one-year-out against a random-entry search with the same budget;
+  - extra cost of +₹0, +₹100 and +₹200 per lot per trade.
+
+**Result:**
+- **Held-out years at +₹100:** 0 of 4 positive. The sum was −₹1,22,146, against random's −₹1,35,115. At +₹0 only 2025 was positive.
+- **Every entry family loses about what random entries lose:** ₹194–219 per trade at +₹100, against random's ₹218. The more trades a day, the bigger the loss.
+- **The final pick** (in-sample): one trade a day, ORB15 or MOMO5 with the daily trend, ATM, 1 lot, stop 8%, target 20%, lock 0.5.
+  - Four years: +₹44,503 at +₹0, −₹13,803 at +₹100, −₹77,688 at +₹200.
+  - The ₹1,500 target was hit on only 69 of 742 days.
+- **The owner's wallet** (final pick, Jan 2023 → Oct 2026):
+  - every3: +₹43,222 at +₹0; every2: +₹34,726. Both took 2 steps, to ₹33,750.
+  - At +₹100 the wallet never grew.
+  - Gross counting grew the wallet 5 times while making only +₹16,650. Count net.
+- **Why it is hard:**
+  - in hindsight, one ATM lot reached +₹1,500 on 92–96% of days;
+  - a random side at 09:30 reached the target first on 54% of days, yet lost ₹1,79,368 over 741 days.
+- **The lock idea helps** on the final pick: −₹13,803 against −₹32,533 without it at +₹100, and +₹34,726 against +₹28,041 at +₹0. All four held-out picks chose a lock. In-sample.
+
+**Status:**
+- Research only. No runtime change, no Production write, no order.
+- The forward sessions Oct 29 – Nov 12 (forward-panel export `20261112T103005Z`) were left unseen for a later SN01 attempt.
+
+**Next (owner's call):**
+- Drop SN01, or run the final pick as a zero-cost paper shadow scored forward for at least 20 sessions.
+- Real money only on the owner's word, by its own runbook.
+
 ## November 12 - Deployed: Production `3ece6a8b` (PR #136: N11 login reminders + N13 NIFTY-only paper main book)
 
 **What was deployed:**
