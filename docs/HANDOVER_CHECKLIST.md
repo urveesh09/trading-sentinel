@@ -1,3 +1,53 @@
+## November 12 - Deployed: Production `3ece6a8b` (PR #136: N11 login reminders + N13 NIFTY-only paper main book)
+
+**What was deployed:**
+- The owner's word, Nov 12: "just deploy the latest changes in prod … and restart and rebuild it".
+- PR #136 (`codex/production-correction-hedge-p0` at `aecbdbc2` → `evolve/smart-strategies`) was merged as `3ece6a8b`. It holds 9 commits on top of `65677dc6`.
+- The release carries:
+  - **N11** (`fdaaa0b8`): the partner's 08:00 login reminder, and the owner's 07:00 nudge sent after a late boot;
+  - **N13** (`aecbdbc2`):
+    - the N11 paper main book trades NIFTY only (`FNO_N13_MAIN_UNDERLYINGS="NIFTY"`); SENSEX signals are logged as `n13_shadow:<strategy>`;
+    - the minute-look lock, built with `FNO_N13_LOCK_LOOK_SEC=0` (off);
+  - the N13 research files and docs.
+- The only runtime code is `python-engine`. There is no schema change, migration or `.env` edit. Paper only: no real orders, and the real-money settings are untouched.
+
+**Backup: none kept (the owner's call).**
+- What was done:
+  - From 07:04 IST (pre-market), autoheal and the three app services were stopped.
+  - A read-only check found no open F&O or paper trade rows. The six virtual overnight penny-shadow rows are paper-only.
+  - An inventory (12,173 files, 8.57 GB) and `data.tar` (tar exit 0, 8.59 GB) were written to `backups\20261112-pre-3ece6a8`.
+- What the owner decided: the C: drive was about 95% full, and the owner asked why a backup was needed. They were told it isn't required for a release that changes no stored data. On "else remove it", the integrity check was stopped and the folder deleted.
+- **From now on:** routine deploys skip the backup. If a release changes stored data, the owner is told first.
+- The older copies remain: Sep 11, Nov 8 (`pre-d763aee`) and Nov 10 (`pre-65677dc`).
+
+**Deploy (runbook):**
+- Fast-forward `65677dc6` → `3ece6a8b`.
+- Built python-engine, node-gateway and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-12T01:40:59Z`.
+- Recreated all three, then restarted nginx and started autoheal again.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\3ece6a8b….json`, all three at `3ece6a8b`.
+
+**After:**
+- All services healthy; nginx `/api/health` 200.
+- In the engine:
+  - `FNO_BOOK` N11;
+  - `FNO_N13_MAIN_UNDERLYINGS` `'NIFTY'` (the main book takes NIFTY, not SENSEX);
+  - `FNO_N13_LOCK_LOOK_SEC` 0.0;
+  - `FNO_TREND_LOCK_ENABLED` True;
+  - `PARTNER_WATCH_PROFIT_PROTECTION_ENABLED` True;
+  - `PARTNER_WATCH_COACH_ENABLED` True;
+  - `FNO_LIVE_TEST_ENABLED` False;
+  - the second reminder at 08:00 (45-minute window); the owner nudge catch-up present.
+- The scheduler holds `premarket_login_nudge` and `login_reminder_retry_tick`.
+- The PC booted at 06:59, and the old engine missed the owner's 07:00 nudge (no `nudged` state). This is the case N11 fixes. After the deploy, the 07:20 retry tick sent the owner nudge (`nudged` 07:20:00) and the partner's first login reminder (`login_reminder` sent, attempt 1).
+
+**Next:**
+- **Today, Nov 12 (step 5 of the runbook):**
+  - the 08:00 partner reminder (only if they are not logged in);
+  - from the open, N11 SENSEX signals should appear as `n13_shadow:*` rejects in `fno_signal_log` and never as `fno_positions` rows;
+  - NIFTY and SENSEX quotes, checked separately.
+- **Minute lock:** re-score with `forward_cadence.py` on sessions from Nov 12, under the same rule, at ≥20 scored trades.
+- **Rollback:** redeploy `65677dc6` by the same runbook, or set `FNO_N13_MAIN_UNDERLYINGS=NIFTY,SENSEX` in `.env` and recreate the engine. No migration needs undoing.
+
 ## November 11 - N13 build (Dev): the N11 paper main book trades NIFTY only; the lock-on-a-minute switch is built but off
 
 Owner, Nov 11: "Go on do it and test if it works good else continue".
