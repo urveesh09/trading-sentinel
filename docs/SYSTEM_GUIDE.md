@@ -1,3 +1,12 @@
+## November 12 - SN09 (research, Dev only): option open interest - NOT PROVEN; benchmark stays
+
+**Study:** `docs/research/fno/2026-11-12-sn09/` (freeze `627d8af8`).
+- **OI entries on N11's empty days** (PCR shift, writer flow, OI walls; 10,500 rule sets): held out −₹1,80,378, against random at −₹1,57,721.
+- **OI flow as a filter on N11's trades:** held out +₹71,964, against the benchmark's +₹1,11,995. Some settings halve the losing days in-sample, but they are not stable.
+- **10-second data** exists only for 27 expiry days.
+
+**Status:** research only.
+
 ## November 12 - SN08 (research, Dev only): N11's quality rules relaxed - every relaxation loses; benchmark stays
 
 **Study:** `docs/research/fno/2026-11-12-sn08/`.
