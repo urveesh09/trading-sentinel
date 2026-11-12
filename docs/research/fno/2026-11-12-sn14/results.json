@@ -1,0 +1,723 @@
+{
+ "A benchmark: Rs 15k, 1 lot, farm": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35618,
+    "refilled": 14915,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 39114,
+    "refilled": 34651,
+    "won": 21,
+    "lost": 21,
+    "none": 152
+   },
+   "2026": {
+    "net": 44322,
+    "refilled": 21505,
+    "won": 16,
+    "lost": 14,
+    "none": 130
+   }
+  },
+  "steps": 0,
+  "final_wallet": 15000,
+  "worst_day": -2998,
+  "step_days": [],
+  "total": 111995,
+  "refilled": 91635
+ },
+ "B Rs 20k, 1 lot, farm": {
+  "per_year": {
+   "2023": {
+    "net": -7591,
+    "refilled": 21096,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 49512,
+    "refilled": 12118,
+    "won": 14,
+    "lost": 11,
+    "none": 171
+   },
+   "2025": {
+    "net": 31273,
+    "refilled": 44856,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 50899,
+    "refilled": 28272,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 0,
+  "final_wallet": 20000,
+  "worst_day": -3997,
+  "step_days": [],
+  "total": 124093,
+  "refilled": 106342
+ },
+ "C Rs 30k, vol-sized, farm": {
+  "per_year": {
+   "2023": {
+    "net": -1011,
+    "refilled": 28153,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 76154,
+    "refilled": 23967,
+    "won": 13,
+    "lost": 12,
+    "none": 171
+   },
+   "2025": {
+    "net": 46198,
+    "refilled": 57622,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 87437,
+    "refilled": 45995,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 0,
+  "final_wallet": 30000,
+  "worst_day": -5997,
+  "step_days": [],
+  "total": 208779,
+  "refilled": 155737
+ },
+ "D start Rs 15k, vol-sized, grow, stop after step 0": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35618,
+    "refilled": 14915,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 39114,
+    "refilled": 34651,
+    "won": 21,
+    "lost": 21,
+    "none": 152
+   },
+   "2026": {
+    "net": 44322,
+    "refilled": 21505,
+    "won": 16,
+    "lost": 14,
+    "none": 130
+   }
+  },
+  "steps": 0,
+  "final_wallet": 15000,
+  "worst_day": -2998,
+  "step_days": [],
+  "total": 111995,
+  "refilled": 91635
+ },
+ "D start Rs 15k, vol-sized, grow, stop after step 1": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35506,
+    "refilled": 15027,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 30932,
+    "refilled": 45407,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 50611,
+    "refilled": 28780,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 1,
+  "final_wallet": 22500,
+  "worst_day": -4498,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ]
+  ],
+  "total": 109991,
+  "refilled": 109777
+ },
+ "D start Rs 15k, vol-sized, grow, stop after step 2": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35506,
+    "refilled": 15027,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 34772,
+    "refilled": 56970,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 87241,
+    "refilled": 49476,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 2,
+  "final_wallet": 33750,
+  "worst_day": -6739,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ]
+  ],
+  "total": 150460,
+  "refilled": 142036
+ },
+ "D start Rs 15k, vol-sized, grow, stop after step 3": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35506,
+    "refilled": 15027,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 34772,
+    "refilled": 56970,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 138346,
+    "refilled": 73481,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 3,
+  "final_wallet": 50625,
+  "worst_day": -10117,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2026-01-23",
+    50625
+   ]
+  ],
+  "total": 201565,
+  "refilled": 166041
+ },
+ "D start Rs 15k, vol-sized, grow, stop after step 4": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35506,
+    "refilled": 15027,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 34772,
+    "refilled": 56970,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 196358,
+    "refilled": 103487,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 4,
+  "final_wallet": 75938,
+  "worst_day": -15158,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2026-01-23",
+    50625
+   ],
+   [
+    "2026-03-27",
+    75938
+   ]
+  ],
+  "total": 259577,
+  "refilled": 196048
+ },
+ "D start Rs 15k, vol-sized, grow, stop after step 5": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35506,
+    "refilled": 15027,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 34772,
+    "refilled": 56970,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 216654,
+    "refilled": 108131,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 5,
+  "final_wallet": 113906,
+  "worst_day": -15158,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2026-01-23",
+    50625
+   ],
+   [
+    "2026-03-27",
+    75938
+   ],
+   [
+    "2026-10-08",
+    113906
+   ]
+  ],
+  "total": 279873,
+  "refilled": 200691
+ },
+ "D start Rs 15k, vol-sized, grow, stop after step 6": {
+  "per_year": {
+   "2023": {
+    "net": -7059,
+    "refilled": 20564,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 35506,
+    "refilled": 15027,
+    "won": 12,
+    "lost": 12,
+    "none": 172
+   },
+   "2025": {
+    "net": 34772,
+    "refilled": 56970,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 216654,
+    "refilled": 108131,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 5,
+  "final_wallet": 113906,
+  "worst_day": -15158,
+  "step_days": [
+   [
+    "2024-11-05",
+    22500
+   ],
+   [
+    "2025-01-21",
+    33750
+   ],
+   [
+    "2026-01-23",
+    50625
+   ],
+   [
+    "2026-03-27",
+    75938
+   ],
+   [
+    "2026-10-08",
+    113906
+   ]
+  ],
+  "total": 279873,
+  "refilled": 200691
+ },
+ "E start Rs 20k, vol-sized, grow, stop after step 1": {
+  "per_year": {
+   "2023": {
+    "net": -7591,
+    "refilled": 21096,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 70318,
+    "refilled": 12136,
+    "won": 14,
+    "lost": 11,
+    "none": 171
+   },
+   "2025": {
+    "net": 46198,
+    "refilled": 57622,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 87437,
+    "refilled": 45995,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 1,
+  "final_wallet": 30000,
+  "worst_day": -5997,
+  "step_days": [
+   [
+    "2024-11-04",
+    30000
+   ]
+  ],
+  "total": 196362,
+  "refilled": 136848
+ },
+ "E start Rs 20k, vol-sized, grow, stop after step 2": {
+  "per_year": {
+   "2023": {
+    "net": -7591,
+    "refilled": 21096,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 67959,
+    "refilled": 14597,
+    "won": 14,
+    "lost": 11,
+    "none": 171
+   },
+   "2025": {
+    "net": 70898,
+    "refilled": 81637,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 144655,
+    "refilled": 69254,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 2,
+  "final_wallet": 45000,
+  "worst_day": -8998,
+  "step_days": [
+   [
+    "2024-11-04",
+    30000
+   ],
+   [
+    "2024-11-12",
+    45000
+   ]
+  ],
+  "total": 275921,
+  "refilled": 186584
+ },
+ "E start Rs 20k, vol-sized, grow, stop after step 3": {
+  "per_year": {
+   "2023": {
+    "net": -7591,
+    "refilled": 21096,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 67959,
+    "refilled": 14597,
+    "won": 14,
+    "lost": 11,
+    "none": 171
+   },
+   "2025": {
+    "net": 82519,
+    "refilled": 121495,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 196452,
+    "refilled": 101219,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 3,
+  "final_wallet": 67500,
+  "worst_day": -13489,
+  "step_days": [
+   [
+    "2024-11-04",
+    30000
+   ],
+   [
+    "2024-11-12",
+    45000
+   ],
+   [
+    "2025-01-21",
+    67500
+   ]
+  ],
+  "total": 339339,
+  "refilled": 258406
+ },
+ "E start Rs 20k, vol-sized, grow, stop after step 4": {
+  "per_year": {
+   "2023": {
+    "net": -7591,
+    "refilled": 21096,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 67959,
+    "refilled": 14597,
+    "won": 14,
+    "lost": 11,
+    "none": 171
+   },
+   "2025": {
+    "net": 82519,
+    "refilled": 121495,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 288472,
+    "refilled": 147280,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 4,
+  "final_wallet": 101250,
+  "worst_day": -21712,
+  "step_days": [
+   [
+    "2024-11-04",
+    30000
+   ],
+   [
+    "2024-11-12",
+    45000
+   ],
+   [
+    "2025-01-21",
+    67500
+   ],
+   [
+    "2026-02-13",
+    101250
+   ]
+  ],
+  "total": 431358,
+  "refilled": 304467
+ },
+ "E start Rs 20k, vol-sized, grow, stop after step 5": {
+  "per_year": {
+   "2023": {
+    "net": -7591,
+    "refilled": 21096,
+    "won": 6,
+    "lost": 16,
+    "none": 170
+   },
+   "2024": {
+    "net": 67959,
+    "refilled": 14597,
+    "won": 14,
+    "lost": 11,
+    "none": 171
+   },
+   "2025": {
+    "net": 82519,
+    "refilled": 121495,
+    "won": 22,
+    "lost": 25,
+    "none": 147
+   },
+   "2026": {
+    "net": 411053,
+    "refilled": 207815,
+    "won": 18,
+    "lost": 17,
+    "none": 125
+   }
+  },
+  "steps": 5,
+  "final_wallet": 151875,
+  "worst_day": -30320,
+  "step_days": [
+   [
+    "2024-11-04",
+    30000
+   ],
+   [
+    "2024-11-12",
+    45000
+   ],
+   [
+    "2025-01-21",
+    67500
+   ],
+   [
+    "2026-02-13",
+    101250
+   ],
+   [
+    "2026-03-25",
+    151875
+   ]
+  ],
+  "total": 553939,
+  "refilled": 365002
+ }
+}

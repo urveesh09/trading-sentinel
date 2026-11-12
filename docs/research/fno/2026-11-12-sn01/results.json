@@ -1,0 +1,1658 @@
+{
+ "rule": {
+  "stress_for_verdict": 100.0,
+  "heldout_positive_years_min": 3,
+  "heldout_sum_positive": true,
+  "heldout_sum_beats_null": true,
+  "robust_stress": 200.0,
+  "final_every_year_positive_at_100": true,
+  "min_trades_per_session": 0.75
+ },
+ "evaluations": 21066,
+ "loyo": {
+  "2023": {
+   "real": {
+    "genome": {
+     "bias": "calls",
+     "cash": 1.0,
+     "families": [
+      {
+       "fast": 9,
+       "kind": "TPB",
+       "look": 5,
+       "slow": 21,
+       "touch": 0.5
+      }
+     ],
+     "hold": 60,
+     "last_entry": 330,
+     "lock": 1.0,
+     "max_lots": 1,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 45,
+     "stop": 0.15,
+     "target": 1.0,
+     "trail_act": 0.05,
+     "trail_give": 0.5
+    },
+    "training_fitness": 43.96,
+    "heldout": {
+     "0": {
+      "net": -10375.15,
+      "sessions": 192,
+      "trades": 181,
+      "target_days": 20,
+      "loss_days": 0,
+      "red_days": 62,
+      "green_days": 119,
+      "worst_day": -2207.65,
+      "best_day": 2002.14
+     },
+     "100": {
+      "net": -28656.68,
+      "sessions": 192,
+      "trades": 181,
+      "target_days": 18,
+      "loss_days": 0,
+      "red_days": 69,
+      "green_days": 112,
+      "worst_day": -2307.65,
+      "best_day": 1902.14
+     },
+     "200": {
+      "net": -46291.07,
+      "sessions": 192,
+      "trades": 181,
+      "target_days": 16,
+      "loss_days": 0,
+      "red_days": 100,
+      "green_days": 81,
+      "worst_day": -2407.65,
+      "best_day": 1502.63
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -28657,
+     -28651,
+     -30602,
+     -24474,
+     -42740,
+     -33617,
+     -33047,
+     -29775,
+     -38575,
+     -44178
+    ],
+    "top10_mean_at_100": -33431
+   },
+   "null": {
+    "genome": {
+     "bias": "with_daily",
+     "cash": 0.8,
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.05,
+       "seed": 964568
+      }
+     ],
+     "hold": 120,
+     "last_entry": 345,
+     "lock": 0.25,
+     "max_lots": 3,
+     "max_trades": 2,
+     "null": true,
+     "offset": 1,
+     "start": 45,
+     "stop": 0.3,
+     "target": 1.0,
+     "trail_act": 0.2,
+     "trail_give": 0.5
+    },
+    "training_fitness": -29.47,
+    "heldout": {
+     "0": {
+      "net": -44299.13,
+      "sessions": 192,
+      "trades": 271,
+      "target_days": 93,
+      "loss_days": 8,
+      "red_days": 95,
+      "green_days": 97,
+      "worst_day": -2989.82,
+      "best_day": 3309.77
+     },
+     "100": {
+      "net": -82249.65,
+      "sessions": 192,
+      "trades": 283,
+      "target_days": 75,
+      "loss_days": 13,
+      "red_days": 109,
+      "green_days": 83,
+      "worst_day": -2977.96,
+      "best_day": 3648.85
+     },
+     "200": {
+      "net": -131736.21,
+      "sessions": 192,
+      "trades": 292,
+      "target_days": 56,
+      "loss_days": 9,
+      "red_days": 125,
+      "green_days": 67,
+      "worst_day": -2981.09,
+      "best_day": 2968.93
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -82250,
+     -79478,
+     -79478,
+     -79279,
+     -61842,
+     -60339,
+     -60339,
+     -84933,
+     -83149,
+     -74861
+    ],
+    "top10_mean_at_100": -74595
+   }
+  },
+  "2024": {
+   "real": {
+    "genome": {
+     "bias": "with_daily",
+     "cash": 1.0,
+     "families": [
+      {
+       "buf": 0.5,
+       "kind": "ORB",
+       "n": 15
+      },
+      {
+       "k": 1,
+       "kind": "MOMO",
+       "vwap": true,
+       "z": 1.0
+      }
+     ],
+     "hold": 120,
+     "last_entry": 300,
+     "lock": 0.5,
+     "max_lots": 2,
+     "max_trades": 1,
+     "null": false,
+     "offset": 0,
+     "start": 1,
+     "stop": 0.08,
+     "target": 1.0,
+     "trail_act": 0.2,
+     "trail_give": 0.5
+    },
+    "training_fitness": 28.94,
+    "heldout": {
+     "0": {
+      "net": -6434.37,
+      "sessions": 196,
+      "trades": 185,
+      "target_days": 61,
+      "loss_days": 0,
+      "red_days": 124,
+      "green_days": 61,
+      "worst_day": -1277.42,
+      "best_day": 6806.5
+     },
+     "100": {
+      "net": -31974.4,
+      "sessions": 196,
+      "trades": 185,
+      "target_days": 59,
+      "loss_days": 0,
+      "red_days": 126,
+      "green_days": 59,
+      "worst_day": -1477.42,
+      "best_day": 6706.5
+     },
+     "200": {
+      "net": -50682.99,
+      "sessions": 196,
+      "trades": 185,
+      "target_days": 58,
+      "loss_days": 0,
+      "red_days": 127,
+      "green_days": 58,
+      "worst_day": -1677.42,
+      "best_day": 6606.5
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -31974,
+     -51116,
+     -51398,
+     -54418,
+     -33465,
+     -33465,
+     -60900,
+     -60900,
+     -60900,
+     -60590
+    ],
+    "top10_mean_at_100": -49913
+   },
+   "null": {
+    "genome": {
+     "bias": "calls",
+     "cash": 1.0,
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.01,
+       "seed": 341777
+      }
+     ],
+     "hold": 10,
+     "last_entry": 330,
+     "lock": 0.25,
+     "max_lots": 1,
+     "max_trades": 1,
+     "null": true,
+     "offset": 1,
+     "start": 45,
+     "stop": 0.15,
+     "target": 0.5,
+     "trail_act": 0.2,
+     "trail_give": 0.5
+    },
+    "training_fitness": -96.03,
+    "heldout": {
+     "0": {
+      "net": -24196.73,
+      "sessions": 196,
+      "trades": 141,
+      "target_days": 3,
+      "loss_days": 0,
+      "red_days": 93,
+      "green_days": 48,
+      "worst_day": -1475.64,
+      "best_day": 1675.44
+     },
+     "100": {
+      "net": -38152.76,
+      "sessions": 196,
+      "trades": 141,
+      "target_days": 3,
+      "loss_days": 0,
+      "red_days": 103,
+      "green_days": 38,
+      "worst_day": -1575.64,
+      "best_day": 1575.44
+     },
+     "200": {
+      "net": -52605.08,
+      "sessions": 196,
+      "trades": 141,
+      "target_days": 1,
+      "loss_days": 0,
+      "red_days": 112,
+      "green_days": 29,
+      "worst_day": -1675.64,
+      "best_day": 1500.78
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -38153,
+     -37726,
+     -39608,
+     -44140,
+     -35601,
+     -41699,
+     -41699,
+     -42061,
+     -42134,
+     -41994
+    ],
+    "top10_mean_at_100": -40481
+   }
+  },
+  "2025": {
+   "real": {
+    "genome": {
+     "bias": "with_daily",
+     "cash": 1.0,
+     "families": [
+      {
+       "buf": 0.0,
+       "kind": "ORB",
+       "n": 30
+      },
+      {
+       "k": 5,
+       "kind": "MOMO",
+       "vwap": true,
+       "z": 1.0
+      }
+     ],
+     "hold": 15,
+     "last_entry": 300,
+     "lock": 0.5,
+     "max_lots": 2,
+     "max_trades": 1,
+     "null": false,
+     "offset": 0,
+     "start": 15,
+     "stop": 0.1,
+     "target": 0.3,
+     "trail_act": 0.2,
+     "trail_give": 0.5
+    },
+    "training_fitness": -61.0,
+    "heldout": {
+     "0": {
+      "net": 11486.24,
+      "sessions": 194,
+      "trades": 171,
+      "target_days": 43,
+      "loss_days": 0,
+      "red_days": 92,
+      "green_days": 79,
+      "worst_day": -1551.86,
+      "best_day": 6146.14
+     },
+     "100": {
+      "net": -22069.73,
+      "sessions": 194,
+      "trades": 171,
+      "target_days": 34,
+      "loss_days": 0,
+      "red_days": 101,
+      "green_days": 70,
+      "worst_day": -1670.5,
+      "best_day": 5946.14
+     },
+     "200": {
+      "net": -45981.58,
+      "sessions": 194,
+      "trades": 171,
+      "target_days": 31,
+      "loss_days": 0,
+      "red_days": 108,
+      "green_days": 63,
+      "worst_day": -1870.5,
+      "best_day": 5746.14
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -22070,
+     -34094,
+     -35253,
+     -34094,
+     -35253,
+     -34094,
+     -31190,
+     -17749,
+     -17749,
+     -23736
+    ],
+    "top10_mean_at_100": -28528
+   },
+   "null": {
+    "genome": {
+     "bias": "with_daily",
+     "cash": 0.8,
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.1,
+       "seed": 907267
+      }
+     ],
+     "hold": 120,
+     "last_entry": 255,
+     "lock": 1.0,
+     "max_lots": 1,
+     "max_trades": 5,
+     "null": true,
+     "offset": -1,
+     "start": 1,
+     "stop": 0.2,
+     "target": 1.0,
+     "trail_act": 0.0,
+     "trail_give": 0.5
+    },
+    "training_fitness": 38.58,
+    "heldout": {
+     "0": {
+      "net": 6000.83,
+      "sessions": 194,
+      "trades": 226,
+      "target_days": 91,
+      "loss_days": 9,
+      "red_days": 80,
+      "green_days": 94,
+      "worst_day": -2990.69,
+      "best_day": 8852.16
+     },
+     "100": {
+      "net": -14601.31,
+      "sessions": 194,
+      "trades": 216,
+      "target_days": 86,
+      "loss_days": 9,
+      "red_days": 88,
+      "green_days": 86,
+      "worst_day": -2982.57,
+      "best_day": 8652.16
+     },
+     "200": {
+      "net": -31641.38,
+      "sessions": 194,
+      "trades": 208,
+      "target_days": 84,
+      "loss_days": 1,
+      "red_days": 90,
+      "green_days": 84,
+      "worst_day": -2952.41,
+      "best_day": 5601.73
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -14601,
+     10369,
+     10369,
+     4978,
+     -23791,
+     -2833,
+     -2833,
+     -15632,
+     -3262,
+     -3262
+    ],
+    "top10_mean_at_100": -4050
+   }
+  },
+  "2026": {
+   "real": {
+    "genome": {
+     "bias": "with_daily",
+     "cash": 1.0,
+     "families": [
+      {
+       "fast": 13,
+       "kind": "TPB",
+       "look": 3,
+       "slow": 21,
+       "touch": 0.5
+      },
+      {
+       "buf": 0.5,
+       "fast": 5,
+       "kind": "VWAPX"
+      }
+     ],
+     "hold": 60,
+     "last_entry": 330,
+     "lock": 0.25,
+     "max_lots": 2,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 15,
+     "stop": 0.1,
+     "target": 0.5,
+     "trail_act": 0.05,
+     "trail_give": 0.5
+    },
+    "training_fitness": 1.77,
+    "heldout": {
+     "0": {
+      "net": -16823.92,
+      "sessions": 160,
+      "trades": 139,
+      "target_days": 26,
+      "loss_days": 0,
+      "red_days": 65,
+      "green_days": 74,
+      "worst_day": -1577.76,
+      "best_day": 3747.24
+     },
+     "100": {
+      "net": -39444.71,
+      "sessions": 160,
+      "trades": 139,
+      "target_days": 19,
+      "loss_days": 0,
+      "red_days": 66,
+      "green_days": 73,
+      "worst_day": -1772.78,
+      "best_day": 3647.24
+     },
+     "200": {
+      "net": -58795.42,
+      "sessions": 160,
+      "trades": 139,
+      "target_days": 15,
+      "loss_days": 0,
+      "red_days": 77,
+      "green_days": 62,
+      "worst_day": -1972.78,
+      "best_day": 3547.24
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -39445,
+     -45073,
+     -34551,
+     -44998,
+     -35014,
+     -44579,
+     -38889,
+     -38815,
+     -38815,
+     -39183
+    ],
+    "top10_mean_at_100": -39936
+   },
+   "null": {
+    "genome": {
+     "bias": "with_daily",
+     "cash": 1.0,
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.02,
+       "seed": 972383
+      }
+     ],
+     "hold": 120,
+     "last_entry": 300,
+     "lock": 0.5,
+     "max_lots": 1,
+     "max_trades": 1,
+     "null": true,
+     "offset": -1,
+     "start": 45,
+     "stop": 0.08,
+     "target": 0.5,
+     "trail_act": 0.0,
+     "trail_give": 0.5
+    },
+    "training_fitness": -44.01,
+    "heldout": {
+     "0": {
+      "net": 18795.18,
+      "sessions": 160,
+      "trades": 131,
+      "target_days": 47,
+      "loss_days": 0,
+      "red_days": 79,
+      "green_days": 52,
+      "worst_day": -1276.08,
+      "best_day": 3919.21
+     },
+     "100": {
+      "net": -110.99,
+      "sessions": 160,
+      "trades": 131,
+      "target_days": 44,
+      "loss_days": 0,
+      "red_days": 81,
+      "green_days": 50,
+      "worst_day": -1376.08,
+      "best_day": 3819.21
+     },
+     "200": {
+      "net": -10782.94,
+      "sessions": 160,
+      "trades": 131,
+      "target_days": 40,
+      "loss_days": 0,
+      "red_days": 83,
+      "green_days": 48,
+      "worst_day": -1476.08,
+      "best_day": 3719.21
+     }
+    },
+    "top10_heldout_net_at_100": [
+     -111,
+     -23787,
+     -5104,
+     -24873,
+     -25227,
+     1142,
+     -11769,
+     -23502,
+     -24587,
+     -24233
+    ],
+    "top10_mean_at_100": -16205
+   }
+  }
+ },
+ "final": {
+  "genome": {
+   "bias": "with_daily",
+   "cash": 1.0,
+   "families": [
+    {
+     "buf": 0.5,
+     "kind": "ORB",
+     "n": 15
+    },
+    {
+     "k": 5,
+     "kind": "MOMO",
+     "vwap": true,
+     "z": 1.5
+    }
+   ],
+   "hold": 60,
+   "last_entry": 300,
+   "lock": 0.5,
+   "max_lots": 1,
+   "max_trades": 1,
+   "null": false,
+   "offset": 0,
+   "start": 1,
+   "stop": 0.08,
+   "target": 0.2,
+   "trail_act": 0.1,
+   "trail_give": 0.3
+  },
+  "per_year": {
+   "0": {
+    "2023": {
+     "net": 9351.69,
+     "sessions": 192,
+     "trades": 164,
+     "target_days": 4,
+     "loss_days": 0,
+     "red_days": 84,
+     "green_days": 80,
+     "worst_day": -833.59,
+     "best_day": 1573.37
+    },
+    "2024": {
+     "net": 9149.25,
+     "sessions": 196,
+     "trades": 156,
+     "target_days": 23,
+     "loss_days": 0,
+     "red_days": 87,
+     "green_days": 69,
+     "worst_day": -1255.24,
+     "best_day": 1904.15
+    },
+    "2025": {
+     "net": 11400.68,
+     "sessions": 194,
+     "trades": 156,
+     "target_days": 19,
+     "loss_days": 0,
+     "red_days": 85,
+     "green_days": 71,
+     "worst_day": -1267.26,
+     "best_day": 3421.06
+    },
+    "2026": {
+     "net": 14601.04,
+     "sessions": 160,
+     "trades": 122,
+     "target_days": 23,
+     "loss_days": 0,
+     "red_days": 66,
+     "green_days": 56,
+     "worst_day": -1267.26,
+     "best_day": 8645.27
+    }
+   },
+   "100": {
+    "2023": {
+     "net": -6847.19,
+     "sessions": 192,
+     "trades": 164,
+     "target_days": 2,
+     "loss_days": 0,
+     "red_days": 85,
+     "green_days": 79,
+     "worst_day": -933.59,
+     "best_day": 1502.92
+    },
+    "2024": {
+     "net": -3573.18,
+     "sessions": 196,
+     "trades": 156,
+     "target_days": 16,
+     "loss_days": 0,
+     "red_days": 88,
+     "green_days": 68,
+     "worst_day": -1355.24,
+     "best_day": 8403.74
+    },
+    "2025": {
+     "net": -6246.55,
+     "sessions": 194,
+     "trades": 156,
+     "target_days": 16,
+     "loss_days": 0,
+     "red_days": 85,
+     "green_days": 71,
+     "worst_day": -1367.26,
+     "best_day": 1955.88
+    },
+    "2026": {
+     "net": 2864.24,
+     "sessions": 160,
+     "trades": 122,
+     "target_days": 20,
+     "loss_days": 0,
+     "red_days": 66,
+     "green_days": 56,
+     "worst_day": -1367.26,
+     "best_day": 8545.27
+    }
+   },
+   "200": {
+    "2023": {
+     "net": -23674.72,
+     "sessions": 192,
+     "trades": 164,
+     "target_days": 1,
+     "loss_days": 0,
+     "red_days": 86,
+     "green_days": 78,
+     "worst_day": -1033.59,
+     "best_day": 1500.23
+    },
+    "2024": {
+     "net": -21799.32,
+     "sessions": 196,
+     "trades": 156,
+     "target_days": 9,
+     "loss_days": 0,
+     "red_days": 88,
+     "green_days": 68,
+     "worst_day": -1455.24,
+     "best_day": 8303.74
+    },
+    "2025": {
+     "net": -22057.5,
+     "sessions": 194,
+     "trades": 156,
+     "target_days": 14,
+     "loss_days": 0,
+     "red_days": 85,
+     "green_days": 71,
+     "worst_day": -1467.26,
+     "best_day": 1815.05
+    },
+    "2026": {
+     "net": -10156.75,
+     "sessions": 160,
+     "trades": 122,
+     "target_days": 16,
+     "loss_days": 0,
+     "red_days": 66,
+     "green_days": 56,
+     "worst_day": -1467.26,
+     "best_day": 8445.27
+    }
+   }
+  }
+ },
+ "checks": {
+  "heldout_positive_years": 0,
+  "heldout_sum_real": -122146,
+  "heldout_sum_null": -135115,
+  "final_four_year_net_at_200": -77688,
+  "final_years_positive_at_100": 1,
+  "search_generalises": false,
+  "final_robust": false,
+  "verdict": "NOT PROVEN"
+ },
+ "ledger": {
+  "every2|0|net": {
+   "mode": "every2",
+   "stress": 0.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": 34726,
+   "refilled": 216966,
+   "won_on_green_days": 251692,
+   "final_wallet": 33750,
+   "wallet_steps": 2,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-02-02",
+     "new_wallet": 33750,
+     "target_now": 2250
+    }
+   ],
+   "target_days": 56,
+   "loss_limit_days": 0,
+   "green_days": 281,
+   "red_days": 327,
+   "flat_days": 134,
+   "worst_day": -1690,
+   "best_day": 3421,
+   "max_fall": 8296,
+   "longest_red_streak": 7
+  },
+  "every2|0|gross": {
+   "mode": "every2",
+   "stress": 0.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": 16650,
+   "refilled": 222439,
+   "won_on_green_days": 239089,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-03-22",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2023-10-23",
+     "new_wallet": 33750,
+     "target_now": 2250
+    },
+    {
+     "day": "2024-05-27",
+     "new_wallet": 50625,
+     "target_now": 2250
+    },
+    {
+     "day": "2025-01-21",
+     "new_wallet": 75938,
+     "target_now": 3375
+    },
+    {
+     "day": "2026-03-13",
+     "new_wallet": 113906,
+     "target_now": 3375
+    }
+   ],
+   "target_days": 7,
+   "loss_limit_days": 0,
+   "green_days": 279,
+   "red_days": 331,
+   "flat_days": 132,
+   "worst_day": -1690,
+   "best_day": 2780,
+   "max_fall": 12416,
+   "longest_red_streak": 7
+  },
+  "every2|100|net": {
+   "mode": "every2",
+   "stress": 100.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -13803,
+   "refilled": 242985,
+   "won_on_green_days": 229182,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 54,
+   "loss_limit_days": 0,
+   "green_days": 274,
+   "red_days": 324,
+   "flat_days": 144,
+   "worst_day": -1367,
+   "best_day": 8545,
+   "max_fall": 24517,
+   "longest_red_streak": 11
+  },
+  "every2|100|gross": {
+   "mode": "every2",
+   "stress": 100.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -43663,
+   "refilled": 255655,
+   "won_on_green_days": 211992,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-04-17",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2023-12-06",
+     "new_wallet": 33750,
+     "target_now": 2250
+    },
+    {
+     "day": "2024-08-09",
+     "new_wallet": 50625,
+     "target_now": 2250
+    },
+    {
+     "day": "2025-04-28",
+     "new_wallet": 75938,
+     "target_now": 3375
+    },
+    {
+     "day": "2026-07-16",
+     "new_wallet": 113906,
+     "target_now": 3375
+    }
+   ],
+   "target_days": 5,
+   "loss_limit_days": 0,
+   "green_days": 277,
+   "red_days": 333,
+   "flat_days": 132,
+   "worst_day": -1790,
+   "best_day": 2680,
+   "max_fall": 45940,
+   "longest_red_streak": 11
+  },
+  "every2|200|net": {
+   "mode": "every2",
+   "stress": 200.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -77688,
+   "refilled": 275441,
+   "won_on_green_days": 197752,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 40,
+   "loss_limit_days": 0,
+   "green_days": 273,
+   "red_days": 325,
+   "flat_days": 144,
+   "worst_day": -1467,
+   "best_day": 8445,
+   "max_fall": 78609,
+   "longest_red_streak": 11
+  },
+  "every2|200|gross": {
+   "mode": "every2",
+   "stress": 200.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -100877,
+   "refilled": 287544,
+   "won_on_green_days": 186667,
+   "final_wallet": 75938,
+   "wallet_steps": 4,
+   "step_days": [
+    {
+     "day": "2023-05-19",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-02-09",
+     "new_wallet": 33750,
+     "target_now": 2250
+    },
+    {
+     "day": "2024-10-25",
+     "new_wallet": 50625,
+     "target_now": 2250
+    },
+    {
+     "day": "2025-09-10",
+     "new_wallet": 75938,
+     "target_now": 3375
+    }
+   ],
+   "target_days": 6,
+   "loss_limit_days": 0,
+   "green_days": 277,
+   "red_days": 333,
+   "flat_days": 132,
+   "worst_day": -1890,
+   "best_day": 2580,
+   "max_fall": 101798,
+   "longest_red_streak": 11
+  },
+  "every3|0|net": {
+   "mode": "every3",
+   "stress": 0.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": 43222,
+   "refilled": 216966,
+   "won_on_green_days": 260188,
+   "final_wallet": 33750,
+   "wallet_steps": 2,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-02-02",
+     "new_wallet": 33750,
+     "target_now": 1500
+    }
+   ],
+   "target_days": 73,
+   "loss_limit_days": 0,
+   "green_days": 281,
+   "red_days": 327,
+   "flat_days": 134,
+   "worst_day": -1690,
+   "best_day": 8645,
+   "max_fall": 7442,
+   "longest_red_streak": 7
+  },
+  "every3|0|gross": {
+   "mode": "every3",
+   "stress": 0.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": 23196,
+   "refilled": 221172,
+   "won_on_green_days": 244368,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-03-22",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2023-10-23",
+     "new_wallet": 33750,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-05-21",
+     "new_wallet": 50625,
+     "target_now": 2250
+    },
+    {
+     "day": "2025-01-17",
+     "new_wallet": 75938,
+     "target_now": 2250
+    },
+    {
+     "day": "2026-02-25",
+     "new_wallet": 113906,
+     "target_now": 2250
+    }
+   ],
+   "target_days": 20,
+   "loss_limit_days": 0,
+   "green_days": 280,
+   "red_days": 330,
+   "flat_days": 132,
+   "worst_day": -1690,
+   "best_day": 2780,
+   "max_fall": 8330,
+   "longest_red_streak": 7
+  },
+  "every3|100|net": {
+   "mode": "every3",
+   "stress": 100.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -13803,
+   "refilled": 242985,
+   "won_on_green_days": 229182,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 54,
+   "loss_limit_days": 0,
+   "green_days": 274,
+   "red_days": 324,
+   "flat_days": 144,
+   "worst_day": -1367,
+   "best_day": 8545,
+   "max_fall": 24517,
+   "longest_red_streak": 11
+  },
+  "every3|100|gross": {
+   "mode": "every3",
+   "stress": 100.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -36403,
+   "refilled": 254288,
+   "won_on_green_days": 217885,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-04-17",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2023-12-06",
+     "new_wallet": 33750,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-07-26",
+     "new_wallet": 50625,
+     "target_now": 2250
+    },
+    {
+     "day": "2025-04-08",
+     "new_wallet": 75938,
+     "target_now": 2250
+    },
+    {
+     "day": "2026-05-15",
+     "new_wallet": 113906,
+     "target_now": 2250
+    }
+   ],
+   "target_days": 18,
+   "loss_limit_days": 0,
+   "green_days": 278,
+   "red_days": 332,
+   "flat_days": 132,
+   "worst_day": -1790,
+   "best_day": 2680,
+   "max_fall": 38680,
+   "longest_red_streak": 11
+  },
+  "every3|200|net": {
+   "mode": "every3",
+   "stress": 200.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -77688,
+   "refilled": 275441,
+   "won_on_green_days": 197752,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 40,
+   "loss_limit_days": 0,
+   "green_days": 273,
+   "red_days": 325,
+   "flat_days": 144,
+   "worst_day": -1467,
+   "best_day": 8445,
+   "max_fall": 78609,
+   "longest_red_streak": 11
+  },
+  "every3|200|gross": {
+   "mode": "every3",
+   "stress": 200.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -99583,
+   "refilled": 287544,
+   "won_on_green_days": 187962,
+   "final_wallet": 75938,
+   "wallet_steps": 4,
+   "step_days": [
+    {
+     "day": "2023-05-19",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-02-09",
+     "new_wallet": 33750,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-10-22",
+     "new_wallet": 50625,
+     "target_now": 2250
+    },
+    {
+     "day": "2025-09-10",
+     "new_wallet": 75938,
+     "target_now": 2250
+    }
+   ],
+   "target_days": 12,
+   "loss_limit_days": 0,
+   "green_days": 277,
+   "red_days": 333,
+   "flat_days": 132,
+   "worst_day": -1890,
+   "best_day": 2580,
+   "max_fall": 100503,
+   "longest_red_streak": 11
+  },
+  "prop|0|net": {
+   "mode": "prop",
+   "stress": 0.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": 29168,
+   "refilled": 218311,
+   "won_on_green_days": 247479,
+   "final_wallet": 22500,
+   "wallet_steps": 1,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 2250
+    }
+   ],
+   "target_days": 25,
+   "loss_limit_days": 0,
+   "green_days": 280,
+   "red_days": 328,
+   "flat_days": 134,
+   "worst_day": -1690,
+   "best_day": 2780,
+   "max_fall": 8330,
+   "longest_red_streak": 7
+  },
+  "prop|0|gross": {
+   "mode": "prop",
+   "stress": 0.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": 17415,
+   "refilled": 222439,
+   "won_on_green_days": 239854,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-03-22",
+     "new_wallet": 22500,
+     "target_now": 2250
+    },
+    {
+     "day": "2023-10-23",
+     "new_wallet": 33750,
+     "target_now": 3375
+    },
+    {
+     "day": "2024-05-27",
+     "new_wallet": 50625,
+     "target_now": 5062
+    },
+    {
+     "day": "2025-01-17",
+     "new_wallet": 75938,
+     "target_now": 7594
+    },
+    {
+     "day": "2026-03-11",
+     "new_wallet": 113906,
+     "target_now": 11391
+    }
+   ],
+   "target_days": 3,
+   "loss_limit_days": 0,
+   "green_days": 279,
+   "red_days": 331,
+   "flat_days": 132,
+   "worst_day": -1690,
+   "best_day": 2780,
+   "max_fall": 12416,
+   "longest_red_streak": 7
+  },
+  "prop|100|net": {
+   "mode": "prop",
+   "stress": 100.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -13803,
+   "refilled": 242985,
+   "won_on_green_days": 229182,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 54,
+   "loss_limit_days": 0,
+   "green_days": 274,
+   "red_days": 324,
+   "flat_days": 144,
+   "worst_day": -1367,
+   "best_day": 8545,
+   "max_fall": 24517,
+   "longest_red_streak": 11
+  },
+  "prop|100|gross": {
+   "mode": "prop",
+   "stress": 100.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -43384,
+   "refilled": 255655,
+   "won_on_green_days": 212272,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-04-17",
+     "new_wallet": 22500,
+     "target_now": 2250
+    },
+    {
+     "day": "2023-12-06",
+     "new_wallet": 33750,
+     "target_now": 3375
+    },
+    {
+     "day": "2024-08-09",
+     "new_wallet": 50625,
+     "target_now": 5062
+    },
+    {
+     "day": "2025-04-22",
+     "new_wallet": 75938,
+     "target_now": 7594
+    },
+    {
+     "day": "2026-07-16",
+     "new_wallet": 113906,
+     "target_now": 11391
+    }
+   ],
+   "target_days": 2,
+   "loss_limit_days": 0,
+   "green_days": 277,
+   "red_days": 333,
+   "flat_days": 132,
+   "worst_day": -1790,
+   "best_day": 2680,
+   "max_fall": 45660,
+   "longest_red_streak": 11
+  },
+  "prop|200|net": {
+   "mode": "prop",
+   "stress": 200.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -77688,
+   "refilled": 275441,
+   "won_on_green_days": 197752,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 40,
+   "loss_limit_days": 0,
+   "green_days": 273,
+   "red_days": 325,
+   "flat_days": 144,
+   "worst_day": -1467,
+   "best_day": 8445,
+   "max_fall": 78609,
+   "longest_red_streak": 11
+  },
+  "prop|200|gross": {
+   "mode": "prop",
+   "stress": 200.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -104811,
+   "refilled": 289011,
+   "won_on_green_days": 184200,
+   "final_wallet": 75938,
+   "wallet_steps": 4,
+   "step_days": [
+    {
+     "day": "2023-05-19",
+     "new_wallet": 22500,
+     "target_now": 2250
+    },
+    {
+     "day": "2024-02-02",
+     "new_wallet": 33750,
+     "target_now": 3375
+    },
+    {
+     "day": "2024-10-22",
+     "new_wallet": 50625,
+     "target_now": 5062
+    },
+    {
+     "day": "2025-10-09",
+     "new_wallet": 75938,
+     "target_now": 7594
+    }
+   ],
+   "target_days": 1,
+   "loss_limit_days": 0,
+   "green_days": 276,
+   "red_days": 334,
+   "flat_days": 132,
+   "worst_day": -1890,
+   "best_day": 2580,
+   "max_fall": 105732,
+   "longest_red_streak": 11
+  },
+  "flat|0|net": {
+   "mode": "flat",
+   "stress": 0.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": 43222,
+   "refilled": 216966,
+   "won_on_green_days": 260188,
+   "final_wallet": 33750,
+   "wallet_steps": 2,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-02-02",
+     "new_wallet": 33750,
+     "target_now": 1500
+    }
+   ],
+   "target_days": 73,
+   "loss_limit_days": 0,
+   "green_days": 281,
+   "red_days": 327,
+   "flat_days": 134,
+   "worst_day": -1690,
+   "best_day": 8645,
+   "max_fall": 7442,
+   "longest_red_streak": 7
+  },
+  "flat|0|gross": {
+   "mode": "flat",
+   "stress": 0.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": 41633,
+   "refilled": 218604,
+   "won_on_green_days": 260237,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-03-22",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2023-10-23",
+     "new_wallet": 33750,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-05-21",
+     "new_wallet": 50625,
+     "target_now": 1500
+    },
+    {
+     "day": "2025-01-10",
+     "new_wallet": 75938,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-01-29",
+     "new_wallet": 113906,
+     "target_now": 1500
+    }
+   ],
+   "target_days": 73,
+   "loss_limit_days": 0,
+   "green_days": 282,
+   "red_days": 328,
+   "flat_days": 132,
+   "worst_day": -1690,
+   "best_day": 8645,
+   "max_fall": 7442,
+   "longest_red_streak": 7
+  },
+  "flat|100|net": {
+   "mode": "flat",
+   "stress": 100.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -13803,
+   "refilled": 242985,
+   "won_on_green_days": 229182,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 54,
+   "loss_limit_days": 0,
+   "green_days": 274,
+   "red_days": 324,
+   "flat_days": 144,
+   "worst_day": -1367,
+   "best_day": 8545,
+   "max_fall": 24517,
+   "longest_red_streak": 11
+  },
+  "flat|100|gross": {
+   "mode": "flat",
+   "stress": 100.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -20924,
+   "refilled": 254288,
+   "won_on_green_days": 233365,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-04-17",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2023-12-06",
+     "new_wallet": 33750,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-07-26",
+     "new_wallet": 50625,
+     "target_now": 1500
+    },
+    {
+     "day": "2025-03-21",
+     "new_wallet": 75938,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-04-29",
+     "new_wallet": 113906,
+     "target_now": 1500
+    }
+   ],
+   "target_days": 56,
+   "loss_limit_days": 0,
+   "green_days": 278,
+   "red_days": 332,
+   "flat_days": 132,
+   "worst_day": -1790,
+   "best_day": 8545,
+   "max_fall": 27693,
+   "longest_red_streak": 11
+  },
+  "flat|200|net": {
+   "mode": "flat",
+   "stress": 200.0,
+   "counting": "net",
+   "sessions": 742,
+   "total_net": -77688,
+   "refilled": 275441,
+   "won_on_green_days": 197752,
+   "final_wallet": 15000,
+   "wallet_steps": 0,
+   "step_days": [],
+   "target_days": 40,
+   "loss_limit_days": 0,
+   "green_days": 273,
+   "red_days": 325,
+   "flat_days": 144,
+   "worst_day": -1467,
+   "best_day": 8445,
+   "max_fall": 78609,
+   "longest_red_streak": 11
+  },
+  "flat|200|gross": {
+   "mode": "flat",
+   "stress": 200.0,
+   "counting": "gross",
+   "sessions": 742,
+   "total_net": -85509,
+   "refilled": 287544,
+   "won_on_green_days": 202035,
+   "final_wallet": 113906,
+   "wallet_steps": 5,
+   "step_days": [
+    {
+     "day": "2023-05-19",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-02-09",
+     "new_wallet": 33750,
+     "target_now": 1500
+    },
+    {
+     "day": "2024-10-22",
+     "new_wallet": 50625,
+     "target_now": 1500
+    },
+    {
+     "day": "2025-07-18",
+     "new_wallet": 75938,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-09-03",
+     "new_wallet": 113906,
+     "target_now": 1500
+    }
+   ],
+   "target_days": 42,
+   "loss_limit_days": 0,
+   "green_days": 277,
+   "red_days": 333,
+   "flat_days": 132,
+   "worst_day": -1890,
+   "best_day": 8445,
+   "max_fall": 86429,
+   "longest_red_streak": 11
+  }
+ }
+}

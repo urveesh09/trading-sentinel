@@ -1,3 +1,324 @@
+## November 13 - SN Gold v5 paper module (Dev, for deploy on the owner's word): `python-engine/sn_gold.py`
+
+**The owner, Nov 13:** "whatever configuration ... of the best Gold that we have set it up to run tomorrow as an independent module ... push that merge that and deploy it in production ... restart and rebuild everything right away". Starting amount and refill rules were left to the agent.
+
+**What runs:** SN Gold v5 (research `docs/research/fno/sn-gold/SN_GOLD_V5.json`), on **paper only**, beside the main book. The owner-facing rules are in `docs/SN_GOLD.md`.
+- **Entries:** N11's live paper-record signals (NIFTY), plus R0.85's extra signals (stand-aside at 0.85 against N11's 0.9), taken from the same chain snapshot when N11 records them. One position at a time.
+- **Size and strike:**
+  - lots = floor(W / 15k), halved on N11's low-volatility days;
+  - the deepest in-the-money strike every lot fits (by wallet per lot);
+  - a 20% day stop.
+- **Scale-in:** once, at a 1-ATR future move, to the full wallet inside the day room.
+- **Exits:** with N11's paper lot; winners ≥ +25% kept on a 3-ATR trail to 15:10; failsafe 15:15.
+- **ATR:** from Kite 1-minute candles of the front future (completed minutes).
+- **Wallet:** ₹30,000 (the owner left the amount to the agent; SN70/SN71); losing days refilled; +50% after net profit = wallet, at most 3 times (₹1,01,250); booked after 15:20.
+- **Messages:** owner messages fire-and-forget.
+- **Tables:** `sn_gold_positions`, `_days`, `_wallet`, `_skips`, `_bars` (new tables only).
+- **Settings:** `SN_GOLD_*` in `config.py`; off with `SN_GOLD_ENABLED=false`.
+- **Hooks:** two guarded hooks in `fno_orchestrator.py`, after `fno_n11.record_paper_signal` and after `fno_n11.tick`.
+
+**Verification:**
+- `tests/test_sn_gold.py`: 20 passed.
+- The full suite: 6,385 passed, 4 skipped (exit 0, 11:39).
+- Atlas regenerated.
+
+**Rollback:** `SN_GOLD_ENABLED=false` and recreate the engine, or redeploy the previous release. No existing table changes.
+
+## November 13 - SN51–SN75 (research, Dev only): SN Gold v5, frozen beside v3/v4
+
+**Study:** `docs/research/fno/2026-11-13-sn51/` (README, lab built from frozen v4; `d1d5f2ba`). Frozen in `docs/research/fno/sn-gold/` with verifiers (v3, v4 and v5 all reproduce) and tags `sn-gold-v3`, `-v4`, `-v5`.
+
+- **v5 = v4 + R0.85's extra entries + scale-in at a 1-ATR index move + pyramid to the full wallet** (inside the day room). Net at the end:
+
+  | Wallet | v5 | v4 |
+  |---|---:|---:|
+  | A | +₹1,51,155 | +₹1,30,530 |
+  | B | +₹1,76,846 | |
+  | C | +₹2,80,508 | |
+  | G3 | +₹3,99,906 | +₹3,26,853 |
+
+- **Held out:** v5 is picked A 4/4, G3 4/4, B and C 3/4.
+- **Risk:** survives +₹400 stress, 1–2% premium slippage, 2-minute delays and partial fills. One year at ₹15k: median +₹36.5k, 3.5% losing years.
+- **Real account with no refills:** ₹30k never dies over 15 start quarters; ₹15k dies 3 times.
+- **Closed:** OI, ADX and recent-form sizing; day profit locks; a 30% day limit; 15:20 holds.
+- **No profit cap exists in Gold.** "Stop after k" caps size; uncapped growth is not achievable at real fills.
+
+**Status:** research only. Forward: `sn-gold/FORWARD_V5.md` (N11 signals only until R0.85 has a live record).
+
+## November 13 - SN31–SN50 (research, Dev only): SN Gold v4; v3 and v4 frozen with verifiers and tags
+
+**Study:** `docs/research/fno/2026-11-13-sn31/` (lab copy, README; `84930331`).
+- **Freeze:** `docs/research/fno/sn-gold/` holds `gold_v3.py`/`gold_v4.py` (frozen harness copies), `SN_GOLD_V3.json`/`SN_GOLD_V4.json`, `verify_gold.py`/`verify_gold_v4.py` (both reproduce) and the tags `sn-gold-v3`/`sn-gold-v4`.
+- **v4 = v3 + in-the-money depth by money per lot** (< ₹17.5k 1, < ₹20k 2, else 3):
+  - A +₹1,30,530 (unchanged), B +₹1,59,282 (held-out pick every fold), C +₹2,27,949, G3 +₹3,26,853, G5 +₹5,45,819;
+  - ≥ v3 at +₹300 and +₹400 stress.
+- **Plateaus:** v3's extension and volatility parameters sit on plateaus.
+- **Rejected:** more scale-ins, restricted scale-ins, intraday-volatility sizing, trades-per-day caps.
+- **Risk:**
+  - one year at ₹15k: median +₹31,369, a 4.7% chance of a losing year, refill median ₹24,154;
+  - removing the 10 best days of 742 leaves +₹30,055, so profit is concentrated in a few days;
+  - 2023 losses are TPB's.
+- **Owner levers:** step after 50% profit gives G3 +₹3,53,995 with the same worst day; ×2 steps are bigger but riskier.
+
+**Status:** research only. The forward check is `sn-gold/FORWARD_V4.md` (from Nov 13).
+
+## November 12 - SN19–SN30 (research, Dev only): SN Gold → v3; ITM-when-affordable and scale-in kept, eight ideas rejected
+
+**Study:** `docs/research/fno/2026-11-12-sn19/` (`gold.py` harness, README, `FORWARD.md`; `c3d0d767`). Every idea is scored at every wallet with per-year tables.
+
+- **SN Gold** (owner's name): N11's entries and exits, winners past the clock kept with a 3-ATR index trail, volatility-halved lots, grow from ₹15k stopped after step 3. Result: +₹2,40,189.
+- **v2:** + one strike in the money when the wallet can pay (SN19b). The held-out pick in every fold for A/B/C; G3 +₹2,65,466.
+- **v3:** + scale-in of 1 lot at +10%, only when the whole position fits the day limit (SN28). G3 +₹3,25,635, the held-out pick in all 4 folds. Refilled ₹2,12,221; worst day −₹10,119.
+- **SN26:** v3 is still positive at +₹400 stress and with every entry 1 minute late.
+- **Rejected:** second chance after a loss, time-of-day / recent-form / gap sizing, hedges, debit spreads, scale-out. SN29 (all lots every day) is optional.
+- **Fix found:** the first scale-in could break the 20% day limit; it is now refused when the position doesn't fit.
+
+**Status:** research only. The v3 forward check (from Nov 13, ≥ 20 trades) is frozen in `sn19/FORWARD.md`.
+
+## November 12 - SN16–SN18 (research, Dev only): each idea scored at every wallet (A ₹15k, B ₹20k, C ₹30k sized, growth caps)
+
+**Study:** `docs/research/fno/2026-11-12-sn16/`. The benchmark reproduces in every wallet.
+
+| Idea | Result |
+|---|---|
+| **SN16:** keep N11 winners past its clock with a 3-ATR index trail | A +₹1,13,567; C +₹2,10,231; growth after 3 steps +₹2,40,189 (+₹38.6k). Held out it helps only the growing wallet (+₹2,37,980 against +₹2,01,565) |
+| **SN17:** re-enter after winners | Loses at every wallet |
+| **SN18:** size by days to expiry | Worse than the volatility rule |
+
+**Status:** research only.
+
+## November 12 - SN10–SN15 (research, Dev only): six iterations; wallet size and volatility sizing help, everything else doesn't
+
+**Summary:** `docs/research/fno/2026-11-12-sn15/README.md` (`dc008ce4`).
+
+| Iteration | What | Result |
+|---|---|---|
+| SN10 | Expiry mornings on 10-second bars (56 days) | Not proven: the pick made −₹20,705 on Apr–Sep 2026 |
+| SN11 | Exit before the dip | Every variant worse; the benchmark is held out every year |
+| SN12 | Wallet size | ₹20k at 1 lot +₹1,24,093 (buys N11's own contract) |
+| SN13 | Second lot only on high-volatility days at ₹30k | +₹2,08,778, refill ₹1,55,737, 2023 −₹1,011; a 10% day limit is worse |
+| SN14 | Growth-cap tables per year | In the README |
+| SN15 | Forward check frozen | `sn15/FORWARD.md`: A ₹15k / B ₹20k / C ₹30k volatility-sized, from Nov 13, ≥ 20 trades, from `fno_n11_paper` |
+
+**Status:** research only. In-sample entries.
+
+## November 12 - SN09 (research, Dev only): option open interest - NOT PROVEN; benchmark stays
+
+**Study:** `docs/research/fno/2026-11-12-sn09/` (freeze `627d8af8`).
+- **OI entries on N11's empty days** (PCR shift, writer flow, OI walls; 10,500 rule sets): held out −₹1,80,378, against random at −₹1,57,721.
+- **OI flow as a filter on N11's trades:** held out +₹71,964, against the benchmark's +₹1,11,995. Some settings halve the losing days in-sample, but they are not stable.
+- **10-second data** exists only for 27 expiry days.
+
+**Status:** research only.
+
+## November 12 - SN08 (research, Dev only): N11's quality rules relaxed - every relaxation loses; benchmark stays
+
+**Study:** `docs/research/fno/2026-11-12-sn08/`.
+- **Setup:** N11 through its lab chain with the stretched skip, the low-day direction rule and the 14:00 cutoff relaxed (8 books × 4 years).
+- **In the ₹15,000 wallet:**
+  - all relaxed: −₹23,477, trading on 250 days;
+  - the best relaxation (LATE): +₹97,851;
+  - the benchmark: +₹1,11,995.
+- **Held out:** the benchmark is picked every year. N11's quality rules are its edge.
+
+**Status:** research only.
+
+## November 12 - SN07 (research, Dev only): the real N11 with big-money rules off; zero-delay entry - benchmark stays
+
+**Study:** `docs/research/fno/2026-11-12-sn07/` (`a746c705`).
+- **Setup:** the N11 lab chain (parity exact, all four years), with kill switches, drawdown halt, premium cap and stand-aside off, plus 6 trades a day and 3 open positions.
+- **In the ₹15,000 wallet:** +₹90,287 against the benchmark's +₹1,11,995. 63 more engine trades, almost all in 2023: 2023 went from −₹7,059 to −₹30,644.
+- **N11's no-trade days come from its setups not appearing,** not from its money rules.
+- **Entering at the 5-minute bar's closing minute** (no delay): +₹1,08,818, no gain. A 2-minute shift would be look-ahead and is invalid.
+
+**Status:** research only.
+
+## November 12 - SN06 (research, Dev only): N11's entry ingredients without big-money rules - NOT PROVEN; benchmark stays
+
+**What was searched** (`docs/research/fno/2026-11-12-sn06/`, freeze `77c3c49b`, results `aaa21833`):
+- 5-minute or 1-minute setups, the daily ADX gate (from all 966 trading days), the DMI direction and N11-style exits;
+- no stand-aside, kill switches or premium cap, trading on ≥ 25% of sessions;
+- 15,600 rule sets.
+
+**Results:**
+- **Held out:** 1 of 4 years positive, −₹62,251, against random behind the same gates at −₹1,50,624. It beats random, but it loses.
+- **The combination** (N11 on its days, SN06 on the rest): +₹2,00,937 in-sample, but **+₹68,243 held out**, below the benchmark's +₹1,11,995.
+- **Per-year wallet-stop tables** for the benchmark are in the README.
+
+**Status:** research only; the SN02 forward check from Nov 13 is unchanged.
+
+## November 12 - SN04 + SN05 (research, Dev only): more trading days lose money; N11 alone stays best for ₹15,000
+
+**The owner's question:** why so many no-trade days? Make it active, not a filter system, and give the wallet stops per strategy.
+
+**SN04** (`docs/research/fno/2026-11-12-sn04/`, freeze `8bf68ae2`):
+- active entries (trading ≥ 50% of sessions) with N11-style index exits;
+- 15,600 rule sets;
+- held out: −₹1,51,769, against random entries with the same exits at −₹1,42,961. **NOT PROVEN.**
+- The edge is in N11's selection, not its exits.
+
+**SN05** (`docs/research/fno/2026-11-12-sn05/`, `1fc89f33`):
+- 136 library strategies (2024–2026) in the ₹15,000 wallet;
+- N11 alone made +₹1,19,054; the next best +₹20,426;
+- a greedy mix held out made +₹1,08,411, worse than N11 alone; random books were never added.
+- The wallet-stop tables for four N11 variants (steps 0–5) are in its `README.md`.
+- Benchmark A: step 0 +₹1,11,995 (refilled ₹91,635); step 3 +₹2,11,670 (refilled ₹1,93,352, worst day −₹10,117).
+
+**Status:** SN02 and its forward check from Nov 13 are unchanged. Research only.
+
+## November 12 - SN03 (research, Dev only): 66 variants on the SN02 benchmark; none beats it held out
+
+**The owner's follow-up:** beat the benchmark, have fewer losing days, simulate stopping the wallet growth after the 3rd, 4th, 5th step and so on, try fast exits, report the days won, lost and empty and the refills, and use the latest Zerodha charges.
+
+**Study:** `docs/research/fno/2026-11-12-sn03/` (`382ebcc5`).
+- **Charges:** checked against zerodha.com/charges on Nov 12; identical to `fno_costs`. Every result also carries +₹205 per lot per trade.
+- **The benchmark** (SN02: N11's entries and exits, one lot, ₹15,000, the out-of-the-money substitute):
+  - +₹1,11,995 over 742 sessions;
+  - 55 won, 63 lost, 624 with no trade;
+  - refilled ₹91,635; worst day −₹2,998.
+
+**Three rounds, each change chosen on three years and scored on the fourth:**
+- **Entry filters:** the best held-out was +₹1,08,692.
+- **Exit changes:** quick profits and breakeven stops add winning days but cut profit. Quick profit at +₹500 made 73 winning days and lost ₹25,412.
+- **N11's sister books** for more days: more losing days.
+- **No new trade once the day is up ₹1,500:** +₹1,06,990.
+- **Strike shifts and 2 lots:** no better held out.
+- **Confirming before buying:** misses the winners.
+- **Leaving trades that aren't working:** more losing days.
+- **The held-out picks** chose the benchmark, or something worse.
+
+**The wallet, stopped after step k** (1 lot per ₹15,000):
+- only 5 steps happened in four years;
+
+  | Stop after | Profit | Refilled | Worst day |
+  |---|---:|---:|---:|
+  | step 2 | +₹1,58,636 | ₹1,62,852 | −₹6,744 |
+  | step 3 | +₹2,11,670 | ₹1,93,352 | −₹10,117 |
+  | step 4 | +₹2,72,521 | ₹2,25,122 | −₹15,158 |
+  | step 5 | +₹2,92,818 | ₹2,29,766 | −₹15,158 |
+
+- 2023 lost money at every cap.
+
+**Status:** SN02 is unchanged. Its frozen forward check (`2026-11-12-sn02/FORWARD.md`, from Nov 13, ≥ 20 trades) is the only honest test. Research only.
+
+## November 12 - SN02 (research, Dev only): N11's entries in the ₹15,000 wallet; the 10% cap is the wrong shape
+
+**The owner's follow-up:** "Get it profitable", learn from N08–N012, with any data granularity. And "if at a certain point we stop increasing the wallet … and just continuously farm" the minimum, does that help?
+
+**Study:** `docs/research/fno/2026-11-12-sn02/` (`4dbbc169`). Exploratory and in-sample: no freeze before the runs, all years seen.
+- **Parity:** N11's stored one-year replays (`2026-11-02-fno-n11`, book N11), played in the SN01 simulator, match its entry and exit prices exactly.
+- **One lot in a fixed ₹15,000 wallet, N11's own exits,** the strike 1 step out of the money when a lot costs over ₹15,000, ₹3,000 day limit:
+  - +₹1,06,990 over four years at +₹205 per lot per trade;
+  - by year: 2023 −7,059, 2024 +35,618, 2025 +34,109, 2026 +44,322.
+- **Selling at the ₹1,500 target cuts that to +₹11,240.** The lock is the least bad overlay (+₹59,287 at a trail of 1.0 × target). N11's profit is in a few big winners.
+- **Buying both a call and a put:** none of 648 combinations is positive in every year, even at +₹0. Dead.
+- **Wallet:**
+  - farming ₹15,000 forever made +₹1,11,995, worst day −₹2,998;
+  - growing at most 2 steps made +₹2,39,621, worst day −₹6,751;
+  - unlimited growth reaches 59 lots and is not believable.
+- **2023 was the hardest stretch, not the easiest.** SN01 never grew the wallet at realistic costs, so growth was not why it lost.
+- **Forward so far** (looked at, so not counted): the main paper book's NIFTY N11 trades Nov 2–11 were about +₹141 per lot over 7 trades.
+
+**Frozen forward check:** `FORWARD.md`.
+- Sessions from Nov 13, from Production's existing one-lot record `fno_n11_paper` plus the quote archive for the out-of-the-money substitute.
+- PASS at ≥ 20 trades when net > 0 and net without the best trade > 0. That takes about 3–4 months.
+- No runtime change is needed.
+
+**Status:** research only. Real money only after a PASS and on the owner's word.
+
+## November 12 - SN01 (research, Dev only): a ₹15,000 fixed wallet for a 10% day - NOT PROVEN
+
+**The owner's idea, in their words:**
+- "SN01 … specifically for the small amount … ₹15,000".
+- "Earn exactly 10% … post charges … we sell all … and end the trading … for the day".
+- "The risk amount will be 20% of the total wallet".
+- Profits are banked and losses refilled, so the wallet stays fixed.
+- The wallet grows 50% after 100% of it in profit, and the target grows 50% every 2 (or 3) steps.
+- The owner's lock idea: once past 10%, lock 10% with a stop and let it run.
+- SN01 runs beside the N11/N012 paper main book and does not replace it.
+
+**Study:** `docs/research/fno/2026-11-12-sn01/`. Freeze `ca045b3c` (PLAN.md, rule, simulator, budget, 15 tests), results `07e692bf`.
+- **Data:** NIFTY weekly options, 1-minute Breeze candles, 2023 – Oct 28 2026. That is 742 non-expiry sessions, all already seen.
+- **Search:** 21,066 rule sets:
+  - entries: ORB, MOMO, TPB, VWAPX, EMAX, FADE and PDX, alone or in pairs;
+  - settings: stop, target, time, trail, 1–20 trades a day, strike, lots, bias and lock.
+- **Checks:**
+  - leave-one-year-out against a random-entry search with the same budget;
+  - extra cost of +₹0, +₹100 and +₹200 per lot per trade.
+
+**Result:**
+- **Held-out years at +₹100:** 0 of 4 positive. The sum was −₹1,22,146, against random's −₹1,35,115. At +₹0 only 2025 was positive.
+- **Every entry family loses about what random entries lose:** ₹194–219 per trade at +₹100, against random's ₹218. The more trades a day, the bigger the loss.
+- **The final pick** (in-sample): one trade a day, ORB15 or MOMO5 with the daily trend, ATM, 1 lot, stop 8%, target 20%, lock 0.5.
+  - Four years: +₹44,503 at +₹0, −₹13,803 at +₹100, −₹77,688 at +₹200.
+  - The ₹1,500 target was hit on only 69 of 742 days.
+- **The owner's wallet** (final pick, Jan 2023 → Oct 2026):
+  - every3: +₹43,222 at +₹0; every2: +₹34,726. Both took 2 steps, to ₹33,750.
+  - At +₹100 the wallet never grew.
+  - Gross counting grew the wallet 5 times while making only +₹16,650. Count net.
+- **Why it is hard:**
+  - in hindsight, one ATM lot reached +₹1,500 on 92–96% of days;
+  - a random side at 09:30 reached the target first on 54% of days, yet lost ₹1,79,368 over 741 days.
+- **The lock idea helps** on the final pick: −₹13,803 against −₹32,533 without it at +₹100, and +₹34,726 against +₹28,041 at +₹0. All four held-out picks chose a lock. In-sample.
+
+**Status:**
+- Research only. No runtime change, no Production write, no order.
+- The forward sessions Oct 29 – Nov 12 (forward-panel export `20261112T103005Z`) were left unseen for a later SN01 attempt.
+
+**Next (owner's call):**
+- Drop SN01, or run the final pick as a zero-cost paper shadow scored forward for at least 20 sessions.
+- Real money only on the owner's word, by its own runbook.
+
+## November 12 - Deployed: Production `3ece6a8b` (PR #136: N11 login reminders + N13 NIFTY-only paper main book)
+
+**What was deployed:**
+- The owner's word, Nov 12: "just deploy the latest changes in prod … and restart and rebuild it".
+- PR #136 (`codex/production-correction-hedge-p0` at `aecbdbc2` → `evolve/smart-strategies`) was merged as `3ece6a8b`. It holds 9 commits on top of `65677dc6`.
+- The release carries:
+  - **N11** (`fdaaa0b8`): the partner's 08:00 login reminder, and the owner's 07:00 nudge sent after a late boot;
+  - **N13** (`aecbdbc2`):
+    - the N11 paper main book trades NIFTY only (`FNO_N13_MAIN_UNDERLYINGS="NIFTY"`); SENSEX signals are logged as `n13_shadow:<strategy>`;
+    - the minute-look lock, built with `FNO_N13_LOCK_LOOK_SEC=0` (off);
+  - the N13 research files and docs.
+- The only runtime code is `python-engine`. There is no schema change, migration or `.env` edit. Paper only: no real orders, and the real-money settings are untouched.
+
+**Backup: none kept (the owner's call).**
+- What was done:
+  - From 07:04 IST (pre-market), autoheal and the three app services were stopped.
+  - A read-only check found no open F&O or paper trade rows. The six virtual overnight penny-shadow rows are paper-only.
+  - An inventory (12,173 files, 8.57 GB) and `data.tar` (tar exit 0, 8.59 GB) were written to `backups\20261112-pre-3ece6a8`.
+- What the owner decided: the C: drive was about 95% full, and the owner asked why a backup was needed. They were told it isn't required for a release that changes no stored data. On "else remove it", the integrity check was stopped and the folder deleted.
+- **From now on:** routine deploys skip the backup. If a release changes stored data, the owner is told first.
+- The older copies remain: Sep 11, Nov 8 (`pre-d763aee`) and Nov 10 (`pre-65677dc`).
+
+**Deploy (runbook):**
+- Fast-forward `65677dc6` → `3ece6a8b`.
+- Built python-engine, node-gateway and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-12T01:40:59Z`.
+- Recreated all three, then restarted nginx and started autoheal again.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\3ece6a8b….json`, all three at `3ece6a8b`.
+
+**After:**
+- All services healthy; nginx `/api/health` 200.
+- In the engine:
+  - `FNO_BOOK` N11;
+  - `FNO_N13_MAIN_UNDERLYINGS` `'NIFTY'` (the main book takes NIFTY, not SENSEX);
+  - `FNO_N13_LOCK_LOOK_SEC` 0.0;
+  - `FNO_TREND_LOCK_ENABLED` True;
+  - `PARTNER_WATCH_PROFIT_PROTECTION_ENABLED` True;
+  - `PARTNER_WATCH_COACH_ENABLED` True;
+  - `FNO_LIVE_TEST_ENABLED` False;
+  - the second reminder at 08:00 (45-minute window); the owner nudge catch-up present.
+- The scheduler holds `premarket_login_nudge` and `login_reminder_retry_tick`.
+- The PC booted at 06:59, and the old engine missed the owner's 07:00 nudge (no `nudged` state). This is the case N11 fixes. After the deploy, the 07:20 retry tick sent the owner nudge (`nudged` 07:20:00) and the partner's first login reminder (`login_reminder` sent, attempt 1).
+
+**Next:**
+- **Today, Nov 12 (step 5 of the runbook):**
+  - the 08:00 partner reminder (only if they are not logged in);
+  - from the open, N11 SENSEX signals should appear as `n13_shadow:*` rejects in `fno_signal_log` and never as `fno_positions` rows;
+  - NIFTY and SENSEX quotes, checked separately.
+- **Minute lock:** re-score with `forward_cadence.py` on sessions from Nov 12, under the same rule, at ≥20 scored trades.
+- **Rollback:** redeploy `65677dc6` by the same runbook, or set `FNO_N13_MAIN_UNDERLYINGS=NIFTY,SENSEX` in `.env` and recreate the engine. No migration needs undoing.
+
 ## November 11 - N13 build (Dev): the N11 paper main book trades NIFTY only; the lock-on-a-minute switch is built but off
 
 Owner, Nov 11: "Go on do it and test if it works good else continue".

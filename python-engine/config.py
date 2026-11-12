@@ -1286,6 +1286,23 @@ class Settings(BaseSettings):
     # positions or premium. SENSEX lost all 6 of its main-book trades Nov 3-11 and cannot be replayed (zero OI history).
     # Back to Oct 29: "NIFTY,SENSEX".
     FNO_N13_MAIN_UNDERLYINGS: str = "NIFTY"
+    # [SN Gold v5 2026-11-13] The owner's small-wallet book on PAPER (sn_gold.py): N11's paper record + R0.85's extra
+    # signals, the deepest in-the-money strike the wallet affords, a 20% day loss limit, a scale-in at a 1-ATR move,
+    # winners kept past N11's exit. Research docs/research/fno/sn-gold/SN_GOLD_V5.json. It never places an order.
+    # Off: SN_GOLD_ENABLED=false (its tables stay; nothing else reads them).
+    SN_GOLD_ENABLED: bool = True
+    # Owner, Nov 13: "if you think 30,000 starting amount is better than I am fine with that". SN70/SN71: from Rs 30k the
+    # account survived every one of 15 start quarters without a refill; from Rs 15k it ran dry 3 times.
+    SN_GOLD_START_WALLET: float = 30000.0      # the starting wallet; profits banked, losing days refilled
+    SN_GOLD_MAX_STEPS: int = 3                 # the wallet grows 50% at most 3 times (Rs 30k -> 45k -> 67.5k -> 1,01,250)
+    SN_GOLD_STEP_TRIGGER: float = 1.0          # ... each time net profit since the last step reaches the wallet
+    SN_GOLD_DAY_LOSS_SHARE: float = 0.20       # day loss limit as a share of the wallet
+    SN_GOLD_STAND_RATIO: float = 0.85          # R0.85: wait only below 0.85 of usual volatility with a losing record
+    SN_GOLD_ITM_PER_LOT_1: float = 17500.0     # below this much wallet per lot: one strike in the money
+    SN_GOLD_ITM_PER_LOT_2: float = 20000.0     # below this: up to two; from it: up to three
+    SN_GOLD_SCALE_ATR: float = 1.0             # the scale-in: the future this many 1-minute ATRs in favour
+    SN_GOLD_EXTEND_AT: float = 0.25            # a winner up this much at N11's exit is kept ...
+    SN_GOLD_EXTEND_ATR: float = 3.0            # ... with a trail this many 1-minute ATRs behind the best future
     # [SX-F1] Keep every exit check of a held option (fno_exit_paths.py) so
     # exit rules can be replayed at the live clock. Research only.
     FNO_EXIT_PATH_RECORDING: bool = True

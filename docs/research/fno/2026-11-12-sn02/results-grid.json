@@ -1,0 +1,3806 @@
+{
+ "n11|L1|skip": {
+  "0": {
+   "2023": {
+    "net": -2343,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 3,
+    "green": 7,
+    "red": 15,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 34742,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 7,
+    "green": 13,
+    "red": 7,
+    "worst": -1740,
+    "skipped": {
+     "wallet_too_small": 5,
+     "busy": 1
+    }
+   },
+   "2025": {
+    "net": 30612,
+    "trades": 43,
+    "trade_days": 38,
+    "target_days": 13,
+    "green": 19,
+    "red": 19,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 48601,
+    "trades": 30,
+    "trade_days": 27,
+    "target_days": 12,
+    "green": 14,
+    "red": 13,
+    "worst": -2992,
+    "skipped": {
+     "busy": 5,
+     "wallet_too_small": 13
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -4642,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 3,
+    "green": 6,
+    "red": 16,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 28880,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 7,
+    "green": 12,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5,
+     "busy": 1
+    }
+   },
+   "2025": {
+    "net": 26513,
+    "trades": 43,
+    "trade_days": 38,
+    "target_days": 12,
+    "green": 19,
+    "red": 19,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 45698,
+    "trades": 30,
+    "trade_days": 27,
+    "target_days": 10,
+    "green": 14,
+    "red": 13,
+    "worst": -2994,
+    "skipped": {
+     "busy": 6,
+     "wallet_too_small": 13
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -7059,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 3,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 26777,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 7,
+    "green": 10,
+    "red": 10,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5,
+     "busy": 1
+    }
+   },
+   "2025": {
+    "net": 22206,
+    "trades": 43,
+    "trade_days": 38,
+    "target_days": 12,
+    "green": 18,
+    "red": 20,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 42655,
+    "trades": 30,
+    "trade_days": 27,
+    "target_days": 10,
+    "green": 14,
+    "red": 13,
+    "worst": -2992,
+    "skipped": {
+     "busy": 6,
+     "wallet_too_small": 13
+    }
+   }
+  }
+ },
+ "n11|L1|otm": {
+  "0": {
+   "2023": {
+    "net": -2343,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 3,
+    "green": 7,
+    "red": 15,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 44402,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 9,
+    "green": 15,
+    "red": 9,
+    "worst": -2192,
+    "skipped": {
+     "busy": 1,
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 43746,
+    "trades": 50,
+    "trade_days": 42,
+    "target_days": 16,
+    "green": 22,
+    "red": 20,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 50883,
+    "trades": 33,
+    "trade_days": 30,
+    "target_days": 13,
+    "green": 16,
+    "red": 14,
+    "worst": -2992,
+    "skipped": {
+     "busy": 5,
+     "wallet_too_small": 10
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -4642,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 3,
+    "green": 6,
+    "red": 16,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 38140,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 9,
+    "green": 14,
+    "red": 10,
+    "worst": -2995,
+    "skipped": {
+     "busy": 1,
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 39048,
+    "trades": 50,
+    "trade_days": 42,
+    "target_days": 15,
+    "green": 22,
+    "red": 20,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 47680,
+    "trades": 33,
+    "trade_days": 30,
+    "target_days": 11,
+    "green": 16,
+    "red": 14,
+    "worst": -2994,
+    "skipped": {
+     "busy": 6,
+     "wallet_too_small": 10
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -7059,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 3,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 35618,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 9,
+    "green": 12,
+    "red": 12,
+    "worst": -2997,
+    "skipped": {
+     "busy": 1,
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 34109,
+    "trades": 50,
+    "trade_days": 42,
+    "target_days": 15,
+    "green": 21,
+    "red": 21,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 44322,
+    "trades": 33,
+    "trade_days": 30,
+    "target_days": 11,
+    "green": 16,
+    "red": 14,
+    "worst": -2992,
+    "skipped": {
+     "busy": 6,
+     "wallet_too_small": 10
+    }
+   }
+  }
+ },
+ "n11|L2|skip": {
+  "0": {
+   "2023": {
+    "net": -7270,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 2,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 40788,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 7,
+    "green": 13,
+    "red": 7,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 5,
+     "busy": 1
+    }
+   },
+   "2025": {
+    "net": 43674,
+    "trades": 42,
+    "trade_days": 38,
+    "target_days": 15,
+    "green": 20,
+    "red": 18,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 51950,
+    "trades": 29,
+    "trade_days": 27,
+    "target_days": 12,
+    "green": 14,
+    "red": 13,
+    "worst": -2992,
+    "skipped": {
+     "busy": 4,
+     "wallet_too_small": 13
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -11829,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 2,
+    "green": 6,
+    "red": 16,
+    "worst": -3113,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 34130,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 7,
+    "green": 12,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5,
+     "busy": 1
+    }
+   },
+   "2025": {
+    "net": 38876,
+    "trades": 42,
+    "trade_days": 38,
+    "target_days": 14,
+    "green": 20,
+    "red": 18,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 48848,
+    "trades": 29,
+    "trade_days": 27,
+    "target_days": 10,
+    "green": 14,
+    "red": 13,
+    "worst": -2994,
+    "skipped": {
+     "busy": 5,
+     "wallet_too_small": 13
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -14111,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 2,
+    "green": 5,
+    "red": 17,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 31815,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 7,
+    "green": 10,
+    "red": 10,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5,
+     "busy": 1
+    }
+   },
+   "2025": {
+    "net": 23815,
+    "trades": 42,
+    "trade_days": 38,
+    "target_days": 12,
+    "green": 18,
+    "red": 20,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 45595,
+    "trades": 29,
+    "trade_days": 27,
+    "target_days": 10,
+    "green": 14,
+    "red": 13,
+    "worst": -2992,
+    "skipped": {
+     "busy": 5,
+     "wallet_too_small": 13
+    }
+   }
+  }
+ },
+ "n11|L2|otm": {
+  "0": {
+   "2023": {
+    "net": -7270,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 2,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 50449,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 9,
+    "green": 15,
+    "red": 9,
+    "worst": -2395,
+    "skipped": {
+     "busy": 1,
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 56808,
+    "trades": 49,
+    "trade_days": 42,
+    "target_days": 18,
+    "green": 23,
+    "red": 19,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 54232,
+    "trades": 32,
+    "trade_days": 30,
+    "target_days": 13,
+    "green": 16,
+    "red": 14,
+    "worst": -2992,
+    "skipped": {
+     "busy": 4,
+     "wallet_too_small": 10
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -11829,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 2,
+    "green": 6,
+    "red": 16,
+    "worst": -3113,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 43391,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 9,
+    "green": 14,
+    "red": 10,
+    "worst": -2995,
+    "skipped": {
+     "busy": 1,
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 51411,
+    "trades": 49,
+    "trade_days": 42,
+    "target_days": 17,
+    "green": 23,
+    "red": 19,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 50829,
+    "trades": 32,
+    "trade_days": 30,
+    "target_days": 11,
+    "green": 16,
+    "red": 14,
+    "worst": -2994,
+    "skipped": {
+     "busy": 5,
+     "wallet_too_small": 10
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -14111,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 2,
+    "green": 5,
+    "red": 17,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 40656,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 9,
+    "green": 12,
+    "red": 12,
+    "worst": -2997,
+    "skipped": {
+     "busy": 1,
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 35718,
+    "trades": 49,
+    "trade_days": 42,
+    "target_days": 15,
+    "green": 21,
+    "red": 21,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 6
+    }
+   },
+   "2026": {
+    "net": 47262,
+    "trades": 32,
+    "trade_days": 30,
+    "target_days": 11,
+    "green": 16,
+    "red": 14,
+    "worst": -2992,
+    "skipped": {
+     "busy": 5,
+     "wallet_too_small": 10
+    }
+   }
+  }
+ },
+ "sell|L1|skip": {
+  "0": {
+   "2023": {
+    "net": -6141,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 19107,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -1651,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 4767,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 14853,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -8826,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 11451,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 2976,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 13943,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -12839,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 10922,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 15,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 18,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 13142,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "sell|L1|otm": {
+  "0": {
+   "2023": {
+    "net": -6141,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 18696,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2192,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 4244,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 16155,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -8826,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 10841,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 2355,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 15147,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -12839,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 10099,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": -710,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 21,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 14241,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "sell|L2|skip": {
+  "0": {
+   "2023": {
+    "net": -2097,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 17936,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 6594,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 13933,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -13549,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 9789,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 5133,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 12925,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -19528,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 9356,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": -2625,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 12029,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "sell|L2|otm": {
+  "0": {
+   "2023": {
+    "net": -2097,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 17525,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 6070,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 15235,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -13549,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 9179,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 4512,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 14128,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -19528,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 8533,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": -3350,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 13128,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock0.25|L1|skip": {
+  "0": {
+   "2023": {
+    "net": -3795,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 22023,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -1651,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 14175,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 22790,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -6876,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 12957,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 16207,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 19391,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -11311,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 13355,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 15628,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 18,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 18875,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock0.25|L1|otm": {
+  "0": {
+   "2023": {
+    "net": -3795,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 23466,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2192,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 14551,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 24684,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -6876,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 14100,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 16093,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 21087,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -11311,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 14173,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 15186,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 21,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 20362,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock0.25|L2|skip": {
+  "0": {
+   "2023": {
+    "net": 1631,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 22013,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 14944,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 22819,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -10349,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 12121,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 17330,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 18948,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -17918,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 12355,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 15686,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 18101,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock0.25|L2|otm": {
+  "0": {
+   "2023": {
+    "net": 1631,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 23456,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 15320,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 24714,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -10349,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 13264,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 17216,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 20643,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -17918,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 13173,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 15243,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 19588,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock0.5|L1|skip": {
+  "0": {
+   "2023": {
+    "net": -2211,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 27051,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -1651,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 18300,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 27660,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -5191,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 16506,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 20159,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 22225,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -11736,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 16763,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 18867,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 18,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 21821,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock0.5|L1|otm": {
+  "0": {
+   "2023": {
+    "net": -2211,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 28119,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2192,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 18044,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 29180,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -5191,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 17275,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 19514,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 23546,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -11736,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 17206,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 18142,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 21,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 22933,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock0.5|L2|skip": {
+  "0": {
+   "2023": {
+    "net": 325,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 28897,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 20649,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 27390,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -11578,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 15610,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 22790,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 21386,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -18350,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 15858,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 20147,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 20707,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock0.5|L2|otm": {
+  "0": {
+   "2023": {
+    "net": 325,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 29966,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 20393,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 28910,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -11578,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 16379,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 22144,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 22707,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -18350,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 16302,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 19422,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 21820,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock1.0|L1|skip": {
+  "0": {
+   "2023": {
+    "net": -2915,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 26739,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -1651,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 20353,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 36997,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -5895,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 17413,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 23747,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 32037,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -12484,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 16771,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 24013,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 18,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 30987,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock1.0|L1|otm": {
+  "0": {
+   "2023": {
+    "net": -2915,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 27059,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2192,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 19829,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 38299,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -5895,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 17433,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 23035,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 33240,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -12484,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 16466,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 23288,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 21,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 32086,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock1.0|L2|skip": {
+  "0": {
+   "2023": {
+    "net": -1300,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 27399,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 20292,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 38895,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -13051,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 14113,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 23967,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 31018,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -19098,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 13463,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 19648,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 29874,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock1.0|L2|otm": {
+  "0": {
+   "2023": {
+    "net": -1300,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 27719,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 19768,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 40197,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -13051,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 14133,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 23256,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 32221,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -19098,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 13158,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 18923,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 30973,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock2.0|L1|skip": {
+  "0": {
+   "2023": {
+    "net": -3549,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 31991,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -1651,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 17391,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 33455,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -6432,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 18376,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 19389,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 21,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 27090,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -12914,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 17652,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 18565,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 18,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 25825,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock2.0|L1|otm": {
+  "0": {
+   "2023": {
+    "net": -3549,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 8,
+    "red": 14,
+    "worst": -2996,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 31579,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2192,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 16868,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 34757,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -6432,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2995,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 17766,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 18677,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 24,
+    "red": 18,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 28293,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -12914,
+    "trades": 25,
+    "trade_days": 22,
+    "target_days": 5,
+    "green": 6,
+    "red": 16,
+    "worst": -2998,
+    "skipped": {
+     "busy": 3
+    }
+   },
+   "2024": {
+    "net": 16820,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 17840,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 21,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 4
+    }
+   },
+   "2026": {
+    "net": 26924,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ },
+ "lock2.0|L2|skip": {
+  "0": {
+   "2023": {
+    "net": -2097,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 36431,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 15,
+    "green": 16,
+    "red": 4,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 17878,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 33855,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -13588,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 15747,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 18804,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 21,
+    "green": 22,
+    "red": 16,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 26071,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -19528,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 15223,
+    "trades": 22,
+    "trade_days": 20,
+    "target_days": 14,
+    "green": 14,
+    "red": 6,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 5
+    }
+   },
+   "2025": {
+    "net": 17489,
+    "trades": 40,
+    "trade_days": 38,
+    "target_days": 19,
+    "green": 20,
+    "red": 18,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 17,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 24712,
+    "trades": 27,
+    "trade_days": 27,
+    "target_days": 18,
+    "green": 18,
+    "red": 9,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 12
+    }
+   }
+  }
+ },
+ "lock2.0|L2|otm": {
+  "0": {
+   "2023": {
+    "net": -2097,
+    "trades": 23,
+    "trade_days": 22,
+    "target_days": 10,
+    "green": 11,
+    "red": 11,
+    "worst": -2995,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 36020,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 17,
+    "green": 18,
+    "red": 6,
+    "worst": -2395,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 17355,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2996,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 35157,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2563,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "100": {
+   "2023": {
+    "net": -13588,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 7,
+    "green": 9,
+    "red": 13,
+    "worst": -2997,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 15137,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 18093,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 24,
+    "green": 25,
+    "red": 17,
+    "worst": -2995,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 27274,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2663,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  },
+  "205": {
+   "2023": {
+    "net": -19528,
+    "trades": 24,
+    "trade_days": 22,
+    "target_days": 6,
+    "green": 7,
+    "red": 15,
+    "worst": -2994,
+    "skipped": {
+     "busy": 2
+    }
+   },
+   "2024": {
+    "net": 14391,
+    "trades": 26,
+    "trade_days": 24,
+    "target_days": 16,
+    "green": 16,
+    "red": 8,
+    "worst": -2997,
+    "skipped": {
+     "wallet_too_small": 1
+    }
+   },
+   "2025": {
+    "net": 16764,
+    "trades": 46,
+    "trade_days": 42,
+    "target_days": 22,
+    "green": 23,
+    "red": 19,
+    "worst": -2998,
+    "skipped": {
+     "wallet_too_small": 8,
+     "busy": 3
+    }
+   },
+   "2026": {
+    "net": 25811,
+    "trades": 30,
+    "trade_days": 30,
+    "target_days": 20,
+    "green": 20,
+    "red": 10,
+    "worst": -2768,
+    "skipped": {
+     "busy": 2,
+     "wallet_too_small": 9
+    }
+   }
+  }
+ }
+}

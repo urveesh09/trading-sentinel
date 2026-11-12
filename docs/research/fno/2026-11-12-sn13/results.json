@@ -1,0 +1,274 @@
+{
+ "30k second lot: never": {
+  "2023": {
+   "net": -7591,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 21096,
+   "worst": -3530
+  },
+  "2024": {
+   "net": 50075,
+   "green": 14,
+   "red": 11,
+   "none": 171,
+   "refilled": 12118,
+   "worst": -2508
+  },
+  "2025": {
+   "net": 29429,
+   "green": 22,
+   "red": 25,
+   "none": 147,
+   "refilled": 46910,
+   "worst": -5994
+  },
+  "2026": {
+   "net": 49113,
+   "green": 18,
+   "red": 17,
+   "none": 125,
+   "refilled": 30279,
+   "worst": -5996
+  }
+ },
+ "30k second lot: always": {
+  "2023": {
+   "net": -13029,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 40369,
+   "worst": -5992
+  },
+  "2024": {
+   "net": 74345,
+   "green": 13,
+   "red": 12,
+   "none": 171,
+   "refilled": 25776,
+   "worst": -5991
+  },
+  "2025": {
+   "net": 61622,
+   "green": 22,
+   "red": 25,
+   "none": 147,
+   "refilled": 71191,
+   "worst": -5997
+  },
+  "2026": {
+   "net": 83712,
+   "green": 18,
+   "red": 17,
+   "none": 125,
+   "refilled": 49720,
+   "worst": -5993
+  }
+ },
+ "30k second lot: vol": {
+  "2023": {
+   "net": -1011,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 28153,
+   "worst": -5992
+  },
+  "2024": {
+   "net": 76154,
+   "green": 13,
+   "red": 12,
+   "none": 171,
+   "refilled": 23967,
+   "worst": -5991
+  },
+  "2025": {
+   "net": 46198,
+   "green": 22,
+   "red": 25,
+   "none": 147,
+   "refilled": 57622,
+   "worst": -5997
+  },
+  "2026": {
+   "net": 87437,
+   "green": 18,
+   "red": 17,
+   "none": 125,
+   "refilled": 45995,
+   "worst": -5993
+  }
+ },
+ "30k second lot: tpb": {
+  "2023": {
+   "net": -13271,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 36239,
+   "worst": -5992
+  },
+  "2024": {
+   "net": 64574,
+   "green": 13,
+   "red": 12,
+   "none": 171,
+   "refilled": 25526,
+   "worst": -5991
+  },
+  "2025": {
+   "net": 68137,
+   "green": 22,
+   "red": 25,
+   "none": 147,
+   "refilled": 63468,
+   "worst": -5994
+  },
+  "2026": {
+   "net": 62812,
+   "green": 18,
+   "red": 17,
+   "none": 125,
+   "refilled": 45387,
+   "worst": -5996
+  }
+ },
+ "30k second lot: after_green": {
+  "2023": {
+   "net": -10672,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 24376,
+   "worst": -3593
+  },
+  "2024": {
+   "net": 63703,
+   "green": 14,
+   "red": 11,
+   "none": 171,
+   "refilled": 16065,
+   "worst": -3842
+  },
+  "2025": {
+   "net": 48161,
+   "green": 22,
+   "red": 25,
+   "none": 147,
+   "refilled": 61550,
+   "worst": -5997
+  },
+  "2026": {
+   "net": 48359,
+   "green": 18,
+   "red": 17,
+   "none": 125,
+   "refilled": 43828,
+   "worst": -5996
+  }
+ },
+ "15k day limit 10%": {
+  "2023": {
+   "net": -9920,
+   "green": 5,
+   "red": 17,
+   "none": 170,
+   "refilled": 19409,
+   "worst": -1592
+  },
+  "2024": {
+   "net": 17462,
+   "green": 10,
+   "red": 14,
+   "none": 172,
+   "refilled": 16925,
+   "worst": -1609
+  },
+  "2025": {
+   "net": 22709,
+   "green": 16,
+   "red": 26,
+   "none": 152,
+   "refilled": 31789,
+   "worst": -1520
+  },
+  "2026": {
+   "net": 30932,
+   "green": 13,
+   "red": 17,
+   "none": 130,
+   "refilled": 24007,
+   "worst": -1498
+  }
+ },
+ "15k day limit 20%": {
+  "2023": {
+   "net": -7059,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 20564,
+   "worst": -2998
+  },
+  "2024": {
+   "net": 35618,
+   "green": 12,
+   "red": 12,
+   "none": 172,
+   "refilled": 14915,
+   "worst": -2997
+  },
+  "2025": {
+   "net": 39114,
+   "green": 21,
+   "red": 21,
+   "none": 152,
+   "refilled": 34651,
+   "worst": -2998
+  },
+  "2026": {
+   "net": 44322,
+   "green": 16,
+   "red": 14,
+   "none": 130,
+   "refilled": 21505,
+   "worst": -2992
+  }
+ },
+ "15k day limit 30%": {
+  "2023": {
+   "net": -7591,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 21096,
+   "worst": -3530
+  },
+  "2024": {
+   "net": 39072,
+   "green": 13,
+   "red": 11,
+   "none": 172,
+   "refilled": 11918,
+   "worst": -2397
+  },
+  "2025": {
+   "net": 36453,
+   "green": 21,
+   "red": 21,
+   "none": 152,
+   "refilled": 37312,
+   "worst": -4498
+  },
+  "2026": {
+   "net": 44776,
+   "green": 16,
+   "red": 14,
+   "none": 130,
+   "refilled": 21051,
+   "worst": -2768
+  }
+ }
+}

@@ -1,0 +1,1177 @@
+{
+ "loyo": {
+  "2023": {
+   "real": {
+    "genome": {
+     "backstop": 0.15,
+     "bias": "puts",
+     "families": [
+      {
+       "kind": "FADE",
+       "z": 2.0
+      },
+      {
+       "k": 3,
+       "kind": "MOMO",
+       "vwap": true,
+       "z": 0.8
+      }
+     ],
+     "gate": "adx20:HIGH",
+     "last_entry": 255,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 5,
+     "stop_k": 3.0,
+     "target_r": 2.0,
+     "tf": 5,
+     "time": 45,
+     "trail_k": 3.0,
+     "trail_r": 1.5,
+     "with_dmi": false
+    },
+    "heldout": {
+     "active": 149,
+     "green": 49,
+     "net": -42688.79,
+     "red": 100,
+     "refilled": 87016.17,
+     "sessions": 192,
+     "trades": 149,
+     "worst": -1916.25
+    }
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.25,
+     "bias": "none",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.02,
+       "seed": 86259
+      }
+     ],
+     "gate": "adx25:HIGH",
+     "last_entry": 300,
+     "max_trades": 1,
+     "null": true,
+     "offset": 0,
+     "start": 30,
+     "stop_k": 4.0,
+     "target_r": 2.0,
+     "tf": 1,
+     "time": 400,
+     "trail_k": 3.0,
+     "trail_r": 1.0,
+     "with_dmi": false
+    },
+    "heldout": {
+     "active": 118,
+     "green": 43,
+     "net": -29914.23,
+     "red": 75,
+     "refilled": 77819.19,
+     "sessions": 192,
+     "trades": 118,
+     "worst": -2994.56
+    }
+   }
+  },
+  "2024": {
+   "real": {
+    "genome": {
+     "backstop": 0.25,
+     "bias": "puts",
+     "families": [
+      {
+       "k": 1,
+       "kind": "MOMO",
+       "vwap": true,
+       "z": 2.0
+      }
+     ],
+     "gate": "none",
+     "last_entry": 255,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 15,
+     "stop_k": 1.5,
+     "target_r": 2.0,
+     "tf": 1,
+     "time": 400,
+     "trail_k": 4.0,
+     "trail_r": 0.0,
+     "with_dmi": false
+    },
+    "heldout": {
+     "active": 94,
+     "green": 34,
+     "net": -16149.77,
+     "red": 60,
+     "refilled": 65961.04,
+     "sessions": 196,
+     "trades": 94,
+     "worst": -2616.46
+    }
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.15,
+     "bias": "calls",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.02,
+       "seed": 491821
+      }
+     ],
+     "gate": "adx30:LOW",
+     "last_entry": 255,
+     "max_trades": 5,
+     "null": true,
+     "offset": -1,
+     "start": 5,
+     "stop_k": 6.0,
+     "target_r": 1.0,
+     "tf": 5,
+     "time": 400,
+     "trail_k": 1.5,
+     "trail_r": 1.0,
+     "with_dmi": false
+    },
+    "heldout": {
+     "active": 81,
+     "green": 26,
+     "net": -48554.66,
+     "red": 55,
+     "refilled": 102782.44,
+     "sessions": 196,
+     "trades": 95,
+     "worst": -2998.82
+    }
+   }
+  },
+  "2025": {
+   "real": {
+    "genome": {
+     "backstop": 0.15,
+     "bias": "puts",
+     "families": [
+      {
+       "k": 1,
+       "kind": "MOMO",
+       "vwap": true,
+       "z": 2.0
+      }
+     ],
+     "gate": "none",
+     "last_entry": 255,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 45,
+     "stop_k": 3.0,
+     "target_r": 3.0,
+     "tf": 1,
+     "time": 120,
+     "trail_k": 4.0,
+     "trail_r": 0.0,
+     "with_dmi": false
+    },
+    "heldout": {
+     "active": 86,
+     "green": 26,
+     "net": -13335.4,
+     "red": 60,
+     "refilled": 83275.52,
+     "sessions": 194,
+     "trades": 86,
+     "worst": -2403.95
+    }
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.35,
+     "bias": "puts",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.01,
+       "seed": 165747
+      }
+     ],
+     "gate": "none",
+     "last_entry": 255,
+     "max_trades": 2,
+     "null": true,
+     "offset": -1,
+     "start": 45,
+     "stop_k": 1.5,
+     "target_r": 0.0,
+     "tf": 1,
+     "time": 400,
+     "trail_k": 1.5,
+     "trail_r": 0.0,
+     "with_dmi": false
+    },
+    "heldout": {
+     "active": 122,
+     "green": 17,
+     "net": -66913.0,
+     "red": 105,
+     "refilled": 122793.71,
+     "sessions": 194,
+     "trades": 156,
+     "worst": -2996.8
+    }
+   }
+  },
+  "2026": {
+   "real": {
+    "genome": {
+     "backstop": 0.35,
+     "bias": "puts",
+     "families": [
+      {
+       "k": 1,
+       "kind": "MOMO",
+       "vwap": true,
+       "z": 2.0
+      }
+     ],
+     "gate": "none",
+     "last_entry": 255,
+     "max_trades": 1,
+     "null": false,
+     "offset": -1,
+     "start": 15,
+     "stop_k": 1.5,
+     "target_r": 3.0,
+     "tf": 1,
+     "time": 400,
+     "trail_k": 4.0,
+     "trail_r": 0.0,
+     "with_dmi": false
+    },
+    "heldout": {
+     "active": 48,
+     "green": 19,
+     "net": 9923.29,
+     "red": 29,
+     "refilled": 28203.71,
+     "sessions": 160,
+     "trades": 48,
+     "worst": -2220.0
+    }
+   },
+   "null": {
+    "genome": {
+     "backstop": 0.35,
+     "bias": "none",
+     "families": [
+      {
+       "kind": "RANDOM",
+       "p": 0.01,
+       "seed": 215595
+      }
+     ],
+     "gate": "none",
+     "last_entry": 300,
+     "max_trades": 5,
+     "null": true,
+     "offset": 0,
+     "start": 5,
+     "stop_k": 1.5,
+     "target_r": 0.0,
+     "tf": 5,
+     "time": 45,
+     "trail_k": 1.5,
+     "trail_r": 1.5,
+     "with_dmi": true
+    },
+    "heldout": {
+     "active": 46,
+     "green": 16,
+     "net": -5242.28,
+     "red": 30,
+     "refilled": 20357.08,
+     "sessions": 160,
+     "trades": 48,
+     "worst": -1687.84
+    }
+   }
+  }
+ },
+ "checks": {
+  "heldout_positive": 1,
+  "heldout_sum": -62251,
+  "null_sum": -150624,
+  "final_years_positive": 2,
+  "verdict": "NOT PROVEN"
+ },
+ "final": {
+  "genome": {
+   "backstop": 0.25,
+   "bias": "calls",
+   "families": [
+    {
+     "fast": 9,
+     "kind": "EMAX",
+     "slow": 34
+    }
+   ],
+   "gate": "adx30:LOW",
+   "last_entry": 255,
+   "max_trades": 1,
+   "null": false,
+   "offset": -1,
+   "start": 15,
+   "stop_k": 6.0,
+   "target_r": 1.5,
+   "tf": 5,
+   "time": 400,
+   "trail_k": 2.0,
+   "trail_r": 0.0,
+   "with_dmi": false
+  },
+  "years": {
+   "2023": {
+    "active": 79,
+    "green": 36,
+    "net": -432.59,
+    "red": 43,
+    "refilled": 74114.55,
+    "sessions": 192,
+    "trades": 79,
+    "worst": -2822.75
+   },
+   "2024": {
+    "active": 108,
+    "green": 43,
+    "net": 25201.95,
+    "red": 65,
+    "refilled": 131135.14,
+    "sessions": 196,
+    "trades": 108,
+    "worst": -3106.43
+   },
+   "2025": {
+    "active": 104,
+    "green": 42,
+    "net": -2574.42,
+    "red": 62,
+    "refilled": 130709.84,
+    "sessions": 194,
+    "trades": 104,
+    "worst": -3028.44
+   },
+   "2026": {
+    "active": 86,
+    "green": 39,
+    "net": 19974.01,
+    "red": 47,
+    "refilled": 106284.27,
+    "sessions": 160,
+    "trades": 86,
+    "worst": -2994.67
+   }
+  }
+ },
+ "tables": {
+  "bench|0": {
+   "per_year": {
+    "2023": {
+     "net": -7059,
+     "refilled": 20564,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 35618,
+     "refilled": 14915,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "wallet_end": 15000
+    },
+    "2025": {
+     "net": 39114,
+     "refilled": 34651,
+     "won": 21,
+     "lost": 21,
+     "none": 152,
+     "wallet_end": 15000
+    },
+    "2026": {
+     "net": 44322,
+     "refilled": 21505,
+     "won": 16,
+     "lost": 14,
+     "none": 130,
+     "wallet_end": 15000
+    }
+   },
+   "total": {
+    "net": 111995,
+    "refilled": 91635,
+    "won": 55,
+    "lost": 63,
+    "none": 624
+   },
+   "steps": 0
+  },
+  "bench|1": {
+   "per_year": {
+    "2023": {
+     "net": -7059,
+     "refilled": 20564,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 35506,
+     "refilled": 15027,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": 30932,
+     "refilled": 45407,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "wallet_end": 22500
+    },
+    "2026": {
+     "net": 50611,
+     "refilled": 28780,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "wallet_end": 22500
+    }
+   },
+   "total": {
+    "net": 109991,
+    "refilled": 109777,
+    "won": 58,
+    "lost": 70,
+    "none": 614
+   },
+   "steps": 1
+  },
+  "bench|2": {
+   "per_year": {
+    "2023": {
+     "net": -7059,
+     "refilled": 20564,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 35506,
+     "refilled": 15027,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": 46673,
+     "refilled": 74060,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "wallet_end": 33750
+    },
+    "2026": {
+     "net": 83516,
+     "refilled": 53202,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "wallet_end": 33750
+    }
+   },
+   "total": {
+    "net": 158636,
+    "refilled": 162852,
+    "won": 58,
+    "lost": 70,
+    "none": 614
+   },
+   "steps": 2
+  },
+  "bench|3": {
+   "per_year": {
+    "2023": {
+     "net": -7059,
+     "refilled": 20564,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 35506,
+     "refilled": 15027,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": 46961,
+     "refilled": 76830,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "wallet_end": 50625
+    },
+    "2026": {
+     "net": 136262,
+     "refilled": 80932,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "wallet_end": 50625
+    }
+   },
+   "total": {
+    "net": 211670,
+    "refilled": 193352,
+    "won": 58,
+    "lost": 70,
+    "none": 614
+   },
+   "steps": 3
+  },
+  "bench|4": {
+   "per_year": {
+    "2023": {
+     "net": -7059,
+     "refilled": 20564,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 35506,
+     "refilled": 15027,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": 46961,
+     "refilled": 76830,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "wallet_end": 50625
+    },
+    "2026": {
+     "net": 197113,
+     "refilled": 112702,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "wallet_end": 75938
+    }
+   },
+   "total": {
+    "net": 272521,
+    "refilled": 225122,
+    "won": 58,
+    "lost": 70,
+    "none": 614
+   },
+   "steps": 4
+  },
+  "bench|5": {
+   "per_year": {
+    "2023": {
+     "net": -7059,
+     "refilled": 20564,
+     "won": 6,
+     "lost": 16,
+     "none": 170,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 35506,
+     "refilled": 15027,
+     "won": 12,
+     "lost": 12,
+     "none": 172,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": 46961,
+     "refilled": 76830,
+     "won": 22,
+     "lost": 25,
+     "none": 147,
+     "wallet_end": 50625
+    },
+    "2026": {
+     "net": 217409,
+     "refilled": 117346,
+     "won": 18,
+     "lost": 17,
+     "none": 125,
+     "wallet_end": 113906
+    }
+   },
+   "total": {
+    "net": 292818,
+    "refilled": 229766,
+    "won": 58,
+    "lost": 70,
+    "none": 614
+   },
+   "steps": 5
+  },
+  "sn06|0": {
+   "per_year": {
+    "2023": {
+     "net": -433,
+     "refilled": 74115,
+     "won": 36,
+     "lost": 43,
+     "none": 113,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 25202,
+     "refilled": 131135,
+     "won": 43,
+     "lost": 65,
+     "none": 88,
+     "wallet_end": 15000
+    },
+    "2025": {
+     "net": -2574,
+     "refilled": 130710,
+     "won": 42,
+     "lost": 62,
+     "none": 90,
+     "wallet_end": 15000
+    },
+    "2026": {
+     "net": 19974,
+     "refilled": 106284,
+     "won": 39,
+     "lost": 47,
+     "none": 74,
+     "wallet_end": 15000
+    }
+   },
+   "total": {
+    "net": 42169,
+    "refilled": 442244,
+    "won": 160,
+    "lost": 217,
+    "none": 365
+   },
+   "steps": 0
+  },
+  "sn06|1": {
+   "per_year": {
+    "2023": {
+     "net": -433,
+     "refilled": 74115,
+     "won": 36,
+     "lost": 43,
+     "none": 113,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 23789,
+     "refilled": 132548,
+     "won": 43,
+     "lost": 65,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": -6688,
+     "refilled": 139046,
+     "won": 43,
+     "lost": 63,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2026": {
+     "net": 36838,
+     "refilled": 110812,
+     "won": 44,
+     "lost": 47,
+     "none": 69,
+     "wallet_end": 22500
+    }
+   },
+   "total": {
+    "net": 53506,
+    "refilled": 456520,
+    "won": 166,
+    "lost": 218,
+    "none": 358
+   },
+   "steps": 1
+  },
+  "sn06|2": {
+   "per_year": {
+    "2023": {
+     "net": -433,
+     "refilled": 74115,
+     "won": 36,
+     "lost": 43,
+     "none": 113,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 23789,
+     "refilled": 132548,
+     "won": 43,
+     "lost": 65,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": -6688,
+     "refilled": 139046,
+     "won": 43,
+     "lost": 63,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2026": {
+     "net": 40565,
+     "refilled": 176877,
+     "won": 43,
+     "lost": 48,
+     "none": 69,
+     "wallet_end": 33750
+    }
+   },
+   "total": {
+    "net": 57233,
+    "refilled": 522586,
+    "won": 165,
+    "lost": 219,
+    "none": 358
+   },
+   "steps": 2
+  },
+  "sn06|3": {
+   "per_year": {
+    "2023": {
+     "net": -433,
+     "refilled": 74115,
+     "won": 36,
+     "lost": 43,
+     "none": 113,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 23789,
+     "refilled": 132548,
+     "won": 43,
+     "lost": 65,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": -6688,
+     "refilled": 139046,
+     "won": 43,
+     "lost": 63,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2026": {
+     "net": 40565,
+     "refilled": 176877,
+     "won": 43,
+     "lost": 48,
+     "none": 69,
+     "wallet_end": 33750
+    }
+   },
+   "total": {
+    "net": 57233,
+    "refilled": 522586,
+    "won": 165,
+    "lost": 219,
+    "none": 358
+   },
+   "steps": 2
+  },
+  "sn06|4": {
+   "per_year": {
+    "2023": {
+     "net": -433,
+     "refilled": 74115,
+     "won": 36,
+     "lost": 43,
+     "none": 113,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 23789,
+     "refilled": 132548,
+     "won": 43,
+     "lost": 65,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": -6688,
+     "refilled": 139046,
+     "won": 43,
+     "lost": 63,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2026": {
+     "net": 40565,
+     "refilled": 176877,
+     "won": 43,
+     "lost": 48,
+     "none": 69,
+     "wallet_end": 33750
+    }
+   },
+   "total": {
+    "net": 57233,
+    "refilled": 522586,
+    "won": 165,
+    "lost": 219,
+    "none": 358
+   },
+   "steps": 2
+  },
+  "sn06|5": {
+   "per_year": {
+    "2023": {
+     "net": -433,
+     "refilled": 74115,
+     "won": 36,
+     "lost": 43,
+     "none": 113,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 23789,
+     "refilled": 132548,
+     "won": 43,
+     "lost": 65,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": -6688,
+     "refilled": 139046,
+     "won": 43,
+     "lost": 63,
+     "none": 88,
+     "wallet_end": 22500
+    },
+    "2026": {
+     "net": 40565,
+     "refilled": 176877,
+     "won": 43,
+     "lost": 48,
+     "none": 69,
+     "wallet_end": 33750
+    }
+   },
+   "total": {
+    "net": 57233,
+    "refilled": 522586,
+    "won": 165,
+    "lost": 219,
+    "none": 358
+   },
+   "steps": 2
+  },
+  "combo|0": {
+   "per_year": {
+    "2023": {
+     "net": -2382,
+     "refilled": 89569,
+     "won": 42,
+     "lost": 56,
+     "none": 94,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 60779,
+     "refilled": 139467,
+     "won": 53,
+     "lost": 74,
+     "none": 69,
+     "wallet_end": 15000
+    },
+    "2025": {
+     "net": 73101,
+     "refilled": 128042,
+     "won": 61,
+     "lost": 65,
+     "none": 68,
+     "wallet_end": 15000
+    },
+    "2026": {
+     "net": 69438,
+     "refilled": 115449,
+     "won": 53,
+     "lost": 55,
+     "none": 52,
+     "wallet_end": 15000
+    }
+   },
+   "total": {
+    "net": 200937,
+    "refilled": 472526,
+    "won": 209,
+    "lost": 250,
+    "none": 283
+   },
+   "steps": 0
+  },
+  "combo|1": {
+   "per_year": {
+    "2023": {
+     "net": -2382,
+     "refilled": 89569,
+     "won": 42,
+     "lost": 56,
+     "none": 94,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 83009,
+     "refilled": 142021,
+     "won": 56,
+     "lost": 74,
+     "none": 66,
+     "wallet_end": 22500
+    },
+    "2025": {
+     "net": 65851,
+     "refilled": 142088,
+     "won": 63,
+     "lost": 69,
+     "none": 62,
+     "wallet_end": 22500
+    },
+    "2026": {
+     "net": 95969,
+     "refilled": 123873,
+     "won": 60,
+     "lost": 57,
+     "none": 43,
+     "wallet_end": 22500
+    }
+   },
+   "total": {
+    "net": 242448,
+    "refilled": 497551,
+    "won": 221,
+    "lost": 256,
+    "none": 265
+   },
+   "steps": 1
+  },
+  "combo|2": {
+   "per_year": {
+    "2023": {
+     "net": -2382,
+     "refilled": 89569,
+     "won": 42,
+     "lost": 56,
+     "none": 94,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 113316,
+     "refilled": 174614,
+     "won": 56,
+     "lost": 74,
+     "none": 66,
+     "wallet_end": 33750
+    },
+    "2025": {
+     "net": 140733,
+     "refilled": 268661,
+     "won": 63,
+     "lost": 69,
+     "none": 62,
+     "wallet_end": 33750
+    },
+    "2026": {
+     "net": 161910,
+     "refilled": 241057,
+     "won": 58,
+     "lost": 57,
+     "none": 45,
+     "wallet_end": 33750
+    }
+   },
+   "total": {
+    "net": 413577,
+    "refilled": 773901,
+    "won": 219,
+    "lost": 256,
+    "none": 267
+   },
+   "steps": 2
+  },
+  "combo|3": {
+   "per_year": {
+    "2023": {
+     "net": -2382,
+     "refilled": 89569,
+     "won": 42,
+     "lost": 56,
+     "none": 94,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 128343,
+     "refilled": 197381,
+     "won": 56,
+     "lost": 74,
+     "none": 66,
+     "wallet_end": 50625
+    },
+    "2025": {
+     "net": 212233,
+     "refilled": 406085,
+     "won": 63,
+     "lost": 69,
+     "none": 62,
+     "wallet_end": 50625
+    },
+    "2026": {
+     "net": 253853,
+     "refilled": 362716,
+     "won": 58,
+     "lost": 57,
+     "none": 45,
+     "wallet_end": 50625
+    }
+   },
+   "total": {
+    "net": 592047,
+    "refilled": 1055750,
+    "won": 219,
+    "lost": 256,
+    "none": 267
+   },
+   "steps": 3
+  },
+  "combo|4": {
+   "per_year": {
+    "2023": {
+     "net": -2382,
+     "refilled": 89569,
+     "won": 42,
+     "lost": 56,
+     "none": 94,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 116433,
+     "refilled": 238500,
+     "won": 56,
+     "lost": 74,
+     "none": 66,
+     "wallet_end": 75938
+    },
+    "2025": {
+     "net": 340373,
+     "refilled": 657664,
+     "won": 62,
+     "lost": 69,
+     "none": 63,
+     "wallet_end": 75938
+    },
+    "2026": {
+     "net": 359140,
+     "refilled": 601044,
+     "won": 55,
+     "lost": 58,
+     "none": 47,
+     "wallet_end": 75938
+    }
+   },
+   "total": {
+    "net": 813564,
+    "refilled": 1586776,
+    "won": 215,
+    "lost": 257,
+    "none": 270
+   },
+   "steps": 4
+  },
+  "combo|5": {
+   "per_year": {
+    "2023": {
+     "net": -2382,
+     "refilled": 89569,
+     "won": 42,
+     "lost": 56,
+     "none": 94,
+     "wallet_end": 15000
+    },
+    "2024": {
+     "net": 116433,
+     "refilled": 238500,
+     "won": 56,
+     "lost": 74,
+     "none": 66,
+     "wallet_end": 75938
+    },
+    "2025": {
+     "net": 448427,
+     "refilled": 931888,
+     "won": 63,
+     "lost": 69,
+     "none": 62,
+     "wallet_end": 113906
+    },
+    "2026": {
+     "net": 616347,
+     "refilled": 839928,
+     "won": 58,
+     "lost": 57,
+     "none": 45,
+     "wallet_end": 113906
+    }
+   },
+   "total": {
+    "net": 1178825,
+    "refilled": 2099884,
+    "won": 219,
+    "lost": 256,
+    "none": 267
+   },
+   "steps": 5
+  }
+ }
+}

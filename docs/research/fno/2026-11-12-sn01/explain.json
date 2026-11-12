@@ -1,0 +1,185 @@
+{
+ "hindsight_and_luck": {
+  "2023": {
+   "days": 192,
+   "either_side_could_make_1500": 176,
+   "right_side_could_make_1500": 154,
+   "random_side": {
+    "target": 102,
+    "loss": 25,
+    "eod": 65,
+    "net": 320
+   }
+  },
+  "2024": {
+   "days": 195,
+   "either_side_could_make_1500": 188,
+   "right_side_could_make_1500": 178,
+   "random_side": {
+    "target": 116,
+    "loss": 65,
+    "eod": 14,
+    "net": -37542
+   }
+  },
+  "2025": {
+   "days": 194,
+   "either_side_could_make_1500": 184,
+   "right_side_could_make_1500": 168,
+   "random_side": {
+    "target": 96,
+    "loss": 68,
+    "eod": 30,
+    "net": -98447
+   }
+  },
+  "2026": {
+   "days": 160,
+   "either_side_could_make_1500": 154,
+   "right_side_could_make_1500": 147,
+   "random_side": {
+    "target": 90,
+    "loss": 49,
+    "eod": 21,
+    "net": -43699
+   }
+  }
+ },
+ "final_pick_changes": {
+  "final pick (lock 0.5) | +0": {
+   "total_net": 34726,
+   "wallet_steps": 2,
+   "target_days": 56,
+   "green_days": 281,
+   "red_days": 327,
+   "worst_day": -1690,
+   "max_fall": 8296
+  },
+  "final pick (lock 0.5) | +100": {
+   "total_net": -13803,
+   "wallet_steps": 0,
+   "target_days": 54,
+   "green_days": 274,
+   "red_days": 324,
+   "worst_day": -1367,
+   "max_fall": 24517
+  },
+  "no lock (sell at the target) | +0": {
+   "total_net": 28041,
+   "wallet_steps": 1,
+   "target_days": 73,
+   "green_days": 281,
+   "red_days": 327,
+   "worst_day": -1690,
+   "max_fall": 7747
+  },
+  "no lock (sell at the target) | +100": {
+   "total_net": -32533,
+   "wallet_steps": 0,
+   "target_days": 54,
+   "green_days": 274,
+   "red_days": 324,
+   "worst_day": -1367,
+   "max_fall": 34826
+  },
+  "lock 1.0 | +0": {
+   "total_net": 34015,
+   "wallet_steps": 2,
+   "target_days": 56,
+   "green_days": 281,
+   "red_days": 327,
+   "worst_day": -1690,
+   "max_fall": 8296
+  },
+  "lock 1.0 | +100": {
+   "total_net": -15566,
+   "wallet_steps": 0,
+   "target_days": 54,
+   "green_days": 274,
+   "red_days": 324,
+   "worst_day": -1367,
+   "max_fall": 25380
+  },
+  "lock 0.25 | +0": {
+   "total_net": 35268,
+   "wallet_steps": 2,
+   "target_days": 55,
+   "green_days": 281,
+   "red_days": 327,
+   "worst_day": -1690,
+   "max_fall": 8296
+  },
+  "lock 0.25 | +100": {
+   "total_net": -18672,
+   "wallet_steps": 0,
+   "target_days": 54,
+   "green_days": 274,
+   "red_days": 324,
+   "worst_day": -1367,
+   "max_fall": 28834
+  },
+  "target mode every2 | +0": {
+   "total_net": 34726,
+   "wallet_steps": 2,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-02-02",
+     "new_wallet": 33750,
+     "target_now": 2250
+    }
+   ],
+   "target_days": 56
+  },
+  "target mode every3 | +0": {
+   "total_net": 43222,
+   "wallet_steps": 2,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-02-02",
+     "new_wallet": 33750,
+     "target_now": 1500
+    }
+   ],
+   "target_days": 73
+  },
+  "target mode prop | +0": {
+   "total_net": 29168,
+   "wallet_steps": 1,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 2250
+    }
+   ],
+   "target_days": 25
+  },
+  "target mode flat | +0": {
+   "total_net": 43222,
+   "wallet_steps": 2,
+   "step_days": [
+    {
+     "day": "2024-07-26",
+     "new_wallet": 22500,
+     "target_now": 1500
+    },
+    {
+     "day": "2026-02-02",
+     "new_wallet": 33750,
+     "target_now": 1500
+    }
+   ],
+   "target_days": 73
+  }
+ }
+}

@@ -1,0 +1,122 @@
+{
+ "2023": {
+  "bench": {
+   "net": -7059,
+   "won": 6,
+   "lost": 16,
+   "none": 170,
+   "refilled": 20564
+  },
+  "sn06_other_days": {
+   "net": -41133,
+   "won": 40,
+   "lost": 88,
+   "none": 42,
+   "refilled": 75923
+  },
+  "combo": {
+   "net": -48192,
+   "won": 46,
+   "lost": 104,
+   "none": 42,
+   "refilled": 96487
+  },
+  "sn06_on_n11_days": {
+   "net": -1556,
+   "won": 9,
+   "lost": 12,
+   "none": 1,
+   "refilled": 11093
+  }
+ },
+ "2024": {
+  "bench": {
+   "net": 35618,
+   "won": 12,
+   "lost": 12,
+   "none": 172,
+   "refilled": 14915
+  },
+  "sn06_other_days": {
+   "net": -8852,
+   "won": 29,
+   "lost": 48,
+   "none": 94,
+   "refilled": 53580
+  },
+  "combo": {
+   "net": 26766,
+   "won": 41,
+   "lost": 60,
+   "none": 95,
+   "refilled": 68495
+  },
+  "sn06_on_n11_days": {
+   "net": -7298,
+   "won": 5,
+   "lost": 12,
+   "none": 8,
+   "refilled": 12381
+  }
+ },
+ "2025": {
+  "bench": {
+   "net": 39114,
+   "won": 21,
+   "lost": 21,
+   "none": 152,
+   "refilled": 34651
+  },
+  "sn06_other_days": {
+   "net": -2413,
+   "won": 20,
+   "lost": 37,
+   "none": 90,
+   "refilled": 51514
+  },
+  "combo": {
+   "net": 36700,
+   "won": 41,
+   "lost": 58,
+   "none": 95,
+   "refilled": 86166
+  },
+  "sn06_on_n11_days": {
+   "net": -10922,
+   "won": 6,
+   "lost": 23,
+   "none": 18,
+   "refilled": 31761
+  }
+ },
+ "2026": {
+  "bench": {
+   "net": 44322,
+   "won": 16,
+   "lost": 14,
+   "none": 130,
+   "refilled": 21505
+  },
+  "sn06_other_days": {
+   "net": 8647,
+   "won": 14,
+   "lost": 21,
+   "none": 90,
+   "refilled": 19121
+  },
+  "combo": {
+   "net": 52969,
+   "won": 30,
+   "lost": 35,
+   "none": 95,
+   "refilled": 40626
+  },
+  "sn06_on_n11_days": {
+   "net": 1277,
+   "won": 5,
+   "lost": 8,
+   "none": 22,
+   "refilled": 9083
+  }
+ }
+}

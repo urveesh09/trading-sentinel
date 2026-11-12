@@ -1,0 +1,12 @@
+{
+  "name": "SN Gold v4",
+  "frozen": "2026-11-13",
+  "built_on": "SN Gold v3 (sn-gold/SN_GOLD_V3.json, tag sn-gold-v3), which stays frozen and verifiable",
+  "change_from_v3": "SN43: the in-the-money depth follows the money behind each lot: under Rs 17,500 per lot one strike in the money, under Rs 20,000 up to two, from Rs 20,000 up to three; always the deepest strike where every lot fits, else N11's strike, else one strike further out of the money",
+  "variant_dict": {"extend": true, "ext_x": 0.25, "ext_k": 3.0, "itm_if_fits": true, "in_x": 0.10, "itm_auto": [17500, 20000]},
+  "rules_unchanged_from_v3": ["N11 entries and exits", "extend winners >= +25% with a 3-ATR index trail", "scale-in 1 lot at +10% only if the whole position fits the day room", "lots floor(W/15k), halved on low-volatility days", "grow from Rs 15k +50% per wallet of net profit, stop after step 3", "20% day loss limit", "Zerodha charges + Rs 205 per lot per trade"],
+  "optional_owner_lever": "step after 50% of the wallet in profit (g_trig 0.5): G3 +3,53,995 with the same worst day",
+  "expected_totals_2023_to_2026_10": {"A 15k 1 lot": 130530, "B 20k 1 lot": 159282, "C 30k sized": 227949, "G3 (Gold)": 326853, "G5": 545819},
+  "harness": "docs/research/fno/sn-gold/gold_v4.py (frozen copy of the SN31 lab; sha256 in verify_gold_v4.py)",
+  "verify": "python-engine/winvenv/Scripts/python.exe docs/research/fno/sn-gold/verify_gold_v4.py"
+}

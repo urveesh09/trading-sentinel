@@ -1,0 +1,39 @@
+{
+ "study": "SN01",
+ "frozen_at_ist": "2026-11-12 20:00",
+ "files_sha256": {
+  "PLAN.md": "8de3734d913502fd5bf8084c1e679ffd7481454ff7b368a829931effda609efe",
+  "sn01_data.py": "47efd08e0f52adbb45a2f2f69434e93f6f0bdb13046ce370e3fa69ec3ec5d564",
+  "sn01_sim.py": "e12277b327fcbb928caa6a467dc88d9b14603dde601b16f5747cdcedb9971fef",
+  "sn01_search.py": "9dda9ebfe140c1f704da28d80c633de4484f948f9bebfecfdf1426eb06f81e66",
+  "sn01_ledger.py": "1ed5fd6cd7c21a170738813d35da676641d3a2afc320d7f2f856a4c82b167836",
+  "sn01_analyze.py": "7268169cd4f3ec7e6630ffb6d563d235cd973944fbd6b510ad06e37809a80e02",
+  "test_sn01.py": "4bbaca7aa67d159493bf83f29ca1c3c99f1ebaccd6ab708ae8a600221162ff91"
+ },
+ "engine_sha256": {
+  "python-engine/fno_costs.py": "c148d3deadec3982b90ff617d0c9b3aec3e1794c69c48f69cc4aaaf9cb391e8a",
+  "python-engine/cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd"
+ },
+ "cost_rates": {
+  "brokerage_flat_per_order": 20.0,
+  "stt_sell_pct": 0.0015,
+  "exchange_pct": 0.0003553,
+  "sebi_pct": 1e-06,
+  "stamp_duty_buy_pct": 3e-05,
+  "ipft_pct": 1e-09,
+  "gst_pct": 0.18
+ },
+ "datasets_manifest_sha256": {
+  "2023": "e40fef86b46b17f07d31ba4f214e9c776eac1d4fee3cfc52f7cdfb43c5cc8a45",
+  "2024": "d0cc8743c06cf46dfe862a4c8d8ba5523e9d5ef53ce83ab70001f3f5c4a94be9",
+  "2025": "41dac07a5f65fd9c9d23342ec6f642a965e5b1ac00533fb549895d89ad4f069d",
+  "2026": "945eba40d24a95f1c85e75823d77443ab3d3c1ed1f8e1baaef1ffa79dcbc7555"
+ },
+ "caches_sha256": {
+  "2023": "c6f6f56968e18646d864d1ba8affba34063ec413ef5e1a33b8db3b168228c54b",
+  "2024": "ec1e4715e9ccb5d5bc9bdb8e94593fae04ed486b6ef1603ce1073533df486617",
+  "2025": "0c7c981a9e1a03ebd0c8438d1c9168338aff50d4c61e5796e744e3c2f022ec04",
+  "2026": "d217b9e28db9afebc56ed4771a3ef8faa6cb709fdb7a2b584d40571ff12953a6"
+ },
+ "forward_export": "C:/Users/Urveesh/sentinel-operations/fno-forward-panel-20261028/docs/research/fno/2026-10-28-forward-panel/_local/exports/20261112T103005Z (quotes Oct 29 - Nov 12 unopened for SN01)"
+}

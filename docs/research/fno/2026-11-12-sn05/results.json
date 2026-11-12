@@ -1,0 +1,4690 @@
+{
+ "singles": {
+  "N11": {
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "B|UNION": {
+   "2024": {
+    "net": -83533,
+    "green": 49,
+    "red": 128,
+    "none": 19,
+    "worst": -3133,
+    "trades": 300,
+    "refilled": 229161,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -32268,
+    "green": 56,
+    "red": 114,
+    "none": 24,
+    "worst": -3050,
+    "trades": 290,
+    "refilled": 188228,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -26761,
+    "green": 42,
+    "red": 88,
+    "none": 30,
+    "worst": -3105,
+    "trades": 206,
+    "refilled": 154777,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|0": {
+   "2024": {
+    "net": -52628,
+    "green": 29,
+    "red": 102,
+    "none": 65,
+    "worst": -2997,
+    "trades": 167,
+    "refilled": 135816,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -30833,
+    "green": 32,
+    "red": 89,
+    "none": 73,
+    "worst": -2995,
+    "trades": 149,
+    "refilled": 100890,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -26682,
+    "green": 10,
+    "red": 32,
+    "none": 118,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 50497,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|1": {
+   "2024": {
+    "net": -20091,
+    "green": 20,
+    "red": 53,
+    "none": 123,
+    "worst": -2998,
+    "trades": 81,
+    "refilled": 67357,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -26689,
+    "green": 23,
+    "red": 48,
+    "none": 123,
+    "worst": -2995,
+    "trades": 75,
+    "refilled": 64660,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 221,
+    "green": 18,
+    "red": 36,
+    "none": 106,
+    "worst": -2996,
+    "trades": 57,
+    "refilled": 46817,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|2": {
+   "2024": {
+    "net": -21516,
+    "green": 39,
+    "red": 57,
+    "none": 100,
+    "worst": -2997,
+    "trades": 107,
+    "refilled": 93779,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -26560,
+    "green": 12,
+    "red": 27,
+    "none": 155,
+    "worst": -2998,
+    "trades": 45,
+    "refilled": 42486,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -15992,
+    "green": 28,
+    "red": 42,
+    "none": 90,
+    "worst": -2994,
+    "trades": 73,
+    "refilled": 73348,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|3": {
+   "2024": {
+    "net": -27395,
+    "green": 24,
+    "red": 52,
+    "none": 120,
+    "worst": -2996,
+    "trades": 84,
+    "refilled": 70801,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -23991,
+    "green": 18,
+    "red": 43,
+    "none": 133,
+    "worst": -2998,
+    "trades": 69,
+    "refilled": 39302,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 18973,
+    "green": 21,
+    "red": 34,
+    "none": 105,
+    "worst": -2921,
+    "trades": 62,
+    "refilled": 34450,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|4": {
+   "2024": {
+    "net": -58489,
+    "green": 27,
+    "red": 62,
+    "none": 107,
+    "worst": -3000,
+    "trades": 124,
+    "refilled": 108041,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -24738,
+    "green": 9,
+    "red": 23,
+    "none": 162,
+    "worst": -2999,
+    "trades": 41,
+    "refilled": 38318,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -33680,
+    "green": 39,
+    "red": 66,
+    "none": 55,
+    "worst": -2999,
+    "trades": 130,
+    "refilled": 111757,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|5": {
+   "2024": {
+    "net": -5515,
+    "green": 10,
+    "red": 28,
+    "none": 158,
+    "worst": -2994,
+    "trades": 38,
+    "refilled": 47703,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -18869,
+    "green": 12,
+    "red": 29,
+    "none": 153,
+    "worst": -2994,
+    "trades": 42,
+    "refilled": 46783,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -11556,
+    "green": 10,
+    "red": 17,
+    "none": 133,
+    "worst": -2994,
+    "trades": 27,
+    "refilled": 30645,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|6": {
+   "2024": {
+    "net": -61338,
+    "green": 19,
+    "red": 77,
+    "none": 100,
+    "worst": -2996,
+    "trades": 148,
+    "refilled": 113030,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -30137,
+    "green": 3,
+    "red": 16,
+    "none": 175,
+    "worst": -2998,
+    "trades": 28,
+    "refilled": 34628,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -28248,
+    "green": 11,
+    "red": 36,
+    "none": 113,
+    "worst": -2997,
+    "trades": 75,
+    "refilled": 51253,
+    "sessions": 160
+   }
+  },
+  "L|MOMO_BURST|7": {
+   "2024": {
+    "net": -10711,
+    "green": 34,
+    "red": 87,
+    "none": 75,
+    "worst": -2997,
+    "trades": 146,
+    "refilled": 111626,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -23274,
+    "green": 37,
+    "red": 81,
+    "none": 76,
+    "worst": -2994,
+    "trades": 129,
+    "refilled": 106839,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -6476,
+    "green": 28,
+    "red": 53,
+    "none": 79,
+    "worst": -2995,
+    "trades": 95,
+    "refilled": 74207,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|0": {
+   "2024": {
+    "net": -46262,
+    "green": 24,
+    "red": 62,
+    "none": 110,
+    "worst": -2994,
+    "trades": 103,
+    "refilled": 83276,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -12633,
+    "green": 32,
+    "red": 49,
+    "none": 113,
+    "worst": -3069,
+    "trades": 110,
+    "refilled": 57487,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -8128,
+    "green": 21,
+    "red": 36,
+    "none": 103,
+    "worst": -2998,
+    "trades": 79,
+    "refilled": 46906,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|1": {
+   "2024": {
+    "net": -19792,
+    "green": 8,
+    "red": 19,
+    "none": 169,
+    "worst": -2994,
+    "trades": 27,
+    "refilled": 28332,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -7624,
+    "green": 9,
+    "red": 10,
+    "none": 175,
+    "worst": -2995,
+    "trades": 19,
+    "refilled": 13321,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -6001,
+    "green": 10,
+    "red": 10,
+    "none": 140,
+    "worst": -2998,
+    "trades": 21,
+    "refilled": 19727,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|2": {
+   "2024": {
+    "net": -1086,
+    "green": 13,
+    "red": 27,
+    "none": 156,
+    "worst": -2994,
+    "trades": 40,
+    "refilled": 33123,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -5674,
+    "green": 10,
+    "red": 12,
+    "none": 172,
+    "worst": -2994,
+    "trades": 22,
+    "refilled": 18266,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 1381,
+    "green": 5,
+    "red": 11,
+    "none": 144,
+    "worst": -2992,
+    "trades": 16,
+    "refilled": 11078,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|3": {
+   "2024": {
+    "net": -16861,
+    "green": 19,
+    "red": 43,
+    "none": 134,
+    "worst": -3188,
+    "trades": 64,
+    "refilled": 62027,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -13415,
+    "green": 22,
+    "red": 34,
+    "none": 138,
+    "worst": -2994,
+    "trades": 57,
+    "refilled": 49498,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -3476,
+    "green": 13,
+    "red": 25,
+    "none": 122,
+    "worst": -2992,
+    "trades": 38,
+    "refilled": 31294,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|4": {
+   "2024": {
+    "net": 9371,
+    "green": 13,
+    "red": 17,
+    "none": 166,
+    "worst": -2993,
+    "trades": 30,
+    "refilled": 21001,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -4915,
+    "green": 8,
+    "red": 9,
+    "none": 177,
+    "worst": -2638,
+    "trades": 17,
+    "refilled": 11540,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 7805,
+    "green": 5,
+    "red": 8,
+    "none": 147,
+    "worst": -2205,
+    "trades": 13,
+    "refilled": 7789,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|5": {
+   "2024": {
+    "net": -4337,
+    "green": 4,
+    "red": 10,
+    "none": 182,
+    "worst": -2992,
+    "trades": 14,
+    "refilled": 12462,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -3178,
+    "green": 2,
+    "red": 3,
+    "none": 189,
+    "worst": -1899,
+    "trades": 5,
+    "refilled": 3436,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -3532,
+    "green": 3,
+    "red": 4,
+    "none": 153,
+    "worst": -2992,
+    "trades": 7,
+    "refilled": 8383,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|6": {
+   "2024": {
+    "net": -16069,
+    "green": 11,
+    "red": 25,
+    "none": 160,
+    "worst": -2993,
+    "trades": 39,
+    "refilled": 23918,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -13914,
+    "green": 7,
+    "red": 19,
+    "none": 168,
+    "worst": -2307,
+    "trades": 34,
+    "refilled": 17078,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -8664,
+    "green": 5,
+    "red": 13,
+    "none": 142,
+    "worst": -2997,
+    "trades": 22,
+    "refilled": 15479,
+    "sessions": 160
+   }
+  },
+  "L|PDL_BREAK|7": {
+   "2024": {
+    "net": -3135,
+    "green": 11,
+    "red": 26,
+    "none": 159,
+    "worst": -2998,
+    "trades": 41,
+    "refilled": 38222,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -3427,
+    "green": 14,
+    "red": 16,
+    "none": 164,
+    "worst": -2993,
+    "trades": 31,
+    "refilled": 21563,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 6956,
+    "green": 8,
+    "red": 9,
+    "none": 143,
+    "worst": -1480,
+    "trades": 18,
+    "refilled": 7632,
+    "sessions": 160
+   }
+  },
+  "L|TPB_O27F": {
+   "2024": {
+    "net": -26569,
+    "green": 8,
+    "red": 33,
+    "none": 155,
+    "worst": -2997,
+    "trades": 46,
+    "refilled": 45482,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 8714,
+    "green": 27,
+    "red": 39,
+    "none": 128,
+    "worst": -2998,
+    "trades": 75,
+    "refilled": 56400,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 6860,
+    "green": 21,
+    "red": 34,
+    "none": 105,
+    "worst": -2996,
+    "trades": 61,
+    "refilled": 50495,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|0": {
+   "2024": {
+    "net": -25142,
+    "green": 12,
+    "red": 35,
+    "none": 149,
+    "worst": -2994,
+    "trades": 51,
+    "refilled": 39322,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -20072,
+    "green": 14,
+    "red": 28,
+    "none": 152,
+    "worst": -2996,
+    "trades": 49,
+    "refilled": 32060,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -5160,
+    "green": 14,
+    "red": 19,
+    "none": 127,
+    "worst": -2998,
+    "trades": 38,
+    "refilled": 27811,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|1": {
+   "2024": {
+    "net": -45214,
+    "green": 17,
+    "red": 67,
+    "none": 112,
+    "worst": -2996,
+    "trades": 107,
+    "refilled": 89261,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -12269,
+    "green": 27,
+    "red": 64,
+    "none": 103,
+    "worst": -3118,
+    "trades": 116,
+    "refilled": 76404,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -33244,
+    "green": 17,
+    "red": 45,
+    "none": 98,
+    "worst": -2997,
+    "trades": 74,
+    "refilled": 60832,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|2": {
+   "2024": {
+    "net": -22661,
+    "green": 22,
+    "red": 42,
+    "none": 132,
+    "worst": -2995,
+    "trades": 78,
+    "refilled": 52900,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -25152,
+    "green": 15,
+    "red": 45,
+    "none": 134,
+    "worst": -2997,
+    "trades": 73,
+    "refilled": 49252,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -18803,
+    "green": 13,
+    "red": 22,
+    "none": 125,
+    "worst": -2995,
+    "trades": 39,
+    "refilled": 37362,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|3": {
+   "2024": {
+    "net": 5922,
+    "green": 12,
+    "red": 25,
+    "none": 159,
+    "worst": -2994,
+    "trades": 45,
+    "refilled": 27421,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -1825,
+    "green": 8,
+    "red": 28,
+    "none": 158,
+    "worst": -2992,
+    "trades": 42,
+    "refilled": 27248,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -10990,
+    "green": 11,
+    "red": 12,
+    "none": 137,
+    "worst": -2995,
+    "trades": 27,
+    "refilled": 19925,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|4": {
+   "2024": {
+    "net": -7833,
+    "green": 2,
+    "red": 14,
+    "none": 180,
+    "worst": -2167,
+    "trades": 21,
+    "refilled": 15029,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -3471,
+    "green": 8,
+    "red": 15,
+    "none": 171,
+    "worst": -1962,
+    "trades": 30,
+    "refilled": 13978,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 5272,
+    "green": 8,
+    "red": 7,
+    "none": 145,
+    "worst": -2328,
+    "trades": 18,
+    "refilled": 6092,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|5": {
+   "2024": {
+    "net": -3355,
+    "green": 3,
+    "red": 9,
+    "none": 184,
+    "worst": -2868,
+    "trades": 12,
+    "refilled": 13110,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 8031,
+    "green": 7,
+    "red": 7,
+    "none": 180,
+    "worst": -1431,
+    "trades": 15,
+    "refilled": 4790,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 5048,
+    "green": 4,
+    "red": 6,
+    "none": 150,
+    "worst": -2328,
+    "trades": 11,
+    "refilled": 3902,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|6": {
+   "2024": {
+    "net": -9460,
+    "green": 32,
+    "red": 77,
+    "none": 87,
+    "worst": -2996,
+    "trades": 128,
+    "refilled": 84657,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -47485,
+    "green": 26,
+    "red": 78,
+    "none": 90,
+    "worst": -3218,
+    "trades": 123,
+    "refilled": 95039,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -17906,
+    "green": 25,
+    "red": 54,
+    "none": 81,
+    "worst": -2997,
+    "trades": 86,
+    "refilled": 61252,
+    "sessions": 160
+   }
+  },
+  "L|TREND_PULLBACK|7": {
+   "2024": {
+    "net": -23770,
+    "green": 3,
+    "red": 22,
+    "none": 171,
+    "worst": -2995,
+    "trades": 25,
+    "refilled": 25978,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -13919,
+    "green": 9,
+    "red": 22,
+    "none": 163,
+    "worst": -2996,
+    "trades": 36,
+    "refilled": 29893,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -5021,
+    "green": 8,
+    "red": 17,
+    "none": 135,
+    "worst": -2997,
+    "trades": 27,
+    "refilled": 22255,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|0": {
+   "2024": {
+    "net": -14689,
+    "green": 12,
+    "red": 39,
+    "none": 145,
+    "worst": -2998,
+    "trades": 61,
+    "refilled": 52021,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -42346,
+    "green": 7,
+    "red": 45,
+    "none": 142,
+    "worst": -2994,
+    "trades": 57,
+    "refilled": 53904,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 1896,
+    "green": 17,
+    "red": 34,
+    "none": 109,
+    "worst": -2996,
+    "trades": 60,
+    "refilled": 42529,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|1": {
+   "2024": {
+    "net": -39558,
+    "green": 14,
+    "red": 36,
+    "none": 146,
+    "worst": -2997,
+    "trades": 67,
+    "refilled": 60637,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -55729,
+    "green": 41,
+    "red": 84,
+    "none": 69,
+    "worst": -3025,
+    "trades": 163,
+    "refilled": 114126,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -46197,
+    "green": 14,
+    "red": 33,
+    "none": 113,
+    "worst": -3000,
+    "trades": 60,
+    "refilled": 56637,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|2": {
+   "2024": {
+    "net": -19580,
+    "green": 36,
+    "red": 85,
+    "none": 75,
+    "worst": -2999,
+    "trades": 151,
+    "refilled": 109429,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -38132,
+    "green": 2,
+    "red": 29,
+    "none": 163,
+    "worst": -2999,
+    "trades": 36,
+    "refilled": 44271,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 328,
+    "green": 23,
+    "red": 63,
+    "none": 74,
+    "worst": -2998,
+    "trades": 114,
+    "refilled": 79491,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|3": {
+   "2024": {
+    "net": 22265,
+    "green": 45,
+    "red": 66,
+    "none": 85,
+    "worst": -3337,
+    "trades": 138,
+    "refilled": 108582,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -35324,
+    "green": 9,
+    "red": 22,
+    "none": 163,
+    "worst": -3069,
+    "trades": 35,
+    "refilled": 42571,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -10073,
+    "green": 37,
+    "red": 49,
+    "none": 74,
+    "worst": -3050,
+    "trades": 107,
+    "refilled": 77624,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|4": {
+   "2024": {
+    "net": -35323,
+    "green": 15,
+    "red": 34,
+    "none": 147,
+    "worst": -2998,
+    "trades": 61,
+    "refilled": 56175,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -56680,
+    "green": 27,
+    "red": 64,
+    "none": 103,
+    "worst": -3069,
+    "trades": 121,
+    "refilled": 100644,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -27369,
+    "green": 17,
+    "red": 39,
+    "none": 104,
+    "worst": -3031,
+    "trades": 79,
+    "refilled": 74003,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|5": {
+   "2024": {
+    "net": -22364,
+    "green": 28,
+    "red": 55,
+    "none": 113,
+    "worst": -2996,
+    "trades": 104,
+    "refilled": 72272,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -46405,
+    "green": 22,
+    "red": 58,
+    "none": 114,
+    "worst": -3062,
+    "trades": 107,
+    "refilled": 73014,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -8926,
+    "green": 25,
+    "red": 42,
+    "none": 93,
+    "worst": -2998,
+    "trades": 92,
+    "refilled": 57634,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|6": {
+   "2024": {
+    "net": -8266,
+    "green": 20,
+    "red": 85,
+    "none": 91,
+    "worst": -2998,
+    "trades": 133,
+    "refilled": 109673,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -40730,
+    "green": 1,
+    "red": 27,
+    "none": 166,
+    "worst": -2999,
+    "trades": 33,
+    "refilled": 42012,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -2323,
+    "green": 19,
+    "red": 65,
+    "none": 76,
+    "worst": -2997,
+    "trades": 105,
+    "refilled": 84319,
+    "sessions": 160
+   }
+  },
+  "L|VWAP_BAND|7": {
+   "2024": {
+    "net": -5350,
+    "green": 43,
+    "red": 125,
+    "none": 28,
+    "worst": -2999,
+    "trades": 262,
+    "refilled": 221878,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -41473,
+    "green": 26,
+    "red": 83,
+    "none": 85,
+    "worst": -2999,
+    "trades": 168,
+    "refilled": 148090,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -42070,
+    "green": 18,
+    "red": 68,
+    "none": 74,
+    "worst": -2998,
+    "trades": 125,
+    "refilled": 114120,
+    "sessions": 160
+   }
+  },
+  "NULL00": {
+   "2024": {
+    "net": -19538,
+    "green": 19,
+    "red": 57,
+    "none": 120,
+    "worst": -2998,
+    "trades": 131,
+    "refilled": 63821,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -60528,
+    "green": 21,
+    "red": 74,
+    "none": 99,
+    "worst": -2994,
+    "trades": 158,
+    "refilled": 77851,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -36362,
+    "green": 13,
+    "red": 47,
+    "none": 100,
+    "worst": -2995,
+    "trades": 101,
+    "refilled": 51565,
+    "sessions": 160
+   }
+  },
+  "NULL01": {
+   "2024": {
+    "net": -26444,
+    "green": 40,
+    "red": 79,
+    "none": 77,
+    "worst": -3043,
+    "trades": 172,
+    "refilled": 115322,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -42661,
+    "green": 26,
+    "red": 94,
+    "none": 74,
+    "worst": -3027,
+    "trades": 175,
+    "refilled": 102217,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -25190,
+    "green": 26,
+    "red": 74,
+    "none": 60,
+    "worst": -2996,
+    "trades": 138,
+    "refilled": 85588,
+    "sessions": 160
+   }
+  },
+  "NULL02": {
+   "2024": {
+    "net": -19144,
+    "green": 24,
+    "red": 56,
+    "none": 116,
+    "worst": -3086,
+    "trades": 115,
+    "refilled": 66216,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -40112,
+    "green": 8,
+    "red": 35,
+    "none": 151,
+    "worst": -3101,
+    "trades": 57,
+    "refilled": 49968,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -25582,
+    "green": 15,
+    "red": 47,
+    "none": 98,
+    "worst": -2999,
+    "trades": 88,
+    "refilled": 54127,
+    "sessions": 160
+   }
+  },
+  "NULL03": {
+   "2024": {
+    "net": -29665,
+    "green": 10,
+    "red": 57,
+    "none": 129,
+    "worst": -2997,
+    "trades": 82,
+    "refilled": 50251,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -42006,
+    "green": 13,
+    "red": 49,
+    "none": 132,
+    "worst": -2965,
+    "trades": 77,
+    "refilled": 52196,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -23743,
+    "green": 10,
+    "red": 48,
+    "none": 102,
+    "worst": -2996,
+    "trades": 68,
+    "refilled": 39125,
+    "sessions": 160
+   }
+  },
+  "NULL04": {
+   "2024": {
+    "net": -26188,
+    "green": 23,
+    "red": 45,
+    "none": 128,
+    "worst": -2995,
+    "trades": 88,
+    "refilled": 54183,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -14801,
+    "green": 27,
+    "red": 51,
+    "none": 116,
+    "worst": -2995,
+    "trades": 108,
+    "refilled": 49605,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -30679,
+    "green": 5,
+    "red": 37,
+    "none": 118,
+    "worst": -2993,
+    "trades": 56,
+    "refilled": 38220,
+    "sessions": 160
+   }
+  },
+  "NULL05": {
+   "2024": {
+    "net": -16897,
+    "green": 21,
+    "red": 50,
+    "none": 125,
+    "worst": -2995,
+    "trades": 77,
+    "refilled": 58579,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -37075,
+    "green": 11,
+    "red": 49,
+    "none": 134,
+    "worst": -2994,
+    "trades": 70,
+    "refilled": 57535,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 16320,
+    "green": 21,
+    "red": 25,
+    "none": 114,
+    "worst": -3015,
+    "trades": 52,
+    "refilled": 36514,
+    "sessions": 160
+   }
+  },
+  "NULL06": {
+   "2024": {
+    "net": -6981,
+    "green": 10,
+    "red": 21,
+    "none": 165,
+    "worst": -2250,
+    "trades": 35,
+    "refilled": 20868,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -4644,
+    "green": 13,
+    "red": 29,
+    "none": 152,
+    "worst": -2295,
+    "trades": 48,
+    "refilled": 29417,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -5530,
+    "green": 10,
+    "red": 23,
+    "none": 127,
+    "worst": -1875,
+    "trades": 38,
+    "refilled": 21480,
+    "sessions": 160
+   }
+  },
+  "NULL07": {
+   "2024": {
+    "net": -18006,
+    "green": 25,
+    "red": 46,
+    "none": 125,
+    "worst": -1939,
+    "trades": 89,
+    "refilled": 42961,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -31722,
+    "green": 12,
+    "red": 54,
+    "none": 128,
+    "worst": -2999,
+    "trades": 87,
+    "refilled": 59504,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -8346,
+    "green": 16,
+    "red": 36,
+    "none": 108,
+    "worst": -2628,
+    "trades": 63,
+    "refilled": 35537,
+    "sessions": 160
+   }
+  },
+  "NULL08": {
+   "2024": {
+    "net": -66671,
+    "green": 27,
+    "red": 124,
+    "none": 45,
+    "worst": -3076,
+    "trades": 228,
+    "refilled": 126122,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -28600,
+    "green": 40,
+    "red": 116,
+    "none": 38,
+    "worst": -2995,
+    "trades": 255,
+    "refilled": 111870,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -66789,
+    "green": 18,
+    "red": 76,
+    "none": 66,
+    "worst": -2997,
+    "trades": 143,
+    "refilled": 86415,
+    "sessions": 160
+   }
+  },
+  "NULL09": {
+   "2024": {
+    "net": -70738,
+    "green": 34,
+    "red": 121,
+    "none": 41,
+    "worst": -3003,
+    "trades": 248,
+    "refilled": 145255,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -54437,
+    "green": 42,
+    "red": 121,
+    "none": 31,
+    "worst": -3096,
+    "trades": 257,
+    "refilled": 122811,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -20739,
+    "green": 27,
+    "red": 88,
+    "none": 45,
+    "worst": -2998,
+    "trades": 171,
+    "refilled": 93288,
+    "sessions": 160
+   }
+  },
+  "NULL10": {
+   "2024": {
+    "net": -31493,
+    "green": 34,
+    "red": 112,
+    "none": 50,
+    "worst": -2998,
+    "trades": 219,
+    "refilled": 124817,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -52864,
+    "green": 10,
+    "red": 51,
+    "none": 133,
+    "worst": -2998,
+    "trades": 91,
+    "refilled": 63385,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -56979,
+    "green": 25,
+    "red": 83,
+    "none": 52,
+    "worst": -2996,
+    "trades": 163,
+    "refilled": 86712,
+    "sessions": 160
+   }
+  },
+  "NULL11": {
+   "2024": {
+    "net": -3598,
+    "green": 10,
+    "red": 14,
+    "none": 172,
+    "worst": -2994,
+    "trades": 24,
+    "refilled": 24336,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -30056,
+    "green": 4,
+    "red": 24,
+    "none": 166,
+    "worst": -2995,
+    "trades": 29,
+    "refilled": 37510,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -2414,
+    "green": 5,
+    "red": 7,
+    "none": 148,
+    "worst": -2992,
+    "trades": 13,
+    "refilled": 11261,
+    "sessions": 160
+   }
+  },
+  "NULL12": {
+   "2024": {
+    "net": -31867,
+    "green": 27,
+    "red": 79,
+    "none": 90,
+    "worst": -2998,
+    "trades": 132,
+    "refilled": 95218,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -33010,
+    "green": 4,
+    "red": 23,
+    "none": 167,
+    "worst": -2997,
+    "trades": 37,
+    "refilled": 34762,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -24773,
+    "green": 21,
+    "red": 49,
+    "none": 90,
+    "worst": -2998,
+    "trades": 97,
+    "refilled": 61043,
+    "sessions": 160
+   }
+  },
+  "NULL13": {
+   "2024": {
+    "net": -69054,
+    "green": 23,
+    "red": 85,
+    "none": 88,
+    "worst": -3161,
+    "trades": 225,
+    "refilled": 101507,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -88996,
+    "green": 42,
+    "red": 126,
+    "none": 26,
+    "worst": -3143,
+    "trades": 350,
+    "refilled": 149992,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -78607,
+    "green": 21,
+    "red": 108,
+    "none": 31,
+    "worst": -2999,
+    "trades": 257,
+    "refilled": 127504,
+    "sessions": 160
+   }
+  },
+  "NULL14": {
+   "2024": {
+    "net": -71270,
+    "green": 12,
+    "red": 66,
+    "none": 118,
+    "worst": -2998,
+    "trades": 95,
+    "refilled": 101335,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -54369,
+    "green": 29,
+    "red": 82,
+    "none": 83,
+    "worst": -2997,
+    "trades": 131,
+    "refilled": 110328,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -14421,
+    "green": 26,
+    "red": 57,
+    "none": 77,
+    "worst": -2993,
+    "trades": 96,
+    "refilled": 71838,
+    "sessions": 160
+   }
+  },
+  "NULL15": {
+   "2024": {
+    "net": -69127,
+    "green": 34,
+    "red": 108,
+    "none": 54,
+    "worst": -3000,
+    "trades": 217,
+    "refilled": 157089,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -40105,
+    "green": 4,
+    "red": 27,
+    "none": 163,
+    "worst": -2999,
+    "trades": 46,
+    "refilled": 45023,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -45048,
+    "green": 11,
+    "red": 48,
+    "none": 101,
+    "worst": -3082,
+    "trades": 82,
+    "refilled": 81654,
+    "sessions": 160
+   }
+  },
+  "NULL16": {
+   "2024": {
+    "net": -35201,
+    "green": 13,
+    "red": 46,
+    "none": 137,
+    "worst": -2488,
+    "trades": 82,
+    "refilled": 60840,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -45578,
+    "green": 31,
+    "red": 131,
+    "none": 32,
+    "worst": -2998,
+    "trades": 226,
+    "refilled": 171963,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -33299,
+    "green": 30,
+    "red": 94,
+    "none": 36,
+    "worst": -2997,
+    "trades": 173,
+    "refilled": 130977,
+    "sessions": 160
+   }
+  },
+  "NULL17": {
+   "2024": {
+    "net": 9159,
+    "green": 20,
+    "red": 35,
+    "none": 141,
+    "worst": -2993,
+    "trades": 61,
+    "refilled": 33054,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -30050,
+    "green": 26,
+    "red": 46,
+    "none": 122,
+    "worst": -2539,
+    "trades": 82,
+    "refilled": 49799,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -19574,
+    "green": 11,
+    "red": 29,
+    "none": 120,
+    "worst": -2994,
+    "trades": 47,
+    "refilled": 27849,
+    "sessions": 160
+   }
+  },
+  "NULL18": {
+   "2024": {
+    "net": -41425,
+    "green": 25,
+    "red": 72,
+    "none": 99,
+    "worst": -2997,
+    "trades": 133,
+    "refilled": 113195,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -46877,
+    "green": 18,
+    "red": 54,
+    "none": 122,
+    "worst": -2999,
+    "trades": 103,
+    "refilled": 80317,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -45475,
+    "green": 30,
+    "red": 82,
+    "none": 48,
+    "worst": -3067,
+    "trades": 155,
+    "refilled": 114124,
+    "sessions": 160
+   }
+  },
+  "NULL19": {
+   "2024": {
+    "net": -27964,
+    "green": 35,
+    "red": 83,
+    "none": 78,
+    "worst": -3002,
+    "trades": 152,
+    "refilled": 109618,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -23084,
+    "green": 21,
+    "red": 60,
+    "none": 113,
+    "worst": -2998,
+    "trades": 99,
+    "refilled": 87772,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -18175,
+    "green": 24,
+    "red": 61,
+    "none": 75,
+    "worst": -2999,
+    "trades": 103,
+    "refilled": 74558,
+    "sessions": 160
+   }
+  },
+  "N|EFF|LATE": {
+   "2024": {
+    "net": -52791,
+    "green": 43,
+    "red": 109,
+    "none": 44,
+    "worst": -3000,
+    "trades": 236,
+    "refilled": 203175,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -27766,
+    "green": 12,
+    "red": 31,
+    "none": 151,
+    "worst": -3000,
+    "trades": 69,
+    "refilled": 59252,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -44987,
+    "green": 45,
+    "red": 78,
+    "none": 37,
+    "worst": -3105,
+    "trades": 186,
+    "refilled": 148389,
+    "sessions": 160
+   }
+  },
+  "N|EFF|LIVE": {
+   "2024": {
+    "net": -68815,
+    "green": 34,
+    "red": 89,
+    "none": 73,
+    "worst": -3117,
+    "trades": 221,
+    "refilled": 149459,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -22817,
+    "green": 22,
+    "red": 29,
+    "none": 143,
+    "worst": -2998,
+    "trades": 91,
+    "refilled": 59935,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -42273,
+    "green": 50,
+    "red": 73,
+    "none": 37,
+    "worst": -3105,
+    "trades": 211,
+    "refilled": 126637,
+    "sessions": 160
+   }
+  },
+  "N|EFF|LOOSE": {
+   "2024": {
+    "net": -70997,
+    "green": 32,
+    "red": 99,
+    "none": 65,
+    "worst": -3000,
+    "trades": 194,
+    "refilled": 170727,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -38855,
+    "green": 51,
+    "red": 106,
+    "none": 37,
+    "worst": -2999,
+    "trades": 249,
+    "refilled": 176516,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -31143,
+    "green": 41,
+    "red": 80,
+    "none": 39,
+    "worst": -3105,
+    "trades": 181,
+    "refilled": 145974,
+    "sessions": 160
+   }
+  },
+  "N|EFF|OWN": {
+   "2024": {
+    "net": -70997,
+    "green": 32,
+    "red": 99,
+    "none": 65,
+    "worst": -3000,
+    "trades": 194,
+    "refilled": 170727,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -38855,
+    "green": 51,
+    "red": 106,
+    "none": 37,
+    "worst": -2999,
+    "trades": 249,
+    "refilled": 176516,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -31143,
+    "green": 41,
+    "red": 80,
+    "none": 39,
+    "worst": -3105,
+    "trades": 181,
+    "refilled": 145974,
+    "sessions": 160
+   }
+  },
+  "N|EFF|OWN|vwap": {
+   "2024": {
+    "net": -80336,
+    "green": 32,
+    "red": 104,
+    "none": 60,
+    "worst": -3000,
+    "trades": 207,
+    "refilled": 168751,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -27235,
+    "green": 7,
+    "red": 26,
+    "none": 161,
+    "worst": -2997,
+    "trades": 50,
+    "refilled": 51048,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -19165,
+    "green": 43,
+    "red": 76,
+    "none": 41,
+    "worst": -3102,
+    "trades": 182,
+    "refilled": 127365,
+    "sessions": 160
+   }
+  },
+  "N|EFF|RUN": {
+   "2024": {
+    "net": -37152,
+    "green": 41,
+    "red": 107,
+    "none": 48,
+    "worst": -3000,
+    "trades": 200,
+    "refilled": 205806,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -31471,
+    "green": 5,
+    "red": 22,
+    "none": 167,
+    "worst": -2997,
+    "trades": 35,
+    "refilled": 49288,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -19292,
+    "green": 42,
+    "red": 70,
+    "none": 48,
+    "worst": -3105,
+    "trades": 153,
+    "refilled": 139618,
+    "sessions": 160
+   }
+  },
+  "N|OR20|LATE": {
+   "2024": {
+    "net": -72677,
+    "green": 45,
+    "red": 77,
+    "none": 74,
+    "worst": -3096,
+    "trades": 159,
+    "refilled": 135795,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -16993,
+    "green": 40,
+    "red": 72,
+    "none": 82,
+    "worst": -3050,
+    "trades": 142,
+    "refilled": 97636,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -29490,
+    "green": 34,
+    "red": 63,
+    "none": 63,
+    "worst": -3205,
+    "trades": 118,
+    "refilled": 106812,
+    "sessions": 160
+   }
+  },
+  "N|OR20|LIVE": {
+   "2024": {
+    "net": -82565,
+    "green": 45,
+    "red": 77,
+    "none": 74,
+    "worst": -3096,
+    "trades": 162,
+    "refilled": 126897,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -12529,
+    "green": 45,
+    "red": 67,
+    "none": 82,
+    "worst": -3050,
+    "trades": 150,
+    "refilled": 83202,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -40613,
+    "green": 33,
+    "red": 66,
+    "none": 61,
+    "worst": -3205,
+    "trades": 132,
+    "refilled": 99621,
+    "sessions": 160
+   }
+  },
+  "N|OR20|LOOSE": {
+   "2024": {
+    "net": -77502,
+    "green": 34,
+    "red": 87,
+    "none": 75,
+    "worst": -3096,
+    "trades": 156,
+    "refilled": 135600,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -27818,
+    "green": 34,
+    "red": 77,
+    "none": 83,
+    "worst": -3050,
+    "trades": 137,
+    "refilled": 109874,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -41682,
+    "green": 30,
+    "red": 68,
+    "none": 62,
+    "worst": -3205,
+    "trades": 122,
+    "refilled": 111256,
+    "sessions": 160
+   }
+  },
+  "N|OR20|OWN": {
+   "2024": {
+    "net": -72677,
+    "green": 45,
+    "red": 77,
+    "none": 74,
+    "worst": -3096,
+    "trades": 159,
+    "refilled": 135795,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -16993,
+    "green": 40,
+    "red": 72,
+    "none": 82,
+    "worst": -3050,
+    "trades": 142,
+    "refilled": 97636,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -29490,
+    "green": 34,
+    "red": 63,
+    "none": 63,
+    "worst": -3205,
+    "trades": 118,
+    "refilled": 106812,
+    "sessions": 160
+   }
+  },
+  "N|OR20|OWN|vwap": {
+   "2024": {
+    "net": -62774,
+    "green": 46,
+    "red": 76,
+    "none": 74,
+    "worst": -3096,
+    "trades": 164,
+    "refilled": 130860,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -14301,
+    "green": 39,
+    "red": 73,
+    "none": 82,
+    "worst": -3050,
+    "trades": 145,
+    "refilled": 94325,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -50395,
+    "green": 21,
+    "red": 53,
+    "none": 86,
+    "worst": -3205,
+    "trades": 91,
+    "refilled": 89903,
+    "sessions": 160
+   }
+  },
+  "N|OR20|RUN": {
+   "2024": {
+    "net": -64314,
+    "green": 37,
+    "red": 84,
+    "none": 75,
+    "worst": -3096,
+    "trades": 155,
+    "refilled": 148886,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -11720,
+    "green": 40,
+    "red": 73,
+    "none": 81,
+    "worst": -3050,
+    "trades": 133,
+    "refilled": 121657,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -40916,
+    "green": 22,
+    "red": 47,
+    "none": 91,
+    "worst": -2998,
+    "trades": 79,
+    "refilled": 85113,
+    "sessions": 160
+   }
+  },
+  "N|SHIPPED|LATE": {
+   "2024": {
+    "net": -41535,
+    "green": 36,
+    "red": 58,
+    "none": 102,
+    "worst": -3096,
+    "trades": 108,
+    "refilled": 98699,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -17900,
+    "green": 35,
+    "red": 64,
+    "none": 95,
+    "worst": -2998,
+    "trades": 121,
+    "refilled": 87448,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -40031,
+    "green": 27,
+    "red": 46,
+    "none": 87,
+    "worst": -3205,
+    "trades": 91,
+    "refilled": 81267,
+    "sessions": 160
+   }
+  },
+  "N|SHIPPED|LIVE": {
+   "2024": {
+    "net": -50229,
+    "green": 36,
+    "red": 59,
+    "none": 101,
+    "worst": -3096,
+    "trades": 111,
+    "refilled": 89822,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -16861,
+    "green": 38,
+    "red": 61,
+    "none": 95,
+    "worst": -2996,
+    "trades": 127,
+    "refilled": 74410,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -29777,
+    "green": 23,
+    "red": 50,
+    "none": 87,
+    "worst": -3205,
+    "trades": 94,
+    "refilled": 67938,
+    "sessions": 160
+   }
+  },
+  "N|SHIPPED|LOOSE": {
+   "2024": {
+    "net": -38302,
+    "green": 30,
+    "red": 65,
+    "none": 101,
+    "worst": -3096,
+    "trades": 109,
+    "refilled": 101389,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -26094,
+    "green": 32,
+    "red": 66,
+    "none": 96,
+    "worst": -2998,
+    "trades": 121,
+    "refilled": 93987,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -40330,
+    "green": 21,
+    "red": 52,
+    "none": 87,
+    "worst": -3205,
+    "trades": 91,
+    "refilled": 80936,
+    "sessions": 160
+   }
+  },
+  "N|SHIPPED|OWN": {
+   "2024": {
+    "net": -50229,
+    "green": 36,
+    "red": 59,
+    "none": 101,
+    "worst": -3096,
+    "trades": 111,
+    "refilled": 89822,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -16861,
+    "green": 38,
+    "red": 61,
+    "none": 95,
+    "worst": -2996,
+    "trades": 127,
+    "refilled": 74410,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -29777,
+    "green": 23,
+    "red": 50,
+    "none": 87,
+    "worst": -3205,
+    "trades": 94,
+    "refilled": 67938,
+    "sessions": 160
+   }
+  },
+  "N|SHIPPED|OWN|vwap": {
+   "2024": {
+    "net": -42169,
+    "green": 37,
+    "red": 58,
+    "none": 101,
+    "worst": -3096,
+    "trades": 114,
+    "refilled": 85771,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -22067,
+    "green": 38,
+    "red": 61,
+    "none": 95,
+    "worst": -2996,
+    "trades": 127,
+    "refilled": 72041,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -28943,
+    "green": 23,
+    "red": 50,
+    "none": 87,
+    "worst": -3205,
+    "trades": 94,
+    "refilled": 67105,
+    "sessions": 160
+   }
+  },
+  "N|SHIPPED|RUN": {
+   "2024": {
+    "net": -22019,
+    "green": 33,
+    "red": 63,
+    "none": 100,
+    "worst": -3096,
+    "trades": 109,
+    "refilled": 107400,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -15993,
+    "green": 36,
+    "red": 62,
+    "none": 96,
+    "worst": -2998,
+    "trades": 110,
+    "refilled": 99568,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -35253,
+    "green": 21,
+    "red": 48,
+    "none": 91,
+    "worst": -3006,
+    "trades": 79,
+    "refilled": 80739,
+    "sessions": 160
+   }
+  },
+  "N|TPB|LATE": {
+   "2024": {
+    "net": -32131,
+    "green": 6,
+    "red": 29,
+    "none": 161,
+    "worst": -2997,
+    "trades": 44,
+    "refilled": 38719,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -5857,
+    "green": 32,
+    "red": 34,
+    "none": 128,
+    "worst": -2998,
+    "trades": 83,
+    "refilled": 49689,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 423,
+    "green": 24,
+    "red": 32,
+    "none": 104,
+    "worst": -2996,
+    "trades": 67,
+    "refilled": 42459,
+    "sessions": 160
+   }
+  },
+  "N|TPB|LIVE": {
+   "2024": {
+    "net": -32911,
+    "green": 15,
+    "red": 30,
+    "none": 151,
+    "worst": -2997,
+    "trades": 61,
+    "refilled": 41127,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -14156,
+    "green": 29,
+    "red": 37,
+    "none": 128,
+    "worst": -2998,
+    "trades": 92,
+    "refilled": 44135,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 665,
+    "green": 28,
+    "red": 28,
+    "none": 104,
+    "worst": -2997,
+    "trades": 74,
+    "refilled": 29634,
+    "sessions": 160
+   }
+  },
+  "N|TPB|LOOSE": {
+   "2024": {
+    "net": -33056,
+    "green": 6,
+    "red": 30,
+    "none": 160,
+    "worst": -2997,
+    "trades": 45,
+    "refilled": 37875,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 1569,
+    "green": 26,
+    "red": 40,
+    "none": 128,
+    "worst": -2998,
+    "trades": 80,
+    "refilled": 47305,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 10435,
+    "green": 22,
+    "red": 33,
+    "none": 105,
+    "worst": -2998,
+    "trades": 66,
+    "refilled": 39868,
+    "sessions": 160
+   }
+  },
+  "N|TPB|OWN": {
+   "2024": {
+    "net": -26569,
+    "green": 8,
+    "red": 33,
+    "none": 155,
+    "worst": -2997,
+    "trades": 46,
+    "refilled": 45482,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 8714,
+    "green": 27,
+    "red": 39,
+    "none": 128,
+    "worst": -2998,
+    "trades": 75,
+    "refilled": 56400,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 6860,
+    "green": 21,
+    "red": 34,
+    "none": 105,
+    "worst": -2996,
+    "trades": 61,
+    "refilled": 50495,
+    "sessions": 160
+   }
+  },
+  "N|TPB|OWN|vwap": {
+   "2024": {
+    "net": -26595,
+    "green": 8,
+    "red": 34,
+    "none": 154,
+    "worst": -2826,
+    "trades": 49,
+    "refilled": 45508,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 8058,
+    "green": 25,
+    "red": 41,
+    "none": 128,
+    "worst": -2998,
+    "trades": 83,
+    "refilled": 52335,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -4413,
+    "green": 17,
+    "red": 38,
+    "none": 105,
+    "worst": -2996,
+    "trades": 63,
+    "refilled": 51013,
+    "sessions": 160
+   }
+  },
+  "N|TPB|RUN": {
+   "2024": {
+    "net": -26569,
+    "green": 8,
+    "red": 33,
+    "none": 155,
+    "worst": -2997,
+    "trades": 46,
+    "refilled": 45482,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 8714,
+    "green": 27,
+    "red": 39,
+    "none": 128,
+    "worst": -2998,
+    "trades": 75,
+    "refilled": 56400,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 6860,
+    "green": 21,
+    "red": 34,
+    "none": 105,
+    "worst": -2996,
+    "trades": 61,
+    "refilled": 50495,
+    "sessions": 160
+   }
+  },
+  "REF|LIVE": {
+   "2024": {
+    "net": -15102,
+    "green": 16,
+    "red": 29,
+    "none": 151,
+    "worst": -3133,
+    "trades": 78,
+    "refilled": 59707,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -1616,
+    "green": 19,
+    "red": 35,
+    "none": 140,
+    "worst": -3050,
+    "trades": 96,
+    "refilled": 61009,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 37144,
+    "green": 16,
+    "red": 21,
+    "none": 123,
+    "worst": -2997,
+    "trades": 58,
+    "refilled": 36816,
+    "sessions": 160
+   }
+  },
+  "REF|LIVE+tpb_all_days": {
+   "2024": {
+    "net": -44215,
+    "green": 25,
+    "red": 70,
+    "none": 101,
+    "worst": -3133,
+    "trades": 130,
+    "refilled": 110110,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 4419,
+    "green": 37,
+    "red": 64,
+    "none": 93,
+    "worst": -3050,
+    "trades": 151,
+    "refilled": 99412,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 28343,
+    "green": 27,
+    "red": 51,
+    "none": 82,
+    "worst": -2997,
+    "trades": 104,
+    "refilled": 79425,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=1.0|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -50212,
+    "green": 19,
+    "red": 73,
+    "none": 104,
+    "worst": -2992,
+    "trades": 105,
+    "refilled": 80819,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -26813,
+    "green": 42,
+    "red": 87,
+    "none": 65,
+    "worst": -2997,
+    "trades": 151,
+    "refilled": 103538,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -5370,
+    "green": 32,
+    "red": 67,
+    "none": 61,
+    "worst": -2994,
+    "trades": 114,
+    "refilled": 75997,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=1.0|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -52903,
+    "green": 27,
+    "red": 93,
+    "none": 76,
+    "worst": -2998,
+    "trades": 140,
+    "refilled": 90632,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -55490,
+    "green": 42,
+    "red": 88,
+    "none": 64,
+    "worst": -2997,
+    "trades": 154,
+    "refilled": 98179,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -33144,
+    "green": 30,
+    "red": 69,
+    "none": 61,
+    "worst": -2994,
+    "trades": 118,
+    "refilled": 72846,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=1.0|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -40893,
+    "green": 21,
+    "red": 57,
+    "none": 118,
+    "worst": -2998,
+    "trades": 89,
+    "refilled": 71026,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -45170,
+    "green": 38,
+    "red": 100,
+    "none": 56,
+    "worst": -2998,
+    "trades": 162,
+    "refilled": 124370,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -11546,
+    "green": 35,
+    "red": 72,
+    "none": 53,
+    "worst": -2997,
+    "trades": 133,
+    "refilled": 88092,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=1.0|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -59933,
+    "green": 36,
+    "red": 98,
+    "none": 62,
+    "worst": -2998,
+    "trades": 167,
+    "refilled": 107297,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -70631,
+    "green": 34,
+    "red": 99,
+    "none": 61,
+    "worst": -2998,
+    "trades": 160,
+    "refilled": 118687,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -30736,
+    "green": 36,
+    "red": 72,
+    "none": 52,
+    "worst": -2996,
+    "trades": 137,
+    "refilled": 82814,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=STRUCT|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -46624,
+    "green": 11,
+    "red": 51,
+    "none": 134,
+    "worst": -2996,
+    "trades": 69,
+    "refilled": 69558,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -58889,
+    "green": 44,
+    "red": 90,
+    "none": 60,
+    "worst": -2998,
+    "trades": 157,
+    "refilled": 134008,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 1040,
+    "green": 40,
+    "red": 62,
+    "none": 58,
+    "worst": -2998,
+    "trades": 118,
+    "refilled": 82239,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=STRUCT|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -54090,
+    "green": 35,
+    "red": 88,
+    "none": 73,
+    "worst": -2994,
+    "trades": 140,
+    "refilled": 106503,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -64994,
+    "green": 31,
+    "red": 77,
+    "none": 86,
+    "worst": -2998,
+    "trades": 131,
+    "refilled": 103681,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -21399,
+    "green": 38,
+    "red": 66,
+    "none": 56,
+    "worst": -2998,
+    "trades": 127,
+    "refilled": 83072,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -41305,
+    "green": 18,
+    "red": 49,
+    "none": 129,
+    "worst": -2997,
+    "trades": 77,
+    "refilled": 72146,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -61824,
+    "green": 42,
+    "red": 95,
+    "none": 57,
+    "worst": -2998,
+    "trades": 158,
+    "refilled": 143526,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -165,
+    "green": 39,
+    "red": 69,
+    "none": 52,
+    "worst": -2996,
+    "trades": 131,
+    "refilled": 88749,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR20|stop=STRUCT|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -53889,
+    "green": 33,
+    "red": 77,
+    "none": 86,
+    "worst": -2997,
+    "trades": 136,
+    "refilled": 97069,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -75612,
+    "green": 36,
+    "red": 99,
+    "none": 59,
+    "worst": -2998,
+    "trades": 160,
+    "refilled": 131987,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -12116,
+    "green": 41,
+    "red": 71,
+    "none": 48,
+    "worst": -2996,
+    "trades": 141,
+    "refilled": 88600,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=1.0|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -50252,
+    "green": 29,
+    "red": 84,
+    "none": 83,
+    "worst": -2992,
+    "trades": 126,
+    "refilled": 94639,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -56739,
+    "green": 28,
+    "red": 92,
+    "none": 74,
+    "worst": -2996,
+    "trades": 133,
+    "refilled": 106048,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -2244,
+    "green": 28,
+    "red": 69,
+    "none": 63,
+    "worst": -2994,
+    "trades": 107,
+    "refilled": 69918,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=1.0|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -33135,
+    "green": 35,
+    "red": 80,
+    "none": 81,
+    "worst": -2992,
+    "trades": 130,
+    "refilled": 77016,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -63004,
+    "green": 37,
+    "red": 92,
+    "none": 65,
+    "worst": -2997,
+    "trades": 147,
+    "refilled": 98845,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -25564,
+    "green": 30,
+    "red": 68,
+    "none": 62,
+    "worst": -2994,
+    "trades": 113,
+    "refilled": 64147,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=1.0|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -39215,
+    "green": 19,
+    "red": 51,
+    "none": 126,
+    "worst": -2998,
+    "trades": 80,
+    "refilled": 65021,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -57275,
+    "green": 25,
+    "red": 84,
+    "none": 85,
+    "worst": -2996,
+    "trades": 122,
+    "refilled": 102089,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -15566,
+    "green": 32,
+    "red": 76,
+    "none": 52,
+    "worst": -2998,
+    "trades": 126,
+    "refilled": 87414,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=1.0|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -47593,
+    "green": 40,
+    "red": 97,
+    "none": 59,
+    "worst": -2998,
+    "trades": 160,
+    "refilled": 100441,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -69680,
+    "green": 32,
+    "red": 95,
+    "none": 67,
+    "worst": -2997,
+    "trades": 145,
+    "refilled": 105469,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -29684,
+    "green": 33,
+    "red": 75,
+    "none": 52,
+    "worst": -2998,
+    "trades": 130,
+    "refilled": 78205,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=STRUCT|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -52454,
+    "green": 23,
+    "red": 71,
+    "none": 102,
+    "worst": -2996,
+    "trades": 105,
+    "refilled": 93741,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -68279,
+    "green": 34,
+    "red": 88,
+    "none": 72,
+    "worst": -2995,
+    "trades": 136,
+    "refilled": 122934,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -8652,
+    "green": 35,
+    "red": 66,
+    "none": 59,
+    "worst": -2994,
+    "trades": 111,
+    "refilled": 82255,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=STRUCT|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -35262,
+    "green": 42,
+    "red": 82,
+    "none": 72,
+    "worst": -2994,
+    "trades": 140,
+    "refilled": 97267,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -66490,
+    "green": 39,
+    "red": 93,
+    "none": 62,
+    "worst": -2994,
+    "trades": 153,
+    "refilled": 110537,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -23519,
+    "green": 39,
+    "red": 63,
+    "none": 58,
+    "worst": -2997,
+    "trades": 120,
+    "refilled": 78129,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=STRUCT|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -35836,
+    "green": 17,
+    "red": 50,
+    "none": 129,
+    "worst": -2997,
+    "trades": 77,
+    "refilled": 68428,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -60292,
+    "green": 34,
+    "red": 82,
+    "none": 78,
+    "worst": -2995,
+    "trades": 129,
+    "refilled": 113950,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -16767,
+    "green": 36,
+    "red": 74,
+    "none": 50,
+    "worst": -2996,
+    "trades": 124,
+    "refilled": 93830,
+    "sessions": 160
+   }
+  },
+  "S|FADE|level=OR30|stop=STRUCT|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -48377,
+    "green": 44,
+    "red": 95,
+    "none": 57,
+    "worst": -2995,
+    "trades": 163,
+    "refilled": 110419,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -72972,
+    "green": 33,
+    "red": 95,
+    "none": 66,
+    "worst": -2994,
+    "trades": 145,
+    "refilled": 114557,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -18839,
+    "green": 39,
+    "red": 72,
+    "none": 49,
+    "worst": -2998,
+    "trades": 133,
+    "refilled": 88101,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.0|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -43934,
+    "green": 12,
+    "red": 51,
+    "none": 133,
+    "worst": -2992,
+    "trades": 64,
+    "refilled": 60344,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -33431,
+    "green": 21,
+    "red": 43,
+    "none": 130,
+    "worst": -2993,
+    "trades": 66,
+    "refilled": 51505,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -9056,
+    "green": 15,
+    "red": 28,
+    "none": 117,
+    "worst": -2586,
+    "trades": 43,
+    "refilled": 29537,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.0|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -43939,
+    "green": 16,
+    "red": 51,
+    "none": 129,
+    "worst": -2992,
+    "trades": 69,
+    "refilled": 54429,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -32997,
+    "green": 19,
+    "red": 45,
+    "none": 130,
+    "worst": -2993,
+    "trades": 66,
+    "refilled": 46535,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -6844,
+    "green": 18,
+    "red": 25,
+    "none": 117,
+    "worst": -2047,
+    "trades": 43,
+    "refilled": 23946,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.0|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -45897,
+    "green": 21,
+    "red": 57,
+    "none": 118,
+    "worst": -2994,
+    "trades": 80,
+    "refilled": 72471,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -38935,
+    "green": 22,
+    "red": 49,
+    "none": 123,
+    "worst": -2995,
+    "trades": 74,
+    "refilled": 59577,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -14491,
+    "green": 15,
+    "red": 34,
+    "none": 111,
+    "worst": -2586,
+    "trades": 50,
+    "refilled": 36147,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.0|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -39362,
+    "green": 23,
+    "red": 56,
+    "none": 117,
+    "worst": -2994,
+    "trades": 82,
+    "refilled": 62942,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -36476,
+    "green": 22,
+    "red": 49,
+    "none": 123,
+    "worst": -2995,
+    "trades": 77,
+    "refilled": 55647,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -10425,
+    "green": 18,
+    "red": 31,
+    "none": 111,
+    "worst": -2204,
+    "trades": 51,
+    "refilled": 28321,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.5|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -44254,
+    "green": 21,
+    "red": 49,
+    "none": 126,
+    "worst": -2994,
+    "trades": 72,
+    "refilled": 66190,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -33290,
+    "green": 23,
+    "red": 41,
+    "none": 130,
+    "worst": -2993,
+    "trades": 66,
+    "refilled": 53854,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -8765,
+    "green": 19,
+    "red": 26,
+    "none": 115,
+    "worst": -2586,
+    "trades": 45,
+    "refilled": 35041,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.5|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -34526,
+    "green": 23,
+    "red": 48,
+    "none": 125,
+    "worst": -2994,
+    "trades": 73,
+    "refilled": 55531,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -31604,
+    "green": 23,
+    "red": 41,
+    "none": 130,
+    "worst": -2993,
+    "trades": 66,
+    "refilled": 48910,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -3877,
+    "green": 22,
+    "red": 23,
+    "none": 115,
+    "worst": -2352,
+    "trades": 45,
+    "refilled": 25965,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.5|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -44312,
+    "green": 27,
+    "red": 52,
+    "none": 117,
+    "worst": -2994,
+    "trades": 81,
+    "refilled": 72152,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -37263,
+    "green": 28,
+    "red": 44,
+    "none": 122,
+    "worst": -2995,
+    "trades": 75,
+    "refilled": 61825,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -17339,
+    "green": 17,
+    "red": 33,
+    "none": 110,
+    "worst": -2586,
+    "trades": 51,
+    "refilled": 41647,
+    "sessions": 160
+   }
+  },
+  "S|PDL_FADE|stop=1.5|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -32508,
+    "green": 29,
+    "red": 51,
+    "none": 116,
+    "worst": -2994,
+    "trades": 82,
+    "refilled": 60771,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -38583,
+    "green": 27,
+    "red": 45,
+    "none": 122,
+    "worst": -2995,
+    "trades": 78,
+    "refilled": 58064,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -8511,
+    "green": 22,
+    "red": 28,
+    "none": 110,
+    "worst": -2352,
+    "trades": 52,
+    "refilled": 29126,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.0|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -46107,
+    "green": 7,
+    "red": 45,
+    "none": 144,
+    "worst": -2996,
+    "trades": 65,
+    "refilled": 56128,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -45010,
+    "green": 11,
+    "red": 48,
+    "none": 135,
+    "worst": -2999,
+    "trades": 78,
+    "refilled": 63656,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -26466,
+    "green": 32,
+    "red": 82,
+    "none": 46,
+    "worst": -2997,
+    "trades": 140,
+    "refilled": 95293,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.0|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -53539,
+    "green": 35,
+    "red": 122,
+    "none": 39,
+    "worst": -2996,
+    "trades": 209,
+    "refilled": 131659,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -50282,
+    "green": 10,
+    "red": 44,
+    "none": 140,
+    "worst": -2962,
+    "trades": 79,
+    "refilled": 59281,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -33966,
+    "green": 36,
+    "red": 81,
+    "none": 43,
+    "worst": -2997,
+    "trades": 154,
+    "refilled": 91755,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.0|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -42685,
+    "green": 19,
+    "red": 56,
+    "none": 121,
+    "worst": -2997,
+    "trades": 97,
+    "refilled": 79430,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -42838,
+    "green": 20,
+    "red": 67,
+    "none": 107,
+    "worst": -2998,
+    "trades": 122,
+    "refilled": 91017,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -55842,
+    "green": 40,
+    "red": 94,
+    "none": 26,
+    "worst": -2999,
+    "trades": 182,
+    "refilled": 140862,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.0|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -50586,
+    "green": 19,
+    "red": 62,
+    "none": 115,
+    "worst": -2997,
+    "trades": 112,
+    "refilled": 76031,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -56104,
+    "green": 21,
+    "red": 59,
+    "none": 114,
+    "worst": -2998,
+    "trades": 123,
+    "refilled": 83162,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -34262,
+    "green": 39,
+    "red": 93,
+    "none": 28,
+    "worst": -2999,
+    "trades": 186,
+    "refilled": 114606,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.5|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -43494,
+    "green": 9,
+    "red": 35,
+    "none": 152,
+    "worst": -2997,
+    "trades": 59,
+    "refilled": 55402,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -42787,
+    "green": 10,
+    "red": 34,
+    "none": 150,
+    "worst": -2999,
+    "trades": 61,
+    "refilled": 59621,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -32942,
+    "green": 39,
+    "red": 85,
+    "none": 36,
+    "worst": -2998,
+    "trades": 158,
+    "refilled": 112917,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.5|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -47758,
+    "green": 17,
+    "red": 55,
+    "none": 124,
+    "worst": -2997,
+    "trades": 97,
+    "refilled": 69132,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -47960,
+    "green": 6,
+    "red": 30,
+    "none": 158,
+    "worst": -2999,
+    "trades": 59,
+    "refilled": 51263,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -44587,
+    "green": 38,
+    "red": 87,
+    "none": 35,
+    "worst": -2998,
+    "trades": 169,
+    "refilled": 105738,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.5|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -41183,
+    "green": 12,
+    "red": 33,
+    "none": 151,
+    "worst": -2997,
+    "trades": 64,
+    "refilled": 55898,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -30163,
+    "green": 17,
+    "red": 45,
+    "none": 132,
+    "worst": -2999,
+    "trades": 90,
+    "refilled": 85825,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -27407,
+    "green": 46,
+    "red": 90,
+    "none": 24,
+    "worst": -3184,
+    "trades": 184,
+    "refilled": 138376,
+    "sessions": 160
+   }
+  },
+  "S|RSI2|stop=1.5|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -48038,
+    "green": 19,
+    "red": 55,
+    "none": 122,
+    "worst": -2998,
+    "trades": 104,
+    "refilled": 74913,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -44055,
+    "green": 16,
+    "red": 43,
+    "none": 135,
+    "worst": -2999,
+    "trades": 93,
+    "refilled": 77511,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -48194,
+    "green": 40,
+    "red": 96,
+    "none": 24,
+    "worst": -3184,
+    "trades": 199,
+    "refilled": 126386,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.0|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -65086,
+    "green": 35,
+    "red": 106,
+    "none": 55,
+    "worst": -2996,
+    "trades": 163,
+    "refilled": 133444,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -49327,
+    "green": 10,
+    "red": 48,
+    "none": 136,
+    "worst": -2996,
+    "trades": 66,
+    "refilled": 67551,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -30003,
+    "green": 19,
+    "red": 62,
+    "none": 79,
+    "worst": -2995,
+    "trades": 96,
+    "refilled": 70952,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.0|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -76248,
+    "green": 33,
+    "red": 120,
+    "none": 43,
+    "worst": -2996,
+    "trades": 189,
+    "refilled": 131691,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -65273,
+    "green": 27,
+    "red": 98,
+    "none": 69,
+    "worst": -2996,
+    "trades": 150,
+    "refilled": 109571,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -43802,
+    "green": 38,
+    "red": 86,
+    "none": 36,
+    "worst": -2996,
+    "trades": 152,
+    "refilled": 94621,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.0|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -74585,
+    "green": 44,
+    "red": 115,
+    "none": 37,
+    "worst": -2996,
+    "trades": 189,
+    "refilled": 157036,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -49564,
+    "green": 16,
+    "red": 51,
+    "none": 127,
+    "worst": -2997,
+    "trades": 83,
+    "refilled": 76248,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -27920,
+    "green": 22,
+    "red": 61,
+    "none": 77,
+    "worst": -2997,
+    "trades": 100,
+    "refilled": 72139,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.0|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -83393,
+    "green": 41,
+    "red": 124,
+    "none": 31,
+    "worst": -2994,
+    "trades": 213,
+    "refilled": 147399,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -58092,
+    "green": 23,
+    "red": 59,
+    "none": 112,
+    "worst": -2996,
+    "trades": 109,
+    "refilled": 85464,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -59765,
+    "green": 39,
+    "red": 93,
+    "none": 28,
+    "worst": -2997,
+    "trades": 175,
+    "refilled": 110931,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.5|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -48809,
+    "green": 53,
+    "red": 113,
+    "none": 30,
+    "worst": -2997,
+    "trades": 193,
+    "refilled": 158439,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -52891,
+    "green": 14,
+    "red": 49,
+    "none": 131,
+    "worst": -2997,
+    "trades": 72,
+    "refilled": 78051,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -28374,
+    "green": 44,
+    "red": 81,
+    "none": 35,
+    "worst": -2997,
+    "trades": 146,
+    "refilled": 110508,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.5|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -56978,
+    "green": 46,
+    "red": 122,
+    "none": 28,
+    "worst": -2993,
+    "trades": 210,
+    "refilled": 143651,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -56296,
+    "green": 18,
+    "red": 51,
+    "none": 125,
+    "worst": -2997,
+    "trades": 85,
+    "refilled": 77266,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -51558,
+    "green": 48,
+    "red": 81,
+    "none": 31,
+    "worst": -2997,
+    "trades": 161,
+    "refilled": 104013,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.5|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -48171,
+    "green": 58,
+    "red": 125,
+    "none": 13,
+    "worst": -2997,
+    "trades": 220,
+    "refilled": 186505,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -47655,
+    "green": 24,
+    "red": 54,
+    "none": 116,
+    "worst": -2997,
+    "trades": 95,
+    "refilled": 86142,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -14397,
+    "green": 28,
+    "red": 53,
+    "none": 79,
+    "worst": -2999,
+    "trades": 99,
+    "refilled": 74972,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=1.5|stop=1.5|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -41592,
+    "green": 55,
+    "red": 128,
+    "none": 13,
+    "worst": -2997,
+    "trades": 235,
+    "refilled": 166229,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -72926,
+    "green": 45,
+    "red": 100,
+    "none": 49,
+    "worst": -2997,
+    "trades": 190,
+    "refilled": 136672,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -63157,
+    "green": 46,
+    "red": 95,
+    "none": 19,
+    "worst": -2999,
+    "trades": 187,
+    "refilled": 123611,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -42131,
+    "green": 34,
+    "red": 98,
+    "none": 64,
+    "worst": -2998,
+    "trades": 143,
+    "refilled": 111267,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -41862,
+    "green": 35,
+    "red": 92,
+    "none": 67,
+    "worst": -2993,
+    "trades": 136,
+    "refilled": 99871,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 9071,
+    "green": 30,
+    "red": 75,
+    "none": 55,
+    "worst": -2996,
+    "trades": 116,
+    "refilled": 75513,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -38069,
+    "green": 38,
+    "red": 98,
+    "none": 60,
+    "worst": -2998,
+    "trades": 154,
+    "refilled": 101386,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -48411,
+    "green": 31,
+    "red": 96,
+    "none": 67,
+    "worst": -2993,
+    "trades": 138,
+    "refilled": 92886,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -14680,
+    "green": 35,
+    "red": 71,
+    "none": 54,
+    "worst": -2996,
+    "trades": 123,
+    "refilled": 70673,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -43659,
+    "green": 43,
+    "red": 111,
+    "none": 42,
+    "worst": -2998,
+    "trades": 174,
+    "refilled": 136875,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -35274,
+    "green": 42,
+    "red": 97,
+    "none": 55,
+    "worst": -2997,
+    "trades": 150,
+    "refilled": 112732,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 1860,
+    "green": 40,
+    "red": 85,
+    "none": 35,
+    "worst": -2999,
+    "trades": 151,
+    "refilled": 99834,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.0|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -56020,
+    "green": 44,
+    "red": 113,
+    "none": 39,
+    "worst": -2998,
+    "trades": 191,
+    "refilled": 125653,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -43455,
+    "green": 36,
+    "red": 105,
+    "none": 53,
+    "worst": -2994,
+    "trades": 161,
+    "refilled": 106240,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -16064,
+    "green": 43,
+    "red": 79,
+    "none": 38,
+    "worst": -2999,
+    "trades": 154,
+    "refilled": 90888,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.5|target_r=1.5|exit=LATE": {
+   "2024": {
+    "net": -32005,
+    "green": 51,
+    "red": 99,
+    "none": 46,
+    "worst": -2998,
+    "trades": 163,
+    "refilled": 125892,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -52518,
+    "green": 41,
+    "red": 92,
+    "none": 61,
+    "worst": -2995,
+    "trades": 142,
+    "refilled": 119841,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -3431,
+    "green": 35,
+    "red": 78,
+    "none": 47,
+    "worst": -2996,
+    "trades": 130,
+    "refilled": 89886,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.5|target_r=1.5|exit=LIVE": {
+   "2024": {
+    "net": -40102,
+    "green": 47,
+    "red": 101,
+    "none": 48,
+    "worst": -2998,
+    "trades": 173,
+    "refilled": 118088,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -56704,
+    "green": 37,
+    "red": 96,
+    "none": 61,
+    "worst": -2995,
+    "trades": 148,
+    "refilled": 105935,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -18124,
+    "green": 40,
+    "red": 72,
+    "none": 48,
+    "worst": -2995,
+    "trades": 134,
+    "refilled": 76091,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.5|target_r=2.4|exit=LATE": {
+   "2024": {
+    "net": -30039,
+    "green": 55,
+    "red": 109,
+    "none": 32,
+    "worst": -2998,
+    "trades": 185,
+    "refilled": 147979,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -56542,
+    "green": 45,
+    "red": 99,
+    "none": 50,
+    "worst": -2995,
+    "trades": 158,
+    "refilled": 132662,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 5951,
+    "green": 45,
+    "red": 80,
+    "none": 35,
+    "worst": -2998,
+    "trades": 148,
+    "refilled": 103117,
+    "sessions": 160
+   }
+  },
+  "S|VWAP_REVERT|k=2.0|stop=1.5|target_r=2.4|exit=LIVE": {
+   "2024": {
+    "net": -48075,
+    "green": 53,
+    "red": 111,
+    "none": 32,
+    "worst": -2998,
+    "trades": 200,
+    "refilled": 134944,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -59311,
+    "green": 44,
+    "red": 102,
+    "none": 48,
+    "worst": -2995,
+    "trades": 166,
+    "refilled": 119237,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -20191,
+    "green": 45,
+    "red": 79,
+    "none": 36,
+    "worst": -2997,
+    "trades": 157,
+    "refilled": 94344,
+    "sessions": 160
+   }
+  },
+  "X|LATE_MOMO|DAY|0.003": {
+   "2024": {
+    "net": -39530,
+    "green": 26,
+    "red": 57,
+    "none": 113,
+    "worst": -2995,
+    "trades": 83,
+    "refilled": 66089,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -40347,
+    "green": 16,
+    "red": 38,
+    "none": 140,
+    "worst": -2993,
+    "trades": 54,
+    "refilled": 52179,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -15722,
+    "green": 36,
+    "red": 61,
+    "none": 63,
+    "worst": -2996,
+    "trades": 98,
+    "refilled": 77978,
+    "sessions": 160
+   }
+  },
+  "X|LATE_MOMO|DAY|0.006": {
+   "2024": {
+    "net": -17884,
+    "green": 25,
+    "red": 42,
+    "none": 129,
+    "worst": -2995,
+    "trades": 67,
+    "refilled": 56082,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -42665,
+    "green": 16,
+    "red": 53,
+    "none": 125,
+    "worst": -2993,
+    "trades": 69,
+    "refilled": 62176,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 2542,
+    "green": 28,
+    "red": 34,
+    "none": 98,
+    "worst": -2993,
+    "trades": 62,
+    "refilled": 43431,
+    "sessions": 160
+   }
+  },
+  "X|LATE_MOMO|FHH|0.003": {
+   "2024": {
+    "net": -19015,
+    "green": 25,
+    "red": 44,
+    "none": 127,
+    "worst": -2994,
+    "trades": 69,
+    "refilled": 51898,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -34068,
+    "green": 23,
+    "red": 57,
+    "none": 114,
+    "worst": -2992,
+    "trades": 80,
+    "refilled": 63243,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -11686,
+    "green": 31,
+    "red": 54,
+    "none": 75,
+    "worst": -2994,
+    "trades": 85,
+    "refilled": 60412,
+    "sessions": 160
+   }
+  },
+  "X|LATE_MOMO|FHH|0.006": {
+   "2024": {
+    "net": -13740,
+    "green": 8,
+    "red": 15,
+    "none": 173,
+    "worst": -2992,
+    "trades": 23,
+    "refilled": 22298,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -21119,
+    "green": 12,
+    "red": 25,
+    "none": 157,
+    "worst": -2992,
+    "trades": 37,
+    "refilled": 34054,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -10717,
+    "green": 18,
+    "red": 25,
+    "none": 117,
+    "worst": -2992,
+    "trades": 43,
+    "refilled": 30502,
+    "sessions": 160
+   }
+  },
+  "X|NOISE_BAND|k1.0|30m": {
+   "2024": {
+    "net": -11780,
+    "green": 31,
+    "red": 78,
+    "none": 87,
+    "worst": -3056,
+    "trades": 136,
+    "refilled": 138769,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -27885,
+    "green": 0,
+    "red": 12,
+    "none": 182,
+    "worst": -2998,
+    "trades": 16,
+    "refilled": 27885,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -26423,
+    "green": 19,
+    "red": 43,
+    "none": 98,
+    "worst": -2997,
+    "trades": 79,
+    "refilled": 74595,
+    "sessions": 160
+   }
+  },
+  "X|NOISE_BAND|k1.0|5m": {
+   "2024": {
+    "net": -28375,
+    "green": 33,
+    "red": 90,
+    "none": 73,
+    "worst": -3056,
+    "trades": 145,
+    "refilled": 162688,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -13024,
+    "green": 4,
+    "red": 19,
+    "none": 171,
+    "worst": -2997,
+    "trades": 25,
+    "refilled": 35942,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 13684,
+    "green": 27,
+    "red": 62,
+    "none": 71,
+    "worst": -2997,
+    "trades": 110,
+    "refilled": 94753,
+    "sessions": 160
+   }
+  },
+  "X|NOISE_BAND|k1.5|30m": {
+   "2024": {
+    "net": 20984,
+    "green": 22,
+    "red": 44,
+    "none": 130,
+    "worst": -3056,
+    "trades": 82,
+    "refilled": 77686,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -45578,
+    "green": 19,
+    "red": 54,
+    "none": 121,
+    "worst": -2997,
+    "trades": 85,
+    "refilled": 89214,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -13495,
+    "green": 13,
+    "red": 31,
+    "none": 116,
+    "worst": -2997,
+    "trades": 56,
+    "refilled": 50965,
+    "sessions": 160
+   }
+  },
+  "X|NOISE_BAND|k1.5|5m": {
+   "2024": {
+    "net": 27094,
+    "green": 22,
+    "red": 54,
+    "none": 120,
+    "worst": -3056,
+    "trades": 91,
+    "refilled": 100137,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -23441,
+    "green": 3,
+    "red": 22,
+    "none": 169,
+    "worst": -2995,
+    "trades": 27,
+    "refilled": 42232,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -5377,
+    "green": 18,
+    "red": 44,
+    "none": 98,
+    "worst": -2997,
+    "trades": 76,
+    "refilled": 71281,
+    "sessions": 160
+   }
+  }
+ },
+ "loyo": {
+  "2024|real": {
+   "books": [
+    "N11",
+    "L|TREND_PULLBACK|5"
+   ],
+   "years": {
+    "2024": {
+     "net": 29891,
+     "green": 14,
+     "red": 17,
+     "none": 165,
+     "worst": -2997,
+     "trades": 34,
+     "refilled": 21013,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 42622,
+     "green": 26,
+     "red": 25,
+     "none": 143,
+     "worst": -2998,
+     "trades": 62,
+     "refilled": 36702,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 48224,
+     "green": 17,
+     "red": 15,
+     "none": 128,
+     "worst": -2994,
+     "trades": 37,
+     "refilled": 23896,
+     "sessions": 160
+    }
+   }
+  },
+  "2024|null": {
+   "books": [
+    "N11"
+   ],
+   "years": {
+    "2024": {
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    }
+   }
+  },
+  "2025|real": {
+   "books": [
+    "N11",
+    "L|PDL_BREAK|4"
+   ],
+   "years": {
+    "2024": {
+     "net": 51316,
+     "green": 26,
+     "red": 25,
+     "none": 145,
+     "worst": -2993,
+     "trades": 54,
+     "refilled": 30763,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 34198,
+     "green": 28,
+     "red": 27,
+     "none": 139,
+     "worst": -2998,
+     "trades": 69,
+     "refilled": 44840,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 52127,
+     "green": 19,
+     "red": 22,
+     "none": 119,
+     "worst": -2992,
+     "trades": 46,
+     "refilled": 29059,
+     "sessions": 160
+    }
+   }
+  },
+  "2025|null": {
+   "books": [
+    "N11"
+   ],
+   "years": {
+    "2024": {
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    }
+   }
+  },
+  "2026|real": {
+   "books": [
+    "N11"
+   ],
+   "years": {
+    "2024": {
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    }
+   }
+  },
+  "2026|null": {
+   "books": [
+    "N11"
+   ],
+   "years": {
+    "2024": {
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    }
+   }
+  }
+ },
+ "final": {
+  "ALL|real": {
+   "books": [
+    "N11"
+   ],
+   "years": {
+    "2024": {
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    }
+   }
+  },
+  "ALL|null": {
+   "books": [
+    "N11"
+   ],
+   "years": {
+    "2024": {
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    }
+   }
+  }
+ }
+}

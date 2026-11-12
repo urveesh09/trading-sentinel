@@ -1,0 +1,17 @@
+{
+  "name": "SN Gold v5",
+  "frozen": "2026-11-13",
+  "built_on": "SN Gold v4 (SN_GOLD_V4.json, tag sn-gold-v4) and v3 (tag sn-gold-v3); both stay frozen and verifiable",
+  "changes_from_v4": {
+    "SN56": "entries: N11's signals plus the signals of its sister book R0.85 (stand-aside line at 0.85 instead of 0.9) that N11 itself did not take",
+    "SN61": "scale-in when the index has moved 1 x 1-minute ATR in the trade's favour (instead of the option +10%)",
+    "SN62": "the scale-in buys as many lots as the wallet can carry (pyramid to full), only if the whole position's stop still fits the day's loss room"
+  },
+  "variant_dict": {"extend": true, "ext_x": 0.25, "ext_k": 3.0, "itm_if_fits": true, "in_x": null, "in_atr": 1.0, "in_full": true,
+                   "itm_auto": [17500, 20000], "books": ["N11", "R0.85"]},
+  "unchanged_from_v4": ["N11 exits; winners >= +25% at N11's exit kept with a 3-ATR index trail to 15:10", "ITM depth by money per lot", "lots floor(W/15k), halved on low-volatility days", "grow from Rs 15k +50% per wallet of net profit, stop after step 3", "20% day loss limit (a gap can fill a stop slightly beyond it)", "Zerodha charges + Rs 205 per lot per trade"],
+  "owner_levers": {"start_amount": "Rs 15k / 20k / 30k (SN70)", "step_trigger": "after 50% of the wallet in profit (g_trig 0.5) gives more with the same worst day at cap 3", "size_cap": "stop after 3 (worst day ~-10k from Rs 15k) or 5 (~-23k)"},
+  "expected_totals_2023_to_2026_10": {"A 15k 1 lot": 151155, "B 20k 1 lot": 176846, "C 30k sized": 280508, "G3 (Gold)": 399906, "G5": 741675},
+  "harness": "docs/research/fno/sn-gold/gold_v5.py (frozen copy of the SN51 lab; sha256 in verify_gold_v5.py)",
+  "verify": "python-engine/winvenv/Scripts/python.exe docs/research/fno/sn-gold/verify_gold_v5.py"
+}

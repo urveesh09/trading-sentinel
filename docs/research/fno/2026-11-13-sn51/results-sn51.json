@@ -1,0 +1,218 @@
+{
+ "start 15k, step after 100%, stop after 3": {
+  "won_on_green_days": 545363,
+  "refilled": 218510,
+  "net_at_end": 326853,
+  "worst": -10119,
+  "per_year_net": {
+   "2023": -8430,
+   "2024": 69482,
+   "2025": 91027,
+   "2026": 174774
+  }
+ },
+ "start 15k, step after 100%, stop after 5": {
+  "won_on_green_days": 917104,
+  "refilled": 371285,
+  "net_at_end": 545819,
+  "worst": -22740,
+  "per_year_net": {
+   "2023": -8430,
+   "2024": 69482,
+   "2025": 105095,
+   "2026": 379672
+  }
+ },
+ "start 15k, step after 100%, stop after 99": {
+  "won_on_green_days": 1208354,
+  "refilled": 463352,
+  "net_at_end": 745002,
+  "worst": -34104,
+  "per_year_net": {
+   "2023": -8430,
+   "2024": 69482,
+   "2025": 105095,
+   "2026": 578855
+  }
+ },
+ "start 15k, step after 50%, stop after 3": {
+  "won_on_green_days": 582684,
+  "refilled": 228689,
+  "net_at_end": 353995,
+  "worst": -10119,
+  "per_year_net": {
+   "2023": -8430,
+   "2024": 89203,
+   "2025": 98448,
+   "2026": 174774
+  }
+ },
+ "start 15k, step after 50%, stop after 5": {
+  "won_on_green_days": 1158640,
+  "refilled": 476307,
+  "net_at_end": 682333,
+  "worst": -22740,
+  "per_year_net": {
+   "2023": -8430,
+   "2024": 87054,
+   "2025": 212247,
+   "2026": 391462
+  }
+ },
+ "start 15k, step after 50%, stop after 99": {
+  "won_on_green_days": 8417843,
+  "refilled": 2713268,
+  "net_at_end": 5704575,
+  "worst": -357238,
+  "per_year_net": {
+   "2023": -8430,
+   "2024": 87054,
+   "2025": 302119,
+   "2026": 5323832
+  }
+ },
+ "start 20k, step after 100%, stop after 3": {
+  "won_on_green_days": 731385,
+  "refilled": 305297,
+  "net_at_end": 426088,
+  "worst": -13492,
+  "per_year_net": {
+   "2023": -8939,
+   "2024": 93875,
+   "2025": 117455,
+   "2026": 223697
+  }
+ },
+ "start 20k, step after 100%, stop after 5": {
+  "won_on_green_days": 1225928,
+  "refilled": 490531,
+  "net_at_end": 735397,
+  "worst": -30320,
+  "per_year_net": {
+   "2023": -8939,
+   "2024": 93875,
+   "2025": 132179,
+   "2026": 518282
+  }
+ },
+ "start 20k, step after 100%, stop after 99": {
+  "won_on_green_days": 1568061,
+  "refilled": 606703,
+  "net_at_end": 961358,
+  "worst": -45464,
+  "per_year_net": {
+   "2023": -8939,
+   "2024": 93875,
+   "2025": 132179,
+   "2026": 744243
+  }
+ },
+ "start 20k, step after 50%, stop after 3": {
+  "won_on_green_days": 792824,
+  "refilled": 319033,
+  "net_at_end": 473791,
+  "worst": -13492,
+  "per_year_net": {
+   "2023": -8939,
+   "2024": 121585,
+   "2025": 137448,
+   "2026": 223697
+  }
+ },
+ "start 20k, step after 50%, stop after 5": {
+  "won_on_green_days": 1632814,
+  "refilled": 660038,
+  "net_at_end": 972776,
+  "worst": -30320,
+  "per_year_net": {
+   "2023": -8939,
+   "2024": 116975,
+   "2025": 313508,
+   "2026": 551232
+  }
+ },
+ "start 20k, step after 50%, stop after 99": {
+  "won_on_green_days": 11351141,
+  "refilled": 3622859,
+  "net_at_end": 7728282,
+  "worst": -476915,
+  "per_year_net": {
+   "2023": -8939,
+   "2024": 116975,
+   "2025": 410307,
+   "2026": 7209939
+  }
+ },
+ "start 30k, step after 100%, stop after 3": {
+  "won_on_green_days": 1036900,
+  "refilled": 454866,
+  "net_at_end": 582034,
+  "worst": -21113,
+  "per_year_net": {
+   "2023": -21192,
+   "2024": 97233,
+   "2025": 170866,
+   "2026": 335127
+  }
+ },
+ "start 30k, step after 100%, stop after 5": {
+  "won_on_green_days": 1627237,
+  "refilled": 653698,
+  "net_at_end": 973539,
+  "worst": -45464,
+  "per_year_net": {
+   "2023": -21192,
+   "2024": 97233,
+   "2025": 172040,
+   "2026": 725458
+  }
+ },
+ "start 30k, step after 100%, stop after 99": {
+  "won_on_green_days": 1825610,
+  "refilled": 687931,
+  "net_at_end": 1137679,
+  "worst": -45464,
+  "per_year_net": {
+   "2023": -21192,
+   "2024": 97233,
+   "2025": 172040,
+   "2026": 889598
+  }
+ },
+ "start 30k, step after 50%, stop after 3": {
+  "won_on_green_days": 1190329,
+  "refilled": 483147,
+  "net_at_end": 707182,
+  "worst": -21113,
+  "per_year_net": {
+   "2023": -21192,
+   "2024": 178790,
+   "2025": 214457,
+   "2026": 335127
+  }
+ },
+ "start 30k, step after 50%, stop after 5": {
+  "won_on_green_days": 2414309,
+  "refilled": 984977,
+  "net_at_end": 1429332,
+  "worst": -45469,
+  "per_year_net": {
+   "2023": -21192,
+   "2024": 172032,
+   "2025": 452293,
+   "2026": 826199
+  }
+ },
+ "start 30k, step after 50%, stop after 99": {
+  "won_on_green_days": 16897856,
+  "refilled": 5439489,
+  "net_at_end": 11458367,
+  "worst": -716270,
+  "per_year_net": {
+   "2023": -21192,
+   "2024": 172032,
+   "2025": 617518,
+   "2026": 10690009
+  }
+ }
+}

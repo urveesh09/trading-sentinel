@@ -1,0 +1,1513 @@
+{
+ "table": {
+  "benchmark": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "refilled": 34651
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "refilled": 21505
+   }
+  },
+  "k6 w150 oppose 0.0": {
+   "2023": {
+    "net": 1348,
+    "green": 5,
+    "red": 9,
+    "none": 178,
+    "refilled": 13544
+   },
+   "2024": {
+    "net": 38760,
+    "green": 9,
+    "red": 6,
+    "none": 181,
+    "refilled": 6789
+   },
+   "2025": {
+    "net": 19830,
+    "green": 15,
+    "red": 18,
+    "none": 161,
+    "refilled": 27746
+   },
+   "2026": {
+    "net": 16353,
+    "green": 6,
+    "red": 10,
+    "none": 144,
+    "refilled": 12876
+   }
+  },
+  "k6 w150 oppose 0.005": {
+   "2023": {
+    "net": -4135,
+    "green": 5,
+    "red": 14,
+    "none": 173,
+    "refilled": 19027
+   },
+   "2024": {
+    "net": 36297,
+    "green": 10,
+    "red": 8,
+    "none": 178,
+    "refilled": 10163
+   },
+   "2025": {
+    "net": 31424,
+    "green": 17,
+    "red": 18,
+    "none": 159,
+    "refilled": 27144
+   },
+   "2026": {
+    "net": 13490,
+    "green": 7,
+    "red": 12,
+    "none": 141,
+    "refilled": 17810
+   }
+  },
+  "k6 w150 oppose 0.01": {
+   "2023": {
+    "net": -4172,
+    "green": 5,
+    "red": 15,
+    "none": 172,
+    "refilled": 19064
+   },
+   "2024": {
+    "net": 33456,
+    "green": 11,
+    "red": 11,
+    "none": 174,
+    "refilled": 13059
+   },
+   "2025": {
+    "net": 35350,
+    "green": 19,
+    "red": 19,
+    "none": 156,
+    "refilled": 30912
+   },
+   "2026": {
+    "net": 19108,
+    "green": 11,
+    "red": 12,
+    "none": 137,
+    "refilled": 19729
+   }
+  },
+  "k6 w150 oppose 0.02": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 31719,
+    "green": 11,
+    "red": 12,
+    "none": 173,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 41782,
+    "green": 21,
+    "red": 19,
+    "none": 154,
+    "refilled": 30912
+   },
+   "2026": {
+    "net": 34151,
+    "green": 13,
+    "red": 12,
+    "none": 135,
+    "refilled": 18668
+   }
+  },
+  "k6 w150 agree 0.0": {
+   "2023": {
+    "net": 1348,
+    "green": 5,
+    "red": 9,
+    "none": 178,
+    "refilled": 13544
+   },
+   "2024": {
+    "net": 38760,
+    "green": 9,
+    "red": 6,
+    "none": 181,
+    "refilled": 6789
+   },
+   "2025": {
+    "net": 19830,
+    "green": 15,
+    "red": 18,
+    "none": 161,
+    "refilled": 27746
+   },
+   "2026": {
+    "net": 16353,
+    "green": 6,
+    "red": 10,
+    "none": 144,
+    "refilled": 12876
+   }
+  },
+  "k6 w150 agree 0.005": {
+   "2023": {
+    "net": 12413,
+    "green": 5,
+    "red": 4,
+    "none": 183,
+    "refilled": 2479
+   },
+   "2024": {
+    "net": 21578,
+    "green": 4,
+    "red": 4,
+    "none": 188,
+    "refilled": 6299
+   },
+   "2025": {
+    "net": 17023,
+    "green": 11,
+    "red": 17,
+    "none": 166,
+    "refilled": 25647
+   },
+   "2026": {
+    "net": 11124,
+    "green": 5,
+    "red": 9,
+    "none": 146,
+    "refilled": 12786
+   }
+  },
+  "k6 w150 agree 0.01": {
+   "2023": {
+    "net": 11498,
+    "green": 3,
+    "red": 2,
+    "none": 187,
+    "refilled": 1524
+   },
+   "2024": {
+    "net": 15333,
+    "green": 3,
+    "red": 2,
+    "none": 191,
+    "refilled": 4424
+   },
+   "2025": {
+    "net": 25232,
+    "green": 11,
+    "red": 12,
+    "none": 171,
+    "refilled": 17025
+   },
+   "2026": {
+    "net": 9274,
+    "green": 3,
+    "red": 5,
+    "none": 152,
+    "refilled": 6466
+   }
+  },
+  "k6 w150 agree 0.02": {
+   "2023": {
+    "net": 6014,
+    "green": 1,
+    "red": 1,
+    "none": 190,
+    "refilled": 1239
+   },
+   "2024": {
+    "net": -3260,
+    "green": 0,
+    "red": 2,
+    "none": 194,
+    "refilled": 3260
+   },
+   "2025": {
+    "net": 23678,
+    "green": 7,
+    "red": 9,
+    "none": 178,
+    "refilled": 12121
+   },
+   "2026": {
+    "net": 9448,
+    "green": 2,
+    "red": 5,
+    "none": 153,
+    "refilled": 5814
+   }
+  },
+  "k6 w300 oppose 0.0": {
+   "2023": {
+    "net": 3849,
+    "green": 5,
+    "red": 8,
+    "none": 179,
+    "refilled": 11043
+   },
+   "2024": {
+    "net": 38760,
+    "green": 9,
+    "red": 6,
+    "none": 181,
+    "refilled": 6789
+   },
+   "2025": {
+    "net": 19497,
+    "green": 14,
+    "red": 18,
+    "none": 162,
+    "refilled": 27746
+   },
+   "2026": {
+    "net": 16353,
+    "green": 6,
+    "red": 10,
+    "none": 144,
+    "refilled": 12876
+   }
+  },
+  "k6 w300 oppose 0.005": {
+   "2023": {
+    "net": -4418,
+    "green": 5,
+    "red": 15,
+    "none": 172,
+    "refilled": 19310
+   },
+   "2024": {
+    "net": 35346,
+    "green": 10,
+    "red": 10,
+    "none": 176,
+    "refilled": 11114
+   },
+   "2025": {
+    "net": 28327,
+    "green": 17,
+    "red": 19,
+    "none": 158,
+    "refilled": 30241
+   },
+   "2026": {
+    "net": 15433,
+    "green": 9,
+    "red": 12,
+    "none": 139,
+    "refilled": 17810
+   }
+  },
+  "k6 w300 oppose 0.01": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 33456,
+    "green": 11,
+    "red": 11,
+    "none": 174,
+    "refilled": 13059
+   },
+   "2025": {
+    "net": 36986,
+    "green": 20,
+    "red": 19,
+    "none": 155,
+    "refilled": 30912
+   },
+   "2026": {
+    "net": 22048,
+    "green": 12,
+    "red": 12,
+    "none": 136,
+    "refilled": 19729
+   }
+  },
+  "k6 w300 oppose 0.02": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "refilled": 14915
+   },
+   "2025": {
+    "net": 39558,
+    "green": 21,
+    "red": 20,
+    "none": 153,
+    "refilled": 33136
+   },
+   "2026": {
+    "net": 35102,
+    "green": 13,
+    "red": 13,
+    "none": 134,
+    "refilled": 19837
+   }
+  },
+  "k6 w300 agree 0.0": {
+   "2023": {
+    "net": 3849,
+    "green": 5,
+    "red": 8,
+    "none": 179,
+    "refilled": 11043
+   },
+   "2024": {
+    "net": 38760,
+    "green": 9,
+    "red": 6,
+    "none": 181,
+    "refilled": 6789
+   },
+   "2025": {
+    "net": 19497,
+    "green": 14,
+    "red": 18,
+    "none": 162,
+    "refilled": 27746
+   },
+   "2026": {
+    "net": 16353,
+    "green": 6,
+    "red": 10,
+    "none": 144,
+    "refilled": 12876
+   }
+  },
+  "k6 w300 agree 0.005": {
+   "2023": {
+    "net": 12981,
+    "green": 5,
+    "red": 3,
+    "none": 184,
+    "refilled": 1911
+   },
+   "2024": {
+    "net": 24207,
+    "green": 5,
+    "red": 4,
+    "none": 187,
+    "refilled": 6299
+   },
+   "2025": {
+    "net": 19346,
+    "green": 11,
+    "red": 16,
+    "none": 167,
+    "refilled": 25360
+   },
+   "2026": {
+    "net": 11124,
+    "green": 5,
+    "red": 9,
+    "none": 146,
+    "refilled": 12786
+   }
+  },
+  "k6 w300 agree 0.01": {
+   "2023": {
+    "net": 11498,
+    "green": 3,
+    "red": 2,
+    "none": 187,
+    "refilled": 1524
+   },
+   "2024": {
+    "net": 685,
+    "green": 1,
+    "red": 2,
+    "none": 193,
+    "refilled": 3260
+   },
+   "2025": {
+    "net": 21752,
+    "green": 10,
+    "red": 12,
+    "none": 172,
+    "refilled": 17580
+   },
+   "2026": {
+    "net": 9274,
+    "green": 3,
+    "red": 5,
+    "none": 152,
+    "refilled": 6466
+   }
+  },
+  "k6 w300 agree 0.02": {
+   "2023": {
+    "net": 6014,
+    "green": 1,
+    "red": 1,
+    "none": 190,
+    "refilled": 1239
+   },
+   "2024": {
+    "net": -1833,
+    "green": 0,
+    "red": 1,
+    "none": 195,
+    "refilled": 1833
+   },
+   "2025": {
+    "net": 27038,
+    "green": 7,
+    "red": 7,
+    "none": 180,
+    "refilled": 8761
+   },
+   "2026": {
+    "net": 10200,
+    "green": 2,
+    "red": 4,
+    "none": 154,
+    "refilled": 5061
+   }
+  },
+  "k15 w150 oppose 0.0": {
+   "2023": {
+    "net": 8576,
+    "green": 4,
+    "red": 6,
+    "none": 182,
+    "refilled": 6165
+   },
+   "2024": {
+    "net": 28974,
+    "green": 7,
+    "red": 4,
+    "none": 185,
+    "refilled": 6752
+   },
+   "2025": {
+    "net": 23132,
+    "green": 12,
+    "red": 14,
+    "none": 168,
+    "refilled": 20714
+   },
+   "2026": {
+    "net": 29571,
+    "green": 9,
+    "red": 7,
+    "none": 144,
+    "refilled": 10654
+   }
+  },
+  "k15 w150 oppose 0.005": {
+   "2023": {
+    "net": 7103,
+    "green": 5,
+    "red": 7,
+    "none": 180,
+    "refilled": 7789
+   },
+   "2024": {
+    "net": 35891,
+    "green": 8,
+    "red": 7,
+    "none": 181,
+    "refilled": 8862
+   },
+   "2025": {
+    "net": 24257,
+    "green": 13,
+    "red": 15,
+    "none": 166,
+    "refilled": 20983
+   },
+   "2026": {
+    "net": 31384,
+    "green": 10,
+    "red": 7,
+    "none": 143,
+    "refilled": 10654
+   }
+  },
+  "k15 w150 oppose 0.01": {
+   "2023": {
+    "net": 1089,
+    "green": 5,
+    "red": 12,
+    "none": 175,
+    "refilled": 13803
+   },
+   "2024": {
+    "net": 38374,
+    "green": 9,
+    "red": 8,
+    "none": 179,
+    "refilled": 7291
+   },
+   "2025": {
+    "net": 25583,
+    "green": 14,
+    "red": 15,
+    "none": 165,
+    "refilled": 21787
+   },
+   "2026": {
+    "net": 31384,
+    "green": 10,
+    "red": 7,
+    "none": 143,
+    "refilled": 10654
+   }
+  },
+  "k15 w150 oppose 0.02": {
+   "2023": {
+    "net": -1298,
+    "green": 6,
+    "red": 14,
+    "none": 172,
+    "refilled": 16342
+   },
+   "2024": {
+    "net": 36828,
+    "green": 11,
+    "red": 9,
+    "none": 176,
+    "refilled": 9687
+   },
+   "2025": {
+    "net": 27598,
+    "green": 17,
+    "red": 17,
+    "none": 160,
+    "refilled": 24884
+   },
+   "2026": {
+    "net": 40999,
+    "green": 12,
+    "red": 8,
+    "none": 140,
+    "refilled": 11343
+   }
+  },
+  "k15 w150 agree 0.0": {
+   "2023": {
+    "net": 8576,
+    "green": 4,
+    "red": 6,
+    "none": 182,
+    "refilled": 6165
+   },
+   "2024": {
+    "net": 28974,
+    "green": 7,
+    "red": 4,
+    "none": 185,
+    "refilled": 6752
+   },
+   "2025": {
+    "net": 23132,
+    "green": 12,
+    "red": 14,
+    "none": 168,
+    "refilled": 20714
+   },
+   "2026": {
+    "net": 29571,
+    "green": 9,
+    "red": 7,
+    "none": 144,
+    "refilled": 10654
+   }
+  },
+  "k15 w150 agree 0.005": {
+   "2023": {
+    "net": 9581,
+    "green": 4,
+    "red": 6,
+    "none": 182,
+    "refilled": 5161
+   },
+   "2024": {
+    "net": 29440,
+    "green": 6,
+    "red": 3,
+    "none": 187,
+    "refilled": 4706
+   },
+   "2025": {
+    "net": 13508,
+    "green": 9,
+    "red": 14,
+    "none": 171,
+    "refilled": 20714
+   },
+   "2026": {
+    "net": 22242,
+    "green": 7,
+    "red": 8,
+    "none": 145,
+    "refilled": 11444
+   }
+  },
+  "k15 w150 agree 0.01": {
+   "2023": {
+    "net": 11110,
+    "green": 3,
+    "red": 3,
+    "none": 186,
+    "refilled": 1911
+   },
+   "2024": {
+    "net": 26080,
+    "green": 5,
+    "red": 2,
+    "none": 189,
+    "refilled": 4427
+   },
+   "2025": {
+    "net": 16208,
+    "green": 9,
+    "red": 13,
+    "none": 172,
+    "refilled": 19074
+   },
+   "2026": {
+    "net": 11201,
+    "green": 6,
+    "red": 8,
+    "none": 146,
+    "refilled": 11444
+   }
+  },
+  "k15 w150 agree 0.02": {
+   "2023": {
+    "net": 11110,
+    "green": 3,
+    "red": 3,
+    "none": 186,
+    "refilled": 1911
+   },
+   "2024": {
+    "net": 12861,
+    "green": 3,
+    "red": 1,
+    "none": 192,
+    "refilled": 1833
+   },
+   "2025": {
+    "net": 14263,
+    "green": 8,
+    "red": 10,
+    "none": 176,
+    "refilled": 14805
+   },
+   "2026": {
+    "net": 7330,
+    "green": 5,
+    "red": 6,
+    "none": 149,
+    "refilled": 9996
+   }
+  },
+  "k15 w300 oppose 0.0": {
+   "2023": {
+    "net": 6952,
+    "green": 4,
+    "red": 7,
+    "none": 181,
+    "refilled": 7789
+   },
+   "2024": {
+    "net": 28895,
+    "green": 7,
+    "red": 5,
+    "none": 184,
+    "refilled": 6832
+   },
+   "2025": {
+    "net": 15674,
+    "green": 12,
+    "red": 15,
+    "none": 167,
+    "refilled": 20983
+   },
+   "2026": {
+    "net": 28302,
+    "green": 8,
+    "red": 8,
+    "none": 144,
+    "refilled": 11444
+   }
+  },
+  "k15 w300 oppose 0.005": {
+   "2023": {
+    "net": 843,
+    "green": 5,
+    "red": 12,
+    "none": 175,
+    "refilled": 14049
+   },
+   "2024": {
+    "net": 35827,
+    "green": 8,
+    "red": 8,
+    "none": 180,
+    "refilled": 8927
+   },
+   "2025": {
+    "net": 26388,
+    "green": 14,
+    "red": 15,
+    "none": 165,
+    "refilled": 20983
+   },
+   "2026": {
+    "net": 31384,
+    "green": 10,
+    "red": 7,
+    "none": 143,
+    "refilled": 10654
+   }
+  },
+  "k15 w300 oppose 0.01": {
+   "2023": {
+    "net": 1241,
+    "green": 6,
+    "red": 12,
+    "none": 174,
+    "refilled": 13803
+   },
+   "2024": {
+    "net": 39169,
+    "green": 10,
+    "red": 8,
+    "none": 178,
+    "refilled": 7291
+   },
+   "2025": {
+    "net": 27184,
+    "green": 16,
+    "red": 17,
+    "none": 161,
+    "refilled": 24884
+   },
+   "2026": {
+    "net": 31384,
+    "green": 10,
+    "red": 7,
+    "none": 143,
+    "refilled": 10654
+   }
+  },
+  "k15 w300 oppose 0.02": {
+   "2023": {
+    "net": -5520,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "refilled": 20564
+   },
+   "2024": {
+    "net": 36946,
+    "green": 11,
+    "red": 9,
+    "none": 176,
+    "refilled": 9687
+   },
+   "2025": {
+    "net": 25438,
+    "green": 17,
+    "red": 17,
+    "none": 160,
+    "refilled": 26549
+   },
+   "2026": {
+    "net": 38937,
+    "green": 13,
+    "red": 10,
+    "none": 137,
+    "refilled": 16345
+   }
+  },
+  "k15 w300 agree 0.0": {
+   "2023": {
+    "net": 6952,
+    "green": 4,
+    "red": 7,
+    "none": 181,
+    "refilled": 7789
+   },
+   "2024": {
+    "net": 28895,
+    "green": 7,
+    "red": 5,
+    "none": 184,
+    "refilled": 6832
+   },
+   "2025": {
+    "net": 15674,
+    "green": 12,
+    "red": 15,
+    "none": 167,
+    "refilled": 20983
+   },
+   "2026": {
+    "net": 28302,
+    "green": 8,
+    "red": 8,
+    "none": 144,
+    "refilled": 11444
+   }
+  },
+  "k15 w300 agree 0.005": {
+   "2023": {
+    "net": 12830,
+    "green": 4,
+    "red": 3,
+    "none": 185,
+    "refilled": 1911
+   },
+   "2024": {
+    "net": 30604,
+    "green": 6,
+    "red": 3,
+    "none": 187,
+    "refilled": 3542
+   },
+   "2025": {
+    "net": 10126,
+    "green": 10,
+    "red": 13,
+    "none": 171,
+    "refilled": 19074
+   },
+   "2026": {
+    "net": 22242,
+    "green": 7,
+    "red": 8,
+    "none": 145,
+    "refilled": 11444
+   }
+  },
+  "k15 w300 agree 0.01": {
+   "2023": {
+    "net": 12830,
+    "green": 4,
+    "red": 3,
+    "none": 185,
+    "refilled": 1911
+   },
+   "2024": {
+    "net": 12861,
+    "green": 3,
+    "red": 1,
+    "none": 192,
+    "refilled": 1833
+   },
+   "2025": {
+    "net": 14131,
+    "green": 8,
+    "red": 12,
+    "none": 174,
+    "refilled": 17387
+   },
+   "2026": {
+    "net": 11450,
+    "green": 6,
+    "red": 7,
+    "none": 147,
+    "refilled": 11196
+   }
+  },
+  "k15 w300 agree 0.02": {
+   "2023": {
+    "net": 11110,
+    "green": 3,
+    "red": 3,
+    "none": 186,
+    "refilled": 1911
+   },
+   "2024": {
+    "net": 4740,
+    "green": 2,
+    "red": 1,
+    "none": 193,
+    "refilled": 1833
+   },
+   "2025": {
+    "net": 14351,
+    "green": 8,
+    "red": 11,
+    "none": 175,
+    "refilled": 17168
+   },
+   "2026": {
+    "net": 5996,
+    "green": 3,
+    "red": 7,
+    "none": 150,
+    "refilled": 10086
+   }
+  },
+  "k30 w150 oppose 0.0": {
+   "2023": {
+    "net": 2519,
+    "green": 2,
+    "red": 7,
+    "none": 183,
+    "refilled": 4948
+   },
+   "2024": {
+    "net": 30683,
+    "green": 7,
+    "red": 2,
+    "none": 187,
+    "refilled": 5043
+   },
+   "2025": {
+    "net": 11411,
+    "green": 8,
+    "red": 10,
+    "none": 176,
+    "refilled": 14889
+   },
+   "2026": {
+    "net": 36997,
+    "green": 8,
+    "red": 7,
+    "none": 145,
+    "refilled": 11196
+   }
+  },
+  "k30 w150 oppose 0.005": {
+   "2023": {
+    "net": 2670,
+    "green": 3,
+    "red": 7,
+    "none": 182,
+    "refilled": 4948
+   },
+   "2024": {
+    "net": 39631,
+    "green": 8,
+    "red": 3,
+    "none": 185,
+    "refilled": 5123
+   },
+   "2025": {
+    "net": 8711,
+    "green": 8,
+    "red": 11,
+    "none": 175,
+    "refilled": 16529
+   },
+   "2026": {
+    "net": 34988,
+    "green": 8,
+    "red": 8,
+    "none": 144,
+    "refilled": 13205
+   }
+  },
+  "k30 w150 oppose 0.01": {
+   "2023": {
+    "net": -3070,
+    "green": 3,
+    "red": 10,
+    "none": 179,
+    "refilled": 10687
+   },
+   "2024": {
+    "net": 36326,
+    "green": 8,
+    "red": 6,
+    "none": 182,
+    "refilled": 8428
+   },
+   "2025": {
+    "net": 9125,
+    "green": 9,
+    "red": 11,
+    "none": 174,
+    "refilled": 16529
+   },
+   "2026": {
+    "net": 38948,
+    "green": 10,
+    "red": 8,
+    "none": 142,
+    "refilled": 12663
+   }
+  },
+  "k30 w150 oppose 0.02": {
+   "2023": {
+    "net": 3921,
+    "green": 5,
+    "red": 11,
+    "none": 176,
+    "refilled": 10971
+   },
+   "2024": {
+    "net": 34515,
+    "green": 10,
+    "red": 9,
+    "none": 177,
+    "refilled": 11324
+   },
+   "2025": {
+    "net": 8303,
+    "green": 11,
+    "red": 11,
+    "none": 172,
+    "refilled": 17333
+   },
+   "2026": {
+    "net": 41629,
+    "green": 11,
+    "red": 8,
+    "none": 141,
+    "refilled": 12663
+   }
+  },
+  "k30 w150 agree 0.0": {
+   "2023": {
+    "net": 2519,
+    "green": 2,
+    "red": 7,
+    "none": 183,
+    "refilled": 4948
+   },
+   "2024": {
+    "net": 30683,
+    "green": 7,
+    "red": 2,
+    "none": 187,
+    "refilled": 5043
+   },
+   "2025": {
+    "net": 11411,
+    "green": 8,
+    "red": 10,
+    "none": 176,
+    "refilled": 14889
+   },
+   "2026": {
+    "net": 36997,
+    "green": 8,
+    "red": 7,
+    "none": 145,
+    "refilled": 11196
+   }
+  },
+  "k30 w150 agree 0.005": {
+   "2023": {
+    "net": 3087,
+    "green": 2,
+    "red": 6,
+    "none": 184,
+    "refilled": 4380
+   },
+   "2024": {
+    "net": 32729,
+    "green": 7,
+    "red": 1,
+    "none": 188,
+    "refilled": 2997
+   },
+   "2025": {
+    "net": 12275,
+    "green": 7,
+    "red": 9,
+    "none": 178,
+    "refilled": 11894
+   },
+   "2026": {
+    "net": 34925,
+    "green": 7,
+    "red": 7,
+    "none": 146,
+    "refilled": 11196
+   }
+  },
+  "k30 w150 agree 0.01": {
+   "2023": {
+    "net": 3087,
+    "green": 2,
+    "red": 6,
+    "none": 184,
+    "refilled": 4380
+   },
+   "2024": {
+    "net": 27509,
+    "green": 5,
+    "red": 1,
+    "none": 190,
+    "refilled": 2997
+   },
+   "2025": {
+    "net": 12561,
+    "green": 7,
+    "red": 8,
+    "none": 179,
+    "refilled": 11607
+   },
+   "2026": {
+    "net": 26003,
+    "green": 6,
+    "red": 7,
+    "none": 147,
+    "refilled": 11196
+   }
+  },
+  "k30 w150 agree 0.02": {
+   "2023": {
+    "net": -2489,
+    "green": 1,
+    "red": 4,
+    "none": 187,
+    "refilled": 2704
+   },
+   "2024": {
+    "net": 27509,
+    "green": 5,
+    "red": 1,
+    "none": 190,
+    "refilled": 2997
+   },
+   "2025": {
+    "net": -4457,
+    "green": 4,
+    "red": 9,
+    "none": 181,
+    "refilled": 13908
+   },
+   "2026": {
+    "net": 27202,
+    "green": 6,
+    "red": 6,
+    "none": 148,
+    "refilled": 9996
+   }
+  },
+  "k30 w300 oppose 0.0": {
+   "2023": {
+    "net": 3237,
+    "green": 3,
+    "red": 6,
+    "none": 183,
+    "refilled": 4380
+   },
+   "2024": {
+    "net": 30604,
+    "green": 7,
+    "red": 3,
+    "none": 186,
+    "refilled": 5123
+   },
+   "2025": {
+    "net": 12275,
+    "green": 7,
+    "red": 9,
+    "none": 178,
+    "refilled": 11894
+   },
+   "2026": {
+    "net": 28075,
+    "green": 7,
+    "red": 7,
+    "none": 146,
+    "refilled": 11196
+   }
+  },
+  "k30 w300 oppose 0.005": {
+   "2023": {
+    "net": 3254,
+    "green": 4,
+    "red": 7,
+    "none": 181,
+    "refilled": 6083
+   },
+   "2024": {
+    "net": 36799,
+    "green": 8,
+    "red": 5,
+    "none": 183,
+    "refilled": 7954
+   },
+   "2025": {
+    "net": 11411,
+    "green": 8,
+    "red": 10,
+    "none": 176,
+    "refilled": 14889
+   },
+   "2026": {
+    "net": 39197,
+    "green": 10,
+    "red": 7,
+    "none": 143,
+    "refilled": 12415
+   }
+  },
+  "k30 w300 oppose 0.01": {
+   "2023": {
+    "net": 3921,
+    "green": 5,
+    "red": 11,
+    "none": 176,
+    "refilled": 10971
+   },
+   "2024": {
+    "net": 35835,
+    "green": 9,
+    "red": 7,
+    "none": 180,
+    "refilled": 9830
+   },
+   "2025": {
+    "net": 14883,
+    "green": 10,
+    "red": 11,
+    "none": 173,
+    "refilled": 17333
+   },
+   "2026": {
+    "net": 39509,
+    "green": 11,
+    "red": 8,
+    "none": 141,
+    "refilled": 12663
+   }
+  },
+  "k30 w300 oppose 0.02": {
+   "2023": {
+    "net": 1801,
+    "green": 5,
+    "red": 12,
+    "none": 175,
+    "refilled": 13091
+   },
+   "2024": {
+    "net": 34515,
+    "green": 10,
+    "red": 9,
+    "none": 177,
+    "refilled": 11324
+   },
+   "2025": {
+    "net": 12500,
+    "green": 13,
+    "red": 13,
+    "none": 168,
+    "refilled": 19701
+   },
+   "2026": {
+    "net": 41629,
+    "green": 11,
+    "red": 8,
+    "none": 141,
+    "refilled": 12663
+   }
+  },
+  "k30 w300 agree 0.0": {
+   "2023": {
+    "net": 3237,
+    "green": 3,
+    "red": 6,
+    "none": 183,
+    "refilled": 4380
+   },
+   "2024": {
+    "net": 30604,
+    "green": 7,
+    "red": 3,
+    "none": 186,
+    "refilled": 5123
+   },
+   "2025": {
+    "net": 12275,
+    "green": 7,
+    "red": 9,
+    "none": 178,
+    "refilled": 11894
+   },
+   "2026": {
+    "net": 28075,
+    "green": 7,
+    "red": 7,
+    "none": 146,
+    "refilled": 11196
+   }
+  },
+  "k30 w300 agree 0.005": {
+   "2023": {
+    "net": 3087,
+    "green": 2,
+    "red": 6,
+    "none": 184,
+    "refilled": 4380
+   },
+   "2024": {
+    "net": 27509,
+    "green": 5,
+    "red": 1,
+    "none": 190,
+    "refilled": 2997
+   },
+   "2025": {
+    "net": 12275,
+    "green": 7,
+    "red": 9,
+    "none": 178,
+    "refilled": 11894
+   },
+   "2026": {
+    "net": 28075,
+    "green": 7,
+    "red": 7,
+    "none": 146,
+    "refilled": 11196
+   }
+  },
+  "k30 w300 agree 0.01": {
+   "2023": {
+    "net": 4763,
+    "green": 2,
+    "red": 4,
+    "none": 186,
+    "refilled": 2704
+   },
+   "2024": {
+    "net": 27509,
+    "green": 5,
+    "red": 1,
+    "none": 190,
+    "refilled": 2997
+   },
+   "2025": {
+    "net": 12561,
+    "green": 7,
+    "red": 8,
+    "none": 179,
+    "refilled": 11607
+   },
+   "2026": {
+    "net": 28075,
+    "green": 7,
+    "red": 7,
+    "none": 146,
+    "refilled": 11196
+   }
+  },
+  "k30 w300 agree 0.02": {
+   "2023": {
+    "net": 5556,
+    "green": 2,
+    "red": 3,
+    "none": 187,
+    "refilled": 1911
+   },
+   "2024": {
+    "net": 24203,
+    "green": 4,
+    "red": 1,
+    "none": 191,
+    "refilled": 2997
+   },
+   "2025": {
+    "net": 9931,
+    "green": 5,
+    "red": 8,
+    "none": 181,
+    "refilled": 11607
+   },
+   "2026": {
+    "net": 27202,
+    "green": 6,
+    "red": 6,
+    "none": 148,
+    "refilled": 9996
+   }
+  }
+ },
+ "loyo": {
+  "2023": {
+   "pick": "benchmark",
+   "net": -7059,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "refilled": 20564
+  },
+  "2024": {
+   "pick": "benchmark",
+   "net": 35618,
+   "green": 12,
+   "red": 12,
+   "none": 172,
+   "refilled": 14915
+  },
+  "2025": {
+   "pick": "k30 w150 oppose 0.02",
+   "net": 8303,
+   "green": 11,
+   "red": 11,
+   "none": 172,
+   "refilled": 17333
+  },
+  "2026": {
+   "pick": "k6 w300 oppose 0.02",
+   "net": 35102,
+   "green": 13,
+   "red": 13,
+   "none": 134,
+   "refilled": 19837
+  },
+  "sum": {
+   "net": 71964,
+   "red": 52,
+   "green": 42
+  }
+ }
+}
