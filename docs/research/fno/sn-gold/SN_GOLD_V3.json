@@ -1,0 +1,21 @@
+{
+  "name": "SN Gold v3",
+  "frozen": "2026-11-12",
+  "owner_words": "the current best strategy ... will be called SN Gold ... the configuration need to be stored somewhere to ensure our experimentations do not change that and we are able to roll back",
+  "entries_and_exits": "N11's stored replays (docs/research/simulation/2026-11-02-fno-n11, book N11, keys-panel-<year>.json)",
+  "rules": {
+    "extend": {"enabled": true, "ext_x": 0.25, "ext_k": 3.0, "meaning": "a winner up >= 25% at N11's exit is kept with a 3 x 1-minute-ATR index trail until 15:10"},
+    "itm_if_fits": {"enabled": true, "meaning": "one strike in the money when every lot fits the wallet, else N11's strike, else one strike further out of the money"},
+    "scale_in": {"in_x": 0.10, "meaning": "add one lot at +10% only when the whole position's stop fits the day's loss room"},
+    "lots": "floor(wallet / 15,000), halved (min 1) on a low-volatility day (yesterday's daily ATR% below its median of the prior sessions, >= 60 needed)",
+    "wallet": "start Rs 15,000; +50% after net profit equal to the wallet; growth stopped after the 3rd step (Rs 50,625)",
+    "day_loss_limit": "20% of the wallet",
+    "costs": "current Zerodha F&O charges (fno_costs; checked against zerodha.com/charges on 2026-11-12) + Rs 205 per lot per trade",
+    "refill": "losing days are refilled by the owner; profits are banked"
+  },
+  "variant_dict": {"extend": true, "ext_x": 0.25, "ext_k": 3.0, "itm_if_fits": true, "in_x": 0.10},
+  "expected_totals_2023_to_2026_10": {"A 15k 1 lot": 130530, "B 20k 1 lot": 138117, "C 30k sized": 228048, "G3 (Gold)": 325635, "G5": 541625},
+  "harness": "docs/research/fno/sn-gold/gold_v3.py (frozen copy; sha256 in verify_gold.py)",
+  "verify": "python-engine/winvenv/Scripts/python.exe docs/research/fno/sn-gold/verify_gold.py",
+  "forward_check": "docs/research/fno/2026-11-12-sn19/FORWARD.md"
+}
