@@ -1,0 +1,2212 @@
+{
+ "B": {
+  "none": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "drop OR20": {
+   "2023": {
+    "net": -8015,
+    "green": 5,
+    "red": 14,
+    "none": 173,
+    "worst": -2998,
+    "trades": 21,
+    "refilled": 17505,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 31564,
+    "green": 19,
+    "red": 19,
+    "none": 156,
+    "worst": -2998,
+    "trades": 47,
+    "refilled": 32434,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 25332,
+    "green": 14,
+    "red": 13,
+    "none": 133,
+    "worst": -2992,
+    "trades": 30,
+    "refilled": 19600,
+    "sessions": 160
+   }
+  },
+  "drop EFF": {
+   "2023": {
+    "net": -5036,
+    "green": 6,
+    "red": 13,
+    "none": 173,
+    "worst": -2998,
+    "trades": 22,
+    "refilled": 18816,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 17962,
+    "green": 8,
+    "red": 10,
+    "none": 178,
+    "worst": -2997,
+    "trades": 20,
+    "refilled": 14571,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 41551,
+    "green": 21,
+    "red": 18,
+    "none": 155,
+    "worst": -2998,
+    "trades": 47,
+    "refilled": 30401,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 35982,
+    "green": 15,
+    "red": 12,
+    "none": 133,
+    "worst": -2992,
+    "trades": 30,
+    "refilled": 19089,
+    "sessions": 160
+   }
+  },
+  "drop SHIPPED": {
+   "2023": {
+    "net": -6647,
+    "green": 6,
+    "red": 15,
+    "none": 171,
+    "worst": -2998,
+    "trades": 23,
+    "refilled": 20152,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 40787,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "worst": -2397,
+    "trades": 24,
+    "refilled": 11918,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 35228,
+    "green": 21,
+    "red": 19,
+    "none": 154,
+    "worst": -2998,
+    "trades": 46,
+    "refilled": 32089,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44493,
+    "green": 16,
+    "red": 13,
+    "none": 131,
+    "worst": -2992,
+    "trades": 30,
+    "refilled": 18738,
+    "sessions": 160
+   }
+  },
+  "drop OR20+SHIPPED": {
+   "2023": {
+    "net": -7604,
+    "green": 5,
+    "red": 13,
+    "none": 174,
+    "worst": -2998,
+    "trades": 19,
+    "refilled": 17093,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 40787,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "worst": -2397,
+    "trades": 24,
+    "refilled": 11918,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 27678,
+    "green": 19,
+    "red": 17,
+    "none": 158,
+    "worst": -2998,
+    "trades": 41,
+    "refilled": 29871,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 25593,
+    "green": 13,
+    "red": 12,
+    "none": 135,
+    "worst": -2992,
+    "trades": 26,
+    "refilled": 16832,
+    "sessions": 160
+   }
+  },
+  "drop EFF+SHIPPED": {
+   "2023": {
+    "net": -4624,
+    "green": 6,
+    "red": 12,
+    "none": 174,
+    "worst": -2998,
+    "trades": 20,
+    "refilled": 18404,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 23131,
+    "green": 9,
+    "red": 9,
+    "none": 178,
+    "worst": -2397,
+    "trades": 18,
+    "refilled": 11573,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 37665,
+    "green": 20,
+    "red": 17,
+    "none": 157,
+    "worst": -2998,
+    "trades": 41,
+    "refilled": 28368,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 36154,
+    "green": 15,
+    "red": 11,
+    "none": 134,
+    "worst": -2992,
+    "trades": 27,
+    "refilled": 16321,
+    "sessions": 160
+   }
+  },
+  "TPB only": {
+   "2023": {
+    "net": -5581,
+    "green": 5,
+    "red": 10,
+    "none": 177,
+    "worst": -2998,
+    "trades": 16,
+    "refilled": 15346,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 23131,
+    "green": 9,
+    "red": 9,
+    "none": 178,
+    "worst": -2397,
+    "trades": 18,
+    "refilled": 11573,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 30644,
+    "green": 18,
+    "red": 13,
+    "none": 163,
+    "worst": -2998,
+    "trades": 35,
+    "refilled": 23320,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 17254,
+    "green": 12,
+    "red": 10,
+    "none": 138,
+    "worst": -2992,
+    "trades": 23,
+    "refilled": 14416,
+    "sessions": 160
+   }
+  },
+  "puts only": {
+   "2023": {
+    "net": -2393,
+    "green": 6,
+    "red": 10,
+    "none": 176,
+    "worst": -2402,
+    "trades": 16,
+    "refilled": 12372,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 21034,
+    "green": 9,
+    "red": 11,
+    "none": 176,
+    "worst": -2997,
+    "trades": 22,
+    "refilled": 14851,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 36630,
+    "green": 17,
+    "red": 18,
+    "none": 159,
+    "worst": -2998,
+    "trades": 41,
+    "refilled": 31857,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 36183,
+    "green": 14,
+    "red": 12,
+    "none": 134,
+    "worst": -2992,
+    "trades": 28,
+    "refilled": 18137,
+    "sessions": 160
+   }
+  },
+  "calls only": {
+   "2023": {
+    "net": -4177,
+    "green": 1,
+    "red": 6,
+    "none": 185,
+    "worst": -2998,
+    "trades": 10,
+    "refilled": 8192,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 14584,
+    "green": 3,
+    "red": 1,
+    "none": 192,
+    "worst": -64,
+    "trades": 4,
+    "refilled": 64,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 1857,
+    "green": 5,
+    "red": 6,
+    "none": 183,
+    "worst": -2328,
+    "trades": 13,
+    "refilled": 6983,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 8377,
+    "green": 3,
+    "red": 2,
+    "none": 155,
+    "worst": -1705,
+    "trades": 6,
+    "refilled": 3369,
+    "sessions": 160
+   }
+  },
+  "enter before 11:00": {
+   "2023": {
+    "net": -2704,
+    "green": 0,
+    "red": 4,
+    "none": 188,
+    "worst": -1239,
+    "trades": 4,
+    "refilled": 2704,
+    "sessions": 192
+   },
+   "2024": {
+    "net": -1833,
+    "green": 0,
+    "red": 1,
+    "none": 195,
+    "worst": -1833,
+    "trades": 1,
+    "refilled": 1833,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 3435,
+    "green": 3,
+    "red": 4,
+    "none": 187,
+    "worst": -2995,
+    "trades": 8,
+    "refilled": 7513,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 21448,
+    "green": 5,
+    "red": 1,
+    "none": 154,
+    "worst": -1906,
+    "trades": 6,
+    "refilled": 1906,
+    "sessions": 160
+   }
+  },
+  "enter before 12:30": {
+   "2023": {
+    "net": -6863,
+    "green": 3,
+    "red": 13,
+    "none": 176,
+    "worst": -2402,
+    "trades": 17,
+    "refilled": 14482,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 25662,
+    "green": 8,
+    "red": 7,
+    "none": 181,
+    "worst": -1833,
+    "trades": 15,
+    "refilled": 4697,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 25515,
+    "green": 15,
+    "red": 15,
+    "none": 164,
+    "worst": -2995,
+    "trades": 31,
+    "refilled": 22760,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 26248,
+    "green": 10,
+    "red": 12,
+    "none": 138,
+    "worst": -2992,
+    "trades": 22,
+    "refilled": 16693,
+    "sessions": 160
+   }
+  },
+  "enter before 14:00": {
+   "2023": {
+    "net": -11240,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "worst": -2402,
+    "trades": 23,
+    "refilled": 20730,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 30208,
+    "green": 10,
+    "red": 12,
+    "none": 174,
+    "worst": -2397,
+    "trades": 23,
+    "refilled": 13751,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 40083,
+    "green": 21,
+    "red": 20,
+    "none": 153,
+    "worst": -2998,
+    "trades": 51,
+    "refilled": 33683,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 43690,
+    "green": 15,
+    "red": 14,
+    "none": 131,
+    "worst": -2992,
+    "trades": 32,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "enter after 10:00": {
+   "2023": {
+    "net": -5535,
+    "green": 6,
+    "red": 15,
+    "none": 171,
+    "worst": -2998,
+    "trades": 23,
+    "refilled": 19040,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 37338,
+    "green": 21,
+    "red": 20,
+    "none": 153,
+    "worst": -2998,
+    "trades": 49,
+    "refilled": 35587,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 43464,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "expiry >= 2 days": {
+   "2023": {
+    "net": -18403,
+    "green": 3,
+    "red": 13,
+    "none": 176,
+    "worst": -2998,
+    "trades": 18,
+    "refilled": 18920,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 37886,
+    "green": 11,
+    "red": 8,
+    "none": 177,
+    "worst": -2397,
+    "trades": 20,
+    "refilled": 10017,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 41666,
+    "green": 16,
+    "red": 15,
+    "none": 163,
+    "worst": -2998,
+    "trades": 40,
+    "refilled": 25395,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 31156,
+    "green": 11,
+    "red": 10,
+    "none": 139,
+    "worst": -2992,
+    "trades": 23,
+    "refilled": 13891,
+    "sessions": 160
+   }
+  },
+  "expiry >= 3 days": {
+   "2023": {
+    "net": -9098,
+    "green": 2,
+    "red": 8,
+    "none": 182,
+    "worst": -2402,
+    "trades": 10,
+    "refilled": 9465,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 828,
+    "green": 4,
+    "red": 6,
+    "none": 186,
+    "worst": -2397,
+    "trades": 11,
+    "refilled": 6477,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 23258,
+    "green": 11,
+    "red": 9,
+    "none": 174,
+    "worst": -2702,
+    "trades": 26,
+    "refilled": 16333,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 31156,
+    "green": 11,
+    "red": 10,
+    "none": 139,
+    "worst": -2992,
+    "trades": 23,
+    "refilled": 13891,
+    "sessions": 160
+   }
+  },
+  "expiry <= 2 days": {
+   "2023": {
+    "net": 2039,
+    "green": 4,
+    "red": 8,
+    "none": 180,
+    "worst": -2998,
+    "trades": 15,
+    "refilled": 11099,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 34790,
+    "green": 8,
+    "red": 6,
+    "none": 182,
+    "worst": -2997,
+    "trades": 15,
+    "refilled": 8438,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 15856,
+    "green": 10,
+    "red": 12,
+    "none": 172,
+    "worst": -2998,
+    "trades": 26,
+    "refilled": 18319,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 13166,
+    "green": 5,
+    "red": 4,
+    "none": 151,
+    "worst": -2768,
+    "trades": 10,
+    "refilled": 7614,
+    "sessions": 160
+   }
+  },
+  "ADX gate HIGH": {
+   "2023": {
+    "net": -7408,
+    "green": 2,
+    "red": 9,
+    "none": 181,
+    "worst": -2998,
+    "trades": 14,
+    "refilled": 11638,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 18233,
+    "green": 6,
+    "red": 5,
+    "none": 185,
+    "worst": -2997,
+    "trades": 13,
+    "refilled": 5366,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 19601,
+    "green": 7,
+    "red": 8,
+    "none": 179,
+    "worst": -2995,
+    "trades": 21,
+    "refilled": 11332,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 31283,
+    "green": 8,
+    "red": 5,
+    "none": 147,
+    "worst": -2768,
+    "trades": 15,
+    "refilled": 8795,
+    "sessions": 160
+   }
+  },
+  "ADX gate LOW": {
+   "2023": {
+    "net": 350,
+    "green": 4,
+    "red": 7,
+    "none": 181,
+    "worst": -2402,
+    "trades": 11,
+    "refilled": 8925,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 17385,
+    "green": 6,
+    "red": 7,
+    "none": 183,
+    "worst": -2397,
+    "trades": 13,
+    "refilled": 9549,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 19513,
+    "green": 14,
+    "red": 13,
+    "none": 167,
+    "worst": -2998,
+    "trades": 31,
+    "refilled": 23320,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 13039,
+    "green": 8,
+    "red": 9,
+    "none": 143,
+    "worst": -2992,
+    "trades": 18,
+    "refilled": 12711,
+    "sessions": 160
+   }
+  }
+ },
+ "C": {
+  "none": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "breakeven after +300": {
+   "2023": {
+    "net": -7782,
+    "green": 10,
+    "red": 12,
+    "none": 170,
+    "worst": -2402,
+    "trades": 26,
+    "refilled": 13500,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 1384,
+    "green": 9,
+    "red": 15,
+    "none": 172,
+    "worst": -2997,
+    "trades": 27,
+    "refilled": 10807,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 12000,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "worst": -2998,
+    "trades": 60,
+    "refilled": 21921,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 3885,
+    "green": 18,
+    "red": 12,
+    "none": 130,
+    "worst": -2768,
+    "trades": 35,
+    "refilled": 13966,
+    "sessions": 160
+   }
+  },
+  "breakeven after +500": {
+   "2023": {
+    "net": -8324,
+    "green": 11,
+    "red": 11,
+    "none": 170,
+    "worst": -2402,
+    "trades": 25,
+    "refilled": 14194,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 8545,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11983,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 19556,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "worst": -2998,
+    "trades": 56,
+    "refilled": 27303,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 3848,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2768,
+    "trades": 34,
+    "refilled": 14854,
+    "sessions": 160
+   }
+  },
+  "breakeven after +750": {
+   "2023": {
+    "net": -12311,
+    "green": 8,
+    "red": 14,
+    "none": 170,
+    "worst": -2402,
+    "trades": 25,
+    "refilled": 18355,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 10125,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11983,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 21651,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "worst": -2998,
+    "trades": 56,
+    "refilled": 27396,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 11969,
+    "green": 18,
+    "red": 12,
+    "none": 130,
+    "worst": -2768,
+    "trades": 33,
+    "refilled": 14654,
+    "sessions": 160
+   }
+  },
+  "breakeven after +1000": {
+   "2023": {
+    "net": -13404,
+    "green": 8,
+    "red": 14,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 19448,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 11037,
+    "green": 14,
+    "red": 10,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11982,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 25578,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 32487,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 25521,
+    "green": 19,
+    "red": 11,
+    "none": 130,
+    "worst": -2768,
+    "trades": 33,
+    "refilled": 14654,
+    "sessions": 160
+   }
+  },
+  "breakeven after +1500": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 27528,
+    "green": 13,
+    "red": 11,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 13927,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 25912,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 34018,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 41013,
+    "green": 18,
+    "red": 12,
+    "none": 130,
+    "worst": -2768,
+    "trades": 33,
+    "refilled": 16322,
+    "sessions": 160
+   }
+  },
+  "quick profit +500": {
+   "2023": {
+    "net": -7176,
+    "green": 11,
+    "red": 11,
+    "none": 170,
+    "worst": -2402,
+    "trades": 25,
+    "refilled": 13694,
+    "sessions": 192
+   },
+   "2024": {
+    "net": -3346,
+    "green": 17,
+    "red": 7,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11982,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -12681,
+    "green": 24,
+    "red": 18,
+    "none": 152,
+    "worst": -2998,
+    "trades": 61,
+    "refilled": 30236,
+    "sessions": 194
+   },
+   "2026": {
+    "net": -2209,
+    "green": 21,
+    "red": 9,
+    "none": 130,
+    "worst": -2768,
+    "trades": 36,
+    "refilled": 14273,
+    "sessions": 160
+   }
+  },
+  "quick profit +750": {
+   "2023": {
+    "net": -13138,
+    "green": 7,
+    "red": 15,
+    "none": 170,
+    "worst": -2402,
+    "trades": 25,
+    "refilled": 18394,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 906,
+    "green": 17,
+    "red": 7,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11982,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -4465,
+    "green": 23,
+    "red": 19,
+    "none": 152,
+    "worst": -2998,
+    "trades": 59,
+    "refilled": 28580,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 1747,
+    "green": 20,
+    "red": 10,
+    "none": 130,
+    "worst": -2768,
+    "trades": 35,
+    "refilled": 14311,
+    "sessions": 160
+   }
+  },
+  "quick profit +1000": {
+   "2023": {
+    "net": -12982,
+    "green": 7,
+    "red": 15,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 19986,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 5156,
+    "green": 17,
+    "red": 7,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11982,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -5884,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 56,
+    "refilled": 33919,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 7491,
+    "green": 21,
+    "red": 9,
+    "none": 130,
+    "worst": -2768,
+    "trades": 35,
+    "refilled": 14273,
+    "sessions": 160
+   }
+  },
+  "quick profit +1500": {
+   "2023": {
+    "net": -14383,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20603,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 10216,
+    "green": 16,
+    "red": 8,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 13927,
+    "sessions": 196
+   },
+   "2025": {
+    "net": -180,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "worst": -2998,
+    "trades": 55,
+    "refilled": 34355,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 16847,
+    "green": 20,
+    "red": 10,
+    "none": 130,
+    "worst": -2768,
+    "trades": 33,
+    "refilled": 15941,
+    "sessions": 160
+   }
+  },
+  "quick profit +2000": {
+   "2023": {
+    "net": -11882,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 13706,
+    "green": 14,
+    "red": 10,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14426,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 10280,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 33855,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 12514,
+    "green": 17,
+    "red": 13,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 20888,
+    "sessions": 160
+   }
+  },
+  "quick profit +3000": {
+   "2023": {
+    "net": -6884,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 21277,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 20942,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 34018,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 21972,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "trail after +750 give 0.3": {
+   "2023": {
+    "net": -12498,
+    "green": 7,
+    "red": 15,
+    "none": 170,
+    "worst": -2402,
+    "trades": 25,
+    "refilled": 18455,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 4667,
+    "green": 17,
+    "red": 7,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11982,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 1857,
+    "green": 24,
+    "red": 18,
+    "none": 152,
+    "worst": -2998,
+    "trades": 57,
+    "refilled": 29295,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 3706,
+    "green": 20,
+    "red": 10,
+    "none": 130,
+    "worst": -2768,
+    "trades": 35,
+    "refilled": 14492,
+    "sessions": 160
+   }
+  },
+  "trail after +750 give 0.5": {
+   "2023": {
+    "net": -10499,
+    "green": 8,
+    "red": 14,
+    "none": 170,
+    "worst": -2402,
+    "trades": 25,
+    "refilled": 18210,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 12869,
+    "green": 17,
+    "red": 7,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 11982,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 3363,
+    "green": 25,
+    "red": 17,
+    "none": 152,
+    "worst": -2998,
+    "trades": 56,
+    "refilled": 28630,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 430,
+    "green": 21,
+    "red": 9,
+    "none": 130,
+    "worst": -2768,
+    "trades": 34,
+    "refilled": 14273,
+    "sessions": 160
+   }
+  },
+  "trail after +1500 give 0.3": {
+   "2023": {
+    "net": -13747,
+    "green": 5,
+    "red": 17,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20976,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 15043,
+    "green": 16,
+    "red": 8,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 13927,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 13253,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 33677,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 24695,
+    "green": 20,
+    "red": 10,
+    "none": 130,
+    "worst": -2768,
+    "trades": 33,
+    "refilled": 15941,
+    "sessions": 160
+   }
+  },
+  "trail after +1500 give 0.5": {
+   "2023": {
+    "net": -11373,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 27627,
+    "green": 16,
+    "red": 8,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 13927,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 18007,
+    "green": 22,
+    "red": 20,
+    "none": 152,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 33930,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 32164,
+    "green": 20,
+    "red": 10,
+    "none": 130,
+    "worst": -2768,
+    "trades": 33,
+    "refilled": 15941,
+    "sessions": 160
+   }
+  },
+  "hard stop -15%": {
+   "2023": {
+    "net": -5625,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2813,
+    "trades": 25,
+    "refilled": 19629,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 33335,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 27,
+    "refilled": 17198,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 40074,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2999,
+    "trades": 54,
+    "refilled": 31308,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 32455,
+    "green": 15,
+    "red": 15,
+    "none": 130,
+    "worst": -2999,
+    "trades": 34,
+    "refilled": 24451,
+    "sessions": 160
+   }
+  },
+  "hard stop -20%": {
+   "2023": {
+    "net": -7351,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 21099,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 32836,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 27,
+    "refilled": 17697,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 40985,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 33263,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 32262,
+    "green": 15,
+    "red": 15,
+    "none": 130,
+    "worst": -2768,
+    "trades": 33,
+    "refilled": 24644,
+    "sessions": 160
+   }
+  },
+  "hard stop -30%": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  }
+ },
+ "D": {
+  "N11": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "NO_STAND": {
+   "2023": {
+    "net": -30367,
+    "green": 10,
+    "red": 40,
+    "none": 142,
+    "worst": -2402,
+    "trades": 58,
+    "refilled": 47053,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 42087,
+    "green": 22,
+    "red": 21,
+    "none": 151,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "N11+NO_STAND": {
+   "2023": {
+    "net": -27630,
+    "green": 12,
+    "red": 41,
+    "none": 139,
+    "worst": -2998,
+    "trades": 63,
+    "refilled": 50051,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 42087,
+    "green": 22,
+    "red": 21,
+    "none": 151,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "R0.85": {
+   "2023": {
+    "net": -9079,
+    "green": 7,
+    "red": 18,
+    "none": 167,
+    "worst": -2998,
+    "trades": 28,
+    "refilled": 23766,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 42087,
+    "green": 22,
+    "red": 21,
+    "none": 151,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "N15": {
+   "2023": {
+    "net": -12732,
+    "green": 5,
+    "red": 20,
+    "none": 167,
+    "worst": -2998,
+    "trades": 28,
+    "refilled": 24516,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 42087,
+    "green": 22,
+    "red": 21,
+    "none": 151,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "N25": {
+   "2023": {
+    "net": -7780,
+    "green": 7,
+    "red": 17,
+    "none": 168,
+    "worst": -2998,
+    "trades": 27,
+    "refilled": 21607,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 39825,
+    "green": 20,
+    "red": 21,
+    "none": 153,
+    "worst": -2998,
+    "trades": 50,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "NO_LOSS": {
+   "2023": {
+    "net": -7059,
+    "green": 6,
+    "red": 16,
+    "none": 170,
+    "worst": -2998,
+    "trades": 25,
+    "refilled": 20564,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 39114,
+    "green": 21,
+    "red": 21,
+    "none": 152,
+    "worst": -2998,
+    "trades": 52,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  },
+  "N11+R0.85+N15": {
+   "2023": {
+    "net": -15187,
+    "green": 7,
+    "red": 24,
+    "none": 161,
+    "worst": -2998,
+    "trades": 34,
+    "refilled": 29873,
+    "sessions": 192
+   },
+   "2024": {
+    "net": 35618,
+    "green": 12,
+    "red": 12,
+    "none": 172,
+    "worst": -2997,
+    "trades": 26,
+    "refilled": 14915,
+    "sessions": 196
+   },
+   "2025": {
+    "net": 42087,
+    "green": 22,
+    "red": 21,
+    "none": 151,
+    "worst": -2998,
+    "trades": 53,
+    "refilled": 34651,
+    "sessions": 194
+   },
+   "2026": {
+    "net": 44322,
+    "green": 16,
+    "red": 14,
+    "none": 130,
+    "worst": -2992,
+    "trades": 33,
+    "refilled": 21505,
+    "sessions": 160
+   }
+  }
+ },
+ "loyo": {
+  "B": {
+   "profit": {
+    "2023": {
+     "pick": "drop SHIPPED",
+     "net": -6647,
+     "green": 6,
+     "red": 15,
+     "none": 171,
+     "worst": -2998,
+     "trades": 23,
+     "refilled": 20152,
+     "sessions": 192
+    },
+    "2024": {
+     "pick": "none",
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "pick": "drop SHIPPED",
+     "net": 35228,
+     "green": 21,
+     "red": 19,
+     "none": 154,
+     "worst": -2998,
+     "trades": 46,
+     "refilled": 32089,
+     "sessions": 194
+    },
+    "2026": {
+     "pick": "drop SHIPPED",
+     "net": 44493,
+     "green": 16,
+     "red": 13,
+     "none": 131,
+     "worst": -2992,
+     "trades": 30,
+     "refilled": 18738,
+     "sessions": 160
+    },
+    "sum": {
+     "net": 108692,
+     "red": 59,
+     "green": 55
+    }
+   },
+   "calm": {
+    "2023": {
+     "pick": "drop SHIPPED",
+     "net": -6647,
+     "green": 6,
+     "red": 15,
+     "none": 171,
+     "worst": -2998,
+     "trades": 23,
+     "refilled": 20152,
+     "sessions": 192
+    },
+    "2024": {
+     "pick": "drop EFF",
+     "net": 17962,
+     "green": 8,
+     "red": 10,
+     "none": 178,
+     "worst": -2997,
+     "trades": 20,
+     "refilled": 14571,
+     "sessions": 196
+    },
+    "2025": {
+     "pick": "drop SHIPPED",
+     "net": 35228,
+     "green": 21,
+     "red": 19,
+     "none": 154,
+     "worst": -2998,
+     "trades": 46,
+     "refilled": 32089,
+     "sessions": 194
+    },
+    "2026": {
+     "pick": "drop SHIPPED",
+     "net": 44493,
+     "green": 16,
+     "red": 13,
+     "none": 131,
+     "worst": -2992,
+     "trades": 30,
+     "refilled": 18738,
+     "sessions": 160
+    },
+    "sum": {
+     "net": 91036,
+     "red": 57,
+     "green": 51
+    }
+   }
+  },
+  "C": {
+   "profit": {
+    "2023": {
+     "pick": "none",
+     "net": -7059,
+     "green": 6,
+     "red": 16,
+     "none": 170,
+     "worst": -2998,
+     "trades": 25,
+     "refilled": 20564,
+     "sessions": 192
+    },
+    "2024": {
+     "pick": "none",
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "pick": "none",
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "pick": "hard stop -15%",
+     "net": 32455,
+     "green": 15,
+     "red": 15,
+     "none": 130,
+     "worst": -2999,
+     "trades": 34,
+     "refilled": 24451,
+     "sessions": 160
+    },
+    "sum": {
+     "net": 100128,
+     "red": 64,
+     "green": 54
+    }
+   },
+   "calm": {
+    "2023": {
+     "pick": "none",
+     "net": -7059,
+     "green": 6,
+     "red": 16,
+     "none": 170,
+     "worst": -2998,
+     "trades": 25,
+     "refilled": 20564,
+     "sessions": 192
+    },
+    "2024": {
+     "pick": "none",
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "pick": "none",
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "pick": "hard stop -15%",
+     "net": 32455,
+     "green": 15,
+     "red": 15,
+     "none": 130,
+     "worst": -2999,
+     "trades": 34,
+     "refilled": 24451,
+     "sessions": 160
+    },
+    "sum": {
+     "net": 100128,
+     "red": 64,
+     "green": 54
+    }
+   }
+  },
+  "D": {
+   "profit": {
+    "2023": {
+     "pick": "NO_STAND",
+     "net": -30367,
+     "green": 10,
+     "red": 40,
+     "none": 142,
+     "worst": -2402,
+     "trades": 58,
+     "refilled": 47053,
+     "sessions": 192
+    },
+    "2024": {
+     "pick": "R0.85",
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "pick": "N11",
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "pick": "R0.85",
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    },
+    "sum": {
+     "net": 88687,
+     "red": 87,
+     "green": 59
+    }
+   },
+   "calm": {
+    "2023": {
+     "pick": "NO_STAND",
+     "net": -30367,
+     "green": 10,
+     "red": 40,
+     "none": 142,
+     "worst": -2402,
+     "trades": 58,
+     "refilled": 47053,
+     "sessions": 192
+    },
+    "2024": {
+     "pick": "N11",
+     "net": 35618,
+     "green": 12,
+     "red": 12,
+     "none": 172,
+     "worst": -2997,
+     "trades": 26,
+     "refilled": 14915,
+     "sessions": 196
+    },
+    "2025": {
+     "pick": "N11",
+     "net": 39114,
+     "green": 21,
+     "red": 21,
+     "none": 152,
+     "worst": -2998,
+     "trades": 52,
+     "refilled": 34651,
+     "sessions": 194
+    },
+    "2026": {
+     "pick": "N11",
+     "net": 44322,
+     "green": 16,
+     "red": 14,
+     "none": 130,
+     "worst": -2992,
+     "trades": 33,
+     "refilled": 21505,
+     "sessions": 160
+    },
+    "sum": {
+     "net": 88687,
+     "red": 87,
+     "green": 59
+    }
+   }
+  }
+ }
+}
