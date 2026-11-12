@@ -1,0 +1,128 @@
+{
+ "enter 0 min earlier": {
+  "2023": {
+   "net": -7059,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "worst": -2998,
+   "trades": 25,
+   "refilled": 20564,
+   "sessions": 192
+  },
+  "2024": {
+   "net": 35618,
+   "green": 12,
+   "red": 12,
+   "none": 172,
+   "worst": -2997,
+   "trades": 26,
+   "refilled": 14915,
+   "sessions": 196
+  },
+  "2025": {
+   "net": 39114,
+   "green": 21,
+   "red": 21,
+   "none": 152,
+   "worst": -2998,
+   "trades": 52,
+   "refilled": 34651,
+   "sessions": 194
+  },
+  "2026": {
+   "net": 44322,
+   "green": 16,
+   "red": 14,
+   "none": 130,
+   "worst": -2992,
+   "trades": 33,
+   "refilled": 21505,
+   "sessions": 160
+  }
+ },
+ "enter 1 min earlier": {
+  "2023": {
+   "net": -5826,
+   "green": 5,
+   "red": 17,
+   "none": 170,
+   "worst": -2996,
+   "trades": 25,
+   "refilled": 20332,
+   "sessions": 192
+  },
+  "2024": {
+   "net": 33172,
+   "green": 13,
+   "red": 11,
+   "none": 172,
+   "worst": -2998,
+   "trades": 26,
+   "refilled": 16717,
+   "sessions": 196
+  },
+  "2025": {
+   "net": 36119,
+   "green": 21,
+   "red": 21,
+   "none": 152,
+   "worst": -2997,
+   "trades": 52,
+   "refilled": 35812,
+   "sessions": 194
+  },
+  "2026": {
+   "net": 45353,
+   "green": 17,
+   "red": 13,
+   "none": 130,
+   "worst": -2992,
+   "trades": 33,
+   "refilled": 20134,
+   "sessions": 160
+  }
+ },
+ "enter 2 min earlier": {
+  "2023": {
+   "net": -4882,
+   "green": 6,
+   "red": 16,
+   "none": 170,
+   "worst": -2791,
+   "trades": 25,
+   "refilled": 19808,
+   "sessions": 192
+  },
+  "2024": {
+   "net": 34249,
+   "green": 13,
+   "red": 11,
+   "none": 172,
+   "worst": -3033,
+   "trades": 26,
+   "refilled": 15745,
+   "sessions": 196
+  },
+  "2025": {
+   "net": 40482,
+   "green": 22,
+   "red": 20,
+   "none": 152,
+   "worst": -2998,
+   "trades": 52,
+   "refilled": 34912,
+   "sessions": 194
+  },
+  "2026": {
+   "net": 48777,
+   "green": 18,
+   "red": 12,
+   "none": 130,
+   "worst": -2994,
+   "trades": 33,
+   "refilled": 20263,
+   "sessions": 160
+  }
+ }
+}
