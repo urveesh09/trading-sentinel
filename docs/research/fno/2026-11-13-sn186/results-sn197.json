@@ -1,0 +1,223 @@
+{
+ "empty_days": 594,
+ "Rs 15k": {
+  "leg alone, goal 1000": {
+   "sessions": 705,
+   "trade_days": 59,
+   "goal_days": 20,
+   "red_days": 34,
+   "net": 39086,
+   "worst_day": -3165,
+   "month_median": 0,
+   "month_worst": -6961,
+   "goal_days_per_month": 0.45,
+   "without_best_5": -5420,
+   "by_year": {
+    "2023": 9152,
+    "2024": 24999,
+    "2025": -8112,
+    "2026": 13047
+   }
+  },
+  "Gold + leg, goal 1000": {
+   "sessions": 705,
+   "trade_days": 170,
+   "goal_days": 57,
+   "red_days": 94,
+   "net": 160612,
+   "worst_day": -3165,
+   "month_median": 1290,
+   "month_worst": -7160,
+   "goal_days_per_month": 1.3,
+   "without_best_5": 98922,
+   "by_year": {
+    "2023": 9549,
+    "2024": 77156,
+    "2025": 40394,
+    "2026": 33513
+   }
+  },
+  "Gold alone, goal 1000": {
+   "sessions": 705,
+   "trade_days": 111,
+   "goal_days": 37,
+   "red_days": 60,
+   "net": 121527,
+   "worst_day": -2998,
+   "month_median": 800,
+   "month_worst": -6007,
+   "goal_days_per_month": 0.84,
+   "without_best_5": 64860,
+   "by_year": {
+    "2023": 397,
+    "2024": 52158,
+    "2025": 48506,
+    "2026": 20466
+   }
+  },
+  "leg alone, goal 1500": {
+   "sessions": 705,
+   "trade_days": 59,
+   "goal_days": 17,
+   "red_days": 34,
+   "net": 39086,
+   "worst_day": -3165,
+   "month_median": 0,
+   "month_worst": -6961,
+   "goal_days_per_month": 0.39,
+   "without_best_5": -5420,
+   "by_year": {
+    "2023": 9152,
+    "2024": 24999,
+    "2025": -8112,
+    "2026": 13047
+   }
+  },
+  "Gold + leg, goal 1500": {
+   "sessions": 705,
+   "trade_days": 170,
+   "goal_days": 54,
+   "red_days": 94,
+   "net": 160612,
+   "worst_day": -3165,
+   "month_median": 1290,
+   "month_worst": -7160,
+   "goal_days_per_month": 1.23,
+   "without_best_5": 98922,
+   "by_year": {
+    "2023": 9549,
+    "2024": 77156,
+    "2025": 40394,
+    "2026": 33513
+   }
+  },
+  "Gold alone, goal 1500": {
+   "sessions": 705,
+   "trade_days": 111,
+   "goal_days": 37,
+   "red_days": 60,
+   "net": 121527,
+   "worst_day": -2998,
+   "month_median": 800,
+   "month_worst": -6007,
+   "goal_days_per_month": 0.84,
+   "without_best_5": 64860,
+   "by_year": {
+    "2023": 397,
+    "2024": 52158,
+    "2025": 48506,
+    "2026": 20466
+   }
+  }
+ },
+ "Rs 30k growing (production)": {
+  "leg alone, goal 1000": {
+   "sessions": 705,
+   "trade_days": 63,
+   "goal_days": 23,
+   "red_days": 36,
+   "net": 57624,
+   "worst_day": -4282,
+   "month_median": 0,
+   "month_worst": -7723,
+   "goal_days_per_month": 0.52,
+   "without_best_5": -3094,
+   "by_year": {
+    "2023": 9381,
+    "2024": 45565,
+    "2025": -10370,
+    "2026": 13047
+   }
+  },
+  "Gold + leg, goal 1000": {
+   "sessions": 705,
+   "trade_days": 185,
+   "goal_days": 73,
+   "red_days": 103,
+   "net": 699796,
+   "worst_day": -21113,
+   "month_median": 2921,
+   "month_worst": -38531,
+   "goal_days_per_month": 1.66,
+   "without_best_5": 367763,
+   "by_year": {
+    "2023": -2725,
+    "2024": 233041,
+    "2025": 282441,
+    "2026": 187039
+   }
+  },
+  "Gold alone, goal 1000": {
+   "sessions": 705,
+   "trade_days": 122,
+   "goal_days": 50,
+   "red_days": 67,
+   "net": 642173,
+   "worst_day": -21113,
+   "month_median": 679,
+   "month_worst": -38531,
+   "goal_days_per_month": 1.14,
+   "without_best_5": 310139,
+   "by_year": {
+    "2023": -12107,
+    "2024": 187476,
+    "2025": 292811,
+    "2026": 173992
+   }
+  },
+  "leg alone, goal 1500": {
+   "sessions": 705,
+   "trade_days": 63,
+   "goal_days": 19,
+   "red_days": 36,
+   "net": 57624,
+   "worst_day": -4282,
+   "month_median": 0,
+   "month_worst": -7723,
+   "goal_days_per_month": 0.43,
+   "without_best_5": -3094,
+   "by_year": {
+    "2023": 9381,
+    "2024": 45565,
+    "2025": -10370,
+    "2026": 13047
+   }
+  },
+  "Gold + leg, goal 1500": {
+   "sessions": 705,
+   "trade_days": 185,
+   "goal_days": 67,
+   "red_days": 103,
+   "net": 699796,
+   "worst_day": -21113,
+   "month_median": 2921,
+   "month_worst": -38531,
+   "goal_days_per_month": 1.52,
+   "without_best_5": 367763,
+   "by_year": {
+    "2023": -2725,
+    "2024": 233041,
+    "2025": 282441,
+    "2026": 187039
+   }
+  },
+  "Gold alone, goal 1500": {
+   "sessions": 705,
+   "trade_days": 122,
+   "goal_days": 48,
+   "red_days": 67,
+   "net": 642173,
+   "worst_day": -21113,
+   "month_median": 679,
+   "month_worst": -38531,
+   "goal_days_per_month": 1.09,
+   "without_best_5": 310139,
+   "by_year": {
+    "2023": -12107,
+    "2024": 187476,
+    "2025": 292811,
+    "2026": 173992
+   }
+  }
+ }
+}

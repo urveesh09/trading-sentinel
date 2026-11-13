@@ -138,7 +138,7 @@ if __name__ == "__main__":
                           "stress_400": round(s400), "late_1": round(late), "days": sorted(dn)}
             row[scope]["PASS"] = bool(row[scope]["net"] > 0 and row[scope]["net"] > n95 and s400 > 0 and late > 0)
         res["candidates"][name] = row
-        print(f"SN196 {name}: " + json.dumps({k: {x: y for x, y in v.items() if x != 'days'} for k, v in row.items()}), flush=True)
+        print(f"SN196 {name}: " + json.dumps({k: {x: y for x, y in v.items() if x != 'days'} for k, v in row.items()}, default=float), flush=True)
     coin = []
     for k in range(50):
         dn = {}
@@ -155,5 +155,5 @@ if __name__ == "__main__":
     rec["SN188 goal 1000 stop 1000 (all proxy-empty days, no hot filter)"] = round(sum((sn188.day(S, 1000.0, 1000.0) or 0.0) for S in E))
     rec["SN189 fly goal 1500 stop 3000 (rho < 0.75)"] = round(sum((sn189.fly(S, 1500.0, 3000.0) or 0.0) for S in E if rho.get(S.day, 9) < 0.75))
     res["record_failed_development"] = rec
-    print("SN196 reference", json.dumps({"coin": res["coin_flip_rs1000_1lot_2022"], "record": rec}), flush=True)
+    print("SN196 reference", json.dumps({"coin": res["coin_flip_rs1000_1lot_2022"], "record": rec}, default=float), flush=True)
     out_path.write_text(json.dumps(res, indent=1, default=float), encoding="utf-8")

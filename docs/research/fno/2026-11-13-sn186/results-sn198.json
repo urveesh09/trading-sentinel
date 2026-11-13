@@ -1,0 +1,87 @@
+{
+ "test_empty_days": 26,
+ "from": "2026-08-20",
+ "to": "2026-10-28",
+ "candidates": {
+  "SN95-L": {
+   "net": 4121,
+   "trades": 1,
+   "days": [
+    "2026-10-12"
+   ],
+   "null_mean": -370,
+   "null_p95": 4381,
+   "PASS": false
+  },
+  "SN171 Rs 15k strangle": {
+   "net": 0,
+   "trades": 0,
+   "days": [],
+   "null_mean": 0,
+   "null_p95": 0,
+   "PASS": true
+  },
+  "SN171 Rs 30k straddle": {
+   "net": -2212,
+   "trades": 1,
+   "days": [
+    "2026-09-16"
+   ],
+   "null_mean": -1160,
+   "null_p95": 4121,
+   "PASS": false
+  },
+  "SN197 leg Rs 15k": {
+   "sessions": 26,
+   "trade_days": 2,
+   "goal_days": 1,
+   "red_days": 1,
+   "net": 2407,
+   "worst_day": -1714,
+   "month_median": 0,
+   "month_worst": 0,
+   "goal_days_per_month": 0.33,
+   "without_best_5": 0,
+   "by_year": {
+    "2026": 2407
+   },
+   "days": [
+    "2026-10-12",
+    "2026-10-22"
+   ]
+  },
+  "SN197 leg Rs 30k": {
+   "sessions": 26,
+   "trade_days": 3,
+   "goal_days": 1,
+   "red_days": 2,
+   "net": 196,
+   "worst_day": -2212,
+   "month_median": 0,
+   "month_worst": -2212,
+   "goal_days_per_month": 0.33,
+   "without_best_5": 0,
+   "by_year": {
+    "2026": 196
+   },
+   "days": [
+    "2026-09-16",
+    "2026-10-12",
+    "2026-10-22"
+   ]
+  }
+ },
+ "record": {
+  "SN187 pair 10:00 goal 1500 stop 2000": -24095,
+  "SN188 goal 1000 stop 1000 (hot)": -7000,
+  "SN189 fly kappa 0.75 goal 1500 stop 3000": -6897,
+  "SN191 LSTM entry": {
+   "net": 0,
+   "trade_days": 0
+  },
+  "SN193 LSTM direction": {
+   "net": -3004,
+   "trade_days": 7
+  }
+ }
+}
