@@ -1,0 +1,97 @@
+{
+ "in_sample": {
+  "strangle": {
+   "net": -339178,
+   "wage_share": 0.0326,
+   "trade_days": 540,
+   "red_days": 457,
+   "month_mean": -7709,
+   "by_year": {
+    "2023": -88654,
+    "2024": -111988,
+    "2025": -106480,
+    "2026": -32056
+   }
+  },
+  "strangle wage": {
+   "net": -366468,
+   "wage_share": 0.0624,
+   "trade_days": 540,
+   "red_days": 453,
+   "month_mean": -8329,
+   "by_year": {
+    "2023": -109550,
+    "2024": -112436,
+    "2025": -98565,
+    "2026": -45916
+   }
+  },
+  "RB ATM": {
+   "net": -401848,
+   "wage_share": 0.2681,
+   "trade_days": 676,
+   "red_days": 474,
+   "month_mean": -9133,
+   "by_year": {
+    "2023": -139305,
+    "2024": -107904,
+    "2025": -109297,
+    "2026": -45342
+   }
+  },
+  "RB OTM1": {
+   "net": -553024,
+   "wage_share": 0.217,
+   "trade_days": 685,
+   "red_days": 526,
+   "month_mean": -12569,
+   "by_year": {
+    "2023": -205104,
+    "2024": -131206,
+    "2025": -156300,
+    "2026": -60414
+   }
+  }
+ },
+ "loyo": {
+  "2023": {
+   "variant": "strangle",
+   "net": -88654,
+   "trades": 188
+  },
+  "2024": {
+   "variant": "strangle",
+   "net": -111988,
+   "trades": 139
+  },
+  "2025": {
+   "variant": "strangle",
+   "net": -106480,
+   "trades": 148
+  },
+  "2026": {
+   "variant": "strangle",
+   "net": -32056,
+   "trades": 65
+  }
+ },
+ "loyo_total": -339178,
+ "years_positive": 0,
+ "null_mean": -333757,
+ "null_p95": -280295,
+ "dev_pass": false,
+ "final_variant": "strangle",
+ "Rs 30k straddle 13:15": {
+  "net": -497465,
+  "wage_share": 0.0184,
+  "trade_days": 687,
+  "red_days": 577,
+  "month_mean": -11306,
+  "by_year": {
+   "2023": -95171,
+   "2024": -180297,
+   "2025": -163451,
+   "2026": -58545
+  }
+ }
+}

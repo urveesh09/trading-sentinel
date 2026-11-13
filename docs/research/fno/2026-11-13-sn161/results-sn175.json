@@ -1,0 +1,45 @@
+{
+ "days": 151,
+ "dev_days": 143,
+ "test_days": [
+  "2026-11-02",
+  "2026-11-03",
+  "2026-11-04",
+  "2026-11-05",
+  "2026-11-06",
+  "2026-11-09",
+  "2026-11-11",
+  "2026-11-12"
+ ],
+ "train_until": "2026-09-08",
+ "entries": 4066,
+ "validation": {
+  "hold 60s": {
+   "trades": 816,
+   "net": -230445,
+   "per_trade": -282.4
+  },
+  "hold 180s": {
+   "trades": 816,
+   "net": -203136,
+   "per_trade": -248.9
+  },
+  "learned phi 0.3": {
+   "trades": 816,
+   "net": -235181,
+   "per_trade": -288.2
+  },
+  "learned phi 0.4": {
+   "trades": 816,
+   "net": -231986,
+   "per_trade": -284.3
+  },
+  "learned phi 0.5": {
+   "trades": 816,
+   "net": -231843,
+   "per_trade": -284.1
+  }
+ },
+ "chosen_phi": 0.5,
+ "dev_pass": false
+}
