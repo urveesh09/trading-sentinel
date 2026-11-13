@@ -8106,3 +8106,12 @@ real phase changes remain visible and attributable.
   - NIFTY 2019 – 2022 history (probe first);
   - small real broker fills.
 - **Configuration / migration / runtime:** none.
+
+
+## SN151–SN160 hot-day research (Nov 13, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn151` (freeze `5f42b20e`).
+- **Result:** no new gap-day strategy passes.
+  - The 10:00 hot-day straddle (SN95-L) and hot-day bursts (SN126-L) stay forward watches.
+  - Their combined sleeve made +₹19,794 in four years, with intervals that include zero.
+- **Configuration / migration / runtime:** none. Production unchanged.

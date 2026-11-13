@@ -467,3 +467,20 @@ All were read in place and hash-checked.
 | 143–147 | Holding to the close is never chosen. The hot-day learner (−₹18,467) loses to SN95-L's fixed straddle (+₹36,541) on the same days. A learned extension for Gold is worse than v5's exit. Adding the learner to Gold cuts ₹8.63 lakh to ₹6.92 lakh. The reversed 1-second test also finds nothing |
 | 148 | Resources, ranked: (1) live full-chain tick capture (the partner's eyes; free with Kite; a Dev build + deploy); (2) NIFTY 2019 – 2022 minute history (~4 days of Breeze allowance; a probe first); (3) small real broker fills (real money, the owner's decision) |
 | 150 | The learner, given full freedom, chose not to trade gap days: the smart decision at this information and cost level. Edges that pay are mechanism-based (Gold's entries, hot-day volatility persistence) |
+
+
+## SN151–SN160 (Nov 13, 2026): the hot-day program
+
+The work dug where the one gap-day edge lives (volatility persistence, the 10:00 straddle), mixing rules and learning. Folder `docs/research/fno/2026-11-13-sn151` (frozen `5f42b20e`).
+
+| SN | Finding |
+|---|---|
+| 151 | Rolling "hot right now" entries every 30 minutes lose (−₹46,028 held out): later entries have too little day left |
+| 152 | Yesterday-hot → straddle today: +₹4,008 held out but 2/4 years and negative at ₹400 (a faint echo) |
+| 153 | Expiry-day hot straddle loses (0 days to expiry decay) |
+| 154–155 | A learned probability loses (−₹15,898); rule + model agreeing gives 4 trades vs the plain rule's +₹17,144 |
+| 156 | Legging out of a winner is worse than holding both legs |
+| 157 | 1-second hot-day momentum = random side |
+| 158–159 | The hot-day book (SN95-L + SN126-L) +₹19,794 in four years on a ₹15k sleeve, intervals include zero; the same ₹15k inside Gold earns ~₹4.5 lakh more |
+
+**Lesson:** the edge is precise (10:00, hold both legs to the close, hot days only), and the simple mechanism rule beats every model on so few hot days. Gap days stay a paper forward watch (SN95-L + SN126-L). Gold's capital remains the profit lever.

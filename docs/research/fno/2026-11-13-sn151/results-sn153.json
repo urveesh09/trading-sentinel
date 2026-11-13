@@ -1,0 +1,70 @@
+{
+ "days": 56,
+ "choose": [
+  "2025-09-09",
+  "2026-03-17"
+ ],
+ "score": [
+  "2026-03-24",
+  "2026-09-29"
+ ],
+ "variants": {
+  "top20 exit 12:00": {
+   "choose": {
+    "trades": 2,
+    "net": -5494,
+    "won": 0
+   },
+   "score": {
+    "trades": 6,
+    "net": -6314,
+    "won": 1
+   }
+  },
+  "top20 exit 13:00": {
+   "choose": {
+    "trades": 2,
+    "net": -6046,
+    "won": 0
+   },
+   "score": {
+    "trades": 6,
+    "net": -15802,
+    "won": 0
+   }
+  },
+  "top33 exit 12:00": {
+   "choose": {
+    "trades": 5,
+    "net": -8907,
+    "won": 0
+   },
+   "score": {
+    "trades": 7,
+    "net": -8979,
+    "won": 1
+   }
+  },
+  "top33 exit 13:00": {
+   "choose": {
+    "trades": 5,
+    "net": -11006,
+    "won": 0
+   },
+   "score": {
+    "trades": 7,
+    "net": -18853,
+    "won": 0
+   }
+  }
+ },
+ "pick": "top20 exit 12:00",
+ "verdict": {
+  "score_net": -6314,
+  "trades": 6,
+  "random_95th": 1125,
+  "stress_400_per_leg": -8076,
+  "late_1min": -5596,
+  "PASS_development": false
+ }
+}

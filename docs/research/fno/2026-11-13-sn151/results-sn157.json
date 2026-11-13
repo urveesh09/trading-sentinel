@@ -1,0 +1,26 @@
+{
+ "a_hot_days": 16,
+ "b_hot_days": 23,
+ "b_cold_days": 51,
+ "choose": {
+  "k2.0 h60": -39480,
+  "k2.0 h180": -34461,
+  "k3.0 h60": -19833,
+  "k3.0 h180": -18373
+ },
+ "pick": "k3.0 h180",
+ "b_hot": {
+  "net": -22001,
+  "trades": 83,
+  "won_days": 2,
+  "without_best_5_days": -22611
+ },
+ "b_cold_same_rule": {
+  "net": -48863,
+  "trades": 231
+ },
+ "random_side_mean": -21504,
+ "random_side_95th": -14354,
+ "stress_400": -34322,
+ "PASS_development": false
+}

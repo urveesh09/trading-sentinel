@@ -80,4 +80,4 @@ if __name__ == "__main__":
         print(f"=== SN156 {dname}: hold {[base[y]['net'] for y in ph.YEARS]} {ph.tot(base)} | " +
               " | ".join(f"{k} {[t[y]['net'] for y in ph.YEARS]} {ph.tot(t)}" for k, t in out.items() if k != "hold both"), flush=True)
         print("   preference", pref, flush=True)
-    out_path.write_text(json.dumps(res, indent=1), encoding="utf-8")
+    out_path.write_text(json.dumps(res, indent=1, default=float), encoding="utf-8")
