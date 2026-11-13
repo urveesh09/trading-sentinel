@@ -1,0 +1,622 @@
+{
+ "days": {
+  "choose": 30,
+  "score": 26
+ },
+ "pr_median_choose": {
+  "straddle 09:20": 0.7398545417839957,
+  "straddle 09:30": 0.7044332302232437,
+  "leg 09:30": 0.7044332302232437
+ },
+ "stress": {
+  "house 100/leg": {
+   "table": {
+    "straddle 09:20 cheap 13:00": {
+     "choose": {
+      "net": -8528,
+      "won": 3,
+      "lost": 11
+     },
+     "score": {
+      "net": -25168,
+      "won": 7,
+      "lost": 18
+     }
+    },
+    "NULL straddle 09:20 cheap 13:00": {
+     "choose": {
+      "net": -20325,
+      "won": 2,
+      "lost": 14
+     },
+     "score": {
+      "net": -21170,
+      "won": 2,
+      "lost": 9
+     }
+    },
+    "straddle 09:20 cheap +40%": {
+     "choose": {
+      "net": -11444,
+      "won": 4,
+      "lost": 10
+     },
+     "score": {
+      "net": -18119,
+      "won": 9,
+      "lost": 16
+     }
+    },
+    "NULL straddle 09:20 cheap +40%": {
+     "choose": {
+      "net": -5765,
+      "won": 4,
+      "lost": 7
+     },
+     "score": {
+      "net": -14123,
+      "won": 4,
+      "lost": 9
+     }
+    },
+    "straddle 09:20 always 13:00": {
+     "choose": {
+      "net": -27317,
+      "won": 5,
+      "lost": 21
+     },
+     "score": {
+      "net": -25376,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "NULL straddle 09:20 always 13:00": {
+     "choose": {
+      "net": -27317,
+      "won": 5,
+      "lost": 21
+     },
+     "score": {
+      "net": -25376,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "straddle 09:20 always +40%": {
+     "choose": {
+      "net": -27748,
+      "won": 7,
+      "lost": 19
+     },
+     "score": {
+      "net": -18327,
+      "won": 9,
+      "lost": 17
+     }
+    },
+    "NULL straddle 09:20 always +40%": {
+     "choose": {
+      "net": -27748,
+      "won": 7,
+      "lost": 19
+     },
+     "score": {
+      "net": -18327,
+      "won": 9,
+      "lost": 17
+     }
+    },
+    "straddle 09:30 cheap 13:00": {
+     "choose": {
+      "net": -7704,
+      "won": 3,
+      "lost": 12
+     },
+     "score": {
+      "net": -28093,
+      "won": 6,
+      "lost": 17
+     }
+    },
+    "NULL straddle 09:30 cheap 13:00": {
+     "choose": {
+      "net": -5658,
+      "won": 2,
+      "lost": 6
+     },
+     "score": {
+      "net": 366,
+      "won": 4,
+      "lost": 8
+     }
+    },
+    "straddle 09:30 cheap +40%": {
+     "choose": {
+      "net": -10133,
+      "won": 5,
+      "lost": 10
+     },
+     "score": {
+      "net": -21540,
+      "won": 7,
+      "lost": 16
+     }
+    },
+    "NULL straddle 09:30 cheap +40%": {
+     "choose": {
+      "net": -19225,
+      "won": 3,
+      "lost": 10
+     },
+     "score": {
+      "net": -10384,
+      "won": 5,
+      "lost": 11
+     }
+    },
+    "straddle 09:30 always 13:00": {
+     "choose": {
+      "net": -39426,
+      "won": 4,
+      "lost": 23
+     },
+     "score": {
+      "net": -23861,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "NULL straddle 09:30 always 13:00": {
+     "choose": {
+      "net": -39426,
+      "won": 4,
+      "lost": 23
+     },
+     "score": {
+      "net": -23861,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "straddle 09:30 always +40%": {
+     "choose": {
+      "net": -41855,
+      "won": 6,
+      "lost": 21
+     },
+     "score": {
+      "net": -21678,
+      "won": 8,
+      "lost": 18
+     }
+    },
+    "NULL straddle 09:30 always +40%": {
+     "choose": {
+      "net": -41855,
+      "won": 6,
+      "lost": 21
+     },
+     "score": {
+      "net": -21678,
+      "won": 8,
+      "lost": 18
+     }
+    },
+    "leg 09:30 cheap 13:00": {
+     "choose": {
+      "net": -6767,
+      "won": 5,
+      "lost": 10
+     },
+     "score": {
+      "net": -11793,
+      "won": 7,
+      "lost": 16
+     }
+    },
+    "NULL leg 09:30 cheap 13:00": {
+     "choose": {
+      "net": -23895,
+      "won": 4,
+      "lost": 13
+     },
+     "score": {
+      "net": -9782,
+      "won": 3,
+      "lost": 11
+     }
+    },
+    "leg 09:30 cheap +40%": {
+     "choose": {
+      "net": -9563,
+      "won": 7,
+      "lost": 8
+     },
+     "score": {
+      "net": -18206,
+      "won": 9,
+      "lost": 14
+     }
+    },
+    "NULL leg 09:30 cheap +40%": {
+     "choose": {
+      "net": -3740,
+      "won": 10,
+      "lost": 8
+     },
+     "score": {
+      "net": 291,
+      "won": 6,
+      "lost": 3
+     }
+    },
+    "leg 09:30 always 13:00": {
+     "choose": {
+      "net": -39825,
+      "won": 6,
+      "lost": 23
+     },
+     "score": {
+      "net": -5225,
+      "won": 9,
+      "lost": 17
+     }
+    },
+    "NULL leg 09:30 always 13:00": {
+     "choose": {
+      "net": -52699,
+      "won": 3,
+      "lost": 27
+     },
+     "score": {
+      "net": 23,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "leg 09:30 always +40%": {
+     "choose": {
+      "net": -6077,
+      "won": 15,
+      "lost": 14
+     },
+     "score": {
+      "net": -16757,
+      "won": 11,
+      "lost": 15
+     }
+    },
+    "NULL leg 09:30 always +40%": {
+     "choose": {
+      "net": -23402,
+      "won": 11,
+      "lost": 18
+     },
+     "score": {
+      "net": 1491,
+      "won": 16,
+      "lost": 10
+     }
+    }
+   },
+   "pick": "leg 09:30 always +40%",
+   "pick_score": {
+    "net": -16757,
+    "won": 11,
+    "lost": 15
+   },
+   "null_pick": "NULL leg 09:30 cheap +40%",
+   "null_score": {
+    "net": 291,
+    "won": 6,
+    "lost": 3
+   }
+  },
+  "strict 205/leg": {
+   "table": {
+    "straddle 09:20 cheap 13:00": {
+     "choose": {
+      "net": -10654,
+      "won": 3,
+      "lost": 11
+     },
+     "score": {
+      "net": -28157,
+      "won": 7,
+      "lost": 18
+     }
+    },
+    "NULL straddle 09:20 cheap 13:00": {
+     "choose": {
+      "net": -21979,
+      "won": 2,
+      "lost": 14
+     },
+     "score": {
+      "net": -22347,
+      "won": 2,
+      "lost": 9
+     }
+    },
+    "straddle 09:20 cheap +40%": {
+     "choose": {
+      "net": -13570,
+      "won": 4,
+      "lost": 10
+     },
+     "score": {
+      "net": -21109,
+      "won": 9,
+      "lost": 16
+     }
+    },
+    "NULL straddle 09:20 cheap +40%": {
+     "choose": {
+      "net": -7630,
+      "won": 4,
+      "lost": 7
+     },
+     "score": {
+      "net": -15328,
+      "won": 4,
+      "lost": 9
+     }
+    },
+    "straddle 09:20 always 13:00": {
+     "choose": {
+      "net": -30205,
+      "won": 5,
+      "lost": 21
+     },
+     "score": {
+      "net": -28575,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "NULL straddle 09:20 always 13:00": {
+     "choose": {
+      "net": -30205,
+      "won": 5,
+      "lost": 21
+     },
+     "score": {
+      "net": -28575,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "straddle 09:20 always +40%": {
+     "choose": {
+      "net": -30814,
+      "won": 7,
+      "lost": 19
+     },
+     "score": {
+      "net": -21526,
+      "won": 9,
+      "lost": 17
+     }
+    },
+    "NULL straddle 09:20 always +40%": {
+     "choose": {
+      "net": -30814,
+      "won": 7,
+      "lost": 19
+     },
+     "score": {
+      "net": -21526,
+      "won": 9,
+      "lost": 17
+     }
+    },
+    "straddle 09:30 cheap 13:00": {
+     "choose": {
+      "net": -10717,
+      "won": 3,
+      "lost": 12
+     },
+     "score": {
+      "net": -31807,
+      "won": 6,
+      "lost": 17
+     }
+    },
+    "NULL straddle 09:30 cheap 13:00": {
+     "choose": {
+      "net": -6381,
+      "won": 2,
+      "lost": 6
+     },
+     "score": {
+      "net": -2433,
+      "won": 4,
+      "lost": 8
+     }
+    },
+    "straddle 09:30 cheap +40%": {
+     "choose": {
+      "net": -13147,
+      "won": 5,
+      "lost": 10
+     },
+     "score": {
+      "net": -25254,
+      "won": 7,
+      "lost": 16
+     }
+    },
+    "NULL straddle 09:30 cheap +40%": {
+     "choose": {
+      "net": -21394,
+      "won": 3,
+      "lost": 10
+     },
+     "score": {
+      "net": -13498,
+      "won": 5,
+      "lost": 11
+     }
+    },
+    "straddle 09:30 always 13:00": {
+     "choose": {
+      "net": -42851,
+      "won": 4,
+      "lost": 23
+     },
+     "score": {
+      "net": -28050,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "NULL straddle 09:30 always 13:00": {
+     "choose": {
+      "net": -42851,
+      "won": 4,
+      "lost": 23
+     },
+     "score": {
+      "net": -28050,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "straddle 09:30 always +40%": {
+     "choose": {
+      "net": -45281,
+      "won": 6,
+      "lost": 21
+     },
+     "score": {
+      "net": -25867,
+      "won": 8,
+      "lost": 18
+     }
+    },
+    "NULL straddle 09:30 always +40%": {
+     "choose": {
+      "net": -45281,
+      "won": 6,
+      "lost": 21
+     },
+     "score": {
+      "net": -25867,
+      "won": 8,
+      "lost": 18
+     }
+    },
+    "leg 09:30 cheap 13:00": {
+     "choose": {
+      "net": -7573,
+      "won": 5,
+      "lost": 10
+     },
+     "score": {
+      "net": -12979,
+      "won": 6,
+      "lost": 17
+     }
+    },
+    "NULL leg 09:30 cheap 13:00": {
+     "choose": {
+      "net": -25064,
+      "won": 4,
+      "lost": 13
+     },
+     "score": {
+      "net": -11025,
+      "won": 2,
+      "lost": 12
+     }
+    },
+    "leg 09:30 cheap +40%": {
+     "choose": {
+      "net": -10369,
+      "won": 7,
+      "lost": 8
+     },
+     "score": {
+      "net": -19392,
+      "won": 9,
+      "lost": 14
+     }
+    },
+    "NULL leg 09:30 cheap +40%": {
+     "choose": {
+      "net": -4400,
+      "won": 10,
+      "lost": 8
+     },
+     "score": {
+      "net": -579,
+      "won": 6,
+      "lost": 3
+     }
+    },
+    "leg 09:30 always 13:00": {
+     "choose": {
+      "net": -41219,
+      "won": 6,
+      "lost": 23
+     },
+     "score": {
+      "net": -6726,
+      "won": 8,
+      "lost": 18
+     }
+    },
+    "NULL leg 09:30 always 13:00": {
+     "choose": {
+      "net": -54633,
+      "won": 3,
+      "lost": 27
+     },
+     "score": {
+      "net": -2094,
+      "won": 7,
+      "lost": 19
+     }
+    },
+    "leg 09:30 always +40%": {
+     "choose": {
+      "net": -7636,
+      "won": 15,
+      "lost": 14
+     },
+     "score": {
+      "net": -18258,
+      "won": 11,
+      "lost": 15
+     }
+    },
+    "NULL leg 09:30 always +40%": {
+     "choose": {
+      "net": -25590,
+      "won": 11,
+      "lost": 18
+     },
+     "score": {
+      "net": -742,
+      "won": 16,
+      "lost": 10
+     }
+    }
+   },
+   "pick": "leg 09:30 cheap 13:00",
+   "pick_score": {
+    "net": -12979,
+    "won": 6,
+    "lost": 17
+   },
+   "null_pick": "NULL leg 09:30 cheap +40%",
+   "null_score": {
+    "net": -579,
+    "won": 6,
+    "lost": 3
+   }
+  }
+ },
+ "PASS": false
+}

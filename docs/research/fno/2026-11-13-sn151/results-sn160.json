@@ -1,0 +1,296 @@
+[
+ {
+  "SN": "151",
+  "what": "gold-free",
+  "result": {
+   "held_out": -46028,
+   "years": [
+    -19229,
+    -8164,
+    -32911,
+    14276
+   ],
+   "trades": 144,
+   "without_best_5": -92525,
+   "random_95th": -63883,
+   "stress_400_per_leg": -102681,
+   "late_1min": -49047,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "151",
+  "what": "all days",
+  "result": {
+   "held_out": -109177,
+   "years": [
+    -50597,
+    -21835,
+    -49533,
+    12789
+   ],
+   "trades": 199,
+   "without_best_5": -143070,
+   "random_95th": -92736,
+   "stress_400_per_leg": -192839,
+   "late_1min": -111586,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "152",
+  "what": "gold-free",
+  "result": {
+   "held_out": 4008,
+   "years": [
+    -9162,
+    17187,
+    -10265,
+    6247
+   ],
+   "trades": 41,
+   "without_best_5": -43426,
+   "random_95th": 1239,
+   "stress_400_per_leg": -13182,
+   "late_1min": 3756,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "152",
+  "what": "all days",
+  "result": {
+   "held_out": -27619,
+   "years": [
+    -16293,
+    1738,
+    -19312,
+    6247
+   ],
+   "trades": 52,
+   "without_best_5": -72616,
+   "random_95th": -3288,
+   "stress_400_per_leg": -46132,
+   "late_1min": 3205,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "153",
+  "what": "expiry-day hot straddle (score half)",
+  "result": {
+   "pick": "top20 exit 12:00",
+   "score_net": -6314,
+   "trades": 6,
+   "random_95th": 1125,
+   "stress_400_per_leg": -8076,
+   "late_1min": -5596,
+   "PASS_development": false
+  }
+ },
+ {
+  "SN": "154",
+  "what": "learned probability (gold-free)",
+  "result": {
+   "held_out": -15898,
+   "years": [
+    10914,
+    -8419,
+    -18394,
+    0
+   ],
+   "trades": 36,
+   "without_best_5": -42046,
+   "random_95th": -8559,
+   "stress_400_per_leg": -29676,
+   "late_1min": -14718,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "155",
+  "what": "rule + model consensus (gold-free)",
+  "result": {
+   "sn95l_alone": {
+    "2023": -3644,
+    "2024": 12507,
+    "2025": -6537,
+    "2026": 14818,
+    "total": 17144,
+    "trades": 35
+   },
+   "consensus": {
+    "2023": -1756,
+    "2024": 0,
+    "2025": 206,
+    "2026": 0,
+    "total": -1550,
+    "trades": 4,
+    "without_best_5": 0
+   },
+   "years_better": 2,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "154",
+  "what": "learned probability (all days)",
+  "result": {
+   "held_out": -17452,
+   "years": [
+    10914,
+    -4268,
+    -24097,
+    0
+   ],
+   "trades": 41,
+   "without_best_5": -45925,
+   "random_95th": -9716,
+   "stress_400_per_leg": -34327,
+   "late_1min": -16720,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "155",
+  "what": "rule + model consensus (all days)",
+  "result": {
+   "sn95l_alone": {
+    "2023": -7270,
+    "2024": 29842,
+    "2025": -12241,
+    "2026": 18940,
+    "total": 29271,
+    "trades": 47
+   },
+   "consensus": {
+    "2023": -1756,
+    "2024": 5204,
+    "2025": 206,
+    "2026": 0,
+    "total": 3654,
+    "trades": 5,
+    "without_best_5": 0
+   },
+   "years_better": 2,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "156",
+  "what": "leg out (SN95-L days)",
+  "result": {
+   "leg out at +50%": {
+    "total": -10044,
+    "years_better": 1,
+    "without_best_5": -37125,
+    "hold_without_best_5": -22251,
+    "preferred": false
+   },
+   "leg out at +100%": {
+    "total": -13947,
+    "years_better": 0,
+    "without_best_5": -31893,
+    "hold_without_best_5": -22251,
+    "preferred": false
+   }
+  }
+ },
+ {
+  "SN": "156",
+  "what": "leg out (all signal days)",
+  "result": {
+   "leg out at +50%": {
+    "total": -25922,
+    "years_better": 1,
+    "without_best_5": -54900,
+    "hold_without_best_5": -13795,
+    "preferred": false
+   },
+   "leg out at +100%": {
+    "total": -10929,
+    "years_better": 1,
+    "without_best_5": -32371,
+    "hold_without_best_5": -13795,
+    "preferred": false
+   }
+  }
+ },
+ {
+  "SN": "157",
+  "what": "1-second hot-day momentum",
+  "result": {
+   "a_hot_days": 16,
+   "b_hot_days": 23,
+   "b_cold_days": 51,
+   "pick": "k3.0 h180",
+   "b_hot": {
+    "net": -22001,
+    "trades": 83,
+    "won_days": 2,
+    "without_best_5_days": -22611
+   },
+   "b_cold_same_rule": {
+    "net": -48863,
+    "trades": 231
+   },
+   "random_side_mean": -21504,
+   "random_side_95th": -14354,
+   "stress_400": -34322,
+   "PASS_development": false
+  }
+ },
+ {
+  "SN": "158",
+  "what": "hot-day book vs Gold",
+  "result": {
+   "survivors_used": [],
+   "book_by_year": {
+    "2023": -3644,
+    "2024": 17832,
+    "2025": -5727,
+    "2026": 11333
+   },
+   "book_total": 19794,
+   "book_trade_days": 51,
+   "Rs 45k fixed": {
+    "Gold 30k + hot-day book": 300302,
+    "Gold 45k": 463780
+   },
+   "Rs 45k grow stop 3": {
+    "Gold 30k + hot-day book": 870676,
+    "Gold 45k": 1320826
+   }
+  }
+ },
+ {
+  "SN": "159",
+  "what": "bootstrap intervals",
+  "result": {
+   "SN95-L straddle": {
+    "trade_days": 35,
+    "mean": 490,
+    "ci95": [
+     -665,
+     1830
+    ]
+   },
+   "SN126-L bursts": {
+    "trade_days": 27,
+    "mean": 163,
+    "ci95": [
+     -416,
+     765
+    ]
+   },
+   "hot-day book": {
+    "trade_days": 51,
+    "mean": 388,
+    "ci95": [
+     -431,
+     1301
+    ]
+   }
+  }
+ }
+]

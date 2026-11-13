@@ -1,4 +1,4 @@
-"""Advisory profit floor and causal futures context for the partner watch."""
+"""Advisory profit floor, the give-back stop and causal futures context for the partner watch."""
 from __future__ import annotations
 
 from datetime import datetime, time, timedelta
@@ -56,3 +56,37 @@ def trend_note(direction: str, underlying: str, side: str, *, advise: bool = Tru
         return text + " Continue cautiously." if advise else text
     text = f"{underlying} futures are {move}, against {option}."
     return text + " Protect profit. Reduce risk or pause new buys." if advise else text
+
+
+# [SN121 2026-11-13] The give-back stop. On the partner's 7 recorded sessions (Oct 27 - Nov 4) the day's best was
+# >= +20% of their cash on 5 days, yet only 3 ended green, after a median of 22 more trades. Stopping once a day that
+# had been up >= 5% of the cash fell back 30% from its best cut the 7-day loss by ~71% (docs/research/fno/
+# 2026-11-13-sn121). Advice only: the partner decides.
+GIVEBACK_ARM_SHARE = 0.05
+GIVEBACK_STOP_SHARE = 0.30
+
+
+def giveback_stop(best: float, now_value: float, cash: float, arm: float = GIVEBACK_ARM_SHARE,
+                  give: float = GIVEBACK_STOP_SHARE) -> bool:
+    """True when the day's best (booked plus open trades at their bids) reached ``arm`` of the cash and the day now
+    stands at or under ``1 - give`` of that best."""
+    if not all(math.isfinite(x) for x in (best, now_value, cash)) or cash <= 0 or best <= 0:
+        return False
+    return best >= arm * cash and now_value <= (1.0 - give) * best
+
+
+def _rs(x: float) -> str:
+    sign = "+" if x >= 0 else "-"
+    return f"{sign}₹{abs(x):,.0f}"
+
+
+def giveback_stop_text(best: float, now_value: float) -> str:
+    """The partner's message: short, concrete, their call."""
+    given = max(0.0, best - now_value) / best if best > 0 else 0.0
+    if now_value > 0:
+        head, part = "🛑 Stop for today and keep your profit.", f"{given:.0%} of it given back"
+    else:
+        head, part = "🛑 Stop for today.", "all of it given back"
+    return (f"{head}\nBest today {_rs(best)}, now {_rs(now_value)}: {part}.\n"
+            f"On your recent days, trading on from here gave the rest back. Your call.")
+

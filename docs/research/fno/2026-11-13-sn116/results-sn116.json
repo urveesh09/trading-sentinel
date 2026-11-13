@@ -1,0 +1,446 @@
+{
+ "sleeve_alone": {
+  "net": 17145,
+  "by_year": [
+   -3644,
+   12507,
+   -6537,
+   14818
+  ],
+  "max_drawdown": 19418,
+  "worst_day": -3090,
+  "refilled": 39221
+ },
+ "total 45k | fixed": {
+  "Gold 30k alone": {
+   "capital": 30000.0,
+   "net": 280508,
+   "by_year": [
+    -12107,
+    115439,
+    70789,
+    106387
+   ],
+   "refilled": 193046,
+   "max_drawdown": 18467,
+   "worst_day": -6110,
+   "net_per_1000_capital": 9350
+  },
+  "Gold 30k + straddle in Gold's wallet": {
+   "capital": 30000.0,
+   "net": 294288,
+   "by_year": [
+    -15906,
+    127945,
+    61044,
+    121205
+   ],
+   "refilled": 232868,
+   "max_drawdown": 26851,
+   "worst_day": -6110,
+   "net_per_1000_capital": 9810
+  },
+  "Gold 30k + separate 15k straddle sleeve": {
+   "capital": 45000.0,
+   "net": 297653,
+   "by_year": [
+    -15750,
+    127945,
+    64252,
+    121205
+   ],
+   "refilled": 232267,
+   "max_drawdown": 24421,
+   "worst_day": -6583,
+   "net_per_1000_capital": 6615
+  },
+  "Gold 45k alone": {
+   "capital": 45000.0,
+   "net": 463780,
+   "by_year": [
+    -9350,
+    184395,
+    110666,
+    178069
+   ],
+   "refilled": 304099,
+   "max_drawdown": 26306,
+   "worst_day": -8995,
+   "net_per_1000_capital": 10306
+  },
+  "Gold 45k, step after 50%": {
+   "capital": 45000.0,
+   "net": 463780,
+   "by_year": [
+    -9350,
+    184395,
+    110666,
+    178069
+   ],
+   "refilled": 304099,
+   "max_drawdown": 26306,
+   "worst_day": -8995,
+   "net_per_1000_capital": 10306
+  }
+ },
+ "total 45k | grow stop 3": {
+  "Gold 30k alone": {
+   "capital": 30000.0,
+   "net": 850882,
+   "by_year": [
+    -12107,
+    187476,
+    292811,
+    382702
+   ],
+   "refilled": 562129,
+   "max_drawdown": 53788,
+   "worst_day": -21113,
+   "net_per_1000_capital": 28363
+  },
+  "Gold 30k + straddle in Gold's wallet": {
+   "capital": 30000.0,
+   "net": 890419,
+   "by_year": [
+    -15906,
+    229965,
+    289566,
+    386794
+   ],
+   "refilled": 653621,
+   "max_drawdown": 61440,
+   "worst_day": -21113,
+   "net_per_1000_capital": 29681
+  },
+  "Gold 30k + separate 15k straddle sleeve": {
+   "capital": 45000.0,
+   "net": 868027,
+   "by_year": [
+    -15750,
+    199982,
+    286275,
+    397521
+   ],
+   "refilled": 601350,
+   "max_drawdown": 57601,
+   "worst_day": -21113,
+   "net_per_1000_capital": 19289
+  },
+  "Gold 45k alone": {
+   "capital": 45000.0,
+   "net": 1320826,
+   "by_year": [
+    -9350,
+    272186,
+    445263,
+    612727
+   ],
+   "refilled": 872469,
+   "max_drawdown": 80103,
+   "worst_day": -30320,
+   "net_per_1000_capital": 29352
+  },
+  "Gold 45k, step after 50%": {
+   "capital": 45000.0,
+   "net": 1500260,
+   "by_year": [
+    -9350,
+    451620,
+    445263,
+    612727
+   ],
+   "refilled": 911672,
+   "max_drawdown": 80103,
+   "worst_day": -30320,
+   "net_per_1000_capital": 33339
+  }
+ },
+ "total 45k | grow stop 5": {
+  "Gold 30k alone": {
+   "capital": 30000.0,
+   "net": 1551780,
+   "by_year": [
+    -12107,
+    187476,
+    451582,
+    924829
+   ],
+   "refilled": 1021271,
+   "max_drawdown": 118377,
+   "worst_day": -45464,
+   "net_per_1000_capital": 51726
+  },
+  "Gold 30k + straddle in Gold's wallet": {
+   "capital": 30000.0,
+   "net": 1699131,
+   "by_year": [
+    -15906,
+    229965,
+    556151,
+    928921
+   ],
+   "refilled": 1207630,
+   "max_drawdown": 124520,
+   "worst_day": -45464,
+   "net_per_1000_capital": 56638
+  },
+  "Gold 30k + separate 15k straddle sleeve": {
+   "capital": 45000.0,
+   "net": 1568925,
+   "by_year": [
+    -15750,
+    199982,
+    445045,
+    939648
+   ],
+   "refilled": 1060492,
+   "max_drawdown": 123503,
+   "worst_day": -45464,
+   "net_per_1000_capital": 34865
+  },
+  "Gold 45k alone": {
+   "capital": 45000.0,
+   "net": 2348253,
+   "by_year": [
+    -9350,
+    272186,
+    691624,
+    1393793
+   ],
+   "refilled": 1563239,
+   "max_drawdown": 185671,
+   "worst_day": -68263,
+   "net_per_1000_capital": 52183
+  },
+  "Gold 45k, step after 50%": {
+   "capital": 45000.0,
+   "net": 3078045,
+   "by_year": [
+    -9350,
+    656739,
+    1036863,
+    1393793
+   ],
+   "refilled": 1879746,
+   "max_drawdown": 185671,
+   "worst_day": -68263,
+   "net_per_1000_capital": 68401
+  }
+ },
+ "total 50k | fixed": {
+  "Gold 35k alone": {
+   "capital": 35000.0,
+   "net": 304464,
+   "by_year": [
+    -11739,
+    128374,
+    83329,
+    104500
+   ],
+   "refilled": 225869,
+   "max_drawdown": 20710,
+   "worst_day": -6997,
+   "net_per_1000_capital": 8699
+  },
+  "Gold 35k + straddle in Gold's wallet": {
+   "capital": 35000.0,
+   "net": 295162,
+   "by_year": [
+    -15538,
+    130492,
+    69101,
+    111107
+   ],
+   "refilled": 306033,
+   "max_drawdown": 37849,
+   "worst_day": -6997,
+   "net_per_1000_capital": 8433
+  },
+  "Gold 35k + separate 15k straddle sleeve": {
+   "capital": 50000.0,
+   "net": 321609,
+   "by_year": [
+    -15383,
+    140881,
+    76792,
+    119319
+   ],
+   "refilled": 265090,
+   "max_drawdown": 27618,
+   "worst_day": -6997,
+   "net_per_1000_capital": 6432
+  },
+  "Gold 50k alone": {
+   "capital": 50000.0,
+   "net": 491437,
+   "by_year": [
+    -11727,
+    199267,
+    129434,
+    174463
+   ],
+   "refilled": 354098,
+   "max_drawdown": 28290,
+   "worst_day": -9993,
+   "net_per_1000_capital": 9829
+  },
+  "Gold 50k, step after 50%": {
+   "capital": 50000.0,
+   "net": 491437,
+   "by_year": [
+    -11727,
+    199267,
+    129434,
+    174463
+   ],
+   "refilled": 354098,
+   "max_drawdown": 28290,
+   "worst_day": -9993,
+   "net_per_1000_capital": 9829
+  }
+ },
+ "total 50k | grow stop 3": {
+  "Gold 35k alone": {
+   "capital": 35000.0,
+   "net": 990348,
+   "by_year": [
+    -11739,
+    208591,
+    334604,
+    458892
+   ],
+   "refilled": 640959,
+   "max_drawdown": 61596,
+   "worst_day": -23574,
+   "net_per_1000_capital": 28296
+  },
+  "Gold 35k + straddle in Gold's wallet": {
+   "capital": 35000.0,
+   "net": 1026075,
+   "by_year": [
+    -15538,
+    247270,
+    331359,
+    462984
+   ],
+   "refilled": 736981,
+   "max_drawdown": 66160,
+   "worst_day": -23574,
+   "net_per_1000_capital": 29316
+  },
+  "Gold 35k + separate 15k straddle sleeve": {
+   "capital": 50000.0,
+   "net": 1007493,
+   "by_year": [
+    -15383,
+    221098,
+    328068,
+    473710
+   ],
+   "refilled": 680180,
+   "max_drawdown": 65116,
+   "worst_day": -23574,
+   "net_per_1000_capital": 20150
+  },
+  "Gold 50k alone": {
+   "capital": 50000.0,
+   "net": 1470693,
+   "by_year": [
+    -11727,
+    306880,
+    488668,
+    686872
+   ],
+   "refilled": 966521,
+   "max_drawdown": 86753,
+   "worst_day": -33689,
+   "net_per_1000_capital": 29414
+  },
+  "Gold 50k, step after 50%": {
+   "capital": 50000.0,
+   "net": 1686732,
+   "by_year": [
+    -11727,
+    522919,
+    488668,
+    686872
+   ],
+   "refilled": 977127,
+   "max_drawdown": 86753,
+   "worst_day": -33689,
+   "net_per_1000_capital": 33735
+  }
+ },
+ "total 50k | grow stop 5": {
+  "Gold 35k alone": {
+   "capital": 35000.0,
+   "net": 1810588,
+   "by_year": [
+    -11739,
+    208591,
+    527978,
+    1085758
+   ],
+   "refilled": 1178329,
+   "max_drawdown": 140247,
+   "worst_day": -53055,
+   "net_per_1000_capital": 51731
+  },
+  "Gold 35k + straddle in Gold's wallet": {
+   "capital": 35000.0,
+   "net": 1914227,
+   "by_year": [
+    -15538,
+    247270,
+    592646,
+    1089849
+   ],
+   "refilled": 1340449,
+   "max_drawdown": 146390,
+   "worst_day": -53055,
+   "net_per_1000_capital": 54692
+  },
+  "Gold 35k + separate 15k straddle sleeve": {
+   "capital": 50000.0,
+   "net": 1827733,
+   "by_year": [
+    -15383,
+    221098,
+    521442,
+    1100576
+   ],
+   "refilled": 1217550,
+   "max_drawdown": 145373,
+   "worst_day": -53055,
+   "net_per_1000_capital": 36555
+  },
+  "Gold 50k alone": {
+   "capital": 50000.0,
+   "net": 2641440,
+   "by_year": [
+    -11727,
+    306880,
+    774020,
+    1572267
+   ],
+   "refilled": 1738791,
+   "max_drawdown": 200590,
+   "worst_day": -75794,
+   "net_per_1000_capital": 52829
+  },
+  "Gold 50k, step after 50%": {
+   "capital": 50000.0,
+   "net": 3443885,
+   "by_year": [
+    -11727,
+    733905,
+    1149440,
+    1572267
+   ],
+   "refilled": 2088569,
+   "max_drawdown": 200590,
+   "worst_day": -75794,
+   "net_per_1000_capital": 68878
+  }
+ }
+}

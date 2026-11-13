@@ -2887,6 +2887,9 @@ class _State:
     cash_at: Optional[datetime] = None                # [O29] when the cash was last read (or a refresh failed)
     profit_choice_day: Optional[str] = None
     profit_choice: Optional[float] = None
+    gb_day: Optional[str] = None                      # [SN121] the give-back stop's day, best and last told best
+    gb_best: float = 0.0
+    gb_told: float = 0.0
     profit_bars: dict = field(default_factory=dict)  # future symbol -> (five-minute boundary, candles)
     trades: Optional[list] = None
     fills_sig: Optional[tuple] = None
@@ -3376,6 +3379,11 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
     if told > 0:
         out.append((f"day:{day}:{told}", "DAY", None, {"step": told, **({"coach": True} if coach else {})},
                     so_far["at"], None))
+    # [SN121] The give-back stop: "stop for today" once a good day has given back 30% of its best. When it is due
+    # it replaces the N04-B give-back steps for the same best (one message, the action first).
+    stop_item = _giveback_item(day, so_far, holdings, now)
+    stopped = (stop_item is not None or (_giveback_on() and _state.gb_day == day and _state.gb_told > 0
+                                         and so_far is not None and so_far["best"] <= _state.gb_told + 1e-6))
     # [N07] While a profit floor is active, measure further warnings from that floor.
     # This catches a breached floor between the legacy cash-loss steps and avoids duplicate DAY messages.
     if profit is not None and so_far["net"] >= 0:
@@ -3383,10 +3391,12 @@ async def _events(db_path: str, day: str, rows: list, now: datetime, market: Mar
         phase = _profit_phase(so_far["net"], marked, profit, _state.cash)
         out.append((f"profit:{day}:{phase}", "DAY", None, {"profit": phase}, now, None))
     # [N04-B] Without an active floor, retain the existing cash-based giveback messages.
-    elif so_far is not None and so_far["giveback"] > 0 and so_far["best_at"] is not None:
+    elif not stopped and so_far is not None and so_far["giveback"] > 0 and so_far["best_at"] is not None:
         best = so_far["best_at"].astimezone(IST).strftime("%H%M%S")
         out.append((f"day:{day}:gb:{best}:{so_far['giveback']}", "DAY", None,
                     {"giveback": so_far["giveback"], "best_at": so_far["best_at"].isoformat()}, so_far["at"], None))
+    if stop_item is not None:
+        out.append(stop_item)
     # 4b. [N06] The Sentinel's own main trades as advice: its buys while fresh, its sales after a buy that was told.
     out.extend(await _sentinel_items(db_path, day, now, holdings))
     # 4c. [N09] The coach: the morning plan, the partner's own rule, a losing run, a range break.
@@ -4759,6 +4769,38 @@ def _profit_phase(booked: float, marked: Optional[float], floor: float, cash: fl
     return f"floor:{step}"
 
 
+def _giveback_on() -> bool:
+    return bool(getattr(settings, "PARTNER_WATCH_GIVEBACK_STOP_ENABLED", False))
+
+
+def _giveback_value(so_far: dict, holdings: list, now: datetime) -> Optional[float]:
+    """The day as it stands: booked, plus open trades at their displayed bids; None while an open trade has no fresh
+    full-size bid (no message on an unknown value)."""
+    if not holdings:
+        return so_far["net"]
+    return _profit_mark(holdings, now, so_far["net"])
+
+
+def _giveback_item(day: str, so_far: Optional[dict], holdings: list, now: datetime):
+    """[SN121] The outbox item when the day has been up >= the arm share of the cash and stands at <= 70% of its
+    best (booked best and marked values seen this session). At most once per best; a later message needs a new best
+    at least 20% higher."""
+    if not _giveback_on() or so_far is None or not _state.cash:
+        return None
+    if _state.gb_day != day:
+        _state.gb_day, _state.gb_best, _state.gb_told = day, 0.0, 0.0
+    value = _giveback_value(so_far, holdings, now)
+    _state.gb_best = max(_state.gb_best, so_far["best"], value if value is not None else 0.0)
+    best = _state.gb_best
+    if value is None or not profit_protection.giveback_stop(best, value, _state.cash, settings.PARTNER_WATCH_GIVEBACK_ARM,
+                                                             settings.PARTNER_WATCH_GIVEBACK_STOP):
+        return None
+    if _state.gb_told and best < 1.2 * _state.gb_told:
+        return None
+    _state.gb_told = best
+    return (f"gbstop:{day}:{round(best)}", "DAY", None, {"gbstop": round(best, 2)}, now, None)
+
+
 def _profit_plan_loss(holdings: list) -> Optional[float]:
     loss = 0.0
     for holding in holdings:
@@ -4883,6 +4925,15 @@ async def _b_day(db_path: str, context: dict, view: View, now: datetime):
     so_far = day_so_far(view.trips, _state.cash)
     if so_far is None:
         return None
+    if context.get("gbstop") is not None:
+        # [SN121] Rebuilt at send time: not sent when the day has recovered above the stop line.
+        value = _giveback_value(so_far, view.holdings, now)
+        best = max(float(context["gbstop"]), so_far["best"], value if value is not None else 0.0)
+        if value is None or not profit_protection.giveback_stop(best, value, _state.cash or 0.0,
+                                                                settings.PARTNER_WATCH_GIVEBACK_ARM,
+                                                                settings.PARTNER_WATCH_GIVEBACK_STOP):
+            return None
+        return (profit_protection.giveback_stop_text(best, value), "give-back stop", None)
     floor = _profit_floor(so_far, view.trips) if _profit_on() else None
     if context.get("profit"):
         if floor is None:

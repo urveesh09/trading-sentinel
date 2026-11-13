@@ -1,0 +1,170 @@
+{
+ "SN132 base": {
+  "one_lot": {
+   "2024": {
+    "net": -134725,
+    "trades": 311,
+    "days_traded": 111,
+    "won_days": 36,
+    "lost_days": 75
+   },
+   "2025": {
+    "net": -76080,
+    "trades": 235,
+    "days_traded": 86,
+    "won_days": 32,
+    "lost_days": 54
+   },
+   "2026": {
+    "net": -6334,
+    "trades": 214,
+    "days_traded": 75,
+    "won_days": 37,
+    "lost_days": 38
+   },
+   "total": -217139,
+   "without_best_5_days": -265687,
+   "worst_day": -8345,
+   "positive_years": 0
+  },
+  "sized": {
+   "2024": {
+    "net": -150198,
+    "trades": 301,
+    "days_traded": 111,
+    "won_days": 37,
+    "lost_days": 74
+   },
+   "2025": {
+    "net": -56026,
+    "trades": 228,
+    "days_traded": 86,
+    "won_days": 33,
+    "lost_days": 53
+   },
+   "2026": {
+    "net": -14727,
+    "trades": 209,
+    "days_traded": 75,
+    "won_days": 36,
+    "lost_days": 39
+   },
+   "total": -220951,
+   "without_best_5_days": -320539,
+   "worst_day": -13711,
+   "positive_years": 0
+  }
+ },
+ "SN137 adaptive": {
+  "one_lot": {
+   "2024": {
+    "net": -172685,
+    "trades": 410,
+    "days_traded": 131,
+    "won_days": 37,
+    "lost_days": 94
+   },
+   "2025": {
+    "net": -151047,
+    "trades": 395,
+    "days_traded": 124,
+    "won_days": 35,
+    "lost_days": 89
+   },
+   "2026": {
+    "net": -71625,
+    "trades": 344,
+    "days_traded": 115,
+    "won_days": 46,
+    "lost_days": 69
+   },
+   "total": -395357,
+   "without_best_5_days": -461481,
+   "worst_day": -9892,
+   "positive_years": 0
+  },
+  "sized": {
+   "2024": {
+    "net": -181825,
+    "trades": 395,
+    "days_traded": 131,
+    "won_days": 39,
+    "lost_days": 92
+   },
+   "2025": {
+    "net": -173711,
+    "trades": 380,
+    "days_traded": 124,
+    "won_days": 35,
+    "lost_days": 89
+   },
+   "2026": {
+    "net": -83801,
+    "trades": 337,
+    "days_traded": 115,
+    "won_days": 45,
+    "lost_days": 70
+   },
+   "total": -439337,
+   "without_best_5_days": -545438,
+   "worst_day": -14130,
+   "positive_years": 0
+  }
+ },
+ "SN138 ensemble": {
+  "one_lot": {
+   "2024": {
+    "net": -172844,
+    "trades": 316,
+    "days_traded": 110,
+    "won_days": 32,
+    "lost_days": 78
+   },
+   "2025": {
+    "net": -54248,
+    "trades": 254,
+    "days_traded": 85,
+    "won_days": 27,
+    "lost_days": 58
+   },
+   "2026": {
+    "net": -27660,
+    "trades": 199,
+    "days_traded": 73,
+    "won_days": 36,
+    "lost_days": 37
+   },
+   "total": -254752,
+   "without_best_5_days": -318781,
+   "worst_day": -11559,
+   "positive_years": 0
+  },
+  "sized": {
+   "2024": {
+    "net": -192232,
+    "trades": 309,
+    "days_traded": 110,
+    "won_days": 32,
+    "lost_days": 78
+   },
+   "2025": {
+    "net": -32779,
+    "trades": 249,
+    "days_traded": 85,
+    "won_days": 29,
+    "lost_days": 56
+   },
+   "2026": {
+    "net": -433,
+    "trades": 189,
+    "days_traded": 73,
+    "won_days": 36,
+    "lost_days": 37
+   },
+   "total": -225444,
+   "without_best_5_days": -355930,
+   "worst_day": -13427,
+   "positive_years": 0
+  }
+ }
+}

@@ -2826,10 +2826,12 @@ async def test_the_day_so_far_is_told_once_a_step(watch, kite):
 
 
 @pytest.mark.asyncio
-async def test_the_day_giving_back_its_best_is_told_once_a_step(watch, kite):
+async def test_the_day_giving_back_its_best_is_told_once_a_step(watch, kite, monkeypatch):
     """[N04-B] Nov 2 went from +₹12,921 at 12:20 to −₹1,669 at 13:28 (51% of the cash) with no message: the DAY
     steps counted only a loss under zero. A step of what the day gives back from its best is now told once, while
-    the day is still up."""
+    the day is still up. [SN121] With the give-back stop off (when on, its message replaces this step: see
+    test_partner_giveback_stop)."""
+    monkeypatch.setattr(settings, "PARTNER_WATCH_GIVEBACK_STOP_ENABLED", False)
     db = settings.DB_PATH
     await _login()
     market = _market(D(10, 0))

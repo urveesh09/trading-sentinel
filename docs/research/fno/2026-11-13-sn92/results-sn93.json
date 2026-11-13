@@ -1,0 +1,2329 @@
+{
+ "real": {
+  "N4/3 p0.0015 simple E1": {
+   "2023": {
+    "net": -12081,
+    "green": 14,
+    "red": 31,
+    "none": 71,
+    "refilled": 23586,
+    "days": 116,
+    "trades": 45
+   },
+   "2024": {
+    "net": -20600,
+    "green": 23,
+    "red": 51,
+    "none": 95,
+    "refilled": 61298,
+    "days": 169,
+    "trades": 74
+   },
+   "2025": {
+    "net": -19699,
+    "green": 23,
+    "red": 52,
+    "none": 89,
+    "refilled": 60148,
+    "days": 164,
+    "trades": 75
+   },
+   "2026": {
+    "net": -36391,
+    "green": 12,
+    "red": 43,
+    "none": 78,
+    "refilled": 49988,
+    "days": 133,
+    "trades": 55
+   }
+  },
+  "N4/3 p0.0015 simple E2": {
+   "2023": {
+    "net": -12590,
+    "green": 16,
+    "red": 29,
+    "none": 71,
+    "refilled": 29504,
+    "days": 116,
+    "trades": 45
+   },
+   "2024": {
+    "net": 2998,
+    "green": 24,
+    "red": 50,
+    "none": 95,
+    "refilled": 73575,
+    "days": 169,
+    "trades": 74
+   },
+   "2025": {
+    "net": -33339,
+    "green": 21,
+    "red": 54,
+    "none": 89,
+    "refilled": 67972,
+    "days": 164,
+    "trades": 75
+   },
+   "2026": {
+    "net": -34854,
+    "green": 12,
+    "red": 43,
+    "none": 78,
+    "refilled": 61154,
+    "days": 133,
+    "trades": 55
+   }
+  },
+  "N4/3 p0.0015 pullback E1": {
+   "2023": {
+    "net": -13568,
+    "green": 10,
+    "red": 31,
+    "none": 75,
+    "refilled": 21830,
+    "days": 116,
+    "trades": 41
+   },
+   "2024": {
+    "net": -13873,
+    "green": 20,
+    "red": 47,
+    "none": 102,
+    "refilled": 55330,
+    "days": 169,
+    "trades": 67
+   },
+   "2025": {
+    "net": -32117,
+    "green": 18,
+    "red": 49,
+    "none": 97,
+    "refilled": 56194,
+    "days": 164,
+    "trades": 67
+   },
+   "2026": {
+    "net": -26362,
+    "green": 12,
+    "red": 35,
+    "none": 86,
+    "refilled": 36850,
+    "days": 133,
+    "trades": 47
+   }
+  },
+  "N4/3 p0.0015 pullback E2": {
+   "2023": {
+    "net": -9325,
+    "green": 14,
+    "red": 27,
+    "none": 75,
+    "refilled": 24511,
+    "days": 116,
+    "trades": 41
+   },
+   "2024": {
+    "net": -9504,
+    "green": 21,
+    "red": 46,
+    "none": 102,
+    "refilled": 76800,
+    "days": 169,
+    "trades": 67
+   },
+   "2025": {
+    "net": -40470,
+    "green": 15,
+    "red": 52,
+    "none": 97,
+    "refilled": 62237,
+    "days": 164,
+    "trades": 67
+   },
+   "2026": {
+    "net": -38020,
+    "green": 9,
+    "red": 38,
+    "none": 86,
+    "refilled": 51384,
+    "days": 133,
+    "trades": 47
+   }
+  },
+  "N4/3 p0.003 simple E1": {
+   "2023": {
+    "net": -1675,
+    "green": 9,
+    "red": 16,
+    "none": 91,
+    "refilled": 9846,
+    "days": 116,
+    "trades": 25
+   },
+   "2024": {
+    "net": -5983,
+    "green": 18,
+    "red": 36,
+    "none": 115,
+    "refilled": 43565,
+    "days": 169,
+    "trades": 54
+   },
+   "2025": {
+    "net": -8149,
+    "green": 16,
+    "red": 38,
+    "none": 110,
+    "refilled": 39791,
+    "days": 164,
+    "trades": 54
+   },
+   "2026": {
+    "net": -23450,
+    "green": 10,
+    "red": 29,
+    "none": 94,
+    "refilled": 36408,
+    "days": 133,
+    "trades": 39
+   }
+  },
+  "N4/3 p0.003 simple E2": {
+   "2023": {
+    "net": -2597,
+    "green": 10,
+    "red": 15,
+    "none": 91,
+    "refilled": 12521,
+    "days": 116,
+    "trades": 25
+   },
+   "2024": {
+    "net": 9113,
+    "green": 19,
+    "red": 35,
+    "none": 115,
+    "refilled": 54085,
+    "days": 169,
+    "trades": 54
+   },
+   "2025": {
+    "net": -22075,
+    "green": 17,
+    "red": 37,
+    "none": 110,
+    "refilled": 50595,
+    "days": 164,
+    "trades": 54
+   },
+   "2026": {
+    "net": -19243,
+    "green": 11,
+    "red": 28,
+    "none": 94,
+    "refilled": 44740,
+    "days": 133,
+    "trades": 39
+   }
+  },
+  "N4/3 p0.003 pullback E1": {
+   "2023": {
+    "net": -3183,
+    "green": 7,
+    "red": 16,
+    "none": 93,
+    "refilled": 8786,
+    "days": 116,
+    "trades": 23
+   },
+   "2024": {
+    "net": -3426,
+    "green": 15,
+    "red": 32,
+    "none": 122,
+    "refilled": 38768,
+    "days": 169,
+    "trades": 47
+   },
+   "2025": {
+    "net": -17021,
+    "green": 13,
+    "red": 36,
+    "none": 115,
+    "refilled": 38056,
+    "days": 164,
+    "trades": 49
+   },
+   "2026": {
+    "net": -20499,
+    "green": 10,
+    "red": 24,
+    "none": 99,
+    "refilled": 29323,
+    "days": 133,
+    "trades": 34
+   }
+  },
+  "N4/3 p0.003 pullback E2": {
+   "2023": {
+    "net": -5794,
+    "green": 7,
+    "red": 16,
+    "none": 93,
+    "refilled": 11670,
+    "days": 116,
+    "trades": 23
+   },
+   "2024": {
+    "net": 7029,
+    "green": 17,
+    "red": 30,
+    "none": 122,
+    "refilled": 53423,
+    "days": 169,
+    "trades": 47
+   },
+   "2025": {
+    "net": -25079,
+    "green": 13,
+    "red": 36,
+    "none": 115,
+    "refilled": 46210,
+    "days": 164,
+    "trades": 49
+   },
+   "2026": {
+    "net": -27431,
+    "green": 7,
+    "red": 27,
+    "none": 99,
+    "refilled": 39679,
+    "days": 133,
+    "trades": 34
+   }
+  },
+  "N6/4 p0.0015 simple E1": {
+   "2023": {
+    "net": -11567,
+    "green": 12,
+    "red": 30,
+    "none": 74,
+    "refilled": 23443,
+    "days": 116,
+    "trades": 42
+   },
+   "2024": {
+    "net": -33143,
+    "green": 20,
+    "red": 55,
+    "none": 94,
+    "refilled": 70106,
+    "days": 169,
+    "trades": 75
+   },
+   "2025": {
+    "net": -23661,
+    "green": 23,
+    "red": 48,
+    "none": 93,
+    "refilled": 54676,
+    "days": 164,
+    "trades": 71
+   },
+   "2026": {
+    "net": -38132,
+    "green": 10,
+    "red": 47,
+    "none": 76,
+    "refilled": 50211,
+    "days": 133,
+    "trades": 57
+   }
+  },
+  "N6/4 p0.0015 simple E2": {
+   "2023": {
+    "net": -10688,
+    "green": 15,
+    "red": 27,
+    "none": 74,
+    "refilled": 28148,
+    "days": 116,
+    "trades": 42
+   },
+   "2024": {
+    "net": -7021,
+    "green": 24,
+    "red": 51,
+    "none": 94,
+    "refilled": 79134,
+    "days": 169,
+    "trades": 75
+   },
+   "2025": {
+    "net": -37395,
+    "green": 20,
+    "red": 51,
+    "none": 93,
+    "refilled": 65331,
+    "days": 164,
+    "trades": 71
+   },
+   "2026": {
+    "net": -37026,
+    "green": 11,
+    "red": 46,
+    "none": 76,
+    "refilled": 59927,
+    "days": 133,
+    "trades": 57
+   }
+  },
+  "N6/4 p0.0015 pullback E1": {
+   "2023": {
+    "net": -10527,
+    "green": 11,
+    "red": 27,
+    "none": 78,
+    "refilled": 18475,
+    "days": 116,
+    "trades": 38
+   },
+   "2024": {
+    "net": -15552,
+    "green": 22,
+    "red": 48,
+    "none": 99,
+    "refilled": 56219,
+    "days": 169,
+    "trades": 70
+   },
+   "2025": {
+    "net": -36538,
+    "green": 16,
+    "red": 48,
+    "none": 100,
+    "refilled": 52102,
+    "days": 164,
+    "trades": 64
+   },
+   "2026": {
+    "net": -27825,
+    "green": 11,
+    "red": 38,
+    "none": 84,
+    "refilled": 37665,
+    "days": 133,
+    "trades": 49
+   }
+  },
+  "N6/4 p0.0015 pullback E2": {
+   "2023": {
+    "net": -6690,
+    "green": 14,
+    "red": 24,
+    "none": 78,
+    "refilled": 21243,
+    "days": 116,
+    "trades": 38
+   },
+   "2024": {
+    "net": -13291,
+    "green": 21,
+    "red": 49,
+    "none": 99,
+    "refilled": 75080,
+    "days": 169,
+    "trades": 70
+   },
+   "2025": {
+    "net": -44543,
+    "green": 14,
+    "red": 50,
+    "none": 100,
+    "refilled": 61209,
+    "days": 164,
+    "trades": 64
+   },
+   "2026": {
+    "net": -35218,
+    "green": 9,
+    "red": 40,
+    "none": 84,
+    "refilled": 49178,
+    "days": 133,
+    "trades": 49
+   }
+  },
+  "N6/4 p0.003 simple E1": {
+   "2023": {
+    "net": -1325,
+    "green": 9,
+    "red": 15,
+    "none": 92,
+    "refilled": 9884,
+    "days": 116,
+    "trades": 24
+   },
+   "2024": {
+    "net": -17251,
+    "green": 16,
+    "red": 37,
+    "none": 116,
+    "refilled": 49806,
+    "days": 169,
+    "trades": 53
+   },
+   "2025": {
+    "net": -8196,
+    "green": 16,
+    "red": 35,
+    "none": 113,
+    "refilled": 33627,
+    "days": 164,
+    "trades": 51
+   },
+   "2026": {
+    "net": -25924,
+    "green": 8,
+    "red": 33,
+    "none": 92,
+    "refilled": 37397,
+    "days": 133,
+    "trades": 41
+   }
+  },
+  "N6/4 p0.003 simple E2": {
+   "2023": {
+    "net": -868,
+    "green": 11,
+    "red": 13,
+    "none": 92,
+    "refilled": 11844,
+    "days": 116,
+    "trades": 24
+   },
+   "2024": {
+    "net": 172,
+    "green": 18,
+    "red": 35,
+    "none": 116,
+    "refilled": 56716,
+    "days": 169,
+    "trades": 53
+   },
+   "2025": {
+    "net": -23348,
+    "green": 15,
+    "red": 36,
+    "none": 113,
+    "refilled": 48119,
+    "days": 164,
+    "trades": 51
+   },
+   "2026": {
+    "net": -22349,
+    "green": 10,
+    "red": 31,
+    "none": 92,
+    "refilled": 44230,
+    "days": 133,
+    "trades": 41
+   }
+  },
+  "N6/4 p0.003 pullback E1": {
+   "2023": {
+    "net": -1898,
+    "green": 9,
+    "red": 13,
+    "none": 94,
+    "refilled": 7730,
+    "days": 116,
+    "trades": 22
+   },
+   "2024": {
+    "net": -2591,
+    "green": 17,
+    "red": 32,
+    "none": 120,
+    "refilled": 37432,
+    "days": 169,
+    "trades": 49
+   },
+   "2025": {
+    "net": -23249,
+    "green": 12,
+    "red": 36,
+    "none": 116,
+    "refilled": 36593,
+    "days": 164,
+    "trades": 48
+   },
+   "2026": {
+    "net": -22644,
+    "green": 10,
+    "red": 26,
+    "none": 97,
+    "refilled": 30948,
+    "days": 133,
+    "trades": 36
+   }
+  },
+  "N6/4 p0.003 pullback E2": {
+   "2023": {
+    "net": -4179,
+    "green": 8,
+    "red": 14,
+    "none": 94,
+    "refilled": 9619,
+    "days": 116,
+    "trades": 22
+   },
+   "2024": {
+    "net": 2402,
+    "green": 17,
+    "red": 32,
+    "none": 120,
+    "refilled": 52002,
+    "days": 169,
+    "trades": 49
+   },
+   "2025": {
+    "net": -33055,
+    "green": 10,
+    "red": 38,
+    "none": 116,
+    "refilled": 48817,
+    "days": 164,
+    "trades": 48
+   },
+   "2026": {
+    "net": -27260,
+    "green": 7,
+    "red": 29,
+    "none": 97,
+    "refilled": 39775,
+    "days": 133,
+    "trades": 36
+   }
+  }
+ },
+ "controls": {
+  "NULL random side": {
+   "N4/3 p0.0015 simple E1": {
+    "2023": {
+     "net": -15743,
+     "green": 12,
+     "red": 33,
+     "none": 71,
+     "refilled": 21018,
+     "days": 116,
+     "trades": 45
+    },
+    "2024": {
+     "net": -13898,
+     "green": 20,
+     "red": 54,
+     "none": 95,
+     "refilled": 61750,
+     "days": 169,
+     "trades": 74
+    },
+    "2025": {
+     "net": -44941,
+     "green": 15,
+     "red": 60,
+     "none": 89,
+     "refilled": 67517,
+     "days": 164,
+     "trades": 75
+    },
+    "2026": {
+     "net": -13568,
+     "green": 15,
+     "red": 41,
+     "none": 77,
+     "refilled": 35459,
+     "days": 133,
+     "trades": 56
+    }
+   },
+   "N4/3 p0.0015 simple E2": {
+    "2023": {
+     "net": -15434,
+     "green": 13,
+     "red": 32,
+     "none": 71,
+     "refilled": 23524,
+     "days": 116,
+     "trades": 45
+    },
+    "2024": {
+     "net": -16334,
+     "green": 22,
+     "red": 52,
+     "none": 95,
+     "refilled": 56434,
+     "days": 169,
+     "trades": 74
+    },
+    "2025": {
+     "net": -41584,
+     "green": 14,
+     "red": 61,
+     "none": 89,
+     "refilled": 60944,
+     "days": 164,
+     "trades": 75
+    },
+    "2026": {
+     "net": -21735,
+     "green": 15,
+     "red": 41,
+     "none": 77,
+     "refilled": 36860,
+     "days": 133,
+     "trades": 56
+    }
+   },
+   "N4/3 p0.0015 pullback E1": {
+    "2023": {
+     "net": -17055,
+     "green": 6,
+     "red": 35,
+     "none": 75,
+     "refilled": 21399,
+     "days": 116,
+     "trades": 41
+    },
+    "2024": {
+     "net": 2616,
+     "green": 18,
+     "red": 49,
+     "none": 102,
+     "refilled": 54705,
+     "days": 169,
+     "trades": 67
+    },
+    "2025": {
+     "net": -40031,
+     "green": 13,
+     "red": 54,
+     "none": 97,
+     "refilled": 52996,
+     "days": 164,
+     "trades": 67
+    },
+    "2026": {
+     "net": -19787,
+     "green": 13,
+     "red": 36,
+     "none": 84,
+     "refilled": 35786,
+     "days": 133,
+     "trades": 49
+    }
+   },
+   "N4/3 p0.0015 pullback E2": {
+    "2023": {
+     "net": -13899,
+     "green": 13,
+     "red": 28,
+     "none": 75,
+     "refilled": 19388,
+     "days": 116,
+     "trades": 41
+    },
+    "2024": {
+     "net": -21105,
+     "green": 16,
+     "red": 51,
+     "none": 102,
+     "refilled": 57584,
+     "days": 169,
+     "trades": 67
+    },
+    "2025": {
+     "net": -33352,
+     "green": 16,
+     "red": 51,
+     "none": 97,
+     "refilled": 42805,
+     "days": 164,
+     "trades": 67
+    },
+    "2026": {
+     "net": -29817,
+     "green": 8,
+     "red": 41,
+     "none": 84,
+     "refilled": 37668,
+     "days": 133,
+     "trades": 49
+    }
+   },
+   "N4/3 p0.003 simple E1": {
+    "2023": {
+     "net": -13303,
+     "green": 3,
+     "red": 22,
+     "none": 91,
+     "refilled": 14619,
+     "days": 116,
+     "trades": 25
+    },
+    "2024": {
+     "net": 3729,
+     "green": 16,
+     "red": 38,
+     "none": 115,
+     "refilled": 43809,
+     "days": 169,
+     "trades": 54
+    },
+    "2025": {
+     "net": -24333,
+     "green": 13,
+     "red": 41,
+     "none": 110,
+     "refilled": 41334,
+     "days": 164,
+     "trades": 54
+    },
+    "2026": {
+     "net": -19413,
+     "green": 9,
+     "red": 31,
+     "none": 93,
+     "refilled": 34567,
+     "days": 133,
+     "trades": 40
+    }
+   },
+   "N4/3 p0.003 simple E2": {
+    "2023": {
+     "net": -10341,
+     "green": 4,
+     "red": 21,
+     "none": 91,
+     "refilled": 13547,
+     "days": 116,
+     "trades": 25
+    },
+    "2024": {
+     "net": -9587,
+     "green": 14,
+     "red": 40,
+     "none": 115,
+     "refilled": 42806,
+     "days": 169,
+     "trades": 54
+    },
+    "2025": {
+     "net": -25757,
+     "green": 10,
+     "red": 44,
+     "none": 110,
+     "refilled": 40887,
+     "days": 164,
+     "trades": 54
+    },
+    "2026": {
+     "net": -26705,
+     "green": 9,
+     "red": 31,
+     "none": 93,
+     "refilled": 36692,
+     "days": 133,
+     "trades": 40
+    }
+   },
+   "N4/3 p0.003 pullback E1": {
+    "2023": {
+     "net": -11855,
+     "green": 2,
+     "red": 21,
+     "none": 93,
+     "refilled": 13679,
+     "days": 116,
+     "trades": 23
+    },
+    "2024": {
+     "net": 19548,
+     "green": 15,
+     "red": 32,
+     "none": 122,
+     "refilled": 35076,
+     "days": 169,
+     "trades": 47
+    },
+    "2025": {
+     "net": -28391,
+     "green": 7,
+     "red": 42,
+     "none": 115,
+     "refilled": 37726,
+     "days": 164,
+     "trades": 49
+    },
+    "2026": {
+     "net": -19962,
+     "green": 8,
+     "red": 27,
+     "none": 98,
+     "refilled": 32874,
+     "days": 133,
+     "trades": 35
+    }
+   },
+   "N4/3 p0.003 pullback E2": {
+    "2023": {
+     "net": -11265,
+     "green": 4,
+     "red": 19,
+     "none": 93,
+     "refilled": 12454,
+     "days": 116,
+     "trades": 23
+    },
+    "2024": {
+     "net": -6399,
+     "green": 12,
+     "red": 35,
+     "none": 122,
+     "refilled": 40654,
+     "days": 169,
+     "trades": 47
+    },
+    "2025": {
+     "net": -23691,
+     "green": 12,
+     "red": 37,
+     "none": 115,
+     "refilled": 32940,
+     "days": 164,
+     "trades": 49
+    },
+    "2026": {
+     "net": -27312,
+     "green": 5,
+     "red": 30,
+     "none": 98,
+     "refilled": 32899,
+     "days": 133,
+     "trades": 35
+    }
+   },
+   "N6/4 p0.0015 simple E1": {
+    "2023": {
+     "net": -15983,
+     "green": 9,
+     "red": 33,
+     "none": 74,
+     "refilled": 21757,
+     "days": 116,
+     "trades": 42
+    },
+    "2024": {
+     "net": -37018,
+     "green": 18,
+     "red": 57,
+     "none": 94,
+     "refilled": 64968,
+     "days": 169,
+     "trades": 75
+    },
+    "2025": {
+     "net": -33731,
+     "green": 19,
+     "red": 52,
+     "none": 93,
+     "refilled": 55254,
+     "days": 164,
+     "trades": 71
+    },
+    "2026": {
+     "net": -21926,
+     "green": 14,
+     "red": 44,
+     "none": 75,
+     "refilled": 37379,
+     "days": 133,
+     "trades": 58
+    }
+   },
+   "N6/4 p0.0015 simple E2": {
+    "2023": {
+     "net": -14757,
+     "green": 13,
+     "red": 29,
+     "none": 74,
+     "refilled": 21807,
+     "days": 116,
+     "trades": 42
+    },
+    "2024": {
+     "net": -23991,
+     "green": 22,
+     "red": 53,
+     "none": 94,
+     "refilled": 60150,
+     "days": 169,
+     "trades": 75
+    },
+    "2025": {
+     "net": -33199,
+     "green": 20,
+     "red": 51,
+     "none": 93,
+     "refilled": 51716,
+     "days": 164,
+     "trades": 71
+    },
+    "2026": {
+     "net": -27738,
+     "green": 12,
+     "red": 46,
+     "none": 75,
+     "refilled": 40011,
+     "days": 133,
+     "trades": 58
+    }
+   },
+   "N6/4 p0.0015 pullback E1": {
+    "2023": {
+     "net": -12692,
+     "green": 7,
+     "red": 31,
+     "none": 78,
+     "refilled": 18605,
+     "days": 116,
+     "trades": 38
+    },
+    "2024": {
+     "net": -20063,
+     "green": 18,
+     "red": 52,
+     "none": 99,
+     "refilled": 58008,
+     "days": 169,
+     "trades": 70
+    },
+    "2025": {
+     "net": -34168,
+     "green": 14,
+     "red": 50,
+     "none": 100,
+     "refilled": 45679,
+     "days": 164,
+     "trades": 64
+    },
+    "2026": {
+     "net": -20702,
+     "green": 13,
+     "red": 38,
+     "none": 82,
+     "refilled": 36307,
+     "days": 133,
+     "trades": 51
+    }
+   },
+   "N6/4 p0.0015 pullback E2": {
+    "2023": {
+     "net": -12124,
+     "green": 11,
+     "red": 27,
+     "none": 78,
+     "refilled": 16853,
+     "days": 116,
+     "trades": 38
+    },
+    "2024": {
+     "net": -27430,
+     "green": 14,
+     "red": 56,
+     "none": 99,
+     "refilled": 59594,
+     "days": 169,
+     "trades": 70
+    },
+    "2025": {
+     "net": -29568,
+     "green": 14,
+     "red": 50,
+     "none": 100,
+     "refilled": 38504,
+     "days": 164,
+     "trades": 64
+    },
+    "2026": {
+     "net": -29402,
+     "green": 9,
+     "red": 42,
+     "none": 82,
+     "refilled": 37805,
+     "days": 133,
+     "trades": 51
+    }
+   },
+   "N6/4 p0.003 simple E1": {
+    "2023": {
+     "net": -13622,
+     "green": 2,
+     "red": 22,
+     "none": 92,
+     "refilled": 15061,
+     "days": 116,
+     "trades": 24
+    },
+    "2024": {
+     "net": -15920,
+     "green": 14,
+     "red": 39,
+     "none": 116,
+     "refilled": 44571,
+     "days": 169,
+     "trades": 53
+    },
+    "2025": {
+     "net": -12378,
+     "green": 15,
+     "red": 36,
+     "none": 113,
+     "refilled": 30155,
+     "days": 164,
+     "trades": 51
+    },
+    "2026": {
+     "net": -25267,
+     "green": 7,
+     "red": 35,
+     "none": 91,
+     "refilled": 36380,
+     "days": 133,
+     "trades": 42
+    }
+   },
+   "N6/4 p0.003 simple E2": {
+    "2023": {
+     "net": -9817,
+     "green": 5,
+     "red": 19,
+     "none": 92,
+     "refilled": 13021,
+     "days": 116,
+     "trades": 24
+    },
+    "2024": {
+     "net": -12258,
+     "green": 15,
+     "red": 38,
+     "none": 116,
+     "refilled": 41758,
+     "days": 169,
+     "trades": 53
+    },
+    "2025": {
+     "net": -15602,
+     "green": 16,
+     "red": 35,
+     "none": 113,
+     "refilled": 32692,
+     "days": 164,
+     "trades": 51
+    },
+    "2026": {
+     "net": -31969,
+     "green": 7,
+     "red": 35,
+     "none": 91,
+     "refilled": 40121,
+     "days": 133,
+     "trades": 42
+    }
+   },
+   "N6/4 p0.003 pullback E1": {
+    "2023": {
+     "net": -8628,
+     "green": 4,
+     "red": 18,
+     "none": 94,
+     "refilled": 12725,
+     "days": 116,
+     "trades": 22
+    },
+    "2024": {
+     "net": -886,
+     "green": 14,
+     "red": 35,
+     "none": 120,
+     "refilled": 37667,
+     "days": 169,
+     "trades": 49
+    },
+    "2025": {
+     "net": -22614,
+     "green": 9,
+     "red": 39,
+     "none": 116,
+     "refilled": 31962,
+     "days": 164,
+     "trades": 48
+    },
+    "2026": {
+     "net": -22139,
+     "green": 7,
+     "red": 30,
+     "none": 96,
+     "refilled": 34181,
+     "days": 133,
+     "trades": 37
+    }
+   },
+   "N6/4 p0.003 pullback E2": {
+    "2023": {
+     "net": -10668,
+     "green": 4,
+     "red": 18,
+     "none": 94,
+     "refilled": 11416,
+     "days": 116,
+     "trades": 22
+    },
+    "2024": {
+     "net": -10991,
+     "green": 10,
+     "red": 39,
+     "none": 120,
+     "refilled": 40931,
+     "days": 169,
+     "trades": 49
+    },
+    "2025": {
+     "net": -20204,
+     "green": 11,
+     "red": 37,
+     "none": 116,
+     "refilled": 29590,
+     "days": 164,
+     "trades": 48
+    },
+    "2026": {
+     "net": -28889,
+     "green": 6,
+     "red": 31,
+     "none": 96,
+     "refilled": 35027,
+     "days": 133,
+     "trades": 37
+    }
+   }
+  },
+  "matched random days": {
+   "N4/3 p0.0015 simple E1": {
+    "2023": {
+     "net": -12165,
+     "green": 6,
+     "red": 32,
+     "none": 78,
+     "refilled": 19995,
+     "days": 116,
+     "trades": 38
+    },
+    "2024": {
+     "net": -13593,
+     "green": 13,
+     "red": 49,
+     "none": 107,
+     "refilled": 49567,
+     "days": 169,
+     "trades": 62
+    },
+    "2025": {
+     "net": -35791,
+     "green": 10,
+     "red": 48,
+     "none": 106,
+     "refilled": 47413,
+     "days": 164,
+     "trades": 58
+    },
+    "2026": {
+     "net": -11756,
+     "green": 12,
+     "red": 34,
+     "none": 87,
+     "refilled": 29237,
+     "days": 133,
+     "trades": 46
+    }
+   },
+   "N4/3 p0.0015 simple E2": {
+    "2023": {
+     "net": -8272,
+     "green": 11,
+     "red": 27,
+     "none": 78,
+     "refilled": 19421,
+     "days": 116,
+     "trades": 38
+    },
+    "2024": {
+     "net": -22620,
+     "green": 15,
+     "red": 47,
+     "none": 107,
+     "refilled": 50592,
+     "days": 169,
+     "trades": 62
+    },
+    "2025": {
+     "net": -20912,
+     "green": 13,
+     "red": 45,
+     "none": 106,
+     "refilled": 43975,
+     "days": 164,
+     "trades": 58
+    },
+    "2026": {
+     "net": -18854,
+     "green": 13,
+     "red": 33,
+     "none": 87,
+     "refilled": 30686,
+     "days": 133,
+     "trades": 46
+    }
+   },
+   "N4/3 p0.0015 pullback E1": {
+    "2023": {
+     "net": -14654,
+     "green": 7,
+     "red": 29,
+     "none": 80,
+     "refilled": 20823,
+     "days": 116,
+     "trades": 36
+    },
+    "2024": {
+     "net": -3512,
+     "green": 20,
+     "red": 39,
+     "none": 110,
+     "refilled": 44041,
+     "days": 169,
+     "trades": 59
+    },
+    "2025": {
+     "net": -31026,
+     "green": 9,
+     "red": 44,
+     "none": 111,
+     "refilled": 40214,
+     "days": 164,
+     "trades": 53
+    },
+    "2026": {
+     "net": -14503,
+     "green": 11,
+     "red": 27,
+     "none": 95,
+     "refilled": 29180,
+     "days": 133,
+     "trades": 38
+    }
+   },
+   "N4/3 p0.0015 pullback E2": {
+    "2023": {
+     "net": -6237,
+     "green": 9,
+     "red": 27,
+     "none": 80,
+     "refilled": 18392,
+     "days": 116,
+     "trades": 36
+    },
+    "2024": {
+     "net": -4988,
+     "green": 18,
+     "red": 41,
+     "none": 110,
+     "refilled": 41201,
+     "days": 169,
+     "trades": 59
+    },
+    "2025": {
+     "net": -29465,
+     "green": 8,
+     "red": 45,
+     "none": 111,
+     "refilled": 36750,
+     "days": 164,
+     "trades": 53
+    },
+    "2026": {
+     "net": -16524,
+     "green": 9,
+     "red": 29,
+     "none": 95,
+     "refilled": 27593,
+     "days": 133,
+     "trades": 38
+    }
+   },
+   "N4/3 p0.003 simple E1": {
+    "2023": {
+     "net": 558,
+     "green": 7,
+     "red": 18,
+     "none": 91,
+     "refilled": 12628,
+     "days": 116,
+     "trades": 25
+    },
+    "2024": {
+     "net": -17492,
+     "green": 9,
+     "red": 37,
+     "none": 123,
+     "refilled": 34112,
+     "days": 169,
+     "trades": 46
+    },
+    "2025": {
+     "net": -26242,
+     "green": 4,
+     "red": 40,
+     "none": 120,
+     "refilled": 35391,
+     "days": 164,
+     "trades": 44
+    },
+    "2026": {
+     "net": -26211,
+     "green": 7,
+     "red": 27,
+     "none": 99,
+     "refilled": 32711,
+     "days": 133,
+     "trades": 34
+    }
+   },
+   "N4/3 p0.003 simple E2": {
+    "2023": {
+     "net": 1415,
+     "green": 7,
+     "red": 18,
+     "none": 91,
+     "refilled": 11550,
+     "days": 116,
+     "trades": 25
+    },
+    "2024": {
+     "net": -6625,
+     "green": 14,
+     "red": 32,
+     "none": 123,
+     "refilled": 29842,
+     "days": 169,
+     "trades": 46
+    },
+    "2025": {
+     "net": -25473,
+     "green": 6,
+     "red": 38,
+     "none": 120,
+     "refilled": 35265,
+     "days": 164,
+     "trades": 44
+    },
+    "2026": {
+     "net": -29542,
+     "green": 6,
+     "red": 28,
+     "none": 99,
+     "refilled": 32638,
+     "days": 133,
+     "trades": 34
+    }
+   },
+   "N4/3 p0.003 pullback E1": {
+    "2023": {
+     "net": -5424,
+     "green": 6,
+     "red": 17,
+     "none": 93,
+     "refilled": 11928,
+     "days": 116,
+     "trades": 23
+    },
+    "2024": {
+     "net": -2693,
+     "green": 15,
+     "red": 26,
+     "none": 128,
+     "refilled": 27175,
+     "days": 169,
+     "trades": 41
+    },
+    "2025": {
+     "net": -21717,
+     "green": 9,
+     "red": 32,
+     "none": 123,
+     "refilled": 30759,
+     "days": 164,
+     "trades": 41
+    },
+    "2026": {
+     "net": -16776,
+     "green": 7,
+     "red": 23,
+     "none": 103,
+     "refilled": 21706,
+     "days": 133,
+     "trades": 30
+    }
+   },
+   "N4/3 p0.003 pullback E2": {
+    "2023": {
+     "net": 1368,
+     "green": 7,
+     "red": 16,
+     "none": 93,
+     "refilled": 9533,
+     "days": 116,
+     "trades": 23
+    },
+    "2024": {
+     "net": 13152,
+     "green": 15,
+     "red": 26,
+     "none": 128,
+     "refilled": 22051,
+     "days": 169,
+     "trades": 41
+    },
+    "2025": {
+     "net": -16099,
+     "green": 9,
+     "red": 32,
+     "none": 123,
+     "refilled": 23790,
+     "days": 164,
+     "trades": 41
+    },
+    "2026": {
+     "net": -9020,
+     "green": 7,
+     "red": 23,
+     "none": 103,
+     "refilled": 20077,
+     "days": 133,
+     "trades": 30
+    }
+   },
+   "N6/4 p0.0015 simple E1": {
+    "2023": {
+     "net": -10435,
+     "green": 7,
+     "red": 30,
+     "none": 79,
+     "refilled": 19918,
+     "days": 116,
+     "trades": 37
+    },
+    "2024": {
+     "net": -1914,
+     "green": 16,
+     "red": 47,
+     "none": 106,
+     "refilled": 43593,
+     "days": 169,
+     "trades": 63
+    },
+    "2025": {
+     "net": -32943,
+     "green": 10,
+     "red": 45,
+     "none": 109,
+     "refilled": 42929,
+     "days": 164,
+     "trades": 55
+    },
+    "2026": {
+     "net": -30301,
+     "green": 5,
+     "red": 41,
+     "none": 87,
+     "refilled": 38533,
+     "days": 133,
+     "trades": 46
+    }
+   },
+   "N6/4 p0.0015 simple E2": {
+    "2023": {
+     "net": -6608,
+     "green": 10,
+     "red": 27,
+     "none": 79,
+     "refilled": 18445,
+     "days": 116,
+     "trades": 37
+    },
+    "2024": {
+     "net": -13673,
+     "green": 19,
+     "red": 44,
+     "none": 106,
+     "refilled": 42901,
+     "days": 169,
+     "trades": 63
+    },
+    "2025": {
+     "net": -13974,
+     "green": 13,
+     "red": 42,
+     "none": 109,
+     "refilled": 40551,
+     "days": 164,
+     "trades": 55
+    },
+    "2026": {
+     "net": -29795,
+     "green": 12,
+     "red": 34,
+     "none": 87,
+     "refilled": 37687,
+     "days": 133,
+     "trades": 46
+    }
+   },
+   "N6/4 p0.0015 pullback E1": {
+    "2023": {
+     "net": -8667,
+     "green": 7,
+     "red": 26,
+     "none": 83,
+     "refilled": 18157,
+     "days": 116,
+     "trades": 33
+    },
+    "2024": {
+     "net": 11948,
+     "green": 18,
+     "red": 42,
+     "none": 109,
+     "refilled": 41733,
+     "days": 169,
+     "trades": 60
+    },
+    "2025": {
+     "net": -30296,
+     "green": 9,
+     "red": 43,
+     "none": 112,
+     "refilled": 40172,
+     "days": 164,
+     "trades": 52
+    },
+    "2026": {
+     "net": -17537,
+     "green": 12,
+     "red": 29,
+     "none": 92,
+     "refilled": 31893,
+     "days": 133,
+     "trades": 41
+    }
+   },
+   "N6/4 p0.0015 pullback E2": {
+    "2023": {
+     "net": -4882,
+     "green": 6,
+     "red": 27,
+     "none": 83,
+     "refilled": 17046,
+     "days": 116,
+     "trades": 33
+    },
+    "2024": {
+     "net": 10352,
+     "green": 19,
+     "red": 41,
+     "none": 109,
+     "refilled": 32709,
+     "days": 169,
+     "trades": 60
+    },
+    "2025": {
+     "net": -31120,
+     "green": 6,
+     "red": 46,
+     "none": 112,
+     "refilled": 38363,
+     "days": 164,
+     "trades": 52
+    },
+    "2026": {
+     "net": -23298,
+     "green": 7,
+     "red": 34,
+     "none": 92,
+     "refilled": 29317,
+     "days": 133,
+     "trades": 41
+    }
+   },
+   "N6/4 p0.003 simple E1": {
+    "2023": {
+     "net": -3708,
+     "green": 5,
+     "red": 19,
+     "none": 92,
+     "refilled": 13103,
+     "days": 116,
+     "trades": 24
+    },
+    "2024": {
+     "net": -9442,
+     "green": 12,
+     "red": 34,
+     "none": 123,
+     "refilled": 33408,
+     "days": 169,
+     "trades": 46
+    },
+    "2025": {
+     "net": -24084,
+     "green": 10,
+     "red": 32,
+     "none": 122,
+     "refilled": 29587,
+     "days": 164,
+     "trades": 42
+    },
+    "2026": {
+     "net": -22855,
+     "green": 9,
+     "red": 25,
+     "none": 99,
+     "refilled": 30857,
+     "days": 133,
+     "trades": 34
+    }
+   },
+   "N6/4 p0.003 simple E2": {
+    "2023": {
+     "net": 4813,
+     "green": 9,
+     "red": 15,
+     "none": 92,
+     "refilled": 9739,
+     "days": 116,
+     "trades": 24
+    },
+    "2024": {
+     "net": 4562,
+     "green": 17,
+     "red": 29,
+     "none": 123,
+     "refilled": 25891,
+     "days": 169,
+     "trades": 46
+    },
+    "2025": {
+     "net": -20604,
+     "green": 9,
+     "red": 33,
+     "none": 122,
+     "refilled": 28212,
+     "days": 164,
+     "trades": 42
+    },
+    "2026": {
+     "net": -24992,
+     "green": 8,
+     "red": 26,
+     "none": 99,
+     "refilled": 33083,
+     "days": 133,
+     "trades": 34
+    }
+   },
+   "N6/4 p0.003 pullback E1": {
+    "2023": {
+     "net": -3979,
+     "green": 6,
+     "red": 16,
+     "none": 94,
+     "refilled": 12219,
+     "days": 116,
+     "trades": 22
+    },
+    "2024": {
+     "net": -25555,
+     "green": 9,
+     "red": 34,
+     "none": 126,
+     "refilled": 39420,
+     "days": 169,
+     "trades": 43
+    },
+    "2025": {
+     "net": -27633,
+     "green": 4,
+     "red": 37,
+     "none": 123,
+     "refilled": 35986,
+     "days": 164,
+     "trades": 41
+    },
+    "2026": {
+     "net": -11089,
+     "green": 9,
+     "red": 23,
+     "none": 101,
+     "refilled": 21010,
+     "days": 133,
+     "trades": 32
+    }
+   },
+   "N6/4 p0.003 pullback E2": {
+    "2023": {
+     "net": 1234,
+     "green": 5,
+     "red": 17,
+     "none": 94,
+     "refilled": 9904,
+     "days": 116,
+     "trades": 22
+    },
+    "2024": {
+     "net": -16405,
+     "green": 9,
+     "red": 34,
+     "none": 126,
+     "refilled": 34295,
+     "days": 169,
+     "trades": 43
+    },
+    "2025": {
+     "net": -23059,
+     "green": 8,
+     "red": 33,
+     "none": 123,
+     "refilled": 32432,
+     "days": 164,
+     "trades": 41
+    },
+    "2026": {
+     "net": -7400,
+     "green": 5,
+     "red": 27,
+     "none": 101,
+     "refilled": 18287,
+     "days": 133,
+     "trades": 32
+    }
+   }
+  },
+  "plain calls 10:30/12:00": {
+   "call 10:30 E1": {
+    "2023": {
+     "net": -15556,
+     "green": 34,
+     "red": 82,
+     "none": 0,
+     "refilled": 48340,
+     "days": 116,
+     "trades": 116
+    },
+    "2024": {
+     "net": 8954,
+     "green": 54,
+     "red": 110,
+     "none": 5,
+     "refilled": 121752,
+     "days": 169,
+     "trades": 164
+    },
+    "2025": {
+     "net": -55238,
+     "green": 38,
+     "red": 124,
+     "none": 2,
+     "refilled": 125621,
+     "days": 164,
+     "trades": 162
+    },
+    "2026": {
+     "net": -71260,
+     "green": 25,
+     "red": 105,
+     "none": 3,
+     "refilled": 109860,
+     "days": 133,
+     "trades": 130
+    }
+   },
+   "call 10:30 E2": {
+    "2023": {
+     "net": -22368,
+     "green": 30,
+     "red": 86,
+     "none": 0,
+     "refilled": 55365,
+     "days": 116,
+     "trades": 116
+    },
+    "2024": {
+     "net": -12513,
+     "green": 51,
+     "red": 113,
+     "none": 5,
+     "refilled": 115592,
+     "days": 169,
+     "trades": 164
+    },
+    "2025": {
+     "net": -55322,
+     "green": 42,
+     "red": 120,
+     "none": 2,
+     "refilled": 119903,
+     "days": 164,
+     "trades": 162
+    },
+    "2026": {
+     "net": -61885,
+     "green": 29,
+     "red": 101,
+     "none": 3,
+     "refilled": 100782,
+     "days": 133,
+     "trades": 130
+    }
+   },
+   "call 12:00 E1": {
+    "2023": {
+     "net": -17740,
+     "green": 30,
+     "red": 86,
+     "none": 0,
+     "refilled": 59097,
+     "days": 116,
+     "trades": 116
+    },
+    "2024": {
+     "net": -89710,
+     "green": 35,
+     "red": 131,
+     "none": 3,
+     "refilled": 136126,
+     "days": 169,
+     "trades": 166
+    },
+    "2025": {
+     "net": -51016,
+     "green": 41,
+     "red": 122,
+     "none": 1,
+     "refilled": 111952,
+     "days": 164,
+     "trades": 163
+    },
+    "2026": {
+     "net": -36966,
+     "green": 31,
+     "red": 99,
+     "none": 3,
+     "refilled": 93978,
+     "days": 133,
+     "trades": 130
+    }
+   },
+   "call 12:00 E2": {
+    "2023": {
+     "net": -16942,
+     "green": 33,
+     "red": 83,
+     "none": 0,
+     "refilled": 59157,
+     "days": 116,
+     "trades": 116
+    },
+    "2024": {
+     "net": -61992,
+     "green": 40,
+     "red": 126,
+     "none": 3,
+     "refilled": 133402,
+     "days": 169,
+     "trades": 166
+    },
+    "2025": {
+     "net": -51837,
+     "green": 38,
+     "red": 125,
+     "none": 1,
+     "refilled": 108896,
+     "days": 164,
+     "trades": 163
+    },
+    "2026": {
+     "net": -15104,
+     "green": 34,
+     "red": 96,
+     "none": 3,
+     "refilled": 93018,
+     "days": 133,
+     "trades": 130
+    }
+   }
+  }
+ },
+ "loyo_real": {
+  "2023": {
+   "pick": "N4/3 p0.003 simple E2",
+   "net": -2597,
+   "green": 10,
+   "red": 15,
+   "none": 91,
+   "refilled": 12521,
+   "days": 116,
+   "trades": 25
+  },
+  "2024": {
+   "pick": "N4/3 p0.003 simple E1",
+   "net": -5983,
+   "green": 18,
+   "red": 36,
+   "none": 115,
+   "refilled": 43565,
+   "days": 169,
+   "trades": 54
+  },
+  "2025": {
+   "pick": "N4/3 p0.003 simple E2",
+   "net": -22075,
+   "green": 17,
+   "red": 37,
+   "none": 110,
+   "refilled": 50595,
+   "days": 164,
+   "trades": 54
+  },
+  "2026": {
+   "pick": "N4/3 p0.003 simple E2",
+   "net": -19243,
+   "green": 11,
+   "red": 28,
+   "none": 94,
+   "refilled": 44740,
+   "days": 133,
+   "trades": 39
+  },
+  "sum": {
+   "net": -49898,
+   "red": 116,
+   "green": 56
+  }
+ },
+ "loyo_controls": {
+  "NULL random side": {
+   "2023": {
+    "pick": "N4/3 p0.003 pullback E1",
+    "net": -11855,
+    "green": 2,
+    "red": 21,
+    "none": 93,
+    "refilled": 13679,
+    "days": 116,
+    "trades": 23
+   },
+   "2024": {
+    "pick": "N6/4 p0.003 simple E1",
+    "net": -15920,
+    "green": 14,
+    "red": 39,
+    "none": 116,
+    "refilled": 44571,
+    "days": 169,
+    "trades": 53
+   },
+   "2025": {
+    "pick": "N4/3 p0.003 pullback E1",
+    "net": -28391,
+    "green": 7,
+    "red": 42,
+    "none": 115,
+    "refilled": 37726,
+    "days": 164,
+    "trades": 49
+   },
+   "2026": {
+    "pick": "N4/3 p0.003 pullback E1",
+    "net": -19962,
+    "green": 8,
+    "red": 27,
+    "none": 98,
+    "refilled": 32874,
+    "days": 133,
+    "trades": 35
+   },
+   "sum": {
+    "net": -76128,
+    "red": 129,
+    "green": 31
+   }
+  },
+  "matched random days": {
+   "2023": {
+    "pick": "N4/3 p0.003 pullback E2",
+    "net": 1368,
+    "green": 7,
+    "red": 16,
+    "none": 93,
+    "refilled": 9533,
+    "days": 116,
+    "trades": 23
+   },
+   "2024": {
+    "pick": "N4/3 p0.003 pullback E2",
+    "net": 13152,
+    "green": 15,
+    "red": 26,
+    "none": 128,
+    "refilled": 22051,
+    "days": 169,
+    "trades": 41
+   },
+   "2025": {
+    "pick": "N4/3 p0.003 pullback E2",
+    "net": -16099,
+    "green": 9,
+    "red": 32,
+    "none": 123,
+    "refilled": 23790,
+    "days": 164,
+    "trades": 41
+   },
+   "2026": {
+    "pick": "N4/3 p0.003 pullback E2",
+    "net": -9020,
+    "green": 7,
+    "red": 23,
+    "none": 103,
+    "refilled": 20077,
+    "days": 133,
+    "trades": 30
+   },
+   "sum": {
+    "net": -10599,
+    "red": 97,
+    "green": 38
+   }
+  },
+  "plain calls 10:30/12:00": {
+   "2023": {
+    "pick": "call 10:30 E1",
+    "net": -15556,
+    "green": 34,
+    "red": 82,
+    "none": 0,
+    "refilled": 48340,
+    "days": 116,
+    "trades": 116
+   },
+   "2024": {
+    "pick": "call 12:00 E2",
+    "net": -61992,
+    "green": 40,
+    "red": 126,
+    "none": 3,
+    "refilled": 133402,
+    "days": 169,
+    "trades": 166
+   },
+   "2025": {
+    "pick": "call 10:30 E1",
+    "net": -55238,
+    "green": 38,
+    "red": 124,
+    "none": 2,
+    "refilled": 125621,
+    "days": 164,
+    "trades": 162
+   },
+   "2026": {
+    "pick": "call 10:30 E1",
+    "net": -71260,
+    "green": 25,
+    "red": 105,
+    "none": 3,
+    "refilled": 109860,
+    "days": 133,
+    "trades": 130
+   },
+   "sum": {
+    "net": -204046,
+    "red": 437,
+    "green": 137
+   }
+  }
+ },
+ "robust": {
+  "stress 400": -82980,
+  "1 minute late": -60126
+ },
+ "wallets_heldout_picks": {
+  "A 15k 1 lot": {
+   "by_year": [
+    -2597,
+    -5983,
+    -22075,
+    -19243
+   ],
+   "won": 101523,
+   "refilled": 151421,
+   "net": -49898,
+   "w/l/none": [
+    56,
+    116,
+    570
+   ],
+   "worst": -2994,
+   "losing_years": 4
+  },
+  "B 20k 1 lot": {
+   "by_year": [
+    -2597,
+    -5949,
+    -21944,
+    -22977
+   ],
+   "won": 101682,
+   "refilled": 155149,
+   "net": -53467,
+   "w/l/none": [
+    56,
+    117,
+    569
+   ],
+   "worst": -3723,
+   "losing_years": 4
+  },
+  "C 30k sized": {
+   "by_year": [
+    -5518,
+    -717,
+    -29399,
+    -35250
+   ],
+   "won": 169815,
+   "refilled": 240699,
+   "net": -70884,
+   "w/l/none": [
+    56,
+    117,
+    569
+   ],
+   "worst": -5986,
+   "losing_years": 4
+  },
+  "G0": {
+   "by_year": [
+    -2597,
+    -5983,
+    -22075,
+    -19243
+   ],
+   "won": 101523,
+   "refilled": 151421,
+   "net": -49898,
+   "w/l/none": [
+    56,
+    116,
+    570
+   ],
+   "worst": -2994,
+   "losing_years": 4
+  },
+  "G2": {
+   "by_year": [
+    -2597,
+    -5983,
+    -22075,
+    -19243
+   ],
+   "won": 101523,
+   "refilled": 151421,
+   "net": -49898,
+   "w/l/none": [
+    56,
+    116,
+    570
+   ],
+   "worst": -2994,
+   "losing_years": 4
+  },
+  "G3 (Gold)": {
+   "by_year": [
+    -2597,
+    -5983,
+    -22075,
+    -19243
+   ],
+   "won": 101523,
+   "refilled": 151421,
+   "net": -49898,
+   "w/l/none": [
+    56,
+    116,
+    570
+   ],
+   "worst": -2994,
+   "losing_years": 4
+  },
+  "G5": {
+   "by_year": [
+    -2597,
+    -5983,
+    -22075,
+    -19243
+   ],
+   "won": 101523,
+   "refilled": 151421,
+   "net": -49898,
+   "w/l/none": [
+    56,
+    116,
+    570
+   ],
+   "worst": -2994,
+   "losing_years": 4
+  }
+ },
+ "verdict": {
+  "held_out_sum": -49898,
+  "held_out_years": [
+   -2597,
+   -5983,
+   -22075,
+   -19243
+  ],
+  "beats_controls": {
+   "NULL random side": true,
+   "matched random days": false,
+   "plain calls 10:30/12:00": true
+  },
+  "robust": {
+   "stress 400": -82980,
+   "1 minute late": -60126
+  },
+  "PASS": false
+ }
+}

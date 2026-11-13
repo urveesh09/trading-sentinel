@@ -1,3 +1,31 @@
+## November 13 (night of Nov 12) - Deployed: Production `82b08371` (PR #137: SN Gold v5 paper module)
+
+**Authority:** the owner's word, Nov 12 night: "push that merge that and deploy it in production ... restart and rebuild everything right away"; and "if you think 30,000 starting amount is better than I am fine with that".
+
+**Release:** PR #137 (`codex/production-correction-hedge-p0` at `bae3a524` → `evolve/smart-strategies`), merged as `82b08371`.
+- Runtime: `python-engine` only (`sn_gold.py`, `config.py` `SN_GOLD_*`, two guarded hooks in `fno_orchestrator.py`).
+- New tables only. No migration, no `.env` edit.
+- **Paper, no orders.**
+
+**Backup:** none, by the owner's rule (code-only release; new tables only).
+
+**Deploy (runbook):**
+- Fast-forward to `82b08371`.
+- Built python-engine, node-gateway and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-12T17:45:01Z`.
+- Stopped autoheal, force-recreated all three, restarted nginx, started autoheal.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\82b08371….json`.
+
+**After (inside the engine):**
+- `SN_GOLD_ENABLED` True, start ₹30,000, 3 steps, day loss 0.20, stand 0.85, ITM by money per lot 17,500 / 20,000, scale-in at 1 ATR, extend at +25% with 3 ATR.
+- `FNO_BOOK` N11; `FNO_LIVE_TEST_ENABLED` False.
+- Gateway, agent and autoheal healthy; the engine and nginx were finishing start-up at the check.
+
+**Next (Nov 13):**
+- On the first N11 paper signal, check `sn_gold_positions` (or an `sn_gold_skips` reason) and the owner's buy message.
+- After 15:20, check `sn_gold_days` and the summary message.
+
+**Rollback:** `SN_GOLD_ENABLED=false` and recreate the engine, or redeploy `3ece6a8b`.
+
 ## November 13 - SN Gold v5 paper module (Dev, for deploy on the owner's word): `python-engine/sn_gold.py`
 
 **The owner, Nov 13:** "whatever configuration ... of the best Gold that we have set it up to run tomorrow as an independent module ... push that merge that and deploy it in production ... restart and rebuild everything right away". Starting amount and refill rules were left to the agent.
@@ -7952,3 +7980,135 @@ string and avoids no-op writes. Focused acceptance: seven Python contract tests
 and all 43 Node mirror tests pass. The two already-present local timestamp-only
 fixture edits remain deliberately unstaged; a clean checkout running the new
 producer will no longer create them.
+
+
+## SN92–SN100 research (Nov 13, 2026; Dev only, research only)
+
+- **Problem:** the owner asked for the other agent's SN92–SN100 proposal and component review to be built and tested against SN Gold v5 at every wallet, cap and start.
+- **Files:** `docs/research/fno/2026-11-13-sn92/` (`PLAN.md`, `common.py`, `sn92.py`–`sn100.py`, `levers.py`, `README.md`, `results-*.json`, `logs/`).
+  - `common.py` adds a shared-account day player (Gold priority, companion sold at the bid when Gold signals) on top of the SN51 lab.
+  - It reproduces Gold v5 exactly at every wallet.
+- **Data:** the sealed 1-minute caches, plus the 15-minute NIFTY 50 stock bars already on disk (Kite snapshot Jan–Jul 2026, Production export Aug–Nov 2026), India VIX, and SN10's expiry 10-second days. No download, no broker call.
+- **Result:** no change to Gold.
+  - Every empty-day companion (drift calls, failed breakouts, priced straddles / iron flies, NIFTY 50 components, futures volume, expiry mornings) is NOT PROVEN held out.
+  - Gold sizing variants do not survive +₹400 / 1-minute-late.
+  - Adding the companions to Gold's account cuts the ₹30k growth result by ₹2.2–5.3 lakh.
+  - One forward-watch item: SN95-L (10:00 cheap straddle on Gold-free days), frozen in the README.
+- **Verification:**
+  - harness parity with v5 (all wallets);
+  - plan and scripts frozen at `b4295b1c` before any scoring run;
+  - each scorer refuses to run twice;
+  - a smoke test on six sessions before freezing.
+- **Configuration / migration / runtime:** none. Production unchanged (`82b08371`, SN Gold v5 paper, ₹30k). Pushed to the Dev branch; nothing deployed.
+- **Next:** SN Gold v5 forward check (`docs/research/fno/sn-gold/FORWARD_V5.md`). Owner levers: start amount, `SN_GOLD_STEP_TRIGGER=0.5`. New information sources only on the owner's word.
+
+
+## SN101–SN120 research (Nov 13, 2026; Dev only, research only)
+
+- **Problem:** the owner asked for the other agent's SN101–SN110, then SN111–SN120, tested correctly.
+- **Folders:** `docs/research/fno/2026-11-13-sn101` (phase A), `…-sn111` (phase B), `…-sn116` (phase C). Each has a `PLAN.md` frozen before scoring, its scripts, `README.md` and `results-*.json`.
+  - Freezes `728f15f8`, `a45b401d`, `2a3683bd`; results `24e769bc`, `21f2bba8` and the commit adding this section.
+  - They import the SN92 harness (Gold v5 parity asserted) and never edit frozen code.
+- **Data:**
+  - sealed 1-minute caches;
+  - Production's forward-panel quote archive and paper-position replay (`sentinel-operations/.../exports/20261112T103005Z`, read in place, SHA-256 checked against its manifest, Nov 12 excluded as unsealed);
+  - N012's Round 36 SENSEX panel (hash-checked);
+  - the 15-minute stock bars.
+  - No download, broker call or Production access.
+- **Corrections after scoring, kept on record:** SN103 and SN109 now require fresh exit quotes (v1 files kept); SN106 had a print crash.
+- **Results:**
+  - no Gold v6, and no change to Gold;
+  - the straddle signal is real (p = 0.002) but thin;
+  - costs are realistic (real quotes, paper fills);
+  - extra capital earns ~27× more in Gold than in a companion;
+  - Gold beats all 400 random-entry Golds;
+  - real money without refills survived every monthly start, but can halve in a bad first year.
+- **Configuration / migration / runtime:** none. Production unchanged (`82b08371`, SN Gold v5 paper, ₹30k). Pushed to the Dev branch only.
+- **Next:**
+  - Gold v5 forward check;
+  - the SN95-L forward watch, scored offline from the quote archive at ≥ 20 signals;
+  - owner levers (start, `SN_GOLD_STEP_TRIGGER=0.5`, cap) only on the owner's word.
+
+
+## SN121–SN130 research (Nov 13, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn121`, plan frozen `cecf2f8a`.
+- **Data:**
+  - the minute caches;
+  - Production's quote archive;
+  - the frozen Nov 4 partner extract (`docs/research/partner/2026-11-04-assistance-review/_local`, SHA-256 checked). Results carry shapes and ratios only, no partner rupee totals.
+- **Results:**
+  - no gap-day strategy passed;
+  - running every candidate every gap day loses ₹17.6 lakh in four years;
+  - the partner's entries hold a 1-minute edge, but they over-trade after the day's peak;
+  - a 30% give-back stop on their own sequence cuts their 7-day loss by ~71%.
+  - New forward watch SN126-L (hot-day big bursts).
+- **Proposed for the partner coach, not built:** give-back alert, friction counter, edge clock. Messages only; it needs the owner's word and a normal Dev → PR → deploy.
+- **Configuration / migration / runtime:** none. Production unchanged.
+
+
+## Partner give-back stop (SN121 finding, Nov 13, 2026; Dev, not deployed)
+
+- **What:** one partner message, "🛑 Stop for today and keep your profit".
+  - **When:** once the day has been up at least 5% of the day's cash and has then given back 30% of its best. The day's value is booked trades plus open trades at their displayed bids.
+  - **Plain words:** once you're up ₹1,250 on ₹25k, don't give back more than about a third of your best.
+  - **Repeats:** told again only after a new best at least 20% higher.
+  - **Scope:** messages only; the partner decides; it never trades.
+- **Why:** SN121 (`docs/research/fno/2026-11-13-sn121`). On the partner's 7 recorded sessions:
+  - the day's best was ≥ +20% of ₹25k on 5 days, but only 3 ended green, after a median of 22 more trades;
+  - stopping at a 30% give-back cut the 7-day loss by ~71%.
+- **Code:**
+  - `partner_profit_protection.giveback_stop` / `giveback_stop_text`;
+  - `partner_watch._giveback_item` (tick step 4);
+  - `_b_day` rebuilds it at send time and drops it if the day has recovered above the line.
+  - It replaces the N04-B give-back steps for the same best. The N07 profit floor is unchanged.
+- **Settings:** `PARTNER_WATCH_GIVEBACK_STOP_ENABLED` (True), `PARTNER_WATCH_GIVEBACK_ARM` (0.05), `PARTNER_WATCH_GIVEBACK_STOP` (0.30). Rollback: `PARTNER_WATCH_GIVEBACK_STOP_ENABLED=false`. No migration.
+- **Tests:**
+  - `tests/test_partner_giveback_stop.py` (8);
+  - the N04-B step test now runs with the stop off;
+  - partner suites 181 passed;
+  - full engine suite at commit time (see the commit message).
+- **Status:** Dev, pushed. Deployment after market hours on the owner's word.
+
+
+## SN131–SN150 Smart Sentinel research (Nov 13, 2026; Dev only, research only)
+
+- **Folders:** `docs/research/fno/2026-11-13-sn131` (phase D, freeze `1df2dd70`) and `…-sn141` (phase E, freeze `f63a658e`).
+- **Engine:** `sm.py`. A minute dataset (234,472 rows, 44 features, executable CE / PE labels), quarterly walk-forward LightGBM, a policy simulator.
+- **Environment:** research venv `C:\Users\Urveesh\sentinel-ml-venv`. It is outside the repo and reuses the engine's site-packages through a `.pth`. `winvenv` is unchanged.
+- **Result:** no learned policy passes. The learners choose not to trade gap days; their trades are no better than random or a shuffled-label model.
+- **Resource asks, for the owner:**
+  - live full-chain tick recorder;
+  - NIFTY 2019 – 2022 history (probe first);
+  - small real broker fills.
+- **Configuration / migration / runtime:** none.
+
+
+## SN151–SN160 hot-day research (Nov 13, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn151` (freeze `5f42b20e`).
+- **Result:** no new gap-day strategy passes.
+  - The 10:00 hot-day straddle (SN95-L) and hot-day bursts (SN126-L) stay forward watches.
+  - Their combined sleeve made +₹19,794 in four years, with intervals that include zero.
+- **Configuration / migration / runtime:** none. Production unchanged.
+
+
+## TR01 live tick recorder (Nov 13, 2026; Dev, for deploy on the owner's word that evening)
+
+- **Problem:** the minute archive (`research_quote_collector`) keeps one REST snapshot a minute of ~11 strikes. Gap-day research (SN121–SN160) could not see what a scalper sees: every change of the whole near-the-money chain. Owner, Nov 13: "the system records those things anything and everything that you want … deploy it in production right now".
+- **Module:** `python-engine/tick_recorder.py`, one Kite websocket connection on the owner's key in `full` mode (price, volumes, OI, 5 bids and 5 asks).
+  - **Instruments:** NIFTY 50, SENSEX and INDIA VIX; each index's front and next future; options on the nearest 3 expiries, 20 strikes either side of the front future, CE and PE (~500 instruments). The window widens when the future moves half a window and never narrows. Cap 2,900 (Kite allows 3,000).
+  - **Files:** `/data/research/ticks/<day>/`:
+    - `chunk-<HHMMSS>-<n>.bin.xz`: 60-second xz chunks of `>qH` (receipt ns, length) + Kite's packet bytes, grouped by instrument;
+    - `instruments.jsonl`, `events.jsonl` (connects, drops, refusals, limits: gaps are explicit);
+    - `manifest.json` (sha256, records, first/last receipt per chunk). `read_chunk()` / `decode_packet()` decode them.
+  - **Limits:** 600 MiB a day and 12 GiB in all (recording stops with an event and one owner line; nothing is deleted to make room); day folders older than 35 days are removed. The `/data` disk lives on the PC's C: drive (52 GB free on Nov 13).
+  - **Runs:** 09:00–15:41 IST on trading days with a token set today, started by the scheduler job `tick_recorder_ensure` (every minute 09:00–15:59, second 40). A drop reconnects (1 s doubling to 60 s), a new login reconnects with the new token, a 401/403 waits 15 minutes and tells the owner once.
+  - **Never:** an order, a REST call (no share of the quote budget), or an input to any trading decision. The token is never logged. Kite's text frames (the owner's order updates) are counted, never stored.
+  - **Owner line after the close:** "📼 Tick recorder <day>: N contracts, N price changes, N MB, live N min".
+- **Config:** `TICK_RECORDER_ENABLED` (default on), `_URL`, `_PATH`, `_EXPIRIES` 3, `_STRIKES` 20, `_CHUNK_SEC` 60, `_DAY_MAX_BYTES` 600 MiB, `_TOTAL_MAX_BYTES` 12 GiB, `_RETENTION_DAYS` 35, `_DAILY_NOTE`. No migration; no stored data changes.
+- **Size estimate:** simulated 500-instrument stream, ~40 bytes a record compressed. At 350 changes a second that is ~320 MB a day. The first real day sets the true figure.
+- **Tests:** full engine suite 6,406 passed, 4 skipped (exit 0, 11 min 24 s). `tests/test_tick_recorder.py` (13, incl. a contract book ready late): packet layout, frames, chunk round trip with sha256, limits and pruning, universe widening and cap, a whole session, a drop, a new login, a refusal, the day limit, the scheduler gate. The golden job lists (`main_surface_golden.json`, `add_job_census_golden.json`) each gain only `tick_recorder_ensure`; its handler carries the calendar-gate marker (the gate is in `ensure_tick`).
+- **Rollback:** set `TICK_RECORDER_ENABLED=false` in Production `.env` and recreate python-engine, or revert the commit. Deleting `/data/research/ticks` removes all recorded data (the owner's call).
+- **Acceptance on the first trading day (Mon Nov 16):** `events.jsonl` shows `connected` before 09:15, chunks every minute, the owner line after 15:41, and no `tick_recorder_*` errors in the engine log. Also check the day's MB against the limits.
+- **Remaining work:** measure the real size and tick rate on Nov 16 and re-set the limits; then the first tick-level studies (spreads across the chain, sub-minute moves on hot days).

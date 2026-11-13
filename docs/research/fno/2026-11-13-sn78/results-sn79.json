@@ -1,0 +1,199 @@
+{
+ "train_days": 77,
+ "test_days": 75,
+ "test_gold_free_known": 54,
+ "C3": {
+  "fam": {
+   "kind": "TWAPX",
+   "buf": 1.0
+  },
+  "stop": 0.2,
+  "target": 0.3,
+  "act": 0.0,
+  "give": 0.5,
+  "time": 45,
+  "max_trades": 1
+ },
+ "C3_train": {
+  "net": 9097,
+  "trades": 71,
+  "days": 71,
+  "won": 36,
+  "lost": 35,
+  "none": 0,
+  "worst": -3041
+ },
+ "N": {
+  "fam": {
+   "kind": "RANDOM",
+   "p": 0.01,
+   "seed": 170851
+  },
+  "stop": 0.2,
+  "target": 0.6,
+  "act": 0.0,
+  "give": 0.5,
+  "time": 45,
+  "max_trades": 1
+ },
+ "N_train": {
+  "net": 13339,
+  "trades": 71,
+  "days": 71,
+  "won": 32,
+  "lost": 39,
+  "none": 0,
+  "worst": -3424
+ },
+ "scores": {
+  "C1|100|all": {
+   "net": -28579,
+   "trades": 75,
+   "days": 75,
+   "won": 24,
+   "lost": 51,
+   "none": 0,
+   "worst": -3968
+  },
+  "C1|100|gold_free": {
+   "net": -20856,
+   "trades": 54,
+   "days": 54,
+   "won": 16,
+   "lost": 38,
+   "none": 0,
+   "worst": -3968
+  },
+  "C1|0|all": {
+   "net": -21079,
+   "trades": 75,
+   "days": 75,
+   "won": 25,
+   "lost": 50,
+   "none": 0,
+   "worst": -3868
+  },
+  "C1|0|gold_free": {
+   "net": -15456,
+   "trades": 54,
+   "days": 54,
+   "won": 17,
+   "lost": 37,
+   "none": 0,
+   "worst": -3868
+  },
+  "C2|100|all": {
+   "net": -51078,
+   "trades": 224,
+   "days": 75,
+   "won": 33,
+   "lost": 42,
+   "none": 0,
+   "worst": -5769
+  },
+  "C2|100|gold_free": {
+   "net": -30697,
+   "trades": 162,
+   "days": 54,
+   "won": 25,
+   "lost": 29,
+   "none": 0,
+   "worst": -5769
+  },
+  "C2|0|all": {
+   "net": -28678,
+   "trades": 224,
+   "days": 75,
+   "won": 36,
+   "lost": 39,
+   "none": 0,
+   "worst": -5469
+  },
+  "C2|0|gold_free": {
+   "net": -14497,
+   "trades": 162,
+   "days": 54,
+   "won": 25,
+   "lost": 29,
+   "none": 0,
+   "worst": -5469
+  },
+  "C3|100|all": {
+   "net": -28579,
+   "trades": 75,
+   "days": 75,
+   "won": 24,
+   "lost": 51,
+   "none": 0,
+   "worst": -3968
+  },
+  "C3|100|gold_free": {
+   "net": -20856,
+   "trades": 54,
+   "days": 54,
+   "won": 16,
+   "lost": 38,
+   "none": 0,
+   "worst": -3968
+  },
+  "C3|0|all": {
+   "net": -21079,
+   "trades": 75,
+   "days": 75,
+   "won": 25,
+   "lost": 50,
+   "none": 0,
+   "worst": -3868
+  },
+  "C3|0|gold_free": {
+   "net": -15456,
+   "trades": 54,
+   "days": 54,
+   "won": 17,
+   "lost": 37,
+   "none": 0,
+   "worst": -3868
+  },
+  "N|100|all": {
+   "net": -7745,
+   "trades": 74,
+   "days": 75,
+   "won": 32,
+   "lost": 42,
+   "none": 1,
+   "worst": -3310
+  },
+  "N|100|gold_free": {
+   "net": -10085,
+   "trades": 54,
+   "days": 54,
+   "won": 22,
+   "lost": 32,
+   "none": 0,
+   "worst": -3310
+  },
+  "N|0|all": {
+   "net": -345,
+   "trades": 74,
+   "days": 75,
+   "won": 34,
+   "lost": 40,
+   "none": 1,
+   "worst": -3210
+  },
+  "N|0|gold_free": {
+   "net": -4685,
+   "trades": 54,
+   "days": 54,
+   "won": 23,
+   "lost": 31,
+   "none": 0,
+   "worst": -3210
+  }
+ },
+ "verdict": {
+  "C1": "NOT PROVEN",
+  "C2": "NOT PROVEN",
+  "C3": "NOT PROVEN"
+ }
+}

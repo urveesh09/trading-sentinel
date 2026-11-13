@@ -1,0 +1,213 @@
+{
+ "lot_sizes": [
+  65
+ ],
+ "spread": {
+  "0-50": {
+   "quotes": 54874,
+   "real_median": 0.1,
+   "real_p75": 0.1,
+   "model": 0.1,
+   "real_mean_over_model_mean": 0.92
+  },
+  "50-100": {
+   "quotes": 84950,
+   "real_median": 0.2,
+   "real_p75": 0.25,
+   "model": 0.2,
+   "real_mean_over_model_mean": 1.0
+  },
+  "100-150": {
+   "quotes": 101000,
+   "real_median": 0.35,
+   "real_p75": 0.4,
+   "model": 0.3,
+   "real_mean_over_model_mean": 1.09
+  },
+  "150-200": {
+   "quotes": 99359,
+   "real_median": 0.45,
+   "real_p75": 0.55,
+   "model": 0.45,
+   "real_mean_over_model_mean": 1.02
+  },
+  "200-300": {
+   "quotes": 158701,
+   "real_median": 0.65,
+   "real_p75": 0.8,
+   "model": 0.6,
+   "real_mean_over_model_mean": 1.13
+  },
+  "300-450": {
+   "quotes": 79096,
+   "real_median": 1.1,
+   "real_p75": 1.35,
+   "model": 0.8,
+   "real_mean_over_model_mean": 1.46
+  },
+  "450-up": {
+   "quotes": 382,
+   "real_median": 1.85,
+   "real_p75": 2.15,
+   "model": 0.9,
+   "real_mean_over_model_mean": 2.06
+  }
+ },
+ "spread_ratio_by_clock": {
+  "09:15-09:45": 1.11,
+  "09:45-12:00": 1.08,
+  "12:00-14:00": 1.08,
+  "14:00-15:30": 1.08
+ },
+ "impact": {
+  "1": {
+   "minutes": 353780,
+   "too_thin_share": 0.0,
+   "buy_above_mid_per_lot_median": 14.6,
+   "sell_below_mid_per_lot_median": 14.6,
+   "round_trip_vs_mid_per_lot_median": 29.2,
+   "round_trip_p90": 48.8
+  },
+  "2": {
+   "minutes": 353780,
+   "too_thin_share": 0.0,
+   "buy_above_mid_per_lot_median": 14.6,
+   "sell_below_mid_per_lot_median": 14.6,
+   "round_trip_vs_mid_per_lot_median": 29.2,
+   "round_trip_p90": 52.0
+  },
+  "3": {
+   "minutes": 353780,
+   "too_thin_share": 0.0,
+   "buy_above_mid_per_lot_median": 14.6,
+   "sell_below_mid_per_lot_median": 14.6,
+   "round_trip_vs_mid_per_lot_median": 29.2,
+   "round_trip_p90": 53.1
+  },
+  "6": {
+   "minutes": 353780,
+   "too_thin_share": 0.002,
+   "buy_above_mid_per_lot_median": 15.7,
+   "sell_below_mid_per_lot_median": 15.7,
+   "round_trip_vs_mid_per_lot_median": 31.4,
+   "round_trip_p90": 56.3
+  }
+ },
+ "latency": {
+  "quote_age_median_s": 1.09,
+  "quote_age_p95_s": 2.09,
+  "one_minute_abs_mid_move_per_lot_median": 134.9,
+  "one_minute_abs_mid_move_per_lot_mean": 201.1
+ },
+ "gold_trades": [
+  {
+   "day": "2026-09-24",
+   "expert": "TPB",
+   "lots": 1,
+   "model_ask": 153.25,
+   "real_ask": 156.0,
+   "model_exit": 257.7,
+   "real_exit_bid": 256.65,
+   "entry_diff_per_lot": 178.8,
+   "exit_diff_per_lot": 68.3
+  },
+  {
+   "day": "2026-09-28",
+   "expert": "OR20",
+   "lots": 1,
+   "model_ask": 144.25,
+   "real_ask": 144.35,
+   "model_exit": 163.85000000000002,
+   "real_exit_bid": 164.95,
+   "entry_diff_per_lot": 6.5,
+   "exit_diff_per_lot": -71.5
+  },
+  {
+   "day": "2026-09-28",
+   "expert": "SHIPPED",
+   "lots": 1,
+   "model_ask": 128.1,
+   "real_ask": 127.1,
+   "model_exit": 172.35000000000002,
+   "real_exit_bid": 171.35,
+   "entry_diff_per_lot": -65.0,
+   "exit_diff_per_lot": 65.0
+  },
+  {
+   "day": "2026-10-05",
+   "expert": "EFF",
+   "lots": 1,
+   "model_ask": 215.7,
+   "real_ask": 215.1,
+   "model_exit": 255.9,
+   "real_exit_bid": 256.95,
+   "entry_diff_per_lot": -39.0,
+   "exit_diff_per_lot": -68.2
+  },
+  {
+   "day": "2026-10-07",
+   "expert": "OR20",
+   "lots": 1,
+   "model_ask": 204.2,
+   "real_ask": 197.95,
+   "model_exit": 179.20000000000002,
+   "real_exit_bid": 185.5,
+   "entry_diff_per_lot": -406.2,
+   "exit_diff_per_lot": -409.5
+  },
+  {
+   "day": "2026-10-08",
+   "expert": "OR20",
+   "lots": 1,
+   "model_ask": 219.15,
+   "real_ask": 216.0,
+   "model_exit": 371.6,
+   "real_exit_bid": 354.2,
+   "entry_diff_per_lot": -204.8,
+   "exit_diff_per_lot": 1131.0
+  },
+  {
+   "day": "2026-10-09",
+   "expert": "EFF",
+   "lots": 1,
+   "model_ask": 229.95,
+   "real_ask": 225.65,
+   "model_exit": 221.70000000000002,
+   "real_exit_bid": 221.35,
+   "entry_diff_per_lot": -279.5,
+   "exit_diff_per_lot": 22.8
+  },
+  {
+   "day": "2026-10-14",
+   "missing": true
+  },
+  {
+   "day": "2026-10-21",
+   "expert": "OR20",
+   "lots": 1,
+   "model_ask": 225.95,
+   "real_ask": 229.15,
+   "model_exit": 414.05,
+   "real_exit_bid": 343.4,
+   "entry_diff_per_lot": 208.0,
+   "exit_diff_per_lot": 4592.3
+  },
+  {
+   "day": "2026-10-23",
+   "expert": "TPB",
+   "lots": 1,
+   "model_ask": 193.95,
+   "real_ask": 190.85,
+   "model_exit": 222.3,
+   "real_exit_bid": 230.2,
+   "entry_diff_per_lot": -201.5,
+   "exit_diff_per_lot": -513.5
+  }
+ ],
+ "gold_summary": {
+  "trades_in_archive": 10,
+  "priced": 9,
+  "mean_entry_real_minus_model_per_lot": -89.2,
+  "mean_exit_model_minus_real_per_lot": 535.2
+ }
+}

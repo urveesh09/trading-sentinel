@@ -1,0 +1,2127 @@
+{
+ "real": {
+  "buf0.0 W15 retest mid": {
+   "2023": {
+    "net": -15961,
+    "green": 6,
+    "red": 28,
+    "none": 82,
+    "refilled": 19975,
+    "days": 116,
+    "trades": 34
+   },
+   "2024": {
+    "net": -21630,
+    "green": 28,
+    "red": 37,
+    "none": 104,
+    "refilled": 50054,
+    "days": 169,
+    "trades": 65
+   },
+   "2025": {
+    "net": -22430,
+    "green": 24,
+    "red": 49,
+    "none": 91,
+    "refilled": 51534,
+    "days": 164,
+    "trades": 73
+   },
+   "2026": {
+    "net": -21912,
+    "green": 24,
+    "red": 35,
+    "none": 74,
+    "refilled": 43193,
+    "days": 133,
+    "trades": 59
+   }
+  },
+  "buf0.0 W15 retest far": {
+   "2023": {
+    "net": -10338,
+    "green": 12,
+    "red": 36,
+    "none": 68,
+    "refilled": 24665,
+    "days": 116,
+    "trades": 48
+   },
+   "2024": {
+    "net": -49579,
+    "green": 25,
+    "red": 59,
+    "none": 85,
+    "refilled": 82597,
+    "days": 169,
+    "trades": 84
+   },
+   "2025": {
+    "net": -41316,
+    "green": 18,
+    "red": 65,
+    "none": 81,
+    "refilled": 69389,
+    "days": 164,
+    "trades": 83
+   },
+   "2026": {
+    "net": -2523,
+    "green": 26,
+    "red": 41,
+    "none": 66,
+    "refilled": 50189,
+    "days": 133,
+    "trades": 67
+   }
+  },
+  "buf0.0 W15 direct mid": {
+   "2023": {
+    "net": -16202,
+    "green": 13,
+    "red": 44,
+    "none": 59,
+    "refilled": 26996,
+    "days": 116,
+    "trades": 57
+   },
+   "2024": {
+    "net": -32256,
+    "green": 43,
+    "red": 65,
+    "none": 61,
+    "refilled": 77981,
+    "days": 169,
+    "trades": 108
+   },
+   "2025": {
+    "net": -19324,
+    "green": 35,
+    "red": 65,
+    "none": 64,
+    "refilled": 63133,
+    "days": 164,
+    "trades": 100
+   },
+   "2026": {
+    "net": -22565,
+    "green": 34,
+    "red": 55,
+    "none": 44,
+    "refilled": 57558,
+    "days": 133,
+    "trades": 89
+   }
+  },
+  "buf0.0 W15 direct far": {
+   "2023": {
+    "net": -14484,
+    "green": 16,
+    "red": 57,
+    "none": 43,
+    "refilled": 35119,
+    "days": 116,
+    "trades": 73
+   },
+   "2024": {
+    "net": -56708,
+    "green": 33,
+    "red": 83,
+    "none": 53,
+    "refilled": 103357,
+    "days": 169,
+    "trades": 116
+   },
+   "2025": {
+    "net": -18351,
+    "green": 30,
+    "red": 73,
+    "none": 61,
+    "refilled": 72040,
+    "days": 164,
+    "trades": 103
+   },
+   "2026": {
+    "net": -2465,
+    "green": 30,
+    "red": 63,
+    "none": 40,
+    "refilled": 65012,
+    "days": 133,
+    "trades": 93
+   }
+  },
+  "buf0.0 W30 retest mid": {
+   "2023": {
+    "net": -20579,
+    "green": 10,
+    "red": 34,
+    "none": 72,
+    "refilled": 28125,
+    "days": 116,
+    "trades": 44
+   },
+   "2024": {
+    "net": -26582,
+    "green": 29,
+    "red": 39,
+    "none": 101,
+    "refilled": 55085,
+    "days": 169,
+    "trades": 68
+   },
+   "2025": {
+    "net": -23380,
+    "green": 29,
+    "red": 56,
+    "none": 79,
+    "refilled": 61805,
+    "days": 164,
+    "trades": 85
+   },
+   "2026": {
+    "net": -23152,
+    "green": 29,
+    "red": 42,
+    "none": 62,
+    "refilled": 52930,
+    "days": 133,
+    "trades": 71
+   }
+  },
+  "buf0.0 W30 retest far": {
+   "2023": {
+    "net": -12866,
+    "green": 17,
+    "red": 43,
+    "none": 56,
+    "refilled": 32877,
+    "days": 116,
+    "trades": 60
+   },
+   "2024": {
+    "net": -52206,
+    "green": 28,
+    "red": 61,
+    "none": 80,
+    "refilled": 87628,
+    "days": 169,
+    "trades": 89
+   },
+   "2025": {
+    "net": -33040,
+    "green": 23,
+    "red": 72,
+    "none": 69,
+    "refilled": 79660,
+    "days": 164,
+    "trades": 95
+   },
+   "2026": {
+    "net": -6699,
+    "green": 31,
+    "red": 48,
+    "none": 54,
+    "refilled": 59926,
+    "days": 133,
+    "trades": 79
+   }
+  },
+  "buf0.0 W30 direct mid": {
+   "2023": {
+    "net": -26729,
+    "green": 16,
+    "red": 52,
+    "none": 48,
+    "refilled": 39581,
+    "days": 116,
+    "trades": 68
+   },
+   "2024": {
+    "net": -37072,
+    "green": 45,
+    "red": 68,
+    "none": 56,
+    "refilled": 83735,
+    "days": 169,
+    "trades": 113
+   },
+   "2025": {
+    "net": -17899,
+    "green": 40,
+    "red": 71,
+    "none": 53,
+    "refilled": 70755,
+    "days": 164,
+    "trades": 111
+   },
+   "2026": {
+    "net": -26032,
+    "green": 39,
+    "red": 63,
+    "none": 31,
+    "refilled": 69549,
+    "days": 133,
+    "trades": 102
+   }
+  },
+  "buf0.0 W30 direct far": {
+   "2023": {
+    "net": -23448,
+    "green": 21,
+    "red": 66,
+    "none": 29,
+    "refilled": 48781,
+    "days": 116,
+    "trades": 87
+   },
+   "2024": {
+    "net": -60266,
+    "green": 36,
+    "red": 87,
+    "none": 46,
+    "refilled": 110842,
+    "days": 169,
+    "trades": 123
+   },
+   "2025": {
+    "net": -8801,
+    "green": 35,
+    "red": 80,
+    "none": 49,
+    "refilled": 81589,
+    "days": 164,
+    "trades": 115
+   },
+   "2026": {
+    "net": -6250,
+    "green": 35,
+    "red": 71,
+    "none": 27,
+    "refilled": 77003,
+    "days": 133,
+    "trades": 106
+   }
+  },
+  "buf0.5 W15 retest mid": {
+   "2023": {
+    "net": -12548,
+    "green": 10,
+    "red": 25,
+    "none": 81,
+    "refilled": 18562,
+    "days": 116,
+    "trades": 35
+   },
+   "2024": {
+    "net": -27832,
+    "green": 22,
+    "red": 42,
+    "none": 105,
+    "refilled": 52090,
+    "days": 169,
+    "trades": 64
+   },
+   "2025": {
+    "net": -2648,
+    "green": 30,
+    "red": 38,
+    "none": 96,
+    "refilled": 38425,
+    "days": 164,
+    "trades": 68
+   },
+   "2026": {
+    "net": -17809,
+    "green": 20,
+    "red": 29,
+    "none": 84,
+    "refilled": 39189,
+    "days": 133,
+    "trades": 49
+   }
+  },
+  "buf0.5 W15 retest far": {
+   "2023": {
+    "net": -10142,
+    "green": 15,
+    "red": 36,
+    "none": 65,
+    "refilled": 24779,
+    "days": 116,
+    "trades": 51
+   },
+   "2024": {
+    "net": -49115,
+    "green": 18,
+    "red": 57,
+    "none": 94,
+    "refilled": 76830,
+    "days": 169,
+    "trades": 75
+   },
+   "2025": {
+    "net": -2512,
+    "green": 25,
+    "red": 50,
+    "none": 89,
+    "refilled": 52292,
+    "days": 164,
+    "trades": 75
+   },
+   "2026": {
+    "net": -14967,
+    "green": 20,
+    "red": 37,
+    "none": 76,
+    "refilled": 50438,
+    "days": 133,
+    "trades": 57
+   }
+  },
+  "buf0.5 W15 direct mid": {
+   "2023": {
+    "net": -10201,
+    "green": 15,
+    "red": 33,
+    "none": 68,
+    "refilled": 21739,
+    "days": 116,
+    "trades": 48
+   },
+   "2024": {
+    "net": -31038,
+    "green": 32,
+    "red": 56,
+    "none": 81,
+    "refilled": 66964,
+    "days": 169,
+    "trades": 88
+   },
+   "2025": {
+    "net": -5315,
+    "green": 35,
+    "red": 48,
+    "none": 81,
+    "refilled": 47430,
+    "days": 164,
+    "trades": 83
+   },
+   "2026": {
+    "net": -15033,
+    "green": 28,
+    "red": 36,
+    "none": 69,
+    "refilled": 44295,
+    "days": 133,
+    "trades": 64
+   }
+  },
+  "buf0.5 W15 direct far": {
+   "2023": {
+    "net": -9421,
+    "green": 15,
+    "red": 45,
+    "none": 56,
+    "refilled": 28564,
+    "days": 116,
+    "trades": 60
+   },
+   "2024": {
+    "net": -51244,
+    "green": 24,
+    "red": 70,
+    "none": 75,
+    "refilled": 88994,
+    "days": 169,
+    "trades": 94
+   },
+   "2025": {
+    "net": 1967,
+    "green": 31,
+    "red": 54,
+    "none": 79,
+    "refilled": 55652,
+    "days": 164,
+    "trades": 85
+   },
+   "2026": {
+    "net": -5820,
+    "green": 24,
+    "red": 44,
+    "none": 65,
+    "refilled": 54082,
+    "days": 133,
+    "trades": 68
+   }
+  },
+  "buf0.5 W30 retest mid": {
+   "2023": {
+    "net": -16974,
+    "green": 17,
+    "red": 33,
+    "none": 66,
+    "refilled": 27968,
+    "days": 116,
+    "trades": 50
+   },
+   "2024": {
+    "net": -37688,
+    "green": 25,
+    "red": 47,
+    "none": 97,
+    "refilled": 62980,
+    "days": 169,
+    "trades": 72
+   },
+   "2025": {
+    "net": -4735,
+    "green": 36,
+    "red": 46,
+    "none": 82,
+    "refilled": 50750,
+    "days": 164,
+    "trades": 82
+   },
+   "2026": {
+    "net": -27463,
+    "green": 26,
+    "red": 40,
+    "none": 67,
+    "refilled": 56847,
+    "days": 133,
+    "trades": 66
+   }
+  },
+  "buf0.5 W30 retest far": {
+   "2023": {
+    "net": -11832,
+    "green": 23,
+    "red": 46,
+    "none": 47,
+    "refilled": 34261,
+    "days": 116,
+    "trades": 69
+   },
+   "2024": {
+    "net": -57358,
+    "green": 22,
+    "red": 63,
+    "none": 84,
+    "refilled": 87867,
+    "days": 169,
+    "trades": 85
+   },
+   "2025": {
+    "net": 6689,
+    "green": 31,
+    "red": 58,
+    "none": 75,
+    "refilled": 64617,
+    "days": 164,
+    "trades": 89
+   },
+   "2026": {
+    "net": -25384,
+    "green": 26,
+    "red": 48,
+    "none": 59,
+    "refilled": 68097,
+    "days": 133,
+    "trades": 74
+   }
+  },
+  "buf0.5 W30 direct mid": {
+   "2023": {
+    "net": -20805,
+    "green": 20,
+    "red": 45,
+    "none": 51,
+    "refilled": 36001,
+    "days": 116,
+    "trades": 65
+   },
+   "2024": {
+    "net": -40828,
+    "green": 35,
+    "red": 63,
+    "none": 71,
+    "refilled": 78390,
+    "days": 169,
+    "trades": 98
+   },
+   "2025": {
+    "net": -5187,
+    "green": 41,
+    "red": 55,
+    "none": 68,
+    "refilled": 57348,
+    "days": 164,
+    "trades": 96
+   },
+   "2026": {
+    "net": -28847,
+    "green": 34,
+    "red": 50,
+    "none": 49,
+    "refilled": 66185,
+    "days": 133,
+    "trades": 84
+   }
+  },
+  "buf0.5 W30 direct far": {
+   "2023": {
+    "net": -17697,
+    "green": 23,
+    "red": 58,
+    "none": 35,
+    "refilled": 43903,
+    "days": 116,
+    "trades": 81
+   },
+   "2024": {
+    "net": -58537,
+    "green": 28,
+    "red": 79,
+    "none": 62,
+    "refilled": 102591,
+    "days": 169,
+    "trades": 107
+   },
+   "2025": {
+    "net": 12282,
+    "green": 37,
+    "red": 62,
+    "none": 65,
+    "refilled": 67499,
+    "days": 164,
+    "trades": 99
+   },
+   "2026": {
+    "net": -17989,
+    "green": 30,
+    "red": 58,
+    "none": 45,
+    "refilled": 75972,
+    "days": 133,
+    "trades": 88
+   }
+  }
+ },
+ "controls": {
+  "unconditional fade at the break": {
+   "buf0.0 W15 retest mid": {
+    "2023": {
+     "net": -31504,
+     "green": 14,
+     "red": 89,
+     "none": 13,
+     "refilled": 43248,
+     "days": 116,
+     "trades": 103
+    },
+    "2024": {
+     "net": -58517,
+     "green": 32,
+     "red": 128,
+     "none": 9,
+     "refilled": 91326,
+     "days": 169,
+     "trades": 160
+    },
+    "2025": {
+     "net": -36202,
+     "green": 28,
+     "red": 126,
+     "none": 10,
+     "refilled": 81576,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -25013,
+     "green": 29,
+     "red": 93,
+     "none": 11,
+     "refilled": 64935,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.0 W15 retest far": {
+    "2023": {
+     "net": -30424,
+     "green": 14,
+     "red": 99,
+     "none": 3,
+     "refilled": 47545,
+     "days": 116,
+     "trades": 113
+    },
+    "2024": {
+     "net": -70882,
+     "green": 19,
+     "red": 143,
+     "none": 7,
+     "refilled": 105308,
+     "days": 169,
+     "trades": 162
+    },
+    "2025": {
+     "net": -42167,
+     "green": 23,
+     "red": 131,
+     "none": 10,
+     "refilled": 84459,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -6757,
+     "green": 26,
+     "red": 96,
+     "none": 11,
+     "refilled": 69127,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.0 W15 direct mid": {
+    "2023": {
+     "net": -31504,
+     "green": 14,
+     "red": 89,
+     "none": 13,
+     "refilled": 43248,
+     "days": 116,
+     "trades": 103
+    },
+    "2024": {
+     "net": -58517,
+     "green": 32,
+     "red": 128,
+     "none": 9,
+     "refilled": 91326,
+     "days": 169,
+     "trades": 160
+    },
+    "2025": {
+     "net": -36202,
+     "green": 28,
+     "red": 126,
+     "none": 10,
+     "refilled": 81576,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -25013,
+     "green": 29,
+     "red": 93,
+     "none": 11,
+     "refilled": 64935,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.0 W15 direct far": {
+    "2023": {
+     "net": -30424,
+     "green": 14,
+     "red": 99,
+     "none": 3,
+     "refilled": 47545,
+     "days": 116,
+     "trades": 113
+    },
+    "2024": {
+     "net": -70882,
+     "green": 19,
+     "red": 143,
+     "none": 7,
+     "refilled": 105308,
+     "days": 169,
+     "trades": 162
+    },
+    "2025": {
+     "net": -42167,
+     "green": 23,
+     "red": 131,
+     "none": 10,
+     "refilled": 84459,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -6757,
+     "green": 26,
+     "red": 96,
+     "none": 11,
+     "refilled": 69127,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.0 W30 retest mid": {
+    "2023": {
+     "net": -31504,
+     "green": 14,
+     "red": 89,
+     "none": 13,
+     "refilled": 43248,
+     "days": 116,
+     "trades": 103
+    },
+    "2024": {
+     "net": -58517,
+     "green": 32,
+     "red": 128,
+     "none": 9,
+     "refilled": 91326,
+     "days": 169,
+     "trades": 160
+    },
+    "2025": {
+     "net": -36202,
+     "green": 28,
+     "red": 126,
+     "none": 10,
+     "refilled": 81576,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -25013,
+     "green": 29,
+     "red": 93,
+     "none": 11,
+     "refilled": 64935,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.0 W30 retest far": {
+    "2023": {
+     "net": -30424,
+     "green": 14,
+     "red": 99,
+     "none": 3,
+     "refilled": 47545,
+     "days": 116,
+     "trades": 113
+    },
+    "2024": {
+     "net": -70882,
+     "green": 19,
+     "red": 143,
+     "none": 7,
+     "refilled": 105308,
+     "days": 169,
+     "trades": 162
+    },
+    "2025": {
+     "net": -42167,
+     "green": 23,
+     "red": 131,
+     "none": 10,
+     "refilled": 84459,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -6757,
+     "green": 26,
+     "red": 96,
+     "none": 11,
+     "refilled": 69127,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.0 W30 direct mid": {
+    "2023": {
+     "net": -31504,
+     "green": 14,
+     "red": 89,
+     "none": 13,
+     "refilled": 43248,
+     "days": 116,
+     "trades": 103
+    },
+    "2024": {
+     "net": -58517,
+     "green": 32,
+     "red": 128,
+     "none": 9,
+     "refilled": 91326,
+     "days": 169,
+     "trades": 160
+    },
+    "2025": {
+     "net": -36202,
+     "green": 28,
+     "red": 126,
+     "none": 10,
+     "refilled": 81576,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -25013,
+     "green": 29,
+     "red": 93,
+     "none": 11,
+     "refilled": 64935,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.0 W30 direct far": {
+    "2023": {
+     "net": -30424,
+     "green": 14,
+     "red": 99,
+     "none": 3,
+     "refilled": 47545,
+     "days": 116,
+     "trades": 113
+    },
+    "2024": {
+     "net": -70882,
+     "green": 19,
+     "red": 143,
+     "none": 7,
+     "refilled": 105308,
+     "days": 169,
+     "trades": 162
+    },
+    "2025": {
+     "net": -42167,
+     "green": 23,
+     "red": 131,
+     "none": 10,
+     "refilled": 84459,
+     "days": 164,
+     "trades": 154
+    },
+    "2026": {
+     "net": -6757,
+     "green": 26,
+     "red": 96,
+     "none": 11,
+     "refilled": 69127,
+     "days": 133,
+     "trades": 122
+    }
+   },
+   "buf0.5 W15 retest mid": {
+    "2023": {
+     "net": -31698,
+     "green": 16,
+     "red": 90,
+     "none": 10,
+     "refilled": 42470,
+     "days": 116,
+     "trades": 106
+    },
+    "2024": {
+     "net": -64412,
+     "green": 25,
+     "red": 133,
+     "none": 11,
+     "refilled": 93104,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -31980,
+     "green": 27,
+     "red": 123,
+     "none": 14,
+     "refilled": 78925,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -28502,
+     "green": 22,
+     "red": 97,
+     "none": 14,
+     "refilled": 60979,
+     "days": 133,
+     "trades": 119
+    }
+   },
+   "buf0.5 W15 retest far": {
+    "2023": {
+     "net": -29352,
+     "green": 15,
+     "red": 97,
+     "none": 4,
+     "refilled": 45193,
+     "days": 116,
+     "trades": 112
+    },
+    "2024": {
+     "net": -66984,
+     "green": 19,
+     "red": 139,
+     "none": 11,
+     "refilled": 100647,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -25243,
+     "green": 23,
+     "red": 127,
+     "none": 14,
+     "refilled": 80997,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -26799,
+     "green": 18,
+     "red": 101,
+     "none": 14,
+     "refilled": 65024,
+     "days": 133,
+     "trades": 119
+    }
+   },
+   "buf0.5 W15 direct mid": {
+    "2023": {
+     "net": -31698,
+     "green": 16,
+     "red": 90,
+     "none": 10,
+     "refilled": 42470,
+     "days": 116,
+     "trades": 106
+    },
+    "2024": {
+     "net": -64412,
+     "green": 25,
+     "red": 133,
+     "none": 11,
+     "refilled": 93104,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -31980,
+     "green": 27,
+     "red": 123,
+     "none": 14,
+     "refilled": 78925,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -28502,
+     "green": 22,
+     "red": 97,
+     "none": 14,
+     "refilled": 60979,
+     "days": 133,
+     "trades": 119
+    }
+   },
+   "buf0.5 W15 direct far": {
+    "2023": {
+     "net": -29352,
+     "green": 15,
+     "red": 97,
+     "none": 4,
+     "refilled": 45193,
+     "days": 116,
+     "trades": 112
+    },
+    "2024": {
+     "net": -66984,
+     "green": 19,
+     "red": 139,
+     "none": 11,
+     "refilled": 100647,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -25243,
+     "green": 23,
+     "red": 127,
+     "none": 14,
+     "refilled": 80997,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -26799,
+     "green": 18,
+     "red": 101,
+     "none": 14,
+     "refilled": 65024,
+     "days": 133,
+     "trades": 119
+    }
+   },
+   "buf0.5 W30 retest mid": {
+    "2023": {
+     "net": -31698,
+     "green": 16,
+     "red": 90,
+     "none": 10,
+     "refilled": 42470,
+     "days": 116,
+     "trades": 106
+    },
+    "2024": {
+     "net": -64412,
+     "green": 25,
+     "red": 133,
+     "none": 11,
+     "refilled": 93104,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -31980,
+     "green": 27,
+     "red": 123,
+     "none": 14,
+     "refilled": 78925,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -28502,
+     "green": 22,
+     "red": 97,
+     "none": 14,
+     "refilled": 60979,
+     "days": 133,
+     "trades": 119
+    }
+   },
+   "buf0.5 W30 retest far": {
+    "2023": {
+     "net": -29352,
+     "green": 15,
+     "red": 97,
+     "none": 4,
+     "refilled": 45193,
+     "days": 116,
+     "trades": 112
+    },
+    "2024": {
+     "net": -66984,
+     "green": 19,
+     "red": 139,
+     "none": 11,
+     "refilled": 100647,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -25243,
+     "green": 23,
+     "red": 127,
+     "none": 14,
+     "refilled": 80997,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -26799,
+     "green": 18,
+     "red": 101,
+     "none": 14,
+     "refilled": 65024,
+     "days": 133,
+     "trades": 119
+    }
+   },
+   "buf0.5 W30 direct mid": {
+    "2023": {
+     "net": -31698,
+     "green": 16,
+     "red": 90,
+     "none": 10,
+     "refilled": 42470,
+     "days": 116,
+     "trades": 106
+    },
+    "2024": {
+     "net": -64412,
+     "green": 25,
+     "red": 133,
+     "none": 11,
+     "refilled": 93104,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -31980,
+     "green": 27,
+     "red": 123,
+     "none": 14,
+     "refilled": 78925,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -28502,
+     "green": 22,
+     "red": 97,
+     "none": 14,
+     "refilled": 60979,
+     "days": 133,
+     "trades": 119
+    }
+   },
+   "buf0.5 W30 direct far": {
+    "2023": {
+     "net": -29352,
+     "green": 15,
+     "red": 97,
+     "none": 4,
+     "refilled": 45193,
+     "days": 116,
+     "trades": 112
+    },
+    "2024": {
+     "net": -66984,
+     "green": 19,
+     "red": 139,
+     "none": 11,
+     "refilled": 100647,
+     "days": 169,
+     "trades": 158
+    },
+    "2025": {
+     "net": -25243,
+     "green": 23,
+     "red": 127,
+     "none": 14,
+     "refilled": 80997,
+     "days": 164,
+     "trades": 150
+    },
+    "2026": {
+     "net": -26799,
+     "green": 18,
+     "red": 101,
+     "none": 14,
+     "refilled": 65024,
+     "days": 133,
+     "trades": 119
+    }
+   }
+  },
+  "NULL random side": {
+   "buf0.0 W15 retest mid": {
+    "2023": {
+     "net": -18887,
+     "green": 6,
+     "red": 28,
+     "none": 82,
+     "refilled": 21483,
+     "days": 116,
+     "trades": 34
+    },
+    "2024": {
+     "net": -21072,
+     "green": 29,
+     "red": 36,
+     "none": 104,
+     "refilled": 50605,
+     "days": 169,
+     "trades": 65
+    },
+    "2025": {
+     "net": -37920,
+     "green": 19,
+     "red": 54,
+     "none": 91,
+     "refilled": 61010,
+     "days": 164,
+     "trades": 73
+    },
+    "2026": {
+     "net": -17792,
+     "green": 25,
+     "red": 34,
+     "none": 74,
+     "refilled": 42535,
+     "days": 133,
+     "trades": 59
+    }
+   },
+   "buf0.0 W15 retest far": {
+    "2023": {
+     "net": -13147,
+     "green": 13,
+     "red": 35,
+     "none": 68,
+     "refilled": 25602,
+     "days": 116,
+     "trades": 48
+    },
+    "2024": {
+     "net": -37038,
+     "green": 28,
+     "red": 56,
+     "none": 85,
+     "refilled": 77580,
+     "days": 169,
+     "trades": 84
+    },
+    "2025": {
+     "net": -37451,
+     "green": 21,
+     "red": 62,
+     "none": 81,
+     "refilled": 69554,
+     "days": 164,
+     "trades": 83
+    },
+    "2026": {
+     "net": -2449,
+     "green": 27,
+     "red": 40,
+     "none": 66,
+     "refilled": 48985,
+     "days": 133,
+     "trades": 67
+    }
+   },
+   "buf0.0 W15 direct mid": {
+    "2023": {
+     "net": -16626,
+     "green": 12,
+     "red": 45,
+     "none": 59,
+     "refilled": 28726,
+     "days": 116,
+     "trades": 57
+    },
+    "2024": {
+     "net": -35982,
+     "green": 43,
+     "red": 65,
+     "none": 61,
+     "refilled": 82972,
+     "days": 169,
+     "trades": 108
+    },
+    "2025": {
+     "net": -38501,
+     "green": 30,
+     "red": 70,
+     "none": 64,
+     "refilled": 72830,
+     "days": 164,
+     "trades": 100
+    },
+    "2026": {
+     "net": -21554,
+     "green": 32,
+     "red": 57,
+     "none": 44,
+     "refilled": 60567,
+     "days": 133,
+     "trades": 89
+    }
+   },
+   "buf0.0 W15 direct far": {
+    "2023": {
+     "net": -21608,
+     "green": 14,
+     "red": 59,
+     "none": 43,
+     "refilled": 37815,
+     "days": 116,
+     "trades": 73
+    },
+    "2024": {
+     "net": -53251,
+     "green": 33,
+     "red": 83,
+     "none": 53,
+     "refilled": 106513,
+     "days": 169,
+     "trades": 116
+    },
+    "2025": {
+     "net": -28743,
+     "green": 27,
+     "red": 76,
+     "none": 61,
+     "refilled": 80253,
+     "days": 164,
+     "trades": 103
+    },
+    "2026": {
+     "net": -6214,
+     "green": 31,
+     "red": 62,
+     "none": 40,
+     "refilled": 66019,
+     "days": 133,
+     "trades": 93
+    }
+   },
+   "buf0.0 W30 retest mid": {
+    "2023": {
+     "net": -21679,
+     "green": 11,
+     "red": 33,
+     "none": 72,
+     "refilled": 29311,
+     "days": 116,
+     "trades": 44
+    },
+    "2024": {
+     "net": -17947,
+     "green": 32,
+     "red": 36,
+     "none": 101,
+     "refilled": 50605,
+     "days": 169,
+     "trades": 68
+    },
+    "2025": {
+     "net": -43851,
+     "green": 24,
+     "red": 61,
+     "none": 79,
+     "refilled": 73336,
+     "days": 164,
+     "trades": 85
+    },
+    "2026": {
+     "net": -14793,
+     "green": 32,
+     "red": 39,
+     "none": 62,
+     "refilled": 50078,
+     "days": 133,
+     "trades": 71
+    }
+   },
+   "buf0.0 W30 retest far": {
+    "2023": {
+     "net": -19592,
+     "green": 16,
+     "red": 44,
+     "none": 56,
+     "refilled": 36501,
+     "days": 116,
+     "trades": 60
+    },
+    "2024": {
+     "net": -31302,
+     "green": 32,
+     "red": 57,
+     "none": 80,
+     "refilled": 80546,
+     "days": 169,
+     "trades": 89
+    },
+    "2025": {
+     "net": -35607,
+     "green": 25,
+     "red": 70,
+     "none": 69,
+     "refilled": 82497,
+     "days": 164,
+     "trades": 95
+    },
+    "2026": {
+     "net": -297,
+     "green": 33,
+     "red": 46,
+     "none": 54,
+     "refilled": 57947,
+     "days": 133,
+     "trades": 79
+    }
+   },
+   "buf0.0 W30 direct mid": {
+    "2023": {
+     "net": -22586,
+     "green": 15,
+     "red": 53,
+     "none": 48,
+     "refilled": 38645,
+     "days": 116,
+     "trades": 68
+    },
+    "2024": {
+     "net": -34016,
+     "green": 47,
+     "red": 66,
+     "none": 56,
+     "refilled": 85231,
+     "days": 169,
+     "trades": 113
+    },
+    "2025": {
+     "net": -39621,
+     "green": 35,
+     "red": 76,
+     "none": 53,
+     "refilled": 81956,
+     "days": 164,
+     "trades": 111
+    },
+    "2026": {
+     "net": -22308,
+     "green": 39,
+     "red": 63,
+     "none": 31,
+     "refilled": 71001,
+     "days": 133,
+     "trades": 102
+    }
+   },
+   "buf0.0 W30 direct far": {
+    "2023": {
+     "net": -26632,
+     "green": 18,
+     "red": 69,
+     "none": 29,
+     "refilled": 48770,
+     "days": 116,
+     "trades": 87
+    },
+    "2024": {
+     "net": -48466,
+     "green": 38,
+     "red": 85,
+     "none": 46,
+     "refilled": 110502,
+     "days": 169,
+     "trades": 123
+    },
+    "2025": {
+     "net": -25178,
+     "green": 31,
+     "red": 84,
+     "none": 49,
+     "refilled": 92663,
+     "days": 164,
+     "trades": 115
+    },
+    "2026": {
+     "net": -7366,
+     "green": 37,
+     "red": 69,
+     "none": 27,
+     "refilled": 77747,
+     "days": 133,
+     "trades": 106
+    }
+   },
+   "buf0.5 W15 retest mid": {
+    "2023": {
+     "net": -20182,
+     "green": 7,
+     "red": 28,
+     "none": 81,
+     "refilled": 23774,
+     "days": 116,
+     "trades": 35
+    },
+    "2024": {
+     "net": -24129,
+     "green": 26,
+     "red": 38,
+     "none": 105,
+     "refilled": 54260,
+     "days": 169,
+     "trades": 64
+    },
+    "2025": {
+     "net": -23195,
+     "green": 24,
+     "red": 44,
+     "none": 96,
+     "refilled": 50813,
+     "days": 164,
+     "trades": 68
+    },
+    "2026": {
+     "net": -18707,
+     "green": 19,
+     "red": 30,
+     "none": 84,
+     "refilled": 41197,
+     "days": 133,
+     "trades": 49
+    }
+   },
+   "buf0.5 W15 retest far": {
+    "2023": {
+     "net": -14515,
+     "green": 14,
+     "red": 37,
+     "none": 65,
+     "refilled": 28125,
+     "days": 116,
+     "trades": 51
+    },
+    "2024": {
+     "net": -34389,
+     "green": 25,
+     "red": 50,
+     "none": 94,
+     "refilled": 75868,
+     "days": 169,
+     "trades": 75
+    },
+    "2025": {
+     "net": -11532,
+     "green": 25,
+     "red": 50,
+     "none": 89,
+     "refilled": 57363,
+     "days": 164,
+     "trades": 75
+    },
+    "2026": {
+     "net": -2526,
+     "green": 24,
+     "red": 33,
+     "none": 76,
+     "refilled": 43522,
+     "days": 133,
+     "trades": 57
+    }
+   },
+   "buf0.5 W15 direct mid": {
+    "2023": {
+     "net": -9576,
+     "green": 16,
+     "red": 32,
+     "none": 68,
+     "refilled": 23930,
+     "days": 116,
+     "trades": 48
+    },
+    "2024": {
+     "net": -39725,
+     "green": 33,
+     "red": 55,
+     "none": 81,
+     "refilled": 75072,
+     "days": 169,
+     "trades": 88
+    },
+    "2025": {
+     "net": -34369,
+     "green": 27,
+     "red": 56,
+     "none": 81,
+     "refilled": 64976,
+     "days": 164,
+     "trades": 83
+    },
+    "2026": {
+     "net": -19965,
+     "green": 26,
+     "red": 38,
+     "none": 69,
+     "refilled": 48508,
+     "days": 133,
+     "trades": 64
+    }
+   },
+   "buf0.5 W15 direct far": {
+    "2023": {
+     "net": -12480,
+     "green": 14,
+     "red": 46,
+     "none": 56,
+     "refilled": 32431,
+     "days": 116,
+     "trades": 60
+    },
+    "2024": {
+     "net": -42447,
+     "green": 29,
+     "red": 65,
+     "none": 75,
+     "refilled": 90833,
+     "days": 169,
+     "trades": 94
+    },
+    "2025": {
+     "net": -19876,
+     "green": 25,
+     "red": 60,
+     "none": 79,
+     "refilled": 68520,
+     "days": 164,
+     "trades": 85
+    },
+    "2026": {
+     "net": -8608,
+     "green": 26,
+     "red": 42,
+     "none": 65,
+     "refilled": 51324,
+     "days": 133,
+     "trades": 68
+    }
+   },
+   "buf0.5 W30 retest mid": {
+    "2023": {
+     "net": -27077,
+     "green": 13,
+     "red": 37,
+     "none": 66,
+     "refilled": 35825,
+     "days": 116,
+     "trades": 50
+    },
+    "2024": {
+     "net": -20879,
+     "green": 32,
+     "red": 40,
+     "none": 97,
+     "refilled": 57452,
+     "days": 169,
+     "trades": 72
+    },
+    "2025": {
+     "net": -33110,
+     "green": 29,
+     "red": 53,
+     "none": 82,
+     "refilled": 67123,
+     "days": 164,
+     "trades": 82
+    },
+    "2026": {
+     "net": -26181,
+     "green": 26,
+     "red": 40,
+     "none": 67,
+     "refilled": 58610,
+     "days": 133,
+     "trades": 66
+    }
+   },
+   "buf0.5 W30 retest far": {
+    "2023": {
+     "net": -26113,
+     "green": 18,
+     "red": 51,
+     "none": 47,
+     "refilled": 44295,
+     "days": 116,
+     "trades": 69
+    },
+    "2024": {
+     "net": -25667,
+     "green": 31,
+     "red": 54,
+     "none": 84,
+     "refilled": 82172,
+     "days": 169,
+     "trades": 85
+    },
+    "2025": {
+     "net": -13672,
+     "green": 29,
+     "red": 60,
+     "none": 75,
+     "refilled": 74289,
+     "days": 164,
+     "trades": 89
+    },
+    "2026": {
+     "net": -7044,
+     "green": 30,
+     "red": 44,
+     "none": 59,
+     "refilled": 62354,
+     "days": 133,
+     "trades": 74
+    }
+   },
+   "buf0.5 W30 direct mid": {
+    "2023": {
+     "net": -20756,
+     "green": 19,
+     "red": 46,
+     "none": 51,
+     "refilled": 39067,
+     "days": 116,
+     "trades": 65
+    },
+    "2024": {
+     "net": -39261,
+     "green": 39,
+     "red": 59,
+     "none": 71,
+     "refilled": 80418,
+     "days": 169,
+     "trades": 98
+    },
+    "2025": {
+     "net": -39794,
+     "green": 32,
+     "red": 64,
+     "none": 68,
+     "refilled": 78407,
+     "days": 164,
+     "trades": 96
+    },
+    "2026": {
+     "net": -30759,
+     "green": 33,
+     "red": 51,
+     "none": 49,
+     "refilled": 69988,
+     "days": 133,
+     "trades": 84
+    }
+   },
+   "buf0.5 W30 direct far": {
+    "2023": {
+     "net": -24126,
+     "green": 18,
+     "red": 63,
+     "none": 35,
+     "refilled": 50008,
+     "days": 116,
+     "trades": 81
+    },
+    "2024": {
+     "net": -39487,
+     "green": 35,
+     "red": 72,
+     "none": 62,
+     "refilled": 100421,
+     "days": 169,
+     "trades": 107
+    },
+    "2025": {
+     "net": -20617,
+     "green": 29,
+     "red": 70,
+     "none": 65,
+     "refilled": 85235,
+     "days": 164,
+     "trades": 99
+    },
+    "2026": {
+     "net": -18912,
+     "green": 32,
+     "red": 56,
+     "none": 45,
+     "refilled": 74098,
+     "days": 133,
+     "trades": 88
+    }
+   }
+  }
+ },
+ "loyo_real": {
+  "2023": {
+   "pick": "buf0.5 W15 retest mid",
+   "net": -12548,
+   "green": 10,
+   "red": 25,
+   "none": 81,
+   "refilled": 18562,
+   "days": 116,
+   "trades": 35
+  },
+  "2024": {
+   "pick": "buf0.5 W15 direct far",
+   "net": -51244,
+   "green": 24,
+   "red": 70,
+   "none": 75,
+   "refilled": 88994,
+   "days": 169,
+   "trades": 94
+  },
+  "2025": {
+   "pick": "buf0.5 W15 direct mid",
+   "net": -5315,
+   "green": 35,
+   "red": 48,
+   "none": 81,
+   "refilled": 47430,
+   "days": 164,
+   "trades": 83
+  },
+  "2026": {
+   "pick": "buf0.5 W15 retest mid",
+   "net": -17809,
+   "green": 20,
+   "red": 29,
+   "none": 84,
+   "refilled": 39189,
+   "days": 133,
+   "trades": 49
+  },
+  "sum": {
+   "net": -86916,
+   "red": 172,
+   "green": 89
+  }
+ },
+ "loyo_controls": {
+  "unconditional fade at the break": {
+   "2023": {
+    "pick": "buf0.5 W15 retest far",
+    "net": -29352,
+    "green": 15,
+    "red": 97,
+    "none": 4,
+    "refilled": 45193,
+    "days": 116,
+    "trades": 112
+   },
+   "2024": {
+    "pick": "buf0.0 W15 retest far",
+    "net": -70882,
+    "green": 19,
+    "red": 143,
+    "none": 7,
+    "refilled": 105308,
+    "days": 169,
+    "trades": 162
+   },
+   "2025": {
+    "pick": "buf0.0 W15 retest far",
+    "net": -42167,
+    "green": 23,
+    "red": 131,
+    "none": 10,
+    "refilled": 84459,
+    "days": 164,
+    "trades": 154
+   },
+   "2026": {
+    "pick": "buf0.5 W15 retest far",
+    "net": -26799,
+    "green": 18,
+    "red": 101,
+    "none": 14,
+    "refilled": 65024,
+    "days": 133,
+    "trades": 119
+   },
+   "sum": {
+    "net": -169200,
+    "red": 472,
+    "green": 75
+   }
+  },
+  "NULL random side": {
+   "2023": {
+    "pick": "buf0.5 W30 retest far",
+    "net": -26113,
+    "green": 18,
+    "red": 51,
+    "none": 47,
+    "refilled": 44295,
+    "days": 116,
+    "trades": 69
+   },
+   "2024": {
+    "pick": "buf0.5 W15 retest far",
+    "net": -34389,
+    "green": 25,
+    "red": 50,
+    "none": 94,
+    "refilled": 75868,
+    "days": 169,
+    "trades": 75
+   },
+   "2025": {
+    "pick": "buf0.0 W30 retest far",
+    "net": -35607,
+    "green": 25,
+    "red": 70,
+    "none": 69,
+    "refilled": 82497,
+    "days": 164,
+    "trades": 95
+   },
+   "2026": {
+    "pick": "buf0.5 W15 retest far",
+    "net": -2526,
+    "green": 24,
+    "red": 33,
+    "none": 76,
+    "refilled": 43522,
+    "days": 133,
+    "trades": 57
+   },
+   "sum": {
+    "net": -98635,
+    "red": 204,
+    "green": 92
+   }
+  }
+ },
+ "robust": {
+  "stress 400": -140386,
+  "1 minute late": -78673
+ },
+ "wallets_heldout_picks": {
+  "A 15k 1 lot": {
+   "by_year": [
+    -12548,
+    -51244,
+    -5315,
+    -17809
+   ],
+   "won": 107259,
+   "refilled": 194175,
+   "net": -86916,
+   "w/l/none": [
+    89,
+    172,
+    481
+   ],
+   "worst": -2993,
+   "losing_years": 4
+  },
+  "B 20k 1 lot": {
+   "by_year": [
+    -12548,
+    -51782,
+    -5023,
+    -18373
+   ],
+   "won": 107551,
+   "refilled": 195277,
+   "net": -87726,
+   "w/l/none": [
+    89,
+    172,
+    481
+   ],
+   "worst": -3702,
+   "losing_years": 4
+  },
+  "C 30k sized": {
+   "by_year": [
+    -17402,
+    -92440,
+    414,
+    -28716
+   ],
+   "won": 181386,
+   "refilled": 319530,
+   "net": -138144,
+   "w/l/none": [
+    90,
+    172,
+    480
+   ],
+   "worst": -5988,
+   "losing_years": 3
+  },
+  "G0": {
+   "by_year": [
+    -12548,
+    -51244,
+    -5315,
+    -17809
+   ],
+   "won": 107259,
+   "refilled": 194175,
+   "net": -86916,
+   "w/l/none": [
+    89,
+    172,
+    481
+   ],
+   "worst": -2993,
+   "losing_years": 4
+  },
+  "G2": {
+   "by_year": [
+    -12548,
+    -51244,
+    -5315,
+    -17809
+   ],
+   "won": 107259,
+   "refilled": 194175,
+   "net": -86916,
+   "w/l/none": [
+    89,
+    172,
+    481
+   ],
+   "worst": -2993,
+   "losing_years": 4
+  },
+  "G3 (Gold)": {
+   "by_year": [
+    -12548,
+    -51244,
+    -5315,
+    -17809
+   ],
+   "won": 107259,
+   "refilled": 194175,
+   "net": -86916,
+   "w/l/none": [
+    89,
+    172,
+    481
+   ],
+   "worst": -2993,
+   "losing_years": 4
+  },
+  "G5": {
+   "by_year": [
+    -12548,
+    -51244,
+    -5315,
+    -17809
+   ],
+   "won": 107259,
+   "refilled": 194175,
+   "net": -86916,
+   "w/l/none": [
+    89,
+    172,
+    481
+   ],
+   "worst": -2993,
+   "losing_years": 4
+  }
+ },
+ "verdict": {
+  "held_out_sum": -86916,
+  "held_out_years": [
+   -12548,
+   -51244,
+   -5315,
+   -17809
+  ],
+  "beats_controls": {
+   "unconditional fade at the break": true,
+   "NULL random side": true
+  },
+  "robust": {
+   "stress 400": -140386,
+   "1 minute late": -78673
+  },
+  "PASS": false
+ }
+}

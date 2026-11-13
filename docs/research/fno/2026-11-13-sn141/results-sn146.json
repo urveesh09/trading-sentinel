@@ -1,0 +1,27 @@
+{
+ "sleeve": "DESCRIPTION ONLY - nothing passed: SN132's all-days policy",
+ "sleeve_by_year": {
+  "2024": -122502,
+  "2025": -56799,
+  "2026": 8126
+ },
+ "sleeve_total": -171175,
+ "Gold 30k fixed": {
+  "by_year": {
+   "2024": 115439,
+   "2025": 70789,
+   "2026": 106387
+  },
+  "total_2024_26": 292615,
+  "with_sleeve_total_2024_26": 121440
+ },
+ "Gold 30k grow stop 3": {
+  "by_year": {
+   "2024": 187476,
+   "2025": 292811,
+   "2026": 382702
+  },
+  "total_2024_26": 862989,
+  "with_sleeve_total_2024_26": 691814
+ }
+}

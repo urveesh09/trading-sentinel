@@ -1,0 +1,98 @@
+{
+ "Rs 10000 per lot | fixed 30k": {
+  "by_year": [
+   -6377,
+   119380,
+   61040,
+   108301
+  ],
+  "net": 282344,
+  "refilled": 218656,
+  "worst": -5997,
+  "losing_years": 1
+ },
+ "Rs 10000 per lot | grow from 30k, stop after 3": {
+  "by_year": [
+   -6377,
+   194674,
+   246381,
+   419993
+  ],
+  "net": 854671,
+  "refilled": 646370,
+  "worst": -22536,
+  "losing_years": 1
+ },
+ "Rs 12500 per lot | fixed 30k": {
+  "by_year": [
+   -12107,
+   115439,
+   70789,
+   106387
+  ],
+  "net": 280508,
+  "refilled": 193046,
+  "worst": -6110,
+  "losing_years": 1
+ },
+ "Rs 12500 per lot | grow from 30k, stop after 3": {
+  "by_year": [
+   -12107,
+   195570,
+   228837,
+   411886
+  ],
+  "net": 824186,
+  "refilled": 605885,
+  "worst": -22536,
+  "losing_years": 1
+ },
+ "Rs 15000 per lot | fixed 30k": {
+  "by_year": [
+   -12107,
+   115439,
+   70789,
+   106387
+  ],
+  "net": 280508,
+  "refilled": 193046,
+  "worst": -6110,
+  "losing_years": 1
+ },
+ "Rs 15000 per lot | grow from 30k, stop after 3": {
+  "by_year": [
+   -12107,
+   187476,
+   292811,
+   382702
+  ],
+  "net": 850882,
+  "refilled": 562129,
+  "worst": -21113,
+  "losing_years": 1
+ },
+ "Rs 20000 per lot | fixed 30k": {
+  "by_year": [
+   -15246,
+   86296,
+   61008,
+   81832
+  ],
+  "net": 213890,
+  "refilled": 153447,
+  "worst": -5999,
+  "losing_years": 1
+ },
+ "Rs 20000 per lot | grow from 30k, stop after 3": {
+  "by_year": [
+   -15246,
+   129130,
+   203325,
+   342917
+  ],
+  "net": 660126,
+  "refilled": 479019,
+  "worst": -20830,
+  "losing_years": 1
+ }
+}

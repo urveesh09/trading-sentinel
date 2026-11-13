@@ -290,6 +290,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_tick_recorder_ensure_safe",
+    "id": "'tick_recorder_ensure'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_scheduler_tick_job",
     "id": "'scheduler_tick'",
     "trigger": "'interval'"

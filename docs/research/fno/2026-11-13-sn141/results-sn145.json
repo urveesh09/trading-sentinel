@@ -1,0 +1,21 @@
+{
+ "trades": 112,
+ "v5_exit_total": 136393,
+ "learned_exit_total": 119104,
+ "by_year": {
+  "2024": {
+   "v5": 41455,
+   "learned": 38393
+  },
+  "2025": {
+   "v5": 44844,
+   "learned": 36913
+  },
+  "2026": {
+   "v5": 50094,
+   "learned": 43798
+  }
+ },
+ "learned_better_trades": 35,
+ "mean_extra_minutes_held": 24.4
+}

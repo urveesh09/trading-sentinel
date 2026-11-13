@@ -347,6 +347,12 @@
       "trigger": "cron[day_of_week='mon-fri', hour='9', minute='7']"
     },
     {
+      "func": "_run_tick_recorder_ensure_safe",
+      "id": "tick_recorder_ensure",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='9-15', minute='*/1', second='40']"
+    },
+    {
       "func": "bootstrap_0800_job",
       "id": "daily_bootstrap_0800",
       "kwargs": [],

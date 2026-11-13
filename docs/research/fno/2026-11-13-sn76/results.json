@@ -1,0 +1,398 @@
+{
+ "days": 742,
+ "outcomes": {
+  "none": 620,
+  "win": 58,
+  "loss": 64
+ },
+ "no_trade_reasons": {
+  "no N11/R0.85 entry at all": 609,
+  "entries but none taken (busy / unaffordable)": 11,
+  "traded to exactly zero": 0
+ },
+ "by_adx": {
+  "ADX < 20": {
+   "days": 303,
+   "win": 0.04,
+   "loss": 0.04,
+   "none": 0.92,
+   "net": 13199
+  },
+  "20-25": {
+   "days": 157,
+   "win": 0.05,
+   "loss": 0.09,
+   "none": 0.86,
+   "net": 15646
+  },
+  "25-30": {
+   "days": 122,
+   "win": 0.08,
+   "loss": 0.07,
+   "none": 0.84,
+   "net": 20763
+  },
+  "30-40": {
+   "days": 100,
+   "win": 0.18,
+   "loss": 0.17,
+   "none": 0.65,
+   "net": 58948
+  },
+  ">= 40": {
+   "days": 54,
+   "win": 0.17,
+   "loss": 0.22,
+   "none": 0.61,
+   "net": 42373
+  }
+ },
+ "by_dmi": {
+  "daily trend up": {
+   "days": 347,
+   "win": 0.07,
+   "loss": 0.06,
+   "none": 0.86,
+   "net": 75451
+  },
+  "daily trend down": {
+   "days": 389,
+   "win": 0.08,
+   "loss": 0.11,
+   "none": 0.81,
+   "net": 75478
+  }
+ },
+ "by_vol": {
+  "vol < 0.85": {
+   "days": 179,
+   "win": 0.06,
+   "loss": 0.06,
+   "none": 0.89,
+   "net": 18075
+  },
+  "0.85-1.0": {
+   "days": 126,
+   "win": 0.03,
+   "loss": 0.09,
+   "none": 0.88,
+   "net": -676
+  },
+  "1.0-1.25": {
+   "days": 223,
+   "win": 0.12,
+   "loss": 0.11,
+   "none": 0.78,
+   "net": 92526
+  },
+  ">= 1.25": {
+   "days": 182,
+   "win": 0.09,
+   "loss": 0.07,
+   "none": 0.84,
+   "net": 50384
+  }
+ },
+ "by_gap": {
+  "gap down > 0.5%": {
+   "days": 53,
+   "win": 0.08,
+   "loss": 0.06,
+   "none": 0.87,
+   "net": 11070
+  },
+  "-0.5..-0.15": {
+   "days": 116,
+   "win": 0.09,
+   "loss": 0.08,
+   "none": 0.84,
+   "net": 23285
+  },
+  "flat": {
+   "days": 248,
+   "win": 0.06,
+   "loss": 0.11,
+   "none": 0.83,
+   "net": 30183
+  },
+  "0.15..0.5": {
+   "days": 258,
+   "win": 0.09,
+   "loss": 0.08,
+   "none": 0.83,
+   "net": 65385
+  },
+  "gap up > 0.5%": {
+   "days": 67,
+   "win": 0.07,
+   "loss": 0.07,
+   "none": 0.85,
+   "net": 21232
+  }
+ },
+ "by_dte": {
+  "1 day": {
+   "days": 184,
+   "win": 0.09,
+   "loss": 0.09,
+   "none": 0.83,
+   "net": 40454
+  },
+  "2-3": {
+   "days": 261,
+   "win": 0.08,
+   "loss": 0.11,
+   "none": 0.81,
+   "net": 53038
+  },
+  "4-5": {
+   "days": 123,
+   "win": 0.11,
+   "loss": 0.06,
+   "none": 0.83,
+   "net": 47646
+  },
+  "6+": {
+   "days": 174,
+   "win": 0.04,
+   "loss": 0.07,
+   "none": 0.89,
+   "net": 10017
+  }
+ },
+ "by_day_shape": {
+  "choppy (eff < 0.1)": {
+   "days": 614,
+   "win": 0.06,
+   "loss": 0.09,
+   "none": 0.85,
+   "net": 54071
+  },
+  "0.1-0.2": {
+   "days": 123,
+   "win": 0.17,
+   "loss": 0.06,
+   "none": 0.77,
+   "net": 97084
+  },
+  "0.2-0.35": {
+   "days": 5,
+   "win": 0.0,
+   "loss": 0.0,
+   "none": 1.0,
+   "net": 0
+  }
+ },
+ "by_move": {
+  "down > 0.7%": {
+   "days": 92,
+   "win": 0.24,
+   "loss": 0.07,
+   "none": 0.7,
+   "net": 113629
+  },
+  "-0.7..-0.25": {
+   "days": 150,
+   "win": 0.13,
+   "loss": 0.18,
+   "none": 0.69,
+   "net": 16185
+  },
+  "flat": {
+   "days": 275,
+   "win": 0.03,
+   "loss": 0.07,
+   "none": 0.9,
+   "net": -881
+  },
+  "0.25..0.7": {
+   "days": 159,
+   "win": 0.01,
+   "loss": 0.03,
+   "none": 0.96,
+   "net": 3517
+  },
+  "up > 0.7%": {
+   "days": 66,
+   "win": 0.09,
+   "loss": 0.12,
+   "none": 0.79,
+   "net": 18705
+  }
+ },
+ "by_range": {
+  "range < 0.6%": {
+   "days": 185,
+   "win": 0.03,
+   "loss": 0.06,
+   "none": 0.91,
+   "net": -12248
+  },
+  "0.6-0.9": {
+   "days": 251,
+   "win": 0.08,
+   "loss": 0.1,
+   "none": 0.82,
+   "net": 25121
+  },
+  "0.9-1.3": {
+   "days": 178,
+   "win": 0.06,
+   "loss": 0.11,
+   "none": 0.83,
+   "net": 13558
+  },
+  ">= 1.3%": {
+   "days": 128,
+   "win": 0.18,
+   "loss": 0.05,
+   "none": 0.77,
+   "net": 124723
+  }
+ },
+ "gate_x_day": {
+  "ADX<30 | down day": {
+   "loss": 21,
+   "none": 130,
+   "win": 28
+  },
+  "ADX<30 | flat day": {
+   "none": 208,
+   "loss": 12,
+   "win": 2
+  },
+  "ADX<30 | up day": {
+   "none": 179,
+   "loss": 2
+  },
+  "ADX>=30 | down day": {
+   "none": 36,
+   "loss": 12,
+   "win": 12
+  },
+  "ADX>=30 | flat day": {
+   "none": 39,
+   "loss": 6,
+   "win": 7
+  },
+  "ADX>=30 | up day": {
+   "none": 23,
+   "loss": 11,
+   "win": 8
+  }
+ },
+ "trade_days_by_strategy": {
+  "TPB": {
+   "days": 91,
+   "win_share": 0.47,
+   "net": 97339
+  },
+  "OR20": {
+   "days": 14,
+   "win_share": 0.57,
+   "net": 41015
+  },
+  "SHIPPED": {
+   "days": 13,
+   "win_share": 0.54,
+   "net": 13607
+  },
+  "EFF": {
+   "days": 23,
+   "win_share": 0.61,
+   "net": 63768
+  }
+ },
+ "clusters": {
+  "cluster 0": {
+   "days": 70,
+   "centre": {
+    "range_pct": 1.48,
+    "move_pct": 0.99,
+    "eff": 0.11,
+    "hour1_pct": 0.75,
+    "gap_pct": -0.04,
+    "close_pos": 0.88
+   },
+   "win": 3,
+   "loss": 7,
+   "none": 60,
+   "net": 6904
+  },
+  "cluster 1": {
+   "days": 95,
+   "centre": {
+    "range_pct": 1.13,
+    "move_pct": -0.07,
+    "eff": 0.03,
+    "hour1_pct": 0.67,
+    "gap_pct": -0.34,
+    "close_pos": 0.44
+   },
+   "win": 5,
+   "loss": 11,
+   "none": 79,
+   "net": -1897
+  },
+  "cluster 2": {
+   "days": 131,
+   "centre": {
+    "range_pct": 0.94,
+    "move_pct": -0.62,
+    "eff": 0.09,
+    "hour1_pct": 0.47,
+    "gap_pct": 0.14,
+    "close_pos": 0.17
+   },
+   "win": 22,
+   "loss": 16,
+   "none": 93,
+   "net": 51354
+  },
+  "cluster 3": {
+   "days": 192,
+   "centre": {
+    "range_pct": 0.76,
+    "move_pct": 0.36,
+    "eff": 0.06,
+    "hour1_pct": 0.41,
+    "gap_pct": 0.21,
+    "close_pos": 0.84
+   },
+   "win": 8,
+   "loss": 10,
+   "none": 174,
+   "net": 24272
+  },
+  "cluster 4": {
+   "days": 47,
+   "centre": {
+    "range_pct": 2.03,
+    "move_pct": -1.38,
+    "eff": 0.12,
+    "hour1_pct": 0.88,
+    "gap_pct": 0.01,
+    "close_pos": 0.18
+   },
+   "win": 14,
+   "loss": 3,
+   "none": 30,
+   "net": 84857
+  },
+  "cluster 5": {
+   "days": 207,
+   "centre": {
+    "range_pct": 0.59,
+    "move_pct": -0.09,
+    "eff": 0.02,
+    "hour1_pct": 0.38,
+    "gap_pct": 0.16,
+    "close_pos": 0.44
+   },
+   "win": 6,
+   "loss": 17,
+   "none": 184,
+   "net": -14335
+  }
+ }
+}

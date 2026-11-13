@@ -1648,6 +1648,20 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("research_quote_collection_crashed err=%s", exc, exc_info=True)
             return {"status": "FAILED", "reason": type(exc).__name__}
 
+    @telemetry_job(settings.DB_PATH, "tick_recorder_ensure")
+    async def _run_tick_recorder_ensure_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to tick_recorder.ensure_tick,
+        # which checks the session window and main.is_trading_day first.
+        # [TR01 2026-11-13] Starts the live tick recorder when the session, the
+        # trading day and today's login allow; it costs nothing while running.
+        # Research evidence only: no order, no REST call, no trading input.
+        try:
+            from tick_recorder import ensure_tick
+            return await ensure_tick()
+        except Exception as exc:
+            logger.error("tick_recorder_ensure_crashed err=%s", type(exc).__name__)
+            return {"status": "FAILED", "reason": type(exc).__name__}
+
     @telemetry_job(settings.DB_PATH, "research_future_candles")
     async def _run_research_future_candles_safe():
         # [CALENDAR-GATE] trading day + access token, then one read-only
@@ -1856,6 +1870,12 @@ def register_partner_scheduler_jobs(scheduler):
         _run_research_quote_collection_safe, "cron",
         minute="*/1", second=25,
         id="research_quote_collection",
+        max_instances=1, coalesce=True, misfire_grace_time=55,
+    )
+    scheduler.add_job(
+        _run_tick_recorder_ensure_safe, "cron",
+        day_of_week="mon-fri", hour="9-15", minute="*/1", second=40,
+        id="tick_recorder_ensure",
         max_instances=1, coalesce=True, misfire_grace_time=55,
     )
     scheduler.add_job(

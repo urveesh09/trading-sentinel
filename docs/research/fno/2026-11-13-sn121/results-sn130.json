@@ -1,0 +1,307 @@
+[
+ {
+  "SN": "121",
+  "what": "partner day paths (7 sessions)",
+  "result": {
+   "days_with_a_positive_peak": 6,
+   "days_peak_at_least_10pct_of_25k": 5,
+   "days_peak_at_least_20pct_of_25k": 5,
+   "days_ended_green": 3,
+   "median_share_of_peak_given_back": 1.405,
+   "median_trips_after_peak": 22.0,
+   "median_trips_per_day": 37.0
+  }
+ },
+ {
+  "SN": "121",
+  "what": "partner lock counterfactuals",
+  "result": {
+   "lock at +10%": {
+    "days_improved": 2.0,
+    "days_worse": 3.0,
+    "days_green_after": 5.0,
+    "change_relative_to_actual_result": 0.19,
+    "change_sign": "better"
+   },
+   "lock at +20%": {
+    "days_improved": 2.0,
+    "days_worse": 3.0,
+    "days_green_after": 5.0,
+    "change_relative_to_actual_result": 0.37,
+    "change_sign": "better"
+   },
+   "stop after a 30% giveback of a >= +5% peak": {
+    "days_improved": 2.0,
+    "days_worse": 2.0,
+    "days_green_after": 4.0,
+    "change_relative_to_actual_result": 0.71,
+    "change_sign": "better"
+   },
+   "stop after a 50% giveback of a >= +5% peak": {
+    "days_improved": 3.0,
+    "days_worse": 1.0,
+    "days_green_after": 4.0,
+    "change_relative_to_actual_result": 0.67,
+    "change_sign": "better"
+   }
+  }
+ },
+ {
+  "SN": "122",
+  "what": "partner entry drift vs random (p at 1/5/15/30 min)",
+  "result": {
+   "1": 0.0015,
+   "5": 0.416,
+   "15": 0.0855,
+   "30": 0.177
+  }
+ },
+ {
+  "SN": "122",
+  "what": "machine exits on partner entries (per lot)",
+  "result": {
+   "their_exit": {
+    "n": 196,
+    "mean_per_lot": -126,
+    "share_green": 0.372
+   },
+   "hold_10": {
+    "n": 196,
+    "mean_per_lot": -221,
+    "share_green": 0.342
+   },
+   "trail_20": {
+    "n": 196,
+    "mean_per_lot": -358,
+    "share_green": 0.316
+   }
+  }
+ },
+ {
+  "SN": "123",
+  "what": "partner-like burst scalper, held out vs NULL",
+  "result": {
+   "held_out": -906550,
+   "null": -1440202,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "123",
+  "what": "touch table",
+  "result": {
+   "burst | stress 205": {
+    "days": 582,
+    "trades_per_day": 6.0,
+    "touched_+2k": 0.134,
+    "touched_+4k": 0.043,
+    "touched_+6k": 0.01,
+    "ended_green": 0.143,
+    "mean_day": -2950,
+    "total": -1716655,
+    "mean_day_given_back_from_peak": 3179
+   },
+   "burst | stress 0": {
+    "days": 582,
+    "trades_per_day": 6.0,
+    "touched_+2k": 0.256,
+    "touched_+4k": 0.103,
+    "touched_+6k": 0.036,
+    "ended_green": 0.376,
+    "mean_day": -578,
+    "total": -336390,
+    "mean_day_given_back_from_peak": 1708
+   },
+   "random | stress 205": {
+    "days": 582,
+    "trades_per_day": 15.8,
+    "touched_+2k": 0.086,
+    "touched_+4k": 0.021,
+    "touched_+6k": 0.005,
+    "ended_green": 0.021,
+    "mean_day": -8295,
+    "total": -4827959,
+    "mean_day_given_back_from_peak": 8202
+   },
+   "random | stress 0": {
+    "days": 582,
+    "trades_per_day": 15.8,
+    "touched_+2k": 0.261,
+    "touched_+4k": 0.11,
+    "touched_+6k": 0.027,
+    "ended_green": 0.273,
+    "mean_day": -2018,
+    "total": -1174244,
+    "mean_day_given_back_from_peak": 3222
+   }
+  }
+ },
+ {
+  "SN": "124",
+  "what": "overnight short fly/condor",
+  "result": {
+   "held_out_strict": -271939,
+   "held_out_house": -137539,
+   "years": [
+    -70295,
+    -85797,
+    -61703,
+    -54144
+   ],
+   "without_best_5": -276534,
+   "worst_night": -3068,
+   "day_leg_best_total": -540670,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "125",
+  "what": "last half-hour (Gold-free)",
+  "result": {
+   "held_out": -110959,
+   "years": [
+    -17662,
+    -48314,
+    -28857,
+    -16126
+   ],
+   "trades": 294,
+   "random_95th": -73070,
+   "without_best_5": -124350,
+   "robust": {
+    "stress 400": -166728,
+    "1 minute late": -103847
+   },
+   "PASS": false
+  }
+ },
+ {
+  "SN": "126",
+  "what": "hot-day scalping",
+  "result": {
+   "held_out": 4414,
+   "null": -14137,
+   "robust": {
+    "stress 400": -2362,
+    "1 minute late": 1401
+   },
+   "PASS": false
+  }
+ },
+ {
+  "SN": "128",
+  "what": "morning crush (all days / Gold-free)",
+  "result": {
+   "all days": {
+    "held_out_strict": -796822,
+    "held_out_house": -504496,
+    "years": [
+     -189078,
+     -211369,
+     -213715,
+     -182660
+    ],
+    "without_best_5": -797689,
+    "worst": -3635,
+    "midday_control_best": -800773,
+    "PASS": false
+   },
+   "gold-free": {
+    "held_out_strict": -617812,
+    "held_out_house": -387652,
+    "years": [
+     -104303,
+     -184260,
+     -181064,
+     -148185
+    ],
+    "without_best_5": -618081,
+    "worst": -3635,
+    "midday_control_best": -626173,
+    "PASS": false
+   }
+  }
+ },
+ {
+  "SN": "129",
+  "what": "gap-day sleeve",
+  "result": {
+   "formed": false,
+   "sleeve": {
+    "label": "NOT FORMED - description only: every candidate + SN95-L summed",
+    "days": 659,
+    "net": -1764202,
+    "by_year": [
+     -400360,
+     -465540,
+     -519326,
+     -378976
+    ],
+    "without_best_5": -1804439,
+    "max_drawdown": 1764202,
+    "worst_day": -5000,
+    "refilled": 1885067
+   },
+   "vs_gold": {
+    "fixed": {
+     "Gold 30k + 25k sleeve": {
+      "net": -1483694,
+      "max_drawdown": 1519089,
+      "worst_day": -9902,
+      "by_year": [
+       -412466,
+       -350102,
+       -448537,
+       -272590
+      ]
+     },
+     "Gold 55k alone": {
+      "net": 533769,
+      "max_drawdown": 30839,
+      "worst_day": -10993,
+      "by_year": [
+       -12843,
+       226477,
+       133185,
+       186950
+      ]
+     },
+     "Gold 30k alone": {
+      "net": 280508,
+      "max_drawdown": 18467,
+      "worst_day": -6110
+     }
+    },
+    "grow stop 3": {
+     "Gold 30k + 25k sleeve": {
+      "net": -913320,
+      "max_drawdown": 1100140,
+      "worst_day": -24620,
+      "by_year": [
+       -412466,
+       -278064,
+       -226515,
+       3726
+      ]
+     },
+     "Gold 55k alone": {
+      "net": 1616247,
+      "max_drawdown": 98706,
+      "worst_day": -37056,
+      "by_year": [
+       -12843,
+       341307,
+       552856,
+       734927
+      ]
+     },
+     "Gold 30k alone": {
+      "net": 850882,
+      "max_drawdown": 53788,
+      "worst_day": -21113
+     }
+    }
+   }
+  }
+ }
+]

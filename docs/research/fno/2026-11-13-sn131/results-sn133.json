@@ -1,0 +1,118 @@
+{
+ "all days": {
+  "fixed": {
+   "2024": {
+    "net": -122502,
+    "trades": 254,
+    "days_traded": 111,
+    "won_days": 35,
+    "lost_days": 76
+   },
+   "2025": {
+    "net": -56799,
+    "trades": 198,
+    "days_traded": 86,
+    "won_days": 31,
+    "lost_days": 55
+   },
+   "2026": {
+    "net": 8126,
+    "trades": 202,
+    "days_traded": 86,
+    "won_days": 40,
+    "lost_days": 46
+   },
+   "total": -171175,
+   "without_best_5_days": -219723,
+   "worst_day": -8104,
+   "positive_years": 1
+  },
+  "learned_exit": {
+   "2024": {
+    "net": -131990,
+    "trades": 254,
+    "days_traded": 111,
+    "won_days": 42,
+    "lost_days": 69
+   },
+   "2025": {
+    "net": -80203,
+    "trades": 198,
+    "days_traded": 86,
+    "won_days": 33,
+    "lost_days": 53
+   },
+   "2026": {
+    "net": 14205,
+    "trades": 202,
+    "days_traded": 86,
+    "won_days": 40,
+    "lost_days": 46
+   },
+   "total": -197988,
+   "without_best_5_days": -280977,
+   "worst_day": -18523,
+   "positive_years": 1
+  },
+  "years_better": 1,
+  "PREFERRED": false
+ },
+ "gold-free": {
+  "fixed": {
+   "2024": {
+    "net": -96366,
+    "trades": 209,
+    "days_traded": 90,
+    "won_days": 29,
+    "lost_days": 61
+   },
+   "2025": {
+    "net": -78189,
+    "trades": 231,
+    "days_traded": 94,
+    "won_days": 31,
+    "lost_days": 63
+   },
+   "2026": {
+    "net": 10147,
+    "trades": 114,
+    "days_traded": 54,
+    "won_days": 24,
+    "lost_days": 30
+   },
+   "total": -164408,
+   "without_best_5_days": -208008,
+   "worst_day": -8104,
+   "positive_years": 1
+  },
+  "learned_exit": {
+   "2024": {
+    "net": -109788,
+    "trades": 209,
+    "days_traded": 90,
+    "won_days": 34,
+    "lost_days": 56
+   },
+   "2025": {
+    "net": -73243,
+    "trades": 231,
+    "days_traded": 94,
+    "won_days": 30,
+    "lost_days": 64
+   },
+   "2026": {
+    "net": 7711,
+    "trades": 114,
+    "days_traded": 54,
+    "won_days": 27,
+    "lost_days": 27
+   },
+   "total": -175320,
+   "without_best_5_days": -230138,
+   "worst_day": -18523,
+   "positive_years": 1
+  },
+  "years_better": 1,
+  "PREFERRED": false
+ }
+}

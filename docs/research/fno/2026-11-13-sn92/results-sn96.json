@@ -1,0 +1,414 @@
+{
+ "names": [
+  "ADANIENT",
+  "ADANIPORTS",
+  "APOLLOHOSP",
+  "ASIANPAINT",
+  "AXISBANK",
+  "BAJAJ-AUTO",
+  "BAJFINANCE",
+  "BAJAJFINSV",
+  "BEL",
+  "BHARTIARTL",
+  "CIPLA",
+  "COALINDIA",
+  "DRREDDY",
+  "EICHERMOT",
+  "ETERNAL",
+  "GRASIM",
+  "HCLTECH",
+  "HDFCBANK",
+  "HDFCLIFE",
+  "HINDALCO",
+  "HINDUNILVR",
+  "ICICIBANK",
+  "INDIGO",
+  "INFY",
+  "ITC",
+  "JIOFIN",
+  "JSWSTEEL",
+  "KOTAKBANK",
+  "LT",
+  "M&M",
+  "MARUTI",
+  "MAXHEALTH",
+  "NESTLEIND",
+  "NTPC",
+  "ONGC",
+  "POWERGRID",
+  "RELIANCE",
+  "SBILIFE",
+  "SBIN",
+  "SHRIRAMFIN",
+  "SUNPHARMA",
+  "TATACONSUM",
+  "TMPV",
+  "TATASTEEL",
+  "TCS",
+  "TECHM",
+  "TITAN",
+  "TRENT",
+  "ULTRACEMCO",
+  "WIPRO"
+ ],
+ "weights": {
+  "ADANIENT": 0.005981170177099814,
+  "ADANIPORTS": 0.00811820458391024,
+  "APOLLOHOSP": 0.0,
+  "ASIANPAINT": 0.01331734228410442,
+  "AXISBANK": 0.029491182097824382,
+  "BAJAJ-AUTO": 0.01144505433544256,
+  "BAJFINANCE": 0.028086899193021955,
+  "BAJAJFINSV": 0.002606283339719299,
+  "BEL": 0.005613750581736413,
+  "BHARTIARTL": 0.0397282940534636,
+  "CIPLA": 0.0104053025307578,
+  "COALINDIA": 0.005231319105715798,
+  "DRREDDY": 0.0,
+  "EICHERMOT": 0.006191379397405316,
+  "ETERNAL": 0.020157160693439927,
+  "GRASIM": 0.004675618003355824,
+  "HCLTECH": 0.01750747186183455,
+  "HDFCBANK": 0.12142034177544478,
+  "HDFCLIFE": 0.005768730382239829,
+  "HINDALCO": 0.002613697693305365,
+  "HINDUNILVR": 0.014244459061842189,
+  "ICICIBANK": 0.0817795869333481,
+  "INDIGO": 0.023645899441086922,
+  "INFY": 0.03639416399419331,
+  "ITC": 0.02563552242056489,
+  "JIOFIN": 0.0009417599555087208,
+  "JSWSTEEL": 0.0,
+  "KOTAKBANK": 0.02582690618843382,
+  "LT": 0.03857976163210193,
+  "M&M": 0.025663579917804363,
+  "MARUTI": 0.01938756730151154,
+  "MAXHEALTH": 0.0,
+  "NESTLEIND": 0.0,
+  "NTPC": 0.01748931704832974,
+  "ONGC": 0.009053999964899386,
+  "POWERGRID": 0.012850015545433118,
+  "RELIANCE": 0.09170567101140772,
+  "SBILIFE": 0.00461440723778105,
+  "SBIN": 0.033198394946062006,
+  "SHRIRAMFIN": 0.011781312068902886,
+  "SUNPHARMA": 0.0217453898532759,
+  "TATACONSUM": 0.009580033745687963,
+  "TMPV": 0.021430623513761227,
+  "TATASTEEL": 0.00975187469259541,
+  "TCS": 0.0131232806104038,
+  "TECHM": 0.019975401775839525,
+  "TITAN": 0.013745370687180769,
+  "TRENT": 0.014012659444366684,
+  "ULTRACEMCO": 0.02296121114391022,
+  "WIPRO": 0.00499766791465738
+ },
+ "info": {
+  "dev_obs": 799,
+  "test_obs": 1468,
+  "dev_days": 47,
+  "test_days": 88,
+  "y30": {
+   "test_mse_base": 2.353535850726459e-06,
+   "test_mse_with_components": 2.3635841421064547e-06,
+   "mse_gain_pct": -0.427,
+   "mse_gain_95ci": [
+    -3.0284496526399684e-08,
+    1.1854351826135868e-08
+   ],
+   "corr_base": -0.021362802931075148,
+   "corr_with_components": -0.011844073969466223,
+   "residual_breadth_ic_dev": -0.011471616074161686,
+   "residual_breadth_ic_test": 0.008626866634906276,
+   "residual_breadth_ic_test_95ci": [
+    -0.03995929547726322,
+    0.06021015972957036
+   ],
+   "coef_with_components": {
+    "const": -3.6598394265198544e-05,
+    "idx_r": -0.09382531831599575,
+    "idx_cum": -0.015820891687933672,
+    "br": -0.0006262045871998031,
+    "br_open": 6.965766417929564e-05,
+    "agree": 0.0004219608758203753,
+    "bank": -0.00015180478040965287,
+    "top": 0.00033143526029896786,
+    "pers": 0.0003478930891832113
+   }
+  },
+  "y15": {
+   "test_mse_base": 1.2014122900385463e-06,
+   "test_mse_with_components": 1.208976196807943e-06,
+   "mse_gain_pct": -0.63,
+   "mse_gain_95ci": [
+    -1.8155189652111578e-08,
+    3.6652287470573e-09
+   ],
+   "corr_base": -0.004476511774517634,
+   "corr_with_components": -0.00356308976548542,
+   "residual_breadth_ic_dev": -0.013216366957094253,
+   "residual_breadth_ic_test": -0.003784584765459796,
+   "residual_breadth_ic_test_95ci": [
+    -0.0645246705961423,
+    0.0642494510362858
+   ],
+   "coef_with_components": {
+    "const": -4.335264223627132e-06,
+    "idx_r": -0.07203411885183339,
+    "idx_cum": -0.01155211255877395,
+    "br": -0.0005210062398631043,
+    "br_open": 0.00010064245561524493,
+    "agree": 0.00035459000191614574,
+    "bank": -0.0001984023729490669,
+    "top": 5.119738345245317e-05,
+    "pers": 0.00011162824683778362
+   }
+  }
+ },
+ "thresholds": {
+  "resid_q80": 0.15962271485348226,
+  "resid_q20": -0.17631330054167133,
+  "idx_q80": 0.0009063973792050825,
+  "idx_q20": -0.0009720269701356531
+ },
+ "trading": {
+  "gold-free test days": {
+   "components": {
+    "broad X30": {
+     "net": -40938,
+     "green": 20,
+     "red": 55,
+     "none": 10,
+     "refilled": 52460,
+     "days": 85,
+     "trades": 75
+    },
+    "broad Xtrail": {
+     "net": -38989,
+     "green": 19,
+     "red": 56,
+     "none": 10,
+     "refilled": 51865,
+     "days": 85,
+     "trades": 75
+    },
+    "diverge X30": {
+     "net": -24865,
+     "green": 21,
+     "red": 54,
+     "none": 10,
+     "refilled": 45731,
+     "days": 85,
+     "trades": 75
+    },
+    "diverge Xtrail": {
+     "net": -33348,
+     "green": 17,
+     "red": 58,
+     "none": 10,
+     "refilled": 49400,
+     "days": 85,
+     "trades": 75
+    }
+   },
+   "index only": {
+    "broad X30": {
+     "net": -34821,
+     "green": 18,
+     "red": 54,
+     "none": 13,
+     "refilled": 48848,
+     "days": 85,
+     "trades": 72
+    },
+    "broad Xtrail": {
+     "net": -37795,
+     "green": 16,
+     "red": 56,
+     "none": 13,
+     "refilled": 50403,
+     "days": 85,
+     "trades": 72
+    },
+    "diverge X30": {
+     "net": -18707,
+     "green": 20,
+     "red": 38,
+     "none": 27,
+     "refilled": 41619,
+     "days": 85,
+     "trades": 58
+    },
+    "diverge Xtrail": {
+     "net": -3156,
+     "green": 16,
+     "red": 42,
+     "none": 27,
+     "refilled": 38326,
+     "days": 85,
+     "trades": 58
+    }
+   },
+   "NULL random side": {
+    "broad X30": {
+     "net": -39596,
+     "green": 19,
+     "red": 56,
+     "none": 10,
+     "refilled": 50829,
+     "days": 85,
+     "trades": 75
+    },
+    "broad Xtrail": {
+     "net": -42298,
+     "green": 18,
+     "red": 57,
+     "none": 10,
+     "refilled": 51872,
+     "days": 85,
+     "trades": 75
+    },
+    "diverge X30": {
+     "net": -28018,
+     "green": 21,
+     "red": 54,
+     "none": 10,
+     "refilled": 44770,
+     "days": 85,
+     "trades": 75
+    },
+    "diverge Xtrail": {
+     "net": -28303,
+     "green": 19,
+     "red": 56,
+     "none": 10,
+     "refilled": 43780,
+     "days": 85,
+     "trades": 75
+    }
+   }
+  },
+  "all test days": {
+   "components": {
+    "broad X30": {
+     "net": -37895,
+     "green": 26,
+     "red": 60,
+     "none": 11,
+     "refilled": 58621,
+     "days": 97,
+     "trades": 86
+    },
+    "broad Xtrail": {
+     "net": -37762,
+     "green": 22,
+     "red": 64,
+     "none": 11,
+     "refilled": 58036,
+     "days": 97,
+     "trades": 86
+    },
+    "diverge X30": {
+     "net": -35308,
+     "green": 22,
+     "red": 64,
+     "none": 11,
+     "refilled": 57039,
+     "days": 97,
+     "trades": 86
+    },
+    "diverge Xtrail": {
+     "net": -42613,
+     "green": 18,
+     "red": 68,
+     "none": 11,
+     "refilled": 59373,
+     "days": 97,
+     "trades": 86
+    }
+   },
+   "index only": {
+    "broad X30": {
+     "net": -38423,
+     "green": 23,
+     "red": 60,
+     "none": 14,
+     "refilled": 56615,
+     "days": 97,
+     "trades": 83
+    },
+    "broad Xtrail": {
+     "net": -39791,
+     "green": 19,
+     "red": 64,
+     "none": 14,
+     "refilled": 58035,
+     "days": 97,
+     "trades": 83
+    },
+    "diverge X30": {
+     "net": -17887,
+     "green": 23,
+     "red": 42,
+     "none": 32,
+     "refilled": 45330,
+     "days": 97,
+     "trades": 65
+    },
+    "diverge Xtrail": {
+     "net": -7426,
+     "green": 17,
+     "red": 48,
+     "none": 32,
+     "refilled": 43605,
+     "days": 97,
+     "trades": 65
+    }
+   },
+   "NULL random side": {
+    "broad X30": {
+     "net": -38410,
+     "green": 24,
+     "red": 62,
+     "none": 11,
+     "refilled": 57857,
+     "days": 97,
+     "trades": 86
+    },
+    "broad Xtrail": {
+     "net": -44006,
+     "green": 20,
+     "red": 66,
+     "none": 11,
+     "refilled": 58330,
+     "days": 97,
+     "trades": 86
+    },
+    "diverge X30": {
+     "net": -39404,
+     "green": 22,
+     "red": 64,
+     "none": 11,
+     "refilled": 57023,
+     "days": 97,
+     "trades": 86
+    },
+    "diverge Xtrail": {
+     "net": -37516,
+     "green": 20,
+     "red": 66,
+     "none": 11,
+     "refilled": 53701,
+     "days": 97,
+     "trades": 86
+    }
+   }
+  }
+ },
+ "exit_test": {
+  "trades": 31,
+  "changed": 2,
+  "delta": -250
+ },
+ "information_pass": false
+}

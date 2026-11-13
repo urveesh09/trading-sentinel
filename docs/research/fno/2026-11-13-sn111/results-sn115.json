@@ -1,0 +1,322 @@
+{
+ "paper_entries_in_archive_days": 23,
+ "with_quotes": 23,
+ "delay_seconds": {
+  "n": 23,
+  "mean": 51.8,
+  "median": 39.3
+ },
+ "signal_to_fill_per_lot": {
+  "n": 23,
+  "mean": 109.2,
+  "median": 56.9
+ },
+ "fill_over_mid_per_lot": {
+  "n": 23,
+  "mean": 33.5,
+  "median": 45.5
+ },
+ "move_after_fill_1m_per_lot": {
+  "n": 22,
+  "mean": 121.8,
+  "median": 97.5
+ },
+ "move_after_fill_5m_per_lot": {
+  "n": 20,
+  "mean": 226.9,
+  "median": 185.3
+ },
+ "exit_below_mid_per_lot": {
+  "n": 22,
+  "mean": 98.4,
+  "median": 61.7
+ },
+ "scheduled_10am_move_1m_per_lot": {
+  "n": 62,
+  "mean": 16.3,
+  "median": 27.6
+ },
+ "scheduled_10am_move_5m_per_lot": {
+  "n": 62,
+  "mean": 25.5,
+  "median": -56.1
+ },
+ "rows": [
+  {
+   "day": "2026-09-17",
+   "strike": 23350.0,
+   "opt": "CE",
+   "delay_s": 38.870683,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -34.12500000000037,
+   "fill_over_fill_minute_mid_per_lot": 68.25000000000074,
+   "move_after_1m_per_lot": 339.6250000000015,
+   "move_after_5m_per_lot": null,
+   "exit_below_mid_per_lot": -51.999999999999815
+  },
+  {
+   "day": "2026-09-21",
+   "strike": 23400.0,
+   "opt": "CE",
+   "delay_s": 24.367373,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -35.74999999999889,
+   "fill_over_fill_minute_mid_per_lot": -30.87499999999963,
+   "move_after_1m_per_lot": 115.37500000000037,
+   "move_after_5m_per_lot": 336.37500000000074,
+   "exit_below_mid_per_lot": 50.374999999999446
+  },
+  {
+   "day": "2026-09-23",
+   "strike": 23400.0,
+   "opt": "CE",
+   "delay_s": 89.843339,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -112.12500000000148,
+   "fill_over_fill_minute_mid_per_lot": 24.375,
+   "move_after_1m_per_lot": 207.99999999999926,
+   "move_after_5m_per_lot": -35.75000000000074,
+   "exit_below_mid_per_lot": -50.37499999999852
+  },
+  {
+   "day": "2026-09-28",
+   "strike": 22900.0,
+   "opt": "PE",
+   "delay_s": 23.473354,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 56.875,
+   "fill_over_fill_minute_mid_per_lot": 45.49999999999926,
+   "move_after_1m_per_lot": 79.62499999999963,
+   "move_after_5m_per_lot": -247.00000000000074,
+   "exit_below_mid_per_lot": 34.12500000000037
+  },
+  {
+   "day": "2026-09-28",
+   "strike": 22900.0,
+   "opt": "PE",
+   "delay_s": 23.477717,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 118.62500000000018,
+   "fill_over_fill_minute_mid_per_lot": 19.50000000000074,
+   "move_after_1m_per_lot": 456.62500000000034,
+   "move_after_5m_per_lot": 76.37500000000074,
+   "exit_below_mid_per_lot": 6.500000000000554
+  },
+  {
+   "day": "2026-09-28",
+   "strike": 22900.0,
+   "opt": "PE",
+   "delay_s": 53.499375,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -128.37499999999963,
+   "fill_over_fill_minute_mid_per_lot": 82.87500000000037,
+   "move_after_1m_per_lot": 0.0,
+   "move_after_5m_per_lot": -285.99999999999943,
+   "exit_below_mid_per_lot": 0.0
+  },
+  {
+   "day": "2026-09-30",
+   "strike": 22850.0,
+   "opt": "PE",
+   "delay_s": 6.059924,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 276.25,
+   "fill_over_fill_minute_mid_per_lot": 216.12499999999926,
+   "move_after_1m_per_lot": -290.8750000000015,
+   "move_after_5m_per_lot": 230.7499999999989,
+   "exit_below_mid_per_lot": 73.125
+  },
+  {
+   "day": "2026-09-30",
+   "strike": 22850.0,
+   "opt": "PE",
+   "delay_s": 66.053681,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 82.87499999999852,
+   "fill_over_fill_minute_mid_per_lot": -203.125,
+   "move_after_1m_per_lot": 515.1250000000007,
+   "move_after_5m_per_lot": null,
+   "exit_below_mid_per_lot": 126.74999999999926
+  },
+  {
+   "day": "2026-10-01",
+   "strike": 22650.0,
+   "opt": "PE",
+   "delay_s": 53.853879,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 302.2499999999985,
+   "fill_over_fill_minute_mid_per_lot": 9.749999999998522,
+   "move_after_1m_per_lot": -326.62500000000034,
+   "move_after_5m_per_lot": 968.4999999999985,
+   "exit_below_mid_per_lot": null
+  },
+  {
+   "day": "2026-10-07",
+   "strike": 22650.0,
+   "opt": "PE",
+   "delay_s": 130.499656,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 198.25000000000074,
+   "fill_over_fill_minute_mid_per_lot": 118.62500000000111,
+   "move_after_1m_per_lot": -481.00000000000034,
+   "move_after_5m_per_lot": -896.9999999999989,
+   "exit_below_mid_per_lot": 193.37500000000148
+  },
+  {
+   "day": "2026-10-07",
+   "strike": 22700.0,
+   "opt": "PE",
+   "delay_s": 11.534573,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 159.24999999999926,
+   "fill_over_fill_minute_mid_per_lot": -308.75,
+   "move_after_1m_per_lot": -22.74999999999963,
+   "move_after_5m_per_lot": -854.7500000000003,
+   "exit_below_mid_per_lot": 191.7500000000011
+  },
+  {
+   "day": "2026-10-09",
+   "strike": 22500.0,
+   "opt": "CE",
+   "delay_s": 21.978853,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -51.999999999999815,
+   "fill_over_fill_minute_mid_per_lot": -50.37500000000037,
+   "move_after_1m_per_lot": 321.74999999999926,
+   "move_after_5m_per_lot": 742.6249999999998,
+   "exit_below_mid_per_lot": 328.24999999999886
+  },
+  {
+   "day": "2026-10-15",
+   "strike": 22800.0,
+   "opt": "CE",
+   "delay_s": 58.105845,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -1.624999999998522,
+   "fill_over_fill_minute_mid_per_lot": 393.25000000000074,
+   "move_after_1m_per_lot": 505.37500000000034,
+   "move_after_5m_per_lot": 1582.7499999999995,
+   "exit_below_mid_per_lot": 313.62500000000114
+  },
+  {
+   "day": "2026-10-29",
+   "strike": 22900.0,
+   "opt": "CE",
+   "delay_s": 22.110589,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 645.1250000000007,
+   "fill_over_fill_minute_mid_per_lot": -310.3749999999985,
+   "move_after_1m_per_lot": 13.000000000001108,
+   "move_after_5m_per_lot": -258.3749999999978,
+   "exit_below_mid_per_lot": 11.375000000000739
+  },
+  {
+   "day": "2026-10-29",
+   "strike": 22950.0,
+   "opt": "PE",
+   "delay_s": 80.922015,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -103.99999999999963,
+   "fill_over_fill_minute_mid_per_lot": 32.5,
+   "move_after_1m_per_lot": 581.7499999999993,
+   "move_after_5m_per_lot": 271.37500000000074,
+   "exit_below_mid_per_lot": -103.99999999999963
+  },
+  {
+   "day": "2026-10-29",
+   "strike": 22900.0,
+   "opt": "CE",
+   "delay_s": 23.791634,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 53.625000000000185,
+   "fill_over_fill_minute_mid_per_lot": 69.87500000000018,
+   "move_after_1m_per_lot": null,
+   "move_after_5m_per_lot": null,
+   "exit_below_mid_per_lot": 40.625
+  },
+  {
+   "day": "2026-11-02",
+   "strike": 23400.0,
+   "opt": "PE",
+   "delay_s": 39.320921,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 268.1250000000018,
+   "fill_over_fill_minute_mid_per_lot": 181.9999999999989,
+   "move_after_1m_per_lot": 305.49999999999926,
+   "move_after_5m_per_lot": -84.50000000000074,
+   "exit_below_mid_per_lot": 424.12500000000034
+  },
+  {
+   "day": "2026-11-02",
+   "strike": 23350.0,
+   "opt": "CE",
+   "delay_s": 40.285745,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -68.25000000000028,
+   "fill_over_fill_minute_mid_per_lot": 29.249999999999723,
+   "move_after_1m_per_lot": 53.62499999999972,
+   "move_after_5m_per_lot": 888.8749999999998,
+   "exit_below_mid_per_lot": 128.37500000000057
+  },
+  {
+   "day": "2026-11-02",
+   "strike": 23400.0,
+   "opt": "CE",
+   "delay_s": 189.996481,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 537.8750000000003,
+   "fill_over_fill_minute_mid_per_lot": 133.24999999999983,
+   "move_after_1m_per_lot": -105.625,
+   "move_after_5m_per_lot": 518.3749999999997,
+   "exit_below_mid_per_lot": 211.25
+  },
+  {
+   "day": "2026-11-05",
+   "strike": 24400.0,
+   "opt": "CE",
+   "delay_s": 24.000601,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 209.62500000000148,
+   "fill_over_fill_minute_mid_per_lot": 146.25,
+   "move_after_1m_per_lot": 362.37499999999926,
+   "move_after_5m_per_lot": 1122.8749999999986,
+   "exit_below_mid_per_lot": 42.24999999999852
+  },
+  {
+   "day": "2026-11-05",
+   "strike": 24350.0,
+   "opt": "CE",
+   "delay_s": 88.081144,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -453.3750000000015,
+   "fill_over_fill_minute_mid_per_lot": -37.37499999999926,
+   "move_after_1m_per_lot": -103.99999999999778,
+   "move_after_5m_per_lot": 139.75000000000222,
+   "exit_below_mid_per_lot": 178.75
+  },
+  {
+   "day": "2026-11-05",
+   "strike": 24400.0,
+   "opt": "CE",
+   "delay_s": 27.75635,
+   "in_archive": true,
+   "signal_to_fill_per_lot": 701.9999999999989,
+   "fill_over_fill_minute_mid_per_lot": 87.74999999999963,
+   "move_after_1m_per_lot": 134.8750000000011,
+   "move_after_5m_per_lot": 308.7500000000018,
+   "exit_below_mid_per_lot": -95.87500000000148
+  },
+  {
+   "day": "2026-11-11",
+   "strike": 25450.0,
+   "opt": "PE",
+   "delay_s": 52.823533,
+   "in_archive": true,
+   "signal_to_fill_per_lot": -108.87500000000443,
+   "fill_over_fill_minute_mid_per_lot": 51.999999999997044,
+   "move_after_1m_per_lot": 17.874999999998522,
+   "move_after_5m_per_lot": 14.625000000001478,
+   "exit_below_mid_per_lot": 112.12500000000148
+  }
+ ]
+}

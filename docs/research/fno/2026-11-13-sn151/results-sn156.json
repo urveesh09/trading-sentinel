@@ -1,0 +1,198 @@
+{
+ "SN95-L days": {
+  "tables": {
+   "hold both": {
+    "2023": {
+     "net": -3644,
+     "green": 1.0,
+     "red": 5.0,
+     "trades": 6
+    },
+    "2024": {
+     "net": 12507,
+     "green": 3.0,
+     "red": 4.0,
+     "trades": 7
+    },
+    "2025": {
+     "net": -6537,
+     "green": 5.0,
+     "red": 10.0,
+     "trades": 15
+    },
+    "2026": {
+     "net": 14818,
+     "green": 4.0,
+     "red": 3.0,
+     "trades": 7
+    }
+   },
+   "leg out at +50%": {
+    "2023": {
+     "net": -552,
+     "green": 3,
+     "red": 3,
+     "trades": 6
+    },
+    "2024": {
+     "net": -5483,
+     "green": 3,
+     "red": 4,
+     "trades": 7
+    },
+    "2025": {
+     "net": -12427,
+     "green": 3,
+     "red": 12,
+     "trades": 15
+    },
+    "2026": {
+     "net": 8418,
+     "green": 2,
+     "red": 5,
+     "trades": 7
+    }
+   },
+   "leg out at +100%": {
+    "2023": {
+     "net": -6550,
+     "green": 1,
+     "red": 5,
+     "trades": 6
+    },
+    "2024": {
+     "net": -2389,
+     "green": 3,
+     "red": 4,
+     "trades": 7
+    },
+    "2025": {
+     "net": -7156,
+     "green": 5,
+     "red": 10,
+     "trades": 15
+    },
+    "2026": {
+     "net": 2148,
+     "green": 3,
+     "red": 4,
+     "trades": 7
+    }
+   }
+  },
+  "preference": {
+   "leg out at +50%": {
+    "total": -10044,
+    "years_better": 1,
+    "without_best_5": -37125,
+    "hold_without_best_5": -22251,
+    "preferred": false
+   },
+   "leg out at +100%": {
+    "total": -13947,
+    "years_better": 0,
+    "without_best_5": -31893,
+    "hold_without_best_5": -22251,
+    "preferred": false
+   }
+  }
+ },
+ "all signal days": {
+  "tables": {
+   "hold both": {
+    "2023": {
+     "net": -7270,
+     "green": 1.0,
+     "red": 8.0,
+     "trades": 9
+    },
+    "2024": {
+     "net": 29842,
+     "green": 7.0,
+     "red": 5.0,
+     "trades": 12
+    },
+    "2025": {
+     "net": -12241,
+     "green": 5.0,
+     "red": 13.0,
+     "trades": 18
+    },
+    "2026": {
+     "net": 18940,
+     "green": 5.0,
+     "red": 3.0,
+     "trades": 8
+    }
+   },
+   "leg out at +50%": {
+    "2023": {
+     "net": -3005,
+     "green": 4,
+     "red": 5,
+     "trades": 9
+    },
+    "2024": {
+     "net": -16385,
+     "green": 3,
+     "red": 9,
+     "trades": 12
+    },
+    "2025": {
+     "net": -13389,
+     "green": 4,
+     "red": 14,
+     "trades": 18
+    },
+    "2026": {
+     "net": 6857,
+     "green": 2,
+     "red": 6,
+     "trades": 8
+    }
+   },
+   "leg out at +100%": {
+    "2023": {
+     "net": -10177,
+     "green": 1,
+     "red": 8,
+     "trades": 9
+    },
+    "2024": {
+     "net": 729,
+     "green": 7,
+     "red": 5,
+     "trades": 12
+    },
+    "2025": {
+     "net": -5675,
+     "green": 6,
+     "red": 12,
+     "trades": 18
+    },
+    "2026": {
+     "net": 4194,
+     "green": 4,
+     "red": 4,
+     "trades": 8
+    }
+   }
+  },
+  "preference": {
+   "leg out at +50%": {
+    "total": -25922,
+    "years_better": 1,
+    "without_best_5": -54900,
+    "hold_without_best_5": -13795,
+    "preferred": false
+   },
+   "leg out at +100%": {
+    "total": -10929,
+    "years_better": 1,
+    "without_best_5": -32371,
+    "hold_without_best_5": -13795,
+    "preferred": false
+   }
+  }
+ }
+}
