@@ -9,6 +9,10 @@ This is the one document to read to continue the SN work after a context reset. 
 - where all data and code are;
 - what is pending.
 
+Companion documents:
+- `docs/SN_TESTING_PROCEDURE.md`: exactly how every SN test was built, run and judged;
+- `docs/SN_PROBLEM_STATEMENT_EMPTY_DAYS.md`: the open problem (Gold's ~84% no-trade days) for a research agent.
+
 Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-sentinel`), branch `codex/production-correction-hedge-p0`, except the one Production deployment in section 7.
 
 ---
