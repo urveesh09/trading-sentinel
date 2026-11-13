@@ -8163,3 +8163,15 @@ real phase changes remain visible and attributable.
   - SN182's export path updated after the forward panel rotated its export folder.
 - **Environment:** research venv `C:\Users\Urveesh\sentinel-ml-venv` (LightGBM).
 - **Configuration / migration / runtime:** none. Production unchanged (`826f0727`).
+
+## SN186–SN200 empty-day leg research and the resume point (Nov 13–14, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn186` (plan `4462f86f`, results `1f60f9df`, `5deb4c7f`, `d08e02fd`).
+- **Result:** no extra leg for Gold's empty days qualifies.
+  - Rules, fixed ₹1,000 / ₹1,500 targets, sellers, LightGBM and LSTM (PyTorch CPU in the research venv) all fail held out.
+  - The SN95-L / SN171 volatility watches failed the unseen NIFTY Apr–Dec 2022 exam (SN196).
+- **Data:** NIFTY Apr–Dec 2022 sealed read-only from the Breeze history database into `…/sn186/_local` (SN195); now seen.
+- **Resume point:** `docs/SN_STRATEGY_HISTORY.md` section 1 (current state, data inventory) and its last section (open items, ICICI download plan). `docs/SN_TESTING_PROCEDURE.md` section 11 lists the tools.
+- **Next downloads** (owner's login, skill only): `nifty-2022-q1-fno`, then `sensex-2024-jan-sep-fno`.
+- **Next build:** a SENSEX lab for one sealed test on SENSEX Oct 2024 – Apr 2026.
+- **Configuration / migration / runtime:** none. Production stays `826f0727`.

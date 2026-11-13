@@ -184,3 +184,31 @@ Read first: `docs/research/fno/2026-11-13-sn92/README.md`, `…-sn101/README.md`
 2. real broker fills, for cost calibration.
 
 Both need the owner's word.
+
+## 10. Status after SN121–SN200 (Nov 13–14, 2026)
+
+**What the empty days are** (SN186, 594 empty vs 111 Gold days, development):
+- weak-trend days: yesterday's ADX 20.8 vs 28.3;
+- quieter openings: OR30 0.37% vs 0.43%;
+- calmer VIX: 0.98 vs 1.02 of its median;
+- smaller ranges: 0.77% vs 0.85%;
+- they end flat: open → close +0.03% vs −0.32% on Gold days;
+- they still move about 0.5% after 10:00, in both directions.
+
+**Everything tried since SN121, all held out against random nulls:**
+- partner-style scalping, overnight and last-half-hour plays, morning crush;
+- the Smart Sentinel learners (LightGBM over 234k minute decisions, 1-second and order-book learners);
+- the hot-day program;
+- the daily-wage program (wage lock, cheap contracts, capital ladders, triple-barrier ML, learned exits, an online bandit);
+- the empty-day leg program: both sides at 09:20, small fixed targets, an iron-fly seller, a volatility-regime leg, LSTM entry / volatility / direction, a stack.
+- **None is profitable held out.** The learners' honest answer is to sit out.
+
+**The one 2023–26 edge failed the unseen year:** volatility persistence (SN95-L, SN171: a busy morning keeps the day busy) lost on NIFTY Apr–Dec 2022 (SN196).
+
+**What could still change the answer** (new information, not new searches):
+1. order-book flow from the tick recorder (from Nov 16);
+2. SENSEX as a second index (a SENSEX lab on the unseen Oct 2024 – Apr 2026 data);
+3. event days (RBI, budget, global cues) as non-price information;
+4. older NIFTY history (2020–2022) for more hot days.
+
+Until then the best empty-day action remains no trade. A daily income comes from paying out Gold's lumpy profit (SN177's salary account).

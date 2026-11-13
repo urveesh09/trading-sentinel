@@ -17,14 +17,48 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 
 ---
 
-## 1. Current state, in one paragraph
+## 1. Current state (updated Nov 14, 2026, after SN200) — read this first
 
-**SN Gold v5 runs in Production on PAPER since Nov 13, 2026** (release `82b08371`, PR #137).
-- It is `python-engine/sn_gold.py`: it follows N11's live paper record and places no orders.
-- **Wallet:** starts at ₹30,000; 20% day loss limit; losing days refilled; +50% wallet after net profit equal to the wallet, at most 3 steps (₹1,01,250).
-- **Research expectation (in-sample):** about +₹8.5 lakh over Jan 2023 – Oct 2026 from ₹30k, worst day about −₹21k, about 1 trade every 5–6 sessions.
-- **The days Gold sits out:** about 84% of sessions. SN76–SN90 showed they have **no intraday edge** we could find (buying, selling, 1-minute, 1-second, web rules). **Recommendation: stay flat on them.**
-- **Frozen, verifiable configs:** `docs/research/fno/sn-gold/` (v3, v4, v5), with git tags `sn-gold-v3`, `sn-gold-v4`, `sn-gold-v5`.
+**In Production (`826f0727`, PR #138, deployed Nov 13 evening, verified):**
+- **SN Gold v5 on PAPER** (`python-engine/sn_gold.py`, since Nov 13, release `82b08371`):
+  - follows N11's live paper record and places no orders;
+  - wallet starts at ₹30,000, 20% day loss limit, losing days refilled, +50% after net profit equal to the wallet (at most 3 steps).
+- **Partner give-back stop** (`partner_profit_protection.giveback_stop`, flag `PARTNER_WATCH_GIVEBACK_STOP_ENABLED`): "🛑 Stop for today and keep your profit" once a day that reached ≥ 5% of cash gives back 30% of its best. Messages only.
+- **TR01 live tick recorder** (`python-engine/tick_recorder.py`, flag `TICK_RECORDER_ENABLED`):
+  - records every NIFTY/SENSEX chain change with 5-level depth to `/data/research/ticks/<day>/`;
+  - limits: 600 MiB a day, 12 GiB in all, 35-day retention;
+  - **first live session Mon Nov 16**: check `events.jsonl`, the chunks and the owner line "📼 Tick recorder …" after 15:41.
+
+**What the research says (SN01–SN200, all in this file):**
+- **Gold v5 is the edge.** It earns in lumps: about 1 trade every 5–6 sessions, about half the months positive, +₹6.4 lakh from ₹30k growing over Jan 2023 – Aug 2026 (development), +₹2.09 lakh on the latest-5% TEST.
+- **Gold's empty days (~84% of sessions)** are weak-trend, calm, flat-closing days (SN186).
+- **Nothing tried makes money on them:** rules, cheaper contracts, fixed ₹1,000 / ₹1,500 targets, sellers, LightGBM, LSTM, a bandit, 1-second scalping.
+  - The volatility-persistence watches (SN95-L, SN171) earned a little in 2023–26 but **failed the unseen NIFTY 2022 exam (SN196)**.
+- **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
+
+**Data inventory (what is seen):**
+- **NIFTY 2023, 2024, 2025, Jan–Oct 2026:** seen.
+- **NIFTY Apr–Dec 2022:** seen since SN196 (sealed copy in `docs/research/fno/2026-11-13-sn186/_local`).
+- **1-second archives Apr–Nov 2026:** seen.
+- **Real-quote archive Sep 10 – Nov 13 2026:** seen through Oct 28.
+- **Not downloaded:** NIFTY Jan–Mar 2022.
+- **Unseen and on disk:** SENSEX Oct 2024 – Apr 2026 (needs a SENSEX lab: lot 20, step 100, costs scaled). SENSEX Jan–Sep 2024 is partly downloaded.
+
+**Paper watches:**
+- SN95-L, SN126-L and SN171 (forward ≥ 20 trades; now weak after SN196);
+- SN Gold v5 `FORWARD_V5.md`.
+
+**Waiting on the owner:**
+- the ICICI downloads (see "Open items, Nov 14, 2026" at the end of this file);
+- whether to build the SENSEX lab next.
+
+**How to resume:**
+- Read this section and the last sections of this file: SN161–SN185 and SN186–SN200.
+- Then read `docs/SN_TESTING_PROCEDURE.md`, sections 1–11 (tools, venvs, pitfalls).
+- Then read the folder READMEs:
+  - `docs/research/fno/2026-11-13-sn161/README.md`
+  - `docs/research/fno/2026-11-13-sn186/README.md`
+- Research Python: `C:\Users\Urveesh\sentinel-ml-venv` (LightGBM, PyTorch CPU); the engine uses `python-engine\winvenv`.
 
 ---
 
@@ -504,3 +538,53 @@ The work dug where the one gap-day edge lives (volatility persistence, the 10:00
 - **The usable answer (SN177):** a salary account pays a fixed wage from Gold's lumpy profit. Paying ₹750 every session needs about ₹3.15 lakh, and ₹1,500 about ₹8.45 lakh (Gold ₹30k fixed + watches, in-sample).
 - **Lesson:** a wage is easy to see and hard to keep. On gap days the smart answer is to sit out. A daily income comes from paying out Gold's edge, not from forcing trades.
 - **Forward:** SN95-L, SN126-L and SN171 stay paper watches, with tick-recorder data from Nov 16. One sealed SENSEX (Oct 2024 – Dec 2025) test of the hot-day trades needs the owner's word.
+
+## SN186–SN200 (Nov 13–14, 2026 night): an extra leg for Gold's empty days (folder `docs/research/fno/2026-11-13-sn186`)
+
+**Owner:** "We don't want to replace Gold … an additional leg for the empty days … the commonality of those days … remove the rule of 10% … a fixed amount of ₹1000 or ₹1500 … whatever the wallet size … maybe try LSTM … use whatever data we have on the device … till SN 200."
+
+**Method:**
+- Plan frozen at `4462f86f`; every phase frozen before it ran.
+- Development = 705 sessions; TEST = the latest 5% (Gold's 26 empty days of Aug 20 – Oct 28, 2026).
+- NIFTY Apr–Dec 2022 (unseen, on disk) sealed and scored once.
+- Fixed goal ₹1,000 / ₹1,500, lots fixed, ₹205 per leg.
+
+| SN | Result |
+|---|---|
+| 186 Commonality | Empty days: yesterday's ADX 20.8 vs 28.3, OR30 0.37% vs 0.43%, VIX ratio 0.98 vs 1.02, range 0.77% vs 0.85%, open→close +0.03% vs −0.32% (Gold earns on falls). No cluster pays a simple play; 09:45 tells Gold vs empty days at AUC 0.66–0.72 |
+| 187 The 91% trade on both sides | −₹3.94 lakh held out (random minute −₹3.63 lakh) |
+| 188 Hot empty days, small target | −₹86,715 |
+| 189 Iron-fly seller on calm forecasts | −₹1.51 lakh; the fly reaches +₹1,000 on 6 of 590 empty days |
+| 190 Volatility-regime leg | −₹1.10 lakh |
+| 191 LSTM entry | AUC 0.53 / 0.50, no trades; LightGBM AUC 0.51 |
+| 192 LSTM volatility | R² below HAR in all three years |
+| 193 LSTM 15-min direction | 51.1% / 52.0% / 49.9% accuracy = base rate; −₹71,667 |
+| 194 Stack | No trades |
+| 195 NIFTY 2022 sealed | 145 lab sessions (Apr 1 – Dec 30, 2022) |
+| **196 NIFTY 2022 exam** | **SN95-L −₹4,490 (10 trades), SN171 −₹1,740 / −₹1,657 (2 each): the watches fail the unseen year** |
+| 197 Leg beside Gold | Leg +₹39,086 in development (in-sample); Gold + leg 1.3 goal days a month vs 0.84 |
+| 198 TEST | Leg +₹2,407 on 2 trades at ₹15k |
+| 199 Leg wallet | Scales linearly, losing years included |
+
+**Lesson:** empty days are calm, two-way days; no buyer, seller or learner earns on them after costs, and the only 2023–26 edge failed 2022. Stay flat on empty days; take a daily income from Gold through the salary account (SN177).
+
+### Open items, Nov 14, 2026 (the current list)
+
+1. **Mon Nov 16 checks:**
+   - the tick recorder's first live day (`events.jsonl`, chunks, the owner line);
+   - SN Gold v5 paper progress;
+   - the partner give-back stop (only when a good day gives back).
+2. **ICICI downloads** (the owner logs in each morning; run only through the `breeze-history-download` skill: preflight → probe → plan → run → check → report):
+   - first `nifty-2022-q1-fno`: NIFTY Jan–Mar 2022, ~1,000 requests, probe first;
+   - then `sensex-2024-jan-sep-fno`: completes SENSEX 2024, 103 index requests and then its options;
+   - together about one day's 4,800, if the other agent's 1-second downloads pause that day.
+   - **Later, as new targets on the owner's word (`references/new-target.md`):** NIFTY 2021, then 2020 (probe first; ICICI may not serve expired weekly options that old).
+3. **Build a SENSEX lab** (lot 20, step 100, costs scaled per lot) and test SN95-L / SN171 / Gold-style entries once on the unseen SENSEX Oct 2024 – Apr 2026.
+4. **Forward watches:** SN95-L, SN126-L and SN171 stay paper-only (≥ 20 trades); after SN196 they are weak.
+5. **Do not repeat** on NIFTY 2023–2026 / 2022 Apr–Dec: wage-lock searches, cheap contracts, fixed small targets, iron flies, LightGBM / LSTM entry or direction models, bandits.
+
+### Commit index, SN161–SN200
+
+- **SN161–SN185:** `8d91837d` (plan), `b813219b`, `f2d8de08`, `0be4c0cb`, `62186118`, `777b1182`, `e63fd462`, `b38b606c`, `73af1f1b`; docs `946a9692`.
+- **SN186–SN200:** `4462f86f` (plan), `1f60f9df`, `09714777`, `5deb4c7f`, `d08e02fd`.
+- **Production:** `826f0727` (PR #138); docs `43634552`.

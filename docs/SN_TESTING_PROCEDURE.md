@@ -162,3 +162,38 @@ For every SN:
 - kept or not.
 
 The tables show per year profit / refill, won / lost / no-trade days, worst day, and net at the end, for every wallet. Results are always labelled in-sample or held-out; a pass only ever means "candidate for forward or paper", never real money without the owner's word.
+
+---
+
+## 11. Additions for SN161–SN200 (Nov 13–14, 2026)
+
+**New toolkits (each folder imports the earlier ones; nothing upstream is edited):**
+
+| Module | Folder | What it gives |
+|---|---|---|
+| `pw.py` | `2026-11-13-sn161` | The TEST split (`TEST_FROM = 2026-08-20`, the latest 5%, 37 sessions); `trade()` (one long option, net target as a limit on the bid high, net stop on the bid low, ties to the stop, gap-through at the open); `spread_trade()`; `play()` (a day of attempts with the wage lock and day limit); random and range-break pickers; `wage_stats()` (wage / red / flat days, monthly sums) |
+| `pml.py` | `2026-11-13-sn161` | Walk-forward LightGBM classifiers inside development (quarterly blocks, one-session purge); the barrier policy simulator; the matched random null |
+| `sn166.py` | `2026-11-13-sn161` | The triple-barrier dataset (+₹1,500 / −₹1,500 / 15:10, four actions, every minute), cached in `_local/barrier.pkl` and aligned to SN131's feature rows; 294 sampled labels re-simulated with 0 mismatches |
+| `p3.py` | `2026-11-13-sn161` | HAR-RV forecast with leave-one-year-out fits (`rho_table`), structure exits with a target (`structure`), an option trade with an index-condition exit, LOYO and random-day nulls |
+| `p4.py` | `2026-11-13-sn161` | Gold v5 day nets per wallet (**development days by default**; pass `keep=pw.is_test` for TEST), the day player, the salary account |
+| `pe.py` | `2026-11-13-sn186` | Gold's empty days (`gold_trade_days`, cached), single-leg and iron-fly minute valuations, fixed-goal statistics |
+| `seq.py` | `2026-11-13-sn186` | 60-minute sequence features and the PyTorch LSTM (classifier and regressor) |
+
+**Research Python:** `C:\Users\Urveesh\sentinel-ml-venv\Scripts\python.exe` (numpy 1.26.4, LightGBM 4.5.0, scikit-learn 1.5.2, **PyTorch 2.5.1 CPU since Nov 13**). `winvenv` stays untouched.
+
+**Data added:**
+- **NIFTY Apr–Dec 2022, sealed by SN195:**
+  - mirror: `2026-11-13-sn186/_local/mirror-2022.sqlite` (sha `94e2b28f…`); dataset: `…/_local/dataset-nifty-2022` (manifest sha `4655d498…`);
+  - 145 lab sessions;
+  - load with `sn196.sessions_2022()`, which also adds 2022 to the lab calendar.
+  - **It was opened once by the SN196 exam, so it is now SEEN.**
+- **Real-quote archive:** the forward panel rotates its export folder daily. Point `qa.EXPORT` at the newest `exports/<stamp>` folder; cached days in SN101's `_local` stay valid.
+
+**Pitfalls found (add to section 9):**
+
+| Pitfall | Where | Fix |
+|---|---|---|
+| A helper's default kept TEST days in development totals | p4.gold (SN177–SN180) | Default = development; v1 results kept as `-v1-test-days-included` |
+| A data folder moved after the freeze | SN182 | Path-only fix, disclosed in the script and commit |
+| A fixed rupee target at many lots sits inside per-lot costs | SN165 | Fix lots (usually 1) when the goal is a fixed rupee amount |
+| A frozen source file did not hold what the study needed (aggregates, not day results) | SN183 | Check a source's shape before freezing a study on it |
