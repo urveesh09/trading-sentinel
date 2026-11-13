@@ -428,3 +428,23 @@ All were read in place and hash-checked.
 - Empty days stay flat; SN95-L stays a forward watch, and if it ever passes it goes in a separate sleeve.
 - The owner's levers are capital, the 50% growth trigger and the cap.
 - The only data worth buying next is small real broker fills (cost calibration), then NIFTY next-week expiry minutes (for the straddle watch).
+
+
+## SN121–SN130 (Nov 13, 2026): gap days freed from Gold's rules, and the partner
+
+**The request:** the owner wanted the gap days used ("the partner trades every day and is up ₹6–7k on ₹25k at some moment; why can't the system"), with autonomy over gap-day rules. Folder `docs/research/fno/2026-11-13-sn121` (frozen `cecf2f8a`; the README has every number and the sources).
+
+**The partner data and its privacy rule:** the frozen Nov 4 extract is used, with shapes and ratios only and no partner rupee totals.
+
+| SN | Finding | Verdict |
+|---|---|---|
+| 121 | The partner's peak was ≥ +20% of ₹25k on 5 of 7 days, but only 3 ended green, with a median of 22 trips after the peak. A 30% give-back stop on their own sequence cuts the 7-day loss by ~71% | Coaching lesson |
+| 122 | Their entries catch the next minute (+1.51% vs +0.12% random, p = 0.0015), gone by 5 minutes; their exits are well timed; machine exits on their entries are worse | Skill is real but tiny vs costs |
+| 123 | A partner-like machine scalper loses ₹2,950–8,295 a day; locks only shrink losses | NOT PROVEN |
+| 124 | Overnight fly / condor selling (Muravyev–Ni): the effect exists, but 4 legs of costs swamp it (−₹850–1,040 a night) | NOT PROVEN |
+| 125 | The last half-hour to 15:25: −₹1,10,959 held out | NOT PROVEN |
+| 126 | Hot-day big-burst scalping: +₹4,414 on 35 trades, −₹2,362 at ₹400 | Forward watch SN126-L |
+| 127 | A 15-minute option buy costs ₹285–340 per lot at every clock | Map |
+| 128 | Morning IV-crush selling: no better than midday | NOT PROVEN |
+| 129 | Nothing passed. Trading every candidate every gap day: −₹17.6 lakh. Gold ₹55k alone: ₹16.16 lakh | Do not trade every day |
+| 130 | Synthesis: copy the partner's missing discipline (give-back alert, friction counter, edge clock) as coach messages, the owner's call; their tape-reading cannot be copied from minute data | – |

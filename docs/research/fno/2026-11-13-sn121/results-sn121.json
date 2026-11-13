@@ -1,0 +1,129 @@
+{
+ "sessions": 7,
+ "trips": 237,
+ "days": [
+  {
+   "day": "2026-10-27",
+   "trips": 24,
+   "trips_priced_share": 1.0,
+   "peak_clock": "15:20",
+   "peak_positive": true,
+   "peak_at_least_10pct": true,
+   "peak_at_least_20pct": true,
+   "share_of_peak_given_back": 0.21,
+   "trips_after_peak": 3,
+   "ended_green": true
+  },
+  {
+   "day": "2026-10-28",
+   "trips": 47,
+   "trips_priced_share": 0.94,
+   "peak_clock": "10:22",
+   "peak_positive": false,
+   "peak_at_least_10pct": false,
+   "peak_at_least_20pct": false,
+   "share_of_peak_given_back": null,
+   "trips_after_peak": 32,
+   "ended_green": false
+  },
+  {
+   "day": "2026-10-29",
+   "trips": 50,
+   "trips_priced_share": 1.0,
+   "peak_clock": "10:30",
+   "peak_positive": true,
+   "peak_at_least_10pct": true,
+   "peak_at_least_20pct": true,
+   "share_of_peak_given_back": 2.17,
+   "trips_after_peak": 34,
+   "ended_green": false
+  },
+  {
+   "day": "2026-10-30",
+   "trips": 6,
+   "trips_priced_share": 0.83,
+   "peak_clock": "09:22",
+   "peak_positive": true,
+   "peak_at_least_10pct": false,
+   "peak_at_least_20pct": false,
+   "share_of_peak_given_back": 213.54,
+   "trips_after_peak": 5,
+   "ended_green": false
+  },
+  {
+   "day": "2026-11-02",
+   "trips": 44,
+   "trips_priced_share": 0.98,
+   "peak_clock": "12:16",
+   "peak_positive": true,
+   "peak_at_least_10pct": true,
+   "peak_at_least_20pct": true,
+   "share_of_peak_given_back": 0.64,
+   "trips_after_peak": 29,
+   "ended_green": true
+  },
+  {
+   "day": "2026-11-03",
+   "trips": 37,
+   "trips_priced_share": 1.0,
+   "peak_clock": "15:39",
+   "peak_positive": true,
+   "peak_at_least_10pct": true,
+   "peak_at_least_20pct": true,
+   "share_of_peak_given_back": 0.0,
+   "trips_after_peak": 0,
+   "ended_green": true
+  },
+  {
+   "day": "2026-11-04",
+   "trips": 29,
+   "trips_priced_share": 0.93,
+   "peak_clock": "09:33",
+   "peak_positive": true,
+   "peak_at_least_10pct": true,
+   "peak_at_least_20pct": true,
+   "share_of_peak_given_back": 9.46,
+   "trips_after_peak": 22,
+   "ended_green": false
+  }
+ ],
+ "locks": {
+  "lock at +10%": {
+   "days_improved": 2.0,
+   "days_worse": 3.0,
+   "days_green_after": 5.0,
+   "change_relative_to_actual_result": 0.19,
+   "change_sign": "better"
+  },
+  "lock at +20%": {
+   "days_improved": 2.0,
+   "days_worse": 3.0,
+   "days_green_after": 5.0,
+   "change_relative_to_actual_result": 0.37,
+   "change_sign": "better"
+  },
+  "stop after a 30% giveback of a >= +5% peak": {
+   "days_improved": 2.0,
+   "days_worse": 2.0,
+   "days_green_after": 4.0,
+   "change_relative_to_actual_result": 0.71,
+   "change_sign": "better"
+  },
+  "stop after a 50% giveback of a >= +5% peak": {
+   "days_improved": 3.0,
+   "days_worse": 1.0,
+   "days_green_after": 4.0,
+   "change_relative_to_actual_result": 0.67,
+   "change_sign": "better"
+  }
+ },
+ "summary": {
+  "days_with_a_positive_peak": 6,
+  "days_peak_at_least_10pct_of_25k": 5,
+  "days_peak_at_least_20pct_of_25k": 5,
+  "days_ended_green": 3,
+  "median_share_of_peak_given_back": 1.405,
+  "median_trips_after_peak": 22.0,
+  "median_trips_per_day": 37.0
+ }
+}

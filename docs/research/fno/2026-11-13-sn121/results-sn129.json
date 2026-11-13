@@ -1,0 +1,170 @@
+{
+ "components": {
+  "SN123 burst scalper + lock": {
+   "passed": false,
+   "days": 575,
+   "net": -903863,
+   "by_year": [
+    -209369,
+    -204181,
+    -286931,
+    -203382
+   ],
+   "without_best_5": -923937,
+   "max_drawdown": 903863,
+   "worst_day": -5000,
+   "refilled": 1159554
+  },
+  "SN124 overnight short fly/condor": {
+   "passed": false,
+   "days": 320,
+   "net": -271939,
+   "by_year": [
+    -70295,
+    -85797,
+    -61703,
+    -54144
+   ],
+   "without_best_5": -276534,
+   "max_drawdown": 271939,
+   "worst_day": -3068,
+   "refilled": 279641
+  },
+  "SN125 last half-hour": {
+   "passed": false,
+   "days": 286,
+   "net": -110958,
+   "by_year": [
+    -17662,
+    -48314,
+    -28857,
+    -16126
+   ],
+   "without_best_5": -124350,
+   "max_drawdown": 110958,
+   "worst_day": -3114,
+   "refilled": 161650
+  },
+  "SN126 hot-day scalping": {
+   "passed": false,
+   "days": 27,
+   "net": 4414,
+   "by_year": [
+    -1007,
+    4918,
+    194,
+    309
+   ],
+   "without_best_5": -10136,
+   "max_drawdown": 4658,
+   "worst_day": -2266,
+   "refilled": 14602
+  },
+  "SN128 morning crush (Gold-free)": {
+   "passed": false,
+   "days": 548,
+   "net": -617813,
+   "by_year": [
+    -104303,
+    -184260,
+    -181064,
+    -148185
+   ],
+   "without_best_5": -618081,
+   "max_drawdown": 617813,
+   "worst_day": -3635,
+   "refilled": 618293
+  },
+  "SN95-L straddle (frozen watch)": {
+   "passed": true,
+   "days": 35,
+   "net": 17145,
+   "by_year": [
+    -3644,
+    12507,
+    -6537,
+    14818
+   ],
+   "without_best_5": -22251,
+   "max_drawdown": 19418,
+   "worst_day": -3090,
+   "refilled": 39221
+  }
+ },
+ "formed": false,
+ "sleeve": {
+  "label": "NOT FORMED - description only: every candidate + SN95-L summed",
+  "days": 659,
+  "net": -1764202,
+  "by_year": [
+   -400360,
+   -465540,
+   -519326,
+   -378976
+  ],
+  "without_best_5": -1804439,
+  "max_drawdown": 1764202,
+  "worst_day": -5000,
+  "refilled": 1885067
+ },
+ "vs_gold": {
+  "fixed": {
+   "Gold 30k + 25k sleeve": {
+    "net": -1483694,
+    "max_drawdown": 1519089,
+    "worst_day": -9902,
+    "by_year": [
+     -412466,
+     -350102,
+     -448537,
+     -272590
+    ]
+   },
+   "Gold 55k alone": {
+    "net": 533769,
+    "max_drawdown": 30839,
+    "worst_day": -10993,
+    "by_year": [
+     -12843,
+     226477,
+     133185,
+     186950
+    ]
+   },
+   "Gold 30k alone": {
+    "net": 280508,
+    "max_drawdown": 18467,
+    "worst_day": -6110
+   }
+  },
+  "grow stop 3": {
+   "Gold 30k + 25k sleeve": {
+    "net": -913320,
+    "max_drawdown": 1100140,
+    "worst_day": -24620,
+    "by_year": [
+     -412466,
+     -278064,
+     -226515,
+     3726
+    ]
+   },
+   "Gold 55k alone": {
+    "net": 1616247,
+    "max_drawdown": 98706,
+    "worst_day": -37056,
+    "by_year": [
+     -12843,
+     341307,
+     552856,
+     734927
+    ]
+   },
+   "Gold 30k alone": {
+    "net": 850882,
+    "max_drawdown": 53788,
+    "worst_day": -21113
+   }
+  }
+ }
+}

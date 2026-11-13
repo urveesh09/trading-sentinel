@@ -8028,3 +8028,20 @@ producer will no longer create them.
   - Gold v5 forward check;
   - the SN95-L forward watch, scored offline from the quote archive at ≥ 20 signals;
   - owner levers (start, `SN_GOLD_STEP_TRIGGER=0.5`, cap) only on the owner's word.
+
+
+## SN121–SN130 research (Nov 13, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn121`, plan frozen `cecf2f8a`.
+- **Data:**
+  - the minute caches;
+  - Production's quote archive;
+  - the frozen Nov 4 partner extract (`docs/research/partner/2026-11-04-assistance-review/_local`, SHA-256 checked). Results carry shapes and ratios only, no partner rupee totals.
+- **Results:**
+  - no gap-day strategy passed;
+  - running every candidate every gap day loses ₹17.6 lakh in four years;
+  - the partner's entries hold a 1-minute edge, but they over-trade after the day's peak;
+  - a 30% give-back stop on their own sequence cuts their 7-day loss by ~71%.
+  - New forward watch SN126-L (hot-day big bursts).
+- **Proposed for the partner coach, not built:** give-back alert, friction counter, edge clock. Messages only; it needs the owner's word and a normal Dev → PR → deploy.
+- **Configuration / migration / runtime:** none. Production unchanged.
