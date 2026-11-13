@@ -1,0 +1,104 @@
+{
+ "development (2023-01 .. 2026-08-19)": {
+  "Gold v5 Rs 15k": {
+   "wage_days_per_month": 0.8,
+   "month_median": 800,
+   "month_mean": 2762,
+   "month_worst": -6007,
+   "net": 121527,
+   "wage_share": 0.0525
+  },
+  "wage day player Rs 15k": {
+   "wage_days_per_month": 1.2,
+   "month_median": 1290,
+   "month_mean": 3575,
+   "month_worst": -7160,
+   "net": 157318,
+   "wage_share": 0.0738
+  },
+  "Gold v5 Rs 30k growing (production)": {
+   "wage_days_per_month": 1.1,
+   "month_median": 679,
+   "month_mean": 14595,
+   "month_worst": -38531,
+   "net": 642173,
+   "wage_share": 0.0667
+  },
+  "wage day player Rs 30k growing (production)": {
+   "wage_days_per_month": 1.3,
+   "month_median": 2921,
+   "month_mean": 15828,
+   "month_worst": -38531,
+   "net": 696450,
+   "wage_share": 0.0837
+  },
+  "coin-flip wage trader Rs 15k": {
+   "wage_days_per_month": 4.6,
+   "month_mean": -8597,
+   "net": -378251
+  }
+ },
+ "TEST (2026-08-20 .. 10-28)": {
+  "Gold v5 Rs 15k": {
+   "wage_days_per_month": 2.0,
+   "month_median": 8366,
+   "month_mean": 9876,
+   "month_worst": 479,
+   "net": 29628,
+   "wage_share": 0.1622
+  },
+  "Gold v5 Rs 30k growing (production)": {
+   "wage_days_per_month": 2.3,
+   "month_median": 79970,
+   "month_mean": 69570,
+   "month_worst": 3111,
+   "net": 208710,
+   "wage_share": 0.1892
+  },
+  "coin-flip wage trader (SN163 main cell)": {
+   "net_mean": -19511,
+   "net_p5": -31222,
+   "net_p95": -7309,
+   "wage_share_mean": 0.2996
+  },
+  "SN176 wage day player Rs 15k": {
+   "wage_days_per_month": 2.0,
+   "month_median": 8366,
+   "month_mean": 9305,
+   "month_worst": 479,
+   "net": 27914,
+   "wage_share": 0.1622
+  },
+  "SN176 wage day player Rs 30k growing (production)": {
+   "wage_days_per_month": 2.3,
+   "month_median": 77758,
+   "month_mean": 68262,
+   "month_worst": 3111,
+   "net": 204785,
+   "wage_share": 0.1892
+  }
+ },
+ "salary account (development): smallest start that pays every session": {
+  "Rs 15k | Gold v5": {
+   "wage 750": 425000.0,
+   "wage 1000": 600000.0,
+   "wage 1500": 955000.0
+  },
+  "Rs 15k | Gold v5 + forward watches": {
+   "wage 750": 395000.0,
+   "wage 1000": 570000.0,
+   "wage 1500": 925000.0
+  },
+  "Rs 30k fixed | Gold v5": {
+   "wage 750": 345000.0,
+   "wage 1000": 520000.0,
+   "wage 1500": 875000.0
+  },
+  "Rs 30k fixed | Gold v5 + forward watches": {
+   "wage 750": 315000.0,
+   "wage 1000": 490000.0,
+   "wage 1500": 845000.0
+  }
+ },
+ "TEST candidates passing": []
+}

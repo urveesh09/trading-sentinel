@@ -21,6 +21,10 @@ import pw  # noqa: E402
 import qa  # noqa: E402
 
 M = pw.M
+# [Post-freeze path fix] The forward panel rotates its export folder daily; the 20261112T103005Z export that qa.py
+# names was replaced by 20261113T103001Z (same sealed days plus Nov 12). Days already cached in SN101's _local were
+# hash-checked when built; any other day is hash-checked against the new manifest.
+qa.EXPORT = qa.EXPORT.parent / "20261113T103001Z"
 
 
 def real_trade(q, S, i, opt, strike, wallet=15000.0):

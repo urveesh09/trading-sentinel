@@ -1,0 +1,27 @@
+{
+ "days": 24,
+ "from": "2026-09-10",
+ "to": "2026-10-28",
+ "coin-flip": {
+  "trades": 427,
+  "model_net": -198571,
+  "real_net": -73057,
+  "model_per_trade": -465.0,
+  "real_per_trade": -171.1,
+  "model_targets": 0.33,
+  "real_targets": 0.393,
+  "real_minus_model_per_lot": 213.5,
+  "real_half_spread_in_mean": 0.139
+ },
+ "range break": {
+  "trades": 23,
+  "model_net": -13589,
+  "real_net": 1394,
+  "model_per_trade": -590.8,
+  "real_per_trade": 60.6,
+  "model_targets": 0.304,
+  "real_targets": 0.522,
+  "real_minus_model_per_lot": 581.9,
+  "real_half_spread_in_mean": 0.159
+ }
+}
