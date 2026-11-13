@@ -1,0 +1,578 @@
+{
+ "Rs 15,000 | wage fixed 1500 (1,500) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.3087,
+   "net_mean": -223285,
+   "net_pct_of_wallet": -1488.6
+  },
+  "range break": {
+   "wage_share": 0.3645,
+   "net": -222898,
+   "net_pct_of_wallet": -1486.0,
+   "by_year": {
+    "2023": -49846,
+    "2024": -63060,
+    "2025": -55390,
+    "2026": -54602
+   }
+  }
+ },
+ "Rs 15,000 | wage fixed 1500 (1,500) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.2429,
+   "net_mean": -220879,
+   "net_pct_of_wallet": -1472.5
+  },
+  "range break": {
+   "wage_share": 0.3177,
+   "net": -242738,
+   "net_pct_of_wallet": -1618.3,
+   "by_year": {
+    "2023": -83976,
+    "2024": -62209,
+    "2025": -54864,
+    "2026": -41689
+   }
+  }
+ },
+ "Rs 15,000 | wage fixed 1500 (1,500) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.2892,
+   "net_mean": -378251,
+   "net_pct_of_wallet": -2521.7
+  },
+  "range break": {
+   "wage_share": 0.3404,
+   "net": -292236,
+   "net_pct_of_wallet": -1948.2,
+   "by_year": {
+    "2023": -97906,
+    "2024": -72155,
+    "2025": -62128,
+    "2026": -60048
+   }
+  }
+ },
+ "Rs 15,000 | wage fixed 1500 (1,500) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.19,
+   "net_mean": -710999,
+   "net_pct_of_wallet": -4740.0
+  },
+  "range break": {
+   "wage_share": 0.234,
+   "net": -603813,
+   "net_pct_of_wallet": -4025.4,
+   "by_year": {
+    "2023": -272992,
+    "2024": -126618,
+    "2025": -129927,
+    "2026": -74277
+   }
+  }
+ },
+ "Rs 15,000 | wage 10% (1,500) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.3087,
+   "net_mean": -223285,
+   "net_pct_of_wallet": -1488.6
+  },
+  "range break": {
+   "wage_share": 0.3645,
+   "net": -222898,
+   "net_pct_of_wallet": -1486.0,
+   "by_year": {
+    "2023": -49846,
+    "2024": -63060,
+    "2025": -55390,
+    "2026": -54602
+   }
+  }
+ },
+ "Rs 15,000 | wage 10% (1,500) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.2429,
+   "net_mean": -220879,
+   "net_pct_of_wallet": -1472.5
+  },
+  "range break": {
+   "wage_share": 0.3177,
+   "net": -242738,
+   "net_pct_of_wallet": -1618.3,
+   "by_year": {
+    "2023": -83976,
+    "2024": -62209,
+    "2025": -54864,
+    "2026": -41689
+   }
+  }
+ },
+ "Rs 15,000 | wage 10% (1,500) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.2892,
+   "net_mean": -378251,
+   "net_pct_of_wallet": -2521.7
+  },
+  "range break": {
+   "wage_share": 0.3404,
+   "net": -292236,
+   "net_pct_of_wallet": -1948.2,
+   "by_year": {
+    "2023": -97906,
+    "2024": -72155,
+    "2025": -62128,
+    "2026": -60048
+   }
+  }
+ },
+ "Rs 15,000 | wage 10% (1,500) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.19,
+   "net_mean": -710999,
+   "net_pct_of_wallet": -4740.0
+  },
+  "range break": {
+   "wage_share": 0.234,
+   "net": -603813,
+   "net_pct_of_wallet": -4025.4,
+   "by_year": {
+    "2023": -272992,
+    "2024": -126618,
+    "2025": -129927,
+    "2026": -74277
+   }
+  }
+ },
+ "Rs 30,000 | wage fixed 1500 (1,500) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.298,
+   "net_mean": -411485,
+   "net_pct_of_wallet": -1371.6
+  },
+  "range break": {
+   "wage_share": 0.3305,
+   "net": -349248,
+   "net_pct_of_wallet": -1164.2,
+   "by_year": {
+    "2023": -91799,
+    "2024": -101077,
+    "2025": -87186,
+    "2026": -69187
+   }
+  }
+ },
+ "Rs 30,000 | wage fixed 1500 (1,500) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.2753,
+   "net_mean": -398542,
+   "net_pct_of_wallet": -1328.5
+  },
+  "range break": {
+   "wage_share": 0.3177,
+   "net": -363143,
+   "net_pct_of_wallet": -1210.5,
+   "by_year": {
+    "2023": -83928,
+    "2024": -109813,
+    "2025": -91243,
+    "2026": -78160
+   }
+  }
+ },
+ "Rs 30,000 | wage fixed 1500 (1,500) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.1577,
+   "net_mean": -760673,
+   "net_pct_of_wallet": -2535.6
+  },
+  "range break": {
+   "wage_share": 0.2028,
+   "net": -646521,
+   "net_pct_of_wallet": -2155.1,
+   "by_year": {
+    "2023": -236968,
+    "2024": -154000,
+    "2025": -167422,
+    "2026": -88131
+   }
+  }
+ },
+ "Rs 30,000 | wage fixed 1500 (1,500) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.0746,
+   "net_mean": -1414718,
+   "net_pct_of_wallet": -4715.7
+  },
+  "range break": {
+   "wage_share": 0.1135,
+   "net": -1221661,
+   "net_pct_of_wallet": -4072.2,
+   "by_year": {
+    "2023": -558575,
+    "2024": -243684,
+    "2025": -270362,
+    "2026": -149040
+   }
+  }
+ },
+ "Rs 30,000 | wage 10% (3,000) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.3255,
+   "net_mean": -423115,
+   "net_pct_of_wallet": -1410.4
+  },
+  "range break": {
+   "wage_share": 0.3816,
+   "net": -430920,
+   "net_pct_of_wallet": -1436.4,
+   "by_year": {
+    "2023": -91487,
+    "2024": -117195,
+    "2025": -122202,
+    "2026": -100035
+   }
+  }
+ },
+ "Rs 30,000 | wage 10% (3,000) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.2527,
+   "net_mean": -412528,
+   "net_pct_of_wallet": -1375.1
+  },
+  "range break": {
+   "wage_share": 0.3291,
+   "net": -453395,
+   "net_pct_of_wallet": -1511.3,
+   "by_year": {
+    "2023": -150581,
+    "2024": -119577,
+    "2025": -103469,
+    "2026": -79768
+   }
+  }
+ },
+ "Rs 30,000 | wage 10% (3,000) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.2959,
+   "net_mean": -817471,
+   "net_pct_of_wallet": -2724.9
+  },
+  "range break": {
+   "wage_share": 0.3461,
+   "net": -628574,
+   "net_pct_of_wallet": -2095.2,
+   "by_year": {
+    "2023": -219861,
+    "2024": -153315,
+    "2025": -147246,
+    "2026": -108152
+   }
+  }
+ },
+ "Rs 30,000 | wage 10% (3,000) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.1853,
+   "net_mean": -1483934,
+   "net_pct_of_wallet": -4946.4
+  },
+  "range break": {
+   "wage_share": 0.227,
+   "net": -1268205,
+   "net_pct_of_wallet": -4227.3,
+   "by_year": {
+    "2023": -565555,
+    "2024": -272434,
+    "2025": -272460,
+    "2026": -157756
+   }
+  }
+ },
+ "Rs 50,000 | wage fixed 1500 (1,500) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.2327,
+   "net_mean": -563345,
+   "net_pct_of_wallet": -1126.7
+  },
+  "range break": {
+   "wage_share": 0.2709,
+   "net": -477937,
+   "net_pct_of_wallet": -955.9,
+   "by_year": {
+    "2023": -118915,
+    "2024": -145121,
+    "2025": -132576,
+    "2026": -81324
+   }
+  }
+ },
+ "Rs 50,000 | wage fixed 1500 (1,500) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.2328,
+   "net_mean": -548239,
+   "net_pct_of_wallet": -1096.5
+  },
+  "range break": {
+   "wage_share": 0.2681,
+   "net": -480618,
+   "net_pct_of_wallet": -961.2,
+   "by_year": {
+    "2023": -116928,
+    "2024": -134274,
+    "2025": -124090,
+    "2026": -105326
+   }
+  }
+ },
+ "Rs 50,000 | wage fixed 1500 (1,500) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.0497,
+   "net_mean": -1273508,
+   "net_pct_of_wallet": -2547.0
+  },
+  "range break": {
+   "wage_share": 0.0596,
+   "net": -1188632,
+   "net_pct_of_wallet": -2377.3,
+   "by_year": {
+    "2023": -420315,
+    "2024": -288360,
+    "2025": -317885,
+    "2026": -162073
+   }
+  }
+ },
+ "Rs 50,000 | wage fixed 1500 (1,500) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.019,
+   "net_mean": -2386077,
+   "net_pct_of_wallet": -4772.2
+  },
+  "range break": {
+   "wage_share": 0.0227,
+   "net": -2167864,
+   "net_pct_of_wallet": -4335.7,
+   "by_year": {
+    "2023": -943478,
+    "2024": -430907,
+    "2025": -536892,
+    "2026": -256587
+   }
+  }
+ },
+ "Rs 50,000 | wage 10% (5,000) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.3185,
+   "net_mean": -631819,
+   "net_pct_of_wallet": -1263.6
+  },
+  "range break": {
+   "wage_share": 0.3773,
+   "net": -675774,
+   "net_pct_of_wallet": -1351.5,
+   "by_year": {
+    "2023": -148829,
+    "2024": -221223,
+    "2025": -153278,
+    "2026": -152444
+   }
+  }
+ },
+ "Rs 50,000 | wage 10% (5,000) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.2415,
+   "net_mean": -608714,
+   "net_pct_of_wallet": -1217.4
+  },
+  "range break": {
+   "wage_share": 0.3234,
+   "net": -670339,
+   "net_pct_of_wallet": -1340.7,
+   "by_year": {
+    "2023": -204071,
+    "2024": -185370,
+    "2025": -140134,
+    "2026": -140764
+   }
+  }
+ },
+ "Rs 50,000 | wage 10% (5,000) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.2932,
+   "net_mean": -1405631,
+   "net_pct_of_wallet": -2811.3
+  },
+  "range break": {
+   "wage_share": 0.339,
+   "net": -1103951,
+   "net_pct_of_wallet": -2207.9,
+   "by_year": {
+    "2023": -386690,
+    "2024": -301607,
+    "2025": -235377,
+    "2026": -180277
+   }
+  }
+ },
+ "Rs 50,000 | wage 10% (5,000) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.1838,
+   "net_mean": -2507608,
+   "net_pct_of_wallet": -5015.2
+  },
+  "range break": {
+   "wage_share": 0.227,
+   "net": -2118195,
+   "net_pct_of_wallet": -4236.4,
+   "by_year": {
+    "2023": -944662,
+    "2024": -423391,
+    "2025": -466266,
+    "2026": -283877
+   }
+  }
+ },
+ "Rs 100,000 | wage fixed 1500 (1,500) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.0315,
+   "net_mean": -1050801,
+   "net_pct_of_wallet": -1050.8
+  },
+  "range break": {
+   "wage_share": 0.0525,
+   "net": -1021547,
+   "net_pct_of_wallet": -1021.5,
+   "by_year": {
+    "2023": -261979,
+    "2024": -289949,
+    "2025": -295640,
+    "2026": -173980
+   }
+  }
+ },
+ "Rs 100,000 | wage fixed 1500 (1,500) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.0418,
+   "net_mean": -999193,
+   "net_pct_of_wallet": -999.2
+  },
+  "range break": {
+   "wage_share": 0.078,
+   "net": -932921,
+   "net_pct_of_wallet": -932.9,
+   "by_year": {
+    "2023": -246035,
+    "2024": -246017,
+    "2025": -275802,
+    "2026": -165067
+   }
+  }
+ },
+ "Rs 100,000 | wage fixed 1500 (1,500) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.0024,
+   "net_mean": -2611481,
+   "net_pct_of_wallet": -2611.5
+  },
+  "range break": {
+   "wage_share": 0.0057,
+   "net": -2415780,
+   "net_pct_of_wallet": -2415.8,
+   "by_year": {
+    "2023": -864084,
+    "2024": -572521,
+    "2025": -647992,
+    "2026": -331183
+   }
+  }
+ },
+ "Rs 100,000 | wage fixed 1500 (1,500) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.0008,
+   "net_mean": -4827885,
+   "net_pct_of_wallet": -4827.9
+  },
+  "range break": {
+   "wage_share": 0.0028,
+   "net": -4371958,
+   "net_pct_of_wallet": -4372.0,
+   "by_year": {
+    "2023": -1900339,
+    "2024": -879170,
+    "2025": -1076703,
+    "2026": -515746
+   }
+  }
+ },
+ "Rs 100,000 | wage 10% (10,000) | lots 1 per 15k | ATM": {
+  "random": {
+   "wage_share": 0.3206,
+   "net_mean": -1235488,
+   "net_pct_of_wallet": -1235.5
+  },
+  "range break": {
+   "wage_share": 0.3787,
+   "net": -1329863,
+   "net_pct_of_wallet": -1329.9,
+   "by_year": {
+    "2023": -276984,
+    "2024": -442360,
+    "2025": -306007,
+    "2026": -304512
+   }
+  }
+ },
+ "Rs 100,000 | wage 10% (10,000) | lots 1 per 15k | OTM 2": {
+  "random": {
+   "wage_share": 0.2426,
+   "net_mean": -1194308,
+   "net_pct_of_wallet": -1194.3
+  },
+  "range break": {
+   "wage_share": 0.3248,
+   "net": -1313122,
+   "net_pct_of_wallet": -1313.1,
+   "by_year": {
+    "2023": -403253,
+    "2024": -370273,
+    "2025": -258740,
+    "2026": -280856
+   }
+  }
+ },
+ "Rs 100,000 | wage 10% (10,000) | lots max | ATM": {
+  "random": {
+   "wage_share": 0.2875,
+   "net_mean": -2913729,
+   "net_pct_of_wallet": -2913.7
+  },
+  "range break": {
+   "wage_share": 0.3333,
+   "net": -2287490,
+   "net_pct_of_wallet": -2287.5,
+   "by_year": {
+    "2023": -753521,
+    "2024": -642472,
+    "2025": -510759,
+    "2026": -380738
+   }
+  }
+ },
+ "Rs 100,000 | wage 10% (10,000) | lots max | OTM 2": {
+  "random": {
+   "wage_share": 0.1824,
+   "net_mean": -5047558,
+   "net_pct_of_wallet": -5047.6
+  },
+  "range break": {
+   "wage_share": 0.2284,
+   "net": -4230744,
+   "net_pct_of_wallet": -4230.7,
+   "by_year": {
+    "2023": -1912490,
+    "2024": -848124,
+    "2025": -882331,
+    "2026": -587799
+   }
+  }
+ }
+}

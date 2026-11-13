@@ -1,0 +1,74 @@
+{
+ "1 lot": {
+  "sessions": 704,
+  "random side: touched +1,500": 0.581,
+  "random side: kept +1,500 at 15:10": 0.25,
+  "random side: total at 15:10": -282948,
+  "random side: 30% give-back exit total": -233166,
+  "random side: give-back exit wage days": 0.2259,
+  "better side in hindsight: touched +1,500": 0.9062,
+  "better side in hindsight: mean peak": 5688,
+  "either side touched +1,500": 0.9062,
+  "both sides touched +1,500": 0.2628,
+  "mean peak random side": 3395,
+  "mean 15:10 random side": -402,
+  "by_year (random side)": {
+   "2023": {
+    "touched": 0.474,
+    "kept": 0.208,
+    "net_15_10": -91035
+   },
+   "2024": {
+    "touched": 0.61,
+    "kept": 0.267,
+    "net_15_10": -4877
+   },
+   "2025": {
+    "touched": 0.582,
+    "kept": 0.258,
+    "net_15_10": -157441
+   },
+   "2026": {
+    "touched": 0.699,
+    "kept": 0.276,
+    "net_15_10": -29595
+   }
+  }
+ },
+ "max lots at Rs 15k": {
+  "sessions": 671,
+  "random side: touched +1,500": 0.7079,
+  "random side: kept +1,500 at 15:10": 0.2817,
+  "random side: total at 15:10": -428655,
+  "random side: 30% give-back exit total": -196217,
+  "random side: give-back exit wage days": 0.3055,
+  "better side in hindsight: touched +1,500": 0.9687,
+  "better side in hindsight: mean peak": 8881,
+  "either side touched +1,500": 0.9687,
+  "both sides touched +1,500": 0.3949,
+  "mean peak random side": 5371,
+  "mean 15:10 random side": -639,
+  "by_year (random side)": {
+   "2023": {
+    "touched": 0.719,
+    "kept": 0.276,
+    "net_15_10": -208049
+   },
+   "2024": {
+    "touched": 0.652,
+    "kept": 0.272,
+    "net_15_10": -32944
+   },
+   "2025": {
+    "touched": 0.714,
+    "kept": 0.286,
+    "net_15_10": -209264
+   },
+   "2026": {
+    "touched": 0.774,
+    "kept": 0.302,
+    "net_15_10": 21602
+   }
+  }
+ }
+}
