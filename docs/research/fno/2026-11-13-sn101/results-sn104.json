@@ -1,0 +1,1208 @@
+{
+ "gold-free (SN95-L)": {
+  "summary": {
+   "trades": 35,
+   "mean_mfe": 2534,
+   "hindsight_bound_sum_mfe_unattainable": 92825,
+   "share_ever_above_0": 0.714,
+   "share_ever_above_1000": 0.457,
+   "mean_giveback_of_trades_that_reached_1000": 2576,
+   "stopped": 5
+  },
+  "tables": {
+   "hold": {
+    "2023": {
+     "net": -3644,
+     "trades": 6,
+     "won": 1.0,
+     "lost": 5.0
+    },
+    "2024": {
+     "net": 12507,
+     "trades": 7,
+     "won": 3.0,
+     "lost": 4.0
+    },
+    "2025": {
+     "net": -6537,
+     "trades": 15,
+     "won": 5.0,
+     "lost": 10.0
+    },
+    "2026": {
+     "net": 14818,
+     "trades": 7,
+     "won": 4.0,
+     "lost": 3.0
+    },
+    "total": 17145,
+    "without_best_5": -22251,
+    "positive_years": 2
+   },
+   "GB": {
+    "2023": {
+     "net": -2421,
+     "trades": 6,
+     "won": 2.0,
+     "lost": 4.0
+    },
+    "2024": {
+     "net": 667,
+     "trades": 7,
+     "won": 5.0,
+     "lost": 2.0
+    },
+    "2025": {
+     "net": -9287,
+     "trades": 15,
+     "won": 6.0,
+     "lost": 9.0
+    },
+    "2026": {
+     "net": 3082,
+     "trades": 7,
+     "won": 4.0,
+     "lost": 3.0
+    },
+    "total": -7959,
+    "without_best_5": -23135,
+    "positive_years": 2
+   },
+   "13:00": {
+    "2023": {
+     "net": 1121,
+     "trades": 6,
+     "won": 1.0,
+     "lost": 5.0
+    },
+    "2024": {
+     "net": 3291,
+     "trades": 7,
+     "won": 3.0,
+     "lost": 4.0
+    },
+    "2025": {
+     "net": -11243,
+     "trades": 15,
+     "won": 3.0,
+     "lost": 12.0
+    },
+    "2026": {
+     "net": 5577,
+     "trades": 7,
+     "won": 3.0,
+     "lost": 4.0
+    },
+    "total": -1254,
+    "without_best_5": -28500,
+    "positive_years": 3
+   }
+  },
+  "paths": [
+   {
+    "day": "2023-06-09",
+    "hold": -670,
+    "exit": "hold",
+    "mfe": -242,
+    "giveback": 428,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -670,
+    "gb_exit": "hold",
+    "t13": -515
+   },
+   {
+    "day": "2023-08-25",
+    "hold": -271,
+    "exit": "hold",
+    "mfe": 1436,
+    "giveback": 1706,
+    "minutes_above_0": 64,
+    "minutes_above_1000": 18,
+    "gb": 592,
+    "gb_exit": "giveback",
+    "t13": -783
+   },
+   {
+    "day": "2023-09-12",
+    "hold": -1756,
+    "exit": "hold",
+    "mfe": 242,
+    "giveback": 1998,
+    "minutes_above_0": 10,
+    "minutes_above_1000": 0,
+    "gb": -1756,
+    "gb_exit": "hold",
+    "t13": -1071
+   },
+   {
+    "day": "2023-09-22",
+    "hold": -2278,
+    "exit": "hold",
+    "mfe": 155,
+    "giveback": 2433,
+    "minutes_above_0": 5,
+    "minutes_above_1000": 0,
+    "gb": -2278,
+    "gb_exit": "hold",
+    "t13": -867
+   },
+   {
+    "day": "2023-10-25",
+    "hold": 3020,
+    "exit": "hold",
+    "mfe": 6825,
+    "giveback": 3805,
+    "minutes_above_0": 204,
+    "minutes_above_1000": 161,
+    "gb": 3380,
+    "gb_exit": "giveback",
+    "t13": 5985
+   },
+   {
+    "day": "2023-10-31",
+    "hold": -1689,
+    "exit": "hold",
+    "mfe": -534,
+    "giveback": 1155,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1689,
+    "gb_exit": "hold",
+    "t13": -1627
+   },
+   {
+    "day": "2024-02-14",
+    "hold": 6727,
+    "exit": "hold",
+    "mfe": 9529,
+    "giveback": 2803,
+    "minutes_above_0": 69,
+    "minutes_above_1000": 51,
+    "gb": 551,
+    "gb_exit": "giveback",
+    "t13": 32
+   },
+   {
+    "day": "2024-03-12",
+    "hold": -1115,
+    "exit": "hold",
+    "mfe": 1685,
+    "giveback": 2799,
+    "minutes_above_0": 19,
+    "minutes_above_1000": 5,
+    "gb": 251,
+    "gb_exit": "giveback",
+    "t13": -657
+   },
+   {
+    "day": "2024-05-14",
+    "hold": -1802,
+    "exit": "hold",
+    "mfe": 249,
+    "giveback": 2050,
+    "minutes_above_0": 7,
+    "minutes_above_1000": 0,
+    "gb": -1802,
+    "gb_exit": "hold",
+    "t13": -922
+   },
+   {
+    "day": "2024-06-19",
+    "hold": 164,
+    "exit": "hold",
+    "mfe": 4339,
+    "giveback": 4175,
+    "minutes_above_0": 100,
+    "minutes_above_1000": 54,
+    "gb": 819,
+    "gb_exit": "giveback",
+    "t13": -481
+   },
+   {
+    "day": "2024-07-24",
+    "hold": -3066,
+    "exit": "stop",
+    "mfe": 3246,
+    "giveback": 6312,
+    "minutes_above_0": 147,
+    "minutes_above_1000": 68,
+    "gb": 570,
+    "gb_exit": "giveback",
+    "t13": 888
+   },
+   {
+    "day": "2024-10-22",
+    "hold": 14619,
+    "exit": "hold",
+    "mfe": 14940,
+    "giveback": 321,
+    "minutes_above_0": 303,
+    "minutes_above_1000": 299,
+    "gb": 3298,
+    "gb_exit": "giveback",
+    "t13": 7453
+   },
+   {
+    "day": "2024-12-18",
+    "hold": -3021,
+    "exit": "stop",
+    "mfe": -487,
+    "giveback": 2533,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3021,
+    "gb_exit": "stop",
+    "t13": -3021
+   },
+   {
+    "day": "2025-04-01",
+    "hold": 6362,
+    "exit": "hold",
+    "mfe": 9236,
+    "giveback": 2874,
+    "minutes_above_0": 287,
+    "minutes_above_1000": 281,
+    "gb": 1315,
+    "gb_exit": "giveback",
+    "t13": 6716
+   },
+   {
+    "day": "2025-04-02",
+    "hold": -3053,
+    "exit": "stop",
+    "mfe": -477,
+    "giveback": 2576,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3053,
+    "gb_exit": "stop",
+    "t13": -2770
+   },
+   {
+    "day": "2025-04-22",
+    "hold": -1666,
+    "exit": "hold",
+    "mfe": -436,
+    "giveback": 1229,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1666,
+    "gb_exit": "hold",
+    "t13": -1494
+   },
+   {
+    "day": "2025-04-23",
+    "hold": -2689,
+    "exit": "hold",
+    "mfe": 4240,
+    "giveback": 6929,
+    "minutes_above_0": 99,
+    "minutes_above_1000": 70,
+    "gb": 1119,
+    "gb_exit": "giveback",
+    "t13": -1424
+   },
+   {
+    "day": "2025-04-29",
+    "hold": -3090,
+    "exit": "stop",
+    "mfe": -290,
+    "giveback": 2799,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3090,
+    "gb_exit": "stop",
+    "t13": -3090
+   },
+   {
+    "day": "2025-05-06",
+    "hold": -729,
+    "exit": "hold",
+    "mfe": -512,
+    "giveback": 217,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -729,
+    "gb_exit": "hold",
+    "t13": -1586
+   },
+   {
+    "day": "2025-05-07",
+    "hold": -3066,
+    "exit": "stop",
+    "mfe": -484,
+    "giveback": 2582,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3066,
+    "gb_exit": "stop",
+    "t13": -2791
+   },
+   {
+    "day": "2025-07-21",
+    "hold": -2088,
+    "exit": "hold",
+    "mfe": 91,
+    "giveback": 2180,
+    "minutes_above_0": 2,
+    "minutes_above_1000": 0,
+    "gb": -2088,
+    "gb_exit": "hold",
+    "t13": -1900
+   },
+   {
+    "day": "2025-07-29",
+    "hold": -843,
+    "exit": "hold",
+    "mfe": 107,
+    "giveback": 950,
+    "minutes_above_0": 1,
+    "minutes_above_1000": 0,
+    "gb": -843,
+    "gb_exit": "hold",
+    "t13": -2254
+   },
+   {
+    "day": "2025-07-30",
+    "hold": -2194,
+    "exit": "hold",
+    "mfe": -147,
+    "giveback": 2047,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -2194,
+    "gb_exit": "hold",
+    "t13": -1428
+   },
+   {
+    "day": "2025-09-04",
+    "hold": 1585,
+    "exit": "hold",
+    "mfe": 1984,
+    "giveback": 399,
+    "minutes_above_0": 195,
+    "minutes_above_1000": 37,
+    "gb": 512,
+    "gb_exit": "giveback",
+    "t13": -406
+   },
+   {
+    "day": "2025-09-25",
+    "hold": 108,
+    "exit": "hold",
+    "mfe": 348,
+    "giveback": 240,
+    "minutes_above_0": 9,
+    "minutes_above_1000": 0,
+    "gb": 108,
+    "gb_exit": "hold",
+    "t13": -651
+   },
+   {
+    "day": "2025-10-03",
+    "hold": -18,
+    "exit": "hold",
+    "mfe": 270,
+    "giveback": 289,
+    "minutes_above_0": 8,
+    "minutes_above_1000": 0,
+    "gb": -18,
+    "gb_exit": "hold",
+    "t13": -1426
+   },
+   {
+    "day": "2025-10-06",
+    "hold": 3562,
+    "exit": "hold",
+    "mfe": 4772,
+    "giveback": 1210,
+    "minutes_above_0": 228,
+    "minutes_above_1000": 140,
+    "gb": 3562,
+    "gb_exit": "hold",
+    "t13": 1700
+   },
+   {
+    "day": "2025-11-07",
+    "hold": 1282,
+    "exit": "hold",
+    "mfe": 4127,
+    "giveback": 2845,
+    "minutes_above_0": 230,
+    "minutes_above_1000": 163,
+    "gb": 844,
+    "gb_exit": "giveback",
+    "t13": 1561
+   },
+   {
+    "day": "2026-01-01",
+    "hold": -1674,
+    "exit": "hold",
+    "mfe": -525,
+    "giveback": 1148,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1674,
+    "gb_exit": "hold",
+    "t13": -1505
+   },
+   {
+    "day": "2026-01-05",
+    "hold": -604,
+    "exit": "hold",
+    "mfe": 869,
+    "giveback": 1473,
+    "minutes_above_0": 56,
+    "minutes_above_1000": 0,
+    "gb": -604,
+    "gb_exit": "hold",
+    "t13": -1243
+   },
+   {
+    "day": "2026-01-07",
+    "hold": -1841,
+    "exit": "hold",
+    "mfe": 161,
+    "giveback": 2001,
+    "minutes_above_0": 2,
+    "minutes_above_1000": 0,
+    "gb": -1841,
+    "gb_exit": "hold",
+    "t13": -1364
+   },
+   {
+    "day": "2026-01-08",
+    "hold": 3999,
+    "exit": "hold",
+    "mfe": 5326,
+    "giveback": 1327,
+    "minutes_above_0": 258,
+    "minutes_above_1000": 231,
+    "gb": 2514,
+    "gb_exit": "giveback",
+    "t13": 4191
+   },
+   {
+    "day": "2026-01-09",
+    "hold": 3249,
+    "exit": "hold",
+    "mfe": 5351,
+    "giveback": 2102,
+    "minutes_above_0": 208,
+    "minutes_above_1000": 166,
+    "gb": 1809,
+    "gb_exit": "giveback",
+    "t13": 2642
+   },
+   {
+    "day": "2026-01-12",
+    "hold": 6606,
+    "exit": "hold",
+    "mfe": 8215,
+    "giveback": 1609,
+    "minutes_above_0": 173,
+    "minutes_above_1000": 170,
+    "gb": 2422,
+    "gb_exit": "giveback",
+    "t13": 2902
+   },
+   {
+    "day": "2026-02-16",
+    "hold": 5082,
+    "exit": "hold",
+    "mfe": 5082,
+    "giveback": 0,
+    "minutes_above_0": 180,
+    "minutes_above_1000": 44,
+    "gb": 456,
+    "gb_exit": "giveback",
+    "t13": -46
+   }
+  ],
+  "verdict": {
+   "GB_total": -7959,
+   "hold_total": 17145,
+   "t13_total": -1254,
+   "GB_years_at_least_hold": 1,
+   "GB_without_best_5": -23135,
+   "hold_without_best_5": -22251,
+   "PASS": false
+  }
+ },
+ "all days": {
+  "summary": {
+   "trades": 47,
+   "mean_mfe": 2453,
+   "hindsight_bound_sum_mfe_unattainable": 120231,
+   "share_ever_above_0": 0.681,
+   "share_ever_above_1000": 0.447,
+   "mean_giveback_of_trades_that_reached_1000": 2221,
+   "stopped": 6
+  },
+  "tables": {
+   "hold": {
+    "2023": {
+     "net": -7270,
+     "trades": 9,
+     "won": 1.0,
+     "lost": 8.0
+    },
+    "2024": {
+     "net": 29842,
+     "trades": 12,
+     "won": 7.0,
+     "lost": 5.0
+    },
+    "2025": {
+     "net": -12241,
+     "trades": 18,
+     "won": 5.0,
+     "lost": 13.0
+    },
+    "2026": {
+     "net": 18940,
+     "trades": 8,
+     "won": 5.0,
+     "lost": 3.0
+    },
+    "total": 29271,
+    "without_best_5": -13795,
+    "positive_years": 2
+   },
+   "GB": {
+    "2023": {
+     "net": -6047,
+     "trades": 9,
+     "won": 2.0,
+     "lost": 7.0
+    },
+    "2024": {
+     "net": 14551,
+     "trades": 12,
+     "won": 9.0,
+     "lost": 3.0
+    },
+    "2025": {
+     "net": -13087,
+     "trades": 18,
+     "won": 7.0,
+     "lost": 11.0
+    },
+    "2026": {
+     "net": 4907,
+     "trades": 8,
+     "won": 5.0,
+     "lost": 3.0
+    },
+    "total": 323,
+    "without_best_5": -22857,
+    "positive_years": 2
+   },
+   "13:00": {
+    "2023": {
+     "net": -1724,
+     "trades": 9,
+     "won": 1.0,
+     "lost": 8.0
+    },
+    "2024": {
+     "net": 8589,
+     "trades": 12,
+     "won": 6.0,
+     "lost": 6.0
+    },
+    "2025": {
+     "net": -15283,
+     "trades": 18,
+     "won": 4.0,
+     "lost": 14.0
+    },
+    "2026": {
+     "net": 7804,
+     "trades": 8,
+     "won": 4.0,
+     "lost": 4.0
+    },
+    "total": -614,
+    "without_best_5": -28728,
+    "positive_years": 2
+   }
+  },
+  "paths": [
+   {
+    "day": "2023-05-22",
+    "hold": -1297,
+    "exit": "hold",
+    "mfe": -181,
+    "giveback": 1116,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1297,
+    "gb_exit": "hold",
+    "t13": -904
+   },
+   {
+    "day": "2023-06-09",
+    "hold": -670,
+    "exit": "hold",
+    "mfe": -242,
+    "giveback": 428,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -670,
+    "gb_exit": "hold",
+    "t13": -515
+   },
+   {
+    "day": "2023-08-07",
+    "hold": -929,
+    "exit": "hold",
+    "mfe": -63,
+    "giveback": 866,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -929,
+    "gb_exit": "hold",
+    "t13": -848
+   },
+   {
+    "day": "2023-08-25",
+    "hold": -271,
+    "exit": "hold",
+    "mfe": 1436,
+    "giveback": 1706,
+    "minutes_above_0": 64,
+    "minutes_above_1000": 18,
+    "gb": 592,
+    "gb_exit": "giveback",
+    "t13": -783
+   },
+   {
+    "day": "2023-09-12",
+    "hold": -1756,
+    "exit": "hold",
+    "mfe": 242,
+    "giveback": 1998,
+    "minutes_above_0": 10,
+    "minutes_above_1000": 0,
+    "gb": -1756,
+    "gb_exit": "hold",
+    "t13": -1071
+   },
+   {
+    "day": "2023-09-22",
+    "hold": -2278,
+    "exit": "hold",
+    "mfe": 155,
+    "giveback": 2433,
+    "minutes_above_0": 5,
+    "minutes_above_1000": 0,
+    "gb": -2278,
+    "gb_exit": "hold",
+    "t13": -867
+   },
+   {
+    "day": "2023-10-25",
+    "hold": 3020,
+    "exit": "hold",
+    "mfe": 6825,
+    "giveback": 3805,
+    "minutes_above_0": 204,
+    "minutes_above_1000": 161,
+    "gb": 3380,
+    "gb_exit": "giveback",
+    "t13": 5985
+   },
+   {
+    "day": "2023-10-31",
+    "hold": -1689,
+    "exit": "hold",
+    "mfe": -534,
+    "giveback": 1155,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1689,
+    "gb_exit": "hold",
+    "t13": -1627
+   },
+   {
+    "day": "2023-12-18",
+    "hold": -1401,
+    "exit": "hold",
+    "mfe": -55,
+    "giveback": 1346,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1401,
+    "gb_exit": "hold",
+    "t13": -1093
+   },
+   {
+    "day": "2024-01-08",
+    "hold": 586,
+    "exit": "hold",
+    "mfe": 735,
+    "giveback": 149,
+    "minutes_above_0": 40,
+    "minutes_above_1000": 0,
+    "gb": 586,
+    "gb_exit": "hold",
+    "t13": -588
+   },
+   {
+    "day": "2024-01-10",
+    "hold": -1395,
+    "exit": "hold",
+    "mfe": 158,
+    "giveback": 1554,
+    "minutes_above_0": 1,
+    "minutes_above_1000": 0,
+    "gb": -1395,
+    "gb_exit": "hold",
+    "t13": -1165
+   },
+   {
+    "day": "2024-01-17",
+    "hold": 5204,
+    "exit": "hold",
+    "mfe": 6064,
+    "giveback": 860,
+    "minutes_above_0": 212,
+    "minutes_above_1000": 201,
+    "gb": 1753,
+    "gb_exit": "giveback",
+    "t13": 3183
+   },
+   {
+    "day": "2024-02-14",
+    "hold": 6727,
+    "exit": "hold",
+    "mfe": 9529,
+    "giveback": 2803,
+    "minutes_above_0": 69,
+    "minutes_above_1000": 51,
+    "gb": 551,
+    "gb_exit": "giveback",
+    "t13": 32
+   },
+   {
+    "day": "2024-03-12",
+    "hold": -1115,
+    "exit": "hold",
+    "mfe": 1685,
+    "giveback": 2799,
+    "minutes_above_0": 19,
+    "minutes_above_1000": 5,
+    "gb": 251,
+    "gb_exit": "giveback",
+    "t13": -657
+   },
+   {
+    "day": "2024-05-14",
+    "hold": -1802,
+    "exit": "hold",
+    "mfe": 249,
+    "giveback": 2050,
+    "minutes_above_0": 7,
+    "minutes_above_1000": 0,
+    "gb": -1802,
+    "gb_exit": "hold",
+    "t13": -922
+   },
+   {
+    "day": "2024-06-19",
+    "hold": 164,
+    "exit": "hold",
+    "mfe": 4339,
+    "giveback": 4175,
+    "minutes_above_0": 100,
+    "minutes_above_1000": 54,
+    "gb": 819,
+    "gb_exit": "giveback",
+    "t13": -481
+   },
+   {
+    "day": "2024-07-24",
+    "hold": -3066,
+    "exit": "stop",
+    "mfe": 3246,
+    "giveback": 6312,
+    "minutes_above_0": 147,
+    "minutes_above_1000": 68,
+    "gb": 570,
+    "gb_exit": "giveback",
+    "t13": 888
+   },
+   {
+    "day": "2024-10-22",
+    "hold": 14619,
+    "exit": "hold",
+    "mfe": 14940,
+    "giveback": 321,
+    "minutes_above_0": 303,
+    "minutes_above_1000": 299,
+    "gb": 3298,
+    "gb_exit": "giveback",
+    "t13": 7453
+   },
+   {
+    "day": "2024-11-12",
+    "hold": 8752,
+    "exit": "hold",
+    "mfe": 8752,
+    "giveback": 0,
+    "minutes_above_0": 188,
+    "minutes_above_1000": 151,
+    "gb": 8752,
+    "gb_exit": "hold",
+    "t13": 3770
+   },
+   {
+    "day": "2024-11-13",
+    "hold": 4188,
+    "exit": "hold",
+    "mfe": 5362,
+    "giveback": 1174,
+    "minutes_above_0": 69,
+    "minutes_above_1000": 42,
+    "gb": 4188,
+    "gb_exit": "hold",
+    "t13": 98
+   },
+   {
+    "day": "2024-12-18",
+    "hold": -3021,
+    "exit": "stop",
+    "mfe": -487,
+    "giveback": 2533,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3021,
+    "gb_exit": "stop",
+    "t13": -3021
+   },
+   {
+    "day": "2025-01-08",
+    "hold": -1176,
+    "exit": "hold",
+    "mfe": 1815,
+    "giveback": 2991,
+    "minutes_above_0": 173,
+    "minutes_above_1000": 44,
+    "gb": 728,
+    "gb_exit": "giveback",
+    "t13": 615
+   },
+   {
+    "day": "2025-01-15",
+    "hold": -3074,
+    "exit": "stop",
+    "mfe": -495,
+    "giveback": 2579,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3074,
+    "gb_exit": "stop",
+    "t13": -2743
+   },
+   {
+    "day": "2025-03-04",
+    "hold": -1454,
+    "exit": "hold",
+    "mfe": -21,
+    "giveback": 1434,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1454,
+    "gb_exit": "hold",
+    "t13": -1912
+   },
+   {
+    "day": "2025-04-01",
+    "hold": 6362,
+    "exit": "hold",
+    "mfe": 9236,
+    "giveback": 2874,
+    "minutes_above_0": 287,
+    "minutes_above_1000": 281,
+    "gb": 1315,
+    "gb_exit": "giveback",
+    "t13": 6716
+   },
+   {
+    "day": "2025-04-02",
+    "hold": -3053,
+    "exit": "stop",
+    "mfe": -477,
+    "giveback": 2576,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3053,
+    "gb_exit": "stop",
+    "t13": -2770
+   },
+   {
+    "day": "2025-04-22",
+    "hold": -1666,
+    "exit": "hold",
+    "mfe": -436,
+    "giveback": 1229,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1666,
+    "gb_exit": "hold",
+    "t13": -1494
+   },
+   {
+    "day": "2025-04-23",
+    "hold": -2689,
+    "exit": "hold",
+    "mfe": 4240,
+    "giveback": 6929,
+    "minutes_above_0": 99,
+    "minutes_above_1000": 70,
+    "gb": 1119,
+    "gb_exit": "giveback",
+    "t13": -1424
+   },
+   {
+    "day": "2025-04-29",
+    "hold": -3090,
+    "exit": "stop",
+    "mfe": -290,
+    "giveback": 2799,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3090,
+    "gb_exit": "stop",
+    "t13": -3090
+   },
+   {
+    "day": "2025-05-06",
+    "hold": -729,
+    "exit": "hold",
+    "mfe": -512,
+    "giveback": 217,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -729,
+    "gb_exit": "hold",
+    "t13": -1586
+   },
+   {
+    "day": "2025-05-07",
+    "hold": -3066,
+    "exit": "stop",
+    "mfe": -484,
+    "giveback": 2582,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -3066,
+    "gb_exit": "stop",
+    "t13": -2791
+   },
+   {
+    "day": "2025-07-21",
+    "hold": -2088,
+    "exit": "hold",
+    "mfe": 91,
+    "giveback": 2180,
+    "minutes_above_0": 2,
+    "minutes_above_1000": 0,
+    "gb": -2088,
+    "gb_exit": "hold",
+    "t13": -1900
+   },
+   {
+    "day": "2025-07-29",
+    "hold": -843,
+    "exit": "hold",
+    "mfe": 107,
+    "giveback": 950,
+    "minutes_above_0": 1,
+    "minutes_above_1000": 0,
+    "gb": -843,
+    "gb_exit": "hold",
+    "t13": -2254
+   },
+   {
+    "day": "2025-07-30",
+    "hold": -2194,
+    "exit": "hold",
+    "mfe": -147,
+    "giveback": 2047,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -2194,
+    "gb_exit": "hold",
+    "t13": -1428
+   },
+   {
+    "day": "2025-09-04",
+    "hold": 1585,
+    "exit": "hold",
+    "mfe": 1984,
+    "giveback": 399,
+    "minutes_above_0": 195,
+    "minutes_above_1000": 37,
+    "gb": 512,
+    "gb_exit": "giveback",
+    "t13": -406
+   },
+   {
+    "day": "2025-09-25",
+    "hold": 108,
+    "exit": "hold",
+    "mfe": 348,
+    "giveback": 240,
+    "minutes_above_0": 9,
+    "minutes_above_1000": 0,
+    "gb": 108,
+    "gb_exit": "hold",
+    "t13": -651
+   },
+   {
+    "day": "2025-10-03",
+    "hold": -18,
+    "exit": "hold",
+    "mfe": 270,
+    "giveback": 289,
+    "minutes_above_0": 8,
+    "minutes_above_1000": 0,
+    "gb": -18,
+    "gb_exit": "hold",
+    "t13": -1426
+   },
+   {
+    "day": "2025-10-06",
+    "hold": 3562,
+    "exit": "hold",
+    "mfe": 4772,
+    "giveback": 1210,
+    "minutes_above_0": 228,
+    "minutes_above_1000": 140,
+    "gb": 3562,
+    "gb_exit": "hold",
+    "t13": 1700
+   },
+   {
+    "day": "2025-11-07",
+    "hold": 1282,
+    "exit": "hold",
+    "mfe": 4127,
+    "giveback": 2845,
+    "minutes_above_0": 230,
+    "minutes_above_1000": 163,
+    "gb": 844,
+    "gb_exit": "giveback",
+    "t13": 1561
+   },
+   {
+    "day": "2026-01-01",
+    "hold": -1674,
+    "exit": "hold",
+    "mfe": -525,
+    "giveback": 1148,
+    "minutes_above_0": 0,
+    "minutes_above_1000": 0,
+    "gb": -1674,
+    "gb_exit": "hold",
+    "t13": -1505
+   },
+   {
+    "day": "2026-01-05",
+    "hold": -604,
+    "exit": "hold",
+    "mfe": 869,
+    "giveback": 1473,
+    "minutes_above_0": 56,
+    "minutes_above_1000": 0,
+    "gb": -604,
+    "gb_exit": "hold",
+    "t13": -1243
+   },
+   {
+    "day": "2026-01-07",
+    "hold": -1841,
+    "exit": "hold",
+    "mfe": 161,
+    "giveback": 2001,
+    "minutes_above_0": 2,
+    "minutes_above_1000": 0,
+    "gb": -1841,
+    "gb_exit": "hold",
+    "t13": -1364
+   },
+   {
+    "day": "2026-01-08",
+    "hold": 3999,
+    "exit": "hold",
+    "mfe": 5326,
+    "giveback": 1327,
+    "minutes_above_0": 258,
+    "minutes_above_1000": 231,
+    "gb": 2514,
+    "gb_exit": "giveback",
+    "t13": 4191
+   },
+   {
+    "day": "2026-01-09",
+    "hold": 3249,
+    "exit": "hold",
+    "mfe": 5351,
+    "giveback": 2102,
+    "minutes_above_0": 208,
+    "minutes_above_1000": 166,
+    "gb": 1809,
+    "gb_exit": "giveback",
+    "t13": 2642
+   },
+   {
+    "day": "2026-01-12",
+    "hold": 6606,
+    "exit": "hold",
+    "mfe": 8215,
+    "giveback": 1609,
+    "minutes_above_0": 173,
+    "minutes_above_1000": 170,
+    "gb": 2422,
+    "gb_exit": "giveback",
+    "t13": 2902
+   },
+   {
+    "day": "2026-02-16",
+    "hold": 5082,
+    "exit": "hold",
+    "mfe": 5082,
+    "giveback": 0,
+    "minutes_above_0": 180,
+    "minutes_above_1000": 44,
+    "gb": 456,
+    "gb_exit": "giveback",
+    "t13": -46
+   },
+   {
+    "day": "2026-10-12",
+    "hold": 4121,
+    "exit": "hold",
+    "mfe": 4520,
+    "giveback": 399,
+    "minutes_above_0": 276,
+    "minutes_above_1000": 248,
+    "gb": 1825,
+    "gb_exit": "giveback",
+    "t13": 2227
+   }
+  ],
+  "verdict": {
+   "GB_total": 323,
+   "hold_total": 29271,
+   "t13_total": -614,
+   "GB_years_at_least_hold": 1,
+   "GB_without_best_5": -22857,
+   "hold_without_best_5": -13795,
+   "PASS": false
+  }
+ }
+}

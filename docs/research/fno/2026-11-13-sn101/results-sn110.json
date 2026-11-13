@@ -1,0 +1,1247 @@
+{
+ "wallets": {
+  "A 15k 1 lot": {
+   "v5": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236
+   },
+   "SN95-L strict": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   }
+  },
+  "B 20k 1 lot": {
+   "v5": {
+    "by_year": [
+     -1305,
+     72538,
+     43957,
+     61656
+    ],
+    "won": 303742,
+    "refilled": 126896,
+    "net": 176846,
+    "w/l/none": [
+     64,
+     69,
+     609
+    ],
+    "worst": -3997,
+    "losing_years": 1,
+    "max_drawdown": 10945,
+    "worst_5pct_mean": -2719
+   },
+   "SN95-L strict": {
+    "by_year": [
+     -1305,
+     72538,
+     43957,
+     61656
+    ],
+    "won": 303742,
+    "refilled": 126896,
+    "net": 176846,
+    "w/l/none": [
+     64,
+     69,
+     609
+    ],
+    "worst": -3997,
+    "losing_years": 1,
+    "max_drawdown": 10945,
+    "worst_5pct_mean": -2719,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     -1305,
+     72538,
+     43957,
+     61656
+    ],
+    "won": 303742,
+    "refilled": 126896,
+    "net": 176846,
+    "w/l/none": [
+     64,
+     69,
+     609
+    ],
+    "worst": -3997,
+    "losing_years": 1,
+    "max_drawdown": 10945,
+    "worst_5pct_mean": -2719,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     -1305,
+     72538,
+     43957,
+     61656
+    ],
+    "won": 303742,
+    "refilled": 126896,
+    "net": 176846,
+    "w/l/none": [
+     64,
+     69,
+     609
+    ],
+    "worst": -3997,
+    "losing_years": 1,
+    "max_drawdown": 10945,
+    "worst_5pct_mean": -2719,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   }
+  },
+  "C 30k sized": {
+   "v5": {
+    "by_year": [
+     -12107,
+     115439,
+     70789,
+     106387
+    ],
+    "won": 473554,
+    "refilled": 193046,
+    "net": 280508,
+    "w/l/none": [
+     61,
+     72,
+     609
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 18467,
+    "worst_5pct_mean": -4021
+   },
+   "SN95-L strict": {
+    "by_year": [
+     -15906,
+     127945,
+     61044,
+     121205
+    ],
+    "won": 527156,
+    "refilled": 232868,
+    "net": 294288,
+    "w/l/none": [
+     72,
+     91,
+     579
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 26851,
+    "worst_5pct_mean": -4224,
+    "increment": 13780,
+    "increment_pct": 4.9,
+    "paired_new_days": 25174,
+    "paired_overlap_days": -11394,
+    "companion_trades": 35,
+    "companion_net": 18685,
+    "forced_by_gold": 4
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     -18246,
+     125984,
+     55424,
+     118475
+    ],
+    "won": 522312,
+    "refilled": 240675,
+    "net": 281637,
+    "w/l/none": [
+     71,
+     92,
+     579
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 30152,
+    "worst_5pct_mean": -4259,
+    "increment": 1129,
+    "increment_pct": 0.4,
+    "paired_new_days": 14068,
+    "paired_overlap_days": -12938,
+    "companion_trades": 35,
+    "companion_net": 6060,
+    "forced_by_gold": 4
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     -15849,
+     129825,
+     61051,
+     118930
+    ],
+    "won": 525187,
+    "refilled": 231230,
+    "net": 293957,
+    "w/l/none": [
+     72,
+     90,
+     580
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 26926,
+    "worst_5pct_mean": -4203,
+    "increment": 13449,
+    "increment_pct": 4.8,
+    "paired_new_days": 24103,
+    "paired_overlap_days": -10653,
+    "companion_trades": 34,
+    "companion_net": 18782,
+    "forced_by_gold": 5
+   }
+  },
+  "G0": {
+   "v5": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236
+   },
+   "SN95-L strict": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     397,
+     52158,
+     48506,
+     50094
+    ],
+    "won": 252300,
+    "refilled": 101145,
+    "net": 151155,
+    "w/l/none": [
+     58,
+     64,
+     620
+    ],
+    "worst": -2998,
+    "losing_years": 0,
+    "max_drawdown": 10513,
+    "worst_5pct_mean": -2236,
+    "increment": 0,
+    "increment_pct": 0.0,
+    "paired_new_days": 0,
+    "paired_overlap_days": 0,
+    "companion_trades": 0,
+    "companion_net": 0,
+    "forced_by_gold": 0
+   }
+  },
+  "G2": {
+   "v5": {
+    "by_year": [
+     397,
+     84668,
+     87386,
+     112543
+    ],
+    "won": 467726,
+    "refilled": 182732,
+    "net": 284994,
+    "w/l/none": [
+     63,
+     70,
+     609
+    ],
+    "worst": -6740,
+    "losing_years": 0,
+    "max_drawdown": 16955,
+    "worst_5pct_mean": -3952
+   },
+   "SN95-L strict": {
+    "by_year": [
+     397,
+     84268,
+     76307,
+     119376
+    ],
+    "won": 532374,
+    "refilled": 252026,
+    "net": 280348,
+    "w/l/none": [
+     79,
+     104,
+     559
+    ],
+    "worst": -6743,
+    "losing_years": 0,
+    "max_drawdown": 35504,
+    "worst_5pct_mean": -4382,
+    "increment": -4646,
+    "increment_pct": -1.6,
+    "paired_new_days": 9059,
+    "paired_overlap_days": -13705,
+    "companion_trades": 55,
+    "companion_net": 700,
+    "forced_by_gold": 4
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     397,
+     77397,
+     67892,
+     115891
+    ],
+    "won": 525579,
+    "refilled": 264002,
+    "net": 261577,
+    "w/l/none": [
+     78,
+     105,
+     559
+    ],
+    "worst": -6744,
+    "losing_years": 0,
+    "max_drawdown": 39392,
+    "worst_5pct_mean": -4432,
+    "increment": -23417,
+    "increment_pct": -8.2,
+    "paired_new_days": -8150,
+    "paired_overlap_days": -15266,
+    "companion_trades": 55,
+    "companion_net": -18168,
+    "forced_by_gold": 4
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     397,
+     87203,
+     80780,
+     116364
+    ],
+    "won": 531372,
+    "refilled": 246628,
+    "net": 284744,
+    "w/l/none": [
+     79,
+     104,
+     559
+    ],
+    "worst": -6740,
+    "losing_years": 0,
+    "max_drawdown": 30040,
+    "worst_5pct_mean": -4272,
+    "increment": -250,
+    "increment_pct": -0.1,
+    "paired_new_days": 7211,
+    "paired_overlap_days": -7460,
+    "companion_trades": 55,
+    "companion_net": -249,
+    "forced_by_gold": 5
+   }
+  },
+  "G3 (Gold)": {
+   "v5": {
+    "by_year": [
+     397,
+     82363,
+     143065,
+     174081
+    ],
+    "won": 665802,
+    "refilled": 265896,
+    "net": 399906,
+    "w/l/none": [
+     63,
+     70,
+     609
+    ],
+    "worst": -10119,
+    "losing_years": 0,
+    "max_drawdown": 24234,
+    "worst_5pct_mean": -6008
+   },
+   "SN95-L strict": {
+    "by_year": [
+     397,
+     72819,
+     139820,
+     178172
+    ],
+    "won": 736842,
+    "refilled": 345634,
+    "net": 391208,
+    "w/l/none": [
+     81,
+     110,
+     551
+    ],
+    "worst": -10119,
+    "losing_years": 0,
+    "max_drawdown": 39561,
+    "worst_5pct_mean": -6252,
+    "increment": -8698,
+    "increment_pct": -2.2,
+    "paired_new_days": 1907,
+    "paired_overlap_days": -10605,
+    "companion_trades": 65,
+    "companion_net": -8698,
+    "forced_by_gold": 7
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     397,
+     65207,
+     128541,
+     169449
+    ],
+    "won": 728745,
+    "refilled": 365151,
+    "net": 363594,
+    "w/l/none": [
+     79,
+     112,
+     551
+    ],
+    "worst": -10119,
+    "losing_years": 0,
+    "max_drawdown": 45770,
+    "worst_5pct_mean": -6387,
+    "increment": -36312,
+    "increment_pct": -9.1,
+    "paired_new_days": -22977,
+    "paired_overlap_days": -13335,
+    "companion_trades": 65,
+    "companion_net": -36312,
+    "forced_by_gold": 7
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     397,
+     75621,
+     130305,
+     175135
+    ],
+    "won": 726984,
+    "refilled": 345526,
+    "net": 381458,
+    "w/l/none": [
+     81,
+     109,
+     552
+    ],
+    "worst": -10119,
+    "losing_years": 0,
+    "max_drawdown": 40131,
+    "worst_5pct_mean": -6259,
+    "increment": -18448,
+    "increment_pct": -4.6,
+    "paired_new_days": -9083,
+    "paired_overlap_days": -9365,
+    "companion_trades": 64,
+    "companion_net": -18447,
+    "forced_by_gold": 7
+   }
+  },
+  "G5": {
+   "v5": {
+    "by_year": [
+     397,
+     82363,
+     221056,
+     437859
+    ],
+    "won": 1234407,
+    "refilled": 492732,
+    "net": 741675,
+    "w/l/none": [
+     63,
+     70,
+     609
+    ],
+    "worst": -22740,
+    "losing_years": 0,
+    "max_drawdown": 56455,
+    "worst_5pct_mean": -11928
+   },
+   "SN95-L strict": {
+    "by_year": [
+     397,
+     72819,
+     196749,
+     441951
+    ],
+    "won": 1243193,
+    "refilled": 531277,
+    "net": 711916,
+    "w/l/none": [
+     82,
+     109,
+     551
+    ],
+    "worst": -22740,
+    "losing_years": 0,
+    "max_drawdown": 50449,
+    "worst_5pct_mean": -10918,
+    "increment": -29759,
+    "increment_pct": -4.0,
+    "paired_new_days": 1907,
+    "paired_overlap_days": -31666,
+    "companion_trades": 65,
+    "companion_net": -8698,
+    "forced_by_gold": 7
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     397,
+     65207,
+     186219,
+     436491
+    ],
+    "won": 1234707,
+    "refilled": 546393,
+    "net": 688314,
+    "w/l/none": [
+     80,
+     111,
+     551
+    ],
+    "worst": -22740,
+    "losing_years": 0,
+    "max_drawdown": 55909,
+    "worst_5pct_mean": -10951,
+    "increment": -53361,
+    "increment_pct": -7.2,
+    "paired_new_days": -18964,
+    "paired_overlap_days": -34396,
+    "companion_trades": 65,
+    "companion_net": -32299,
+    "forced_by_gold": 7
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     397,
+     75621,
+     196039,
+     438913
+    ],
+    "won": 1242742,
+    "refilled": 531772,
+    "net": 710970,
+    "w/l/none": [
+     82,
+     109,
+     551
+    ],
+    "worst": -22740,
+    "losing_years": 0,
+    "max_drawdown": 51019,
+    "worst_5pct_mean": -10917,
+    "increment": -30705,
+    "increment_pct": -4.1,
+    "paired_new_days": -278,
+    "paired_overlap_days": -30426,
+    "companion_trades": 65,
+    "companion_net": -9642,
+    "forced_by_gold": 7
+   }
+  },
+  "30k fixed": {
+   "v5": {
+    "by_year": [
+     -12107,
+     115439,
+     70789,
+     106387
+    ],
+    "won": 473554,
+    "refilled": 193046,
+    "net": 280508,
+    "w/l/none": [
+     61,
+     72,
+     609
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 18467,
+    "worst_5pct_mean": -4021
+   },
+   "SN95-L strict": {
+    "by_year": [
+     -15906,
+     127945,
+     61044,
+     121205
+    ],
+    "won": 527156,
+    "refilled": 232868,
+    "net": 294288,
+    "w/l/none": [
+     72,
+     91,
+     579
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 26851,
+    "worst_5pct_mean": -4224,
+    "increment": 13780,
+    "increment_pct": 4.9,
+    "paired_new_days": 25174,
+    "paired_overlap_days": -11394,
+    "companion_trades": 35,
+    "companion_net": 18685,
+    "forced_by_gold": 4
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     -18246,
+     125984,
+     55424,
+     118475
+    ],
+    "won": 522312,
+    "refilled": 240675,
+    "net": 281637,
+    "w/l/none": [
+     71,
+     92,
+     579
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 30152,
+    "worst_5pct_mean": -4259,
+    "increment": 1129,
+    "increment_pct": 0.4,
+    "paired_new_days": 14068,
+    "paired_overlap_days": -12938,
+    "companion_trades": 35,
+    "companion_net": 6060,
+    "forced_by_gold": 4
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     -15849,
+     129825,
+     61051,
+     118930
+    ],
+    "won": 525187,
+    "refilled": 231230,
+    "net": 293957,
+    "w/l/none": [
+     72,
+     90,
+     580
+    ],
+    "worst": -6110,
+    "losing_years": 1,
+    "max_drawdown": 26926,
+    "worst_5pct_mean": -4203,
+    "increment": 13449,
+    "increment_pct": 4.8,
+    "paired_new_days": 24103,
+    "paired_overlap_days": -10653,
+    "companion_trades": 34,
+    "companion_net": 18782,
+    "forced_by_gold": 5
+   }
+  },
+  "30k grow stop 3": {
+   "v5": {
+    "by_year": [
+     -12107,
+     187476,
+     292811,
+     382702
+    ],
+    "won": 1413011,
+    "refilled": 562129,
+    "net": 850882,
+    "w/l/none": [
+     62,
+     71,
+     609
+    ],
+    "worst": -21113,
+    "losing_years": 1,
+    "max_drawdown": 53788,
+    "worst_5pct_mean": -12705
+   },
+   "SN95-L strict": {
+    "by_year": [
+     -15906,
+     229965,
+     289566,
+     386794
+    ],
+    "won": 1544040,
+    "refilled": 653621,
+    "net": 890419,
+    "w/l/none": [
+     88,
+     117,
+     537
+    ],
+    "worst": -21113,
+    "losing_years": 1,
+    "max_drawdown": 61440,
+    "worst_5pct_mean": -12810,
+    "increment": 39537,
+    "increment_pct": 4.6,
+    "paired_new_days": 22426,
+    "paired_overlap_days": 17110,
+    "companion_trades": 81,
+    "companion_net": 9306,
+    "forced_by_gold": 9
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     -18246,
+     182759,
+     279036,
+     381334
+    ],
+    "won": 1497257,
+    "refilled": 672374,
+    "net": 824883,
+    "w/l/none": [
+     86,
+     119,
+     537
+    ],
+    "worst": -21113,
+    "losing_years": 1,
+    "max_drawdown": 66900,
+    "worst_5pct_mean": -12842,
+    "increment": -25999,
+    "increment_pct": -3.1,
+    "paired_new_days": -5100,
+    "paired_overlap_days": -20901,
+    "companion_trades": 81,
+    "companion_net": -21729,
+    "forced_by_gold": 9
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     -15849,
+     231503,
+     288856,
+     383757
+    ],
+    "won": 1543122,
+    "refilled": 654855,
+    "net": 888267,
+    "w/l/none": [
+     87,
+     118,
+     537
+    ],
+    "worst": -21113,
+    "losing_years": 1,
+    "max_drawdown": 62010,
+    "worst_5pct_mean": -12806,
+    "increment": 37385,
+    "increment_pct": 4.4,
+    "paired_new_days": 18160,
+    "paired_overlap_days": 19224,
+    "companion_trades": 81,
+    "companion_net": 7154,
+    "forced_by_gold": 9
+   }
+  },
+  "30k grow stop 5": {
+   "v5": {
+    "by_year": [
+     -12107,
+     187476,
+     451582,
+     924829
+    ],
+    "won": 2573051,
+    "refilled": 1021271,
+    "net": 1551780,
+    "w/l/none": [
+     62,
+     71,
+     609
+    ],
+    "worst": -45464,
+    "losing_years": 1,
+    "max_drawdown": 118377,
+    "worst_5pct_mean": -24731
+   },
+   "SN95-L strict": {
+    "by_year": [
+     -15906,
+     229965,
+     556151,
+     928921
+    ],
+    "won": 2906761,
+    "refilled": 1207630,
+    "net": 1699131,
+    "w/l/none": [
+     88,
+     117,
+     537
+    ],
+    "worst": -45464,
+    "losing_years": 1,
+    "max_drawdown": 124520,
+    "worst_5pct_mean": -27230,
+    "increment": 147351,
+    "increment_pct": 9.5,
+    "paired_new_days": 22426,
+    "paired_overlap_days": 124925,
+    "companion_trades": 81,
+    "companion_net": 9306,
+    "forced_by_gold": 9
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     -18246,
+     182759,
+     425832,
+     923461
+    ],
+    "won": 2586705,
+    "refilled": 1072899,
+    "net": 1513806,
+    "w/l/none": [
+     86,
+     119,
+     537
+    ],
+    "worst": -45464,
+    "losing_years": 1,
+    "max_drawdown": 90752,
+    "worst_5pct_mean": -23243,
+    "increment": -37974,
+    "increment_pct": -2.4,
+    "paired_new_days": -5100,
+    "paired_overlap_days": -32875,
+    "companion_trades": 81,
+    "companion_net": -21729,
+    "forced_by_gold": 9
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     -15849,
+     231503,
+     555441,
+     925884
+    ],
+    "won": 2905844,
+    "refilled": 1208865,
+    "net": 1696979,
+    "w/l/none": [
+     87,
+     118,
+     537
+    ],
+    "worst": -45464,
+    "losing_years": 1,
+    "max_drawdown": 125315,
+    "worst_5pct_mean": -27223,
+    "increment": 145199,
+    "increment_pct": 9.4,
+    "paired_new_days": 18160,
+    "paired_overlap_days": 127039,
+    "companion_trades": 81,
+    "companion_net": 7154,
+    "forced_by_gold": 9
+   }
+  },
+  "20k grow stop 3": {
+   "v5": {
+    "by_year": [
+     -1305,
+     98188,
+     193269,
+     246816
+    ],
+    "won": 882424,
+    "refilled": 345456,
+    "net": 536968,
+    "w/l/none": [
+     64,
+     69,
+     609
+    ],
+    "worst": -13492,
+    "losing_years": 1,
+    "max_drawdown": 33485,
+    "worst_5pct_mean": -8074
+   },
+   "SN95-L strict": {
+    "by_year": [
+     -1305,
+     139136,
+     190024,
+     250908
+    ],
+    "won": 1021222,
+    "refilled": 442459,
+    "net": 578763,
+    "w/l/none": [
+     89,
+     110,
+     543
+    ],
+    "worst": -13492,
+    "losing_years": 1,
+    "max_drawdown": 46921,
+    "worst_5pct_mean": -8474,
+    "increment": 41795,
+    "increment_pct": 7.8,
+    "paired_new_days": 23843,
+    "paired_overlap_days": 17951,
+    "companion_trades": 73,
+    "companion_net": 13238,
+    "forced_by_gold": 7
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     -1305,
+     127701,
+     179494,
+     245448
+    ],
+    "won": 1010395,
+    "refilled": 459057,
+    "net": 551338,
+    "w/l/none": [
+     87,
+     112,
+     543
+    ],
+    "worst": -13492,
+    "losing_years": 1,
+    "max_drawdown": 52381,
+    "worst_5pct_mean": -8509,
+    "increment": 14370,
+    "increment_pct": 2.7,
+    "paired_new_days": -853,
+    "paired_overlap_days": 15221,
+    "companion_trades": 73,
+    "companion_net": -14187,
+    "forced_by_gold": 7
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     -1305,
+     140756,
+     189314,
+     247871
+    ],
+    "won": 1020460,
+    "refilled": 443824,
+    "net": 576636,
+    "w/l/none": [
+     88,
+     111,
+     543
+    ],
+    "worst": -13492,
+    "losing_years": 1,
+    "max_drawdown": 47491,
+    "worst_5pct_mean": -8471,
+    "increment": 39668,
+    "increment_pct": 7.4,
+    "paired_new_days": 20474,
+    "paired_overlap_days": 19192,
+    "companion_trades": 73,
+    "companion_net": 11110,
+    "forced_by_gold": 7
+   }
+  },
+  "50k grow stop 3": {
+   "v5": {
+    "by_year": [
+     -11727,
+     306880,
+     488668,
+     686872
+    ],
+    "won": 2437214,
+    "refilled": 966521,
+    "net": 1470693,
+    "w/l/none": [
+     63,
+     70,
+     609
+    ],
+    "worst": -33689,
+    "losing_years": 1,
+    "max_drawdown": 86753,
+    "worst_5pct_mean": -21850
+   },
+   "SN95-L strict": {
+    "by_year": [
+     -15526,
+     390871,
+     485422,
+     690964
+    ],
+    "won": 2614272,
+    "refilled": 1062541,
+    "net": 1551731,
+    "w/l/none": [
+     90,
+     116,
+     536
+    ],
+    "worst": -33689,
+    "losing_years": 1,
+    "max_drawdown": 92896,
+    "worst_5pct_mean": -21966,
+    "increment": 81038,
+    "increment_pct": 5.5,
+    "paired_new_days": 40245,
+    "paired_overlap_days": 40793,
+    "companion_trades": 82,
+    "companion_net": 27126,
+    "forced_by_gold": 9
+   },
+   "SN95-L 400/leg": {
+    "by_year": [
+     -17866,
+     377221,
+     474892,
+     685504
+    ],
+    "won": 2602666,
+    "refilled": 1082915,
+    "net": 1519751,
+    "w/l/none": [
+     88,
+     118,
+     536
+    ],
+    "worst": -33689,
+    "losing_years": 1,
+    "max_drawdown": 94846,
+    "worst_5pct_mean": -21998,
+    "increment": 49058,
+    "increment_pct": 3.3,
+    "paired_new_days": 11775,
+    "paired_overlap_days": 37283,
+    "companion_trades": 82,
+    "companion_net": -4854,
+    "forced_by_gold": 9
+   },
+   "SN95-L 1 min late": {
+    "by_year": [
+     -15469,
+     386476,
+     484712,
+     687926
+    ],
+    "won": 2607422,
+    "refilled": 1063777,
+    "net": 1543645,
+    "w/l/none": [
+     89,
+     117,
+     536
+    ],
+    "worst": -33689,
+    "losing_years": 1,
+    "max_drawdown": 93691,
+    "worst_5pct_mean": -21963,
+    "increment": 72952,
+    "increment_pct": 5.0,
+    "paired_new_days": 30046,
+    "paired_overlap_days": 42907,
+    "companion_trades": 82,
+    "companion_net": 19040,
+    "forced_by_gold": 9
+   }
+  }
+ },
+ "verdict": {
+  "SN95-L strict": {
+   "GOLD_V6_BAR": false,
+   "increment_pct_30k_fixed": 4.9,
+   "increment_pct_30k_grow3": 4.6
+  }
+ }
+}

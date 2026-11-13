@@ -111,7 +111,9 @@ if __name__ == "__main__":
             gold.append({"day": t["day"], "missing": True})
             continue
         ie = qa.first_at(r, t["i"])
-        jx = qa.last_before(r, t["j"], t["i"] + 1)
+        # correction after the first run (documented in README): the exit quote must be from the exit minute or the one
+        # before; v1 accepted any earlier quote, and the archive stops tracking strikes that drift out of its window
+        jx = qa.last_before(r, t["j"], max(t["i"] + 1, t["j"] - 1))
         if ie is None or jx is None or ie > t["i"] + 1:
             gold.append({"day": t["day"], "missing": True})
             continue

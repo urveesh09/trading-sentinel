@@ -154,6 +154,6 @@ if __name__ == "__main__":
            "common_choice": {"n": len(choice), "net": round(sum(choice)), "won": sum(x > 0 for x in choice)},
            "corr_r_today_sensex_vs_nifty": float(np.corrcoef([r["r_today"] for r in common], [r["nifty_r"] for r in common])[0, 1]) if len(common) > 5 else None,
            "mean_premium_sensex": round(float(np.mean([r["premium"] for r in pr])))}
-    print(json.dumps(res, indent=1), flush=True)
+    print(json.dumps(res, indent=1, default=float), flush=True)
     res["rows"] = rows
     out_path.write_text(json.dumps(res, indent=1, default=float), encoding="utf-8")

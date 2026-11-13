@@ -46,7 +46,9 @@ def straddle(day_q, exp, lot):
     asks = [float(r["ask"][i]) for r in legs]
     outs = []
     for r in legs:
-        j = qa.last_before(r, pa.FLAT, i + 1)
+        # correction after the first run (README): the exit quote must be from 15:09 or 15:10 - the archive stops tracking
+        # strikes that drift out of its window, and an older quote is not an executable exit
+        j = qa.last_before(r, pa.FLAT, pa.FLAT - 1)
         if j is None:
             return None
         outs.append(float(r["bid"][j]))
