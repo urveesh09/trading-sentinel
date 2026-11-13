@@ -5328,3 +5328,27 @@ Before the next implementation: update the plan slice. With each commit: update 
   - New forward watch SN126-L (hot-day big bursts).
 - **Proposed for the partner coach, not built:** give-back alert, friction counter, edge clock. Messages only; it needs the owner's word and a normal Dev → PR → deploy.
 - **Configuration / migration / runtime:** none. Production unchanged.
+
+
+## Partner give-back stop (SN121 finding, Nov 13, 2026; Dev, not deployed)
+
+- **What:** one partner message, "🛑 Stop for today and keep your profit".
+  - **When:** once the day has been up at least 5% of the day's cash and has then given back 30% of its best. The day's value is booked trades plus open trades at their displayed bids.
+  - **Plain words:** once you're up ₹1,250 on ₹25k, don't give back more than about a third of your best.
+  - **Repeats:** told again only after a new best at least 20% higher.
+  - **Scope:** messages only; the partner decides; it never trades.
+- **Why:** SN121 (`docs/research/fno/2026-11-13-sn121`). On the partner's 7 recorded sessions:
+  - the day's best was ≥ +20% of ₹25k on 5 days, but only 3 ended green, after a median of 22 more trades;
+  - stopping at a 30% give-back cut the 7-day loss by ~71%.
+- **Code:**
+  - `partner_profit_protection.giveback_stop` / `giveback_stop_text`;
+  - `partner_watch._giveback_item` (tick step 4);
+  - `_b_day` rebuilds it at send time and drops it if the day has recovered above the line.
+  - It replaces the N04-B give-back steps for the same best. The N07 profit floor is unchanged.
+- **Settings:** `PARTNER_WATCH_GIVEBACK_STOP_ENABLED` (True), `PARTNER_WATCH_GIVEBACK_ARM` (0.05), `PARTNER_WATCH_GIVEBACK_STOP` (0.30). Rollback: `PARTNER_WATCH_GIVEBACK_STOP_ENABLED=false`. No migration.
+- **Tests:**
+  - `tests/test_partner_giveback_stop.py` (8);
+  - the N04-B step test now runs with the stop off;
+  - partner suites 181 passed;
+  - full engine suite at commit time (see the commit message).
+- **Status:** Dev, pushed. Deployment after market hours on the owner's word.

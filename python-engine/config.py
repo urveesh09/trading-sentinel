@@ -1561,6 +1561,12 @@ class Settings(BaseSettings):
     PARTNER_WATCH_BROKEN_ENABLED: bool = True
     # [N07] Advisory floor, combined planned risk and current futures context.
     PARTNER_WATCH_PROFIT_PROTECTION_ENABLED: bool = True
+    # [SN121 2026-11-13] The give-back stop: one "stop for today" message once the day (booked + open trades at
+    # their bids) has been up >= PARTNER_WATCH_GIVEBACK_ARM of the day's cash and falls back
+    # PARTNER_WATCH_GIVEBACK_STOP of its best; again only after a new best 20% higher. Messages only.
+    PARTNER_WATCH_GIVEBACK_STOP_ENABLED: bool = True
+    PARTNER_WATCH_GIVEBACK_ARM: float = 0.05
+    PARTNER_WATCH_GIVEBACK_STOP: float = 0.30
     # [N09 2026-11-09] The coach (partner_watch, partner_habits): a 09:05 plan with the partner's own record and a
     # rule they choose (reminded once, never enforced), short buy and day messages ("more" sends the full plan),
     # a losing-run message with a five-minute range to wait for and one message when it breaks, and the day's
