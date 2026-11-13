@@ -1,0 +1,176 @@
+{
+ "stress": 0.0,
+ "split": "2026-06-01",
+ "gold_free|real": {
+  "pick": {
+   "fam": {
+    "kind": "MOMO",
+    "k": 2,
+    "z": 1.5
+   },
+   "stop": 0.2,
+   "target": 0.15,
+   "act": 0.0,
+   "give": 0.5,
+   "time": 45,
+   "max_trades": 3
+  },
+  "choose_half": {
+   "net": 17100,
+   "trades": 93,
+   "days": 31,
+   "won": 20,
+   "lost": 11,
+   "none": 0,
+   "worst": -4862
+  },
+  "score_half": {
+   "net": -8292,
+   "trades": 120,
+   "days": 40,
+   "won": 18,
+   "lost": 22,
+   "none": 0,
+   "worst": -5049
+  },
+  "score_half_gold_empty_days": {
+   "net": -3682,
+   "trades": 108,
+   "days": 36,
+   "won": 18,
+   "lost": 18,
+   "none": 0,
+   "worst": -5049
+  },
+  "share_positive_on_choose_half": 304
+ },
+ "gold_free|null": {
+  "pick": {
+   "fam": {
+    "kind": "RANDOM",
+    "p": 0.05,
+    "seed": 397232
+   },
+   "stop": 0.2,
+   "target": 0.3,
+   "act": 0.2,
+   "give": 0.5,
+   "time": 45,
+   "max_trades": 3
+  },
+  "choose_half": {
+   "net": 24694,
+   "trades": 93,
+   "days": 31,
+   "won": 18,
+   "lost": 13,
+   "none": 0,
+   "worst": -3355
+  },
+  "score_half": {
+   "net": -26131,
+   "trades": 120,
+   "days": 40,
+   "won": 12,
+   "lost": 28,
+   "none": 0,
+   "worst": -4878
+  },
+  "score_half_gold_empty_days": {
+   "net": -20949,
+   "trades": 108,
+   "days": 36,
+   "won": 11,
+   "lost": 25,
+   "none": 0,
+   "worst": -4878
+  },
+  "share_positive_on_choose_half": 702
+ },
+ "all|real": {
+  "pick": {
+   "fam": {
+    "kind": "MOMO",
+    "k": 2,
+    "z": 1.5
+   },
+   "stop": 0.2,
+   "target": 0.15,
+   "act": 0.0,
+   "give": 0.5,
+   "time": 45,
+   "max_trades": 3
+  },
+  "choose_half": {
+   "net": 17324,
+   "trades": 111,
+   "days": 37,
+   "won": 24,
+   "lost": 13,
+   "none": 0,
+   "worst": -4862
+  },
+  "score_half": {
+   "net": -8292,
+   "trades": 120,
+   "days": 40,
+   "won": 18,
+   "lost": 22,
+   "none": 0,
+   "worst": -5049
+  },
+  "score_half_gold_empty_days": {
+   "net": -3682,
+   "trades": 108,
+   "days": 36,
+   "won": 18,
+   "lost": 18,
+   "none": 0,
+   "worst": -5049
+  },
+  "share_positive_on_choose_half": 226
+ },
+ "all|null": {
+  "pick": {
+   "fam": {
+    "kind": "RANDOM",
+    "p": 0.05,
+    "seed": 397232
+   },
+   "stop": 0.2,
+   "target": 0.3,
+   "act": 0.2,
+   "give": 0.5,
+   "time": 45,
+   "max_trades": 3
+  },
+  "choose_half": {
+   "net": 27268,
+   "trades": 111,
+   "days": 37,
+   "won": 21,
+   "lost": 16,
+   "none": 0,
+   "worst": -3355
+  },
+  "score_half": {
+   "net": -26131,
+   "trades": 120,
+   "days": 40,
+   "won": 12,
+   "lost": 28,
+   "none": 0,
+   "worst": -4878
+  },
+  "score_half_gold_empty_days": {
+   "net": -20949,
+   "trades": 108,
+   "days": 36,
+   "won": 11,
+   "lost": 25,
+   "none": 0,
+   "worst": -4878
+  },
+  "share_positive_on_choose_half": 636
+ }
+}
