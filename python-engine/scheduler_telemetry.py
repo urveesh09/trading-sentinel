@@ -566,6 +566,7 @@ JOB_TIER_MAP: dict[str, str] = {
     # research -- offline / non-time-critical
     "proactive_shadow_workflow": "research",
     "research_quote_collection": "research",
+    "tick_recorder_ensure": "research",
     "partner_rv_refresh": "research",
     "partner_input_refresh": "research",
     # system / meta -- bootstrap, login, circuit-breaker enforcement

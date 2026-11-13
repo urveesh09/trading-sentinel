@@ -1465,6 +1465,21 @@ class Settings(BaseSettings):
     RESEARCH_COMPRESSED_RETENTION_DAYS: int = 90
     RESEARCH_RESERVED_FREE_BYTES: int = 1_073_741_824  # 1 GiB operational floor
     RESEARCH_SESSION_MAX_BYTES: int = 268_435_456  # 256 MiB hard passive-collection budget
+    # [TR01 2026-11-13] Live tick recorder (tick_recorder.py): every price change of the NIFTY and SENSEX chains
+    # with 5-level depth from the owner's Kite websocket, for research only (no order, no REST call, nothing a
+    # trading decision reads). The owner, Nov 13: "the system records ... anything and everything that you want".
+    # The /data disk lives on the PC's C: drive (~52 GB free on Nov 13), hence the size limits: recording stops at
+    # a limit, nothing is deleted to make room; day folders older than the retention are removed.
+    TICK_RECORDER_ENABLED: bool = True
+    TICK_RECORDER_URL: str = "wss://ws.kite.trade"
+    TICK_RECORDER_PATH: str = "/data/research/ticks"
+    TICK_RECORDER_EXPIRIES: int = 3              # nearest option expiries per index
+    TICK_RECORDER_STRIKES: int = 20              # strikes either side of the front future
+    TICK_RECORDER_CHUNK_SEC: float = 60.0
+    TICK_RECORDER_DAY_MAX_BYTES: int = 629_145_600       # 600 MiB a day (compressed)
+    TICK_RECORDER_TOTAL_MAX_BYTES: int = 12_884_901_888  # 12 GiB in all
+    TICK_RECORDER_RETENTION_DAYS: int = 35          # ~5 weeks rotate inside the 12 GiB
+    TICK_RECORDER_DAILY_NOTE: bool = True        # one line to the owner after the close
 
     # ============================================================
     # PARTNER TIPS BOT ([PARTNER-TIPS 2026-07-18])

@@ -2778,13 +2778,13 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 Top-level declarations: `_log_fno_watchdog_payload` (line 30), `register_fno_scheduler_jobs` (line 62), `register_penny_scheduler_jobs` (line 453), `register_partner_scheduler_jobs` (line 1573)
 
-Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_auction_forward`, `penny_edge_orchestrator`, `penny_premarket_report`, `penny_smart_morning_evidence`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
+Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `fno_proving_week`, `hedge_advisory`, `operator_alert`, `partner_fill_capture`, `partner_input_refresh`, `partner_orchestrator`, `partner_watch`, `penny_accept_watchdog`, `penny_auction_forward`, `penny_edge_orchestrator`, `penny_premarket_report`, `penny_smart_morning_evidence`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`, `tick_recorder`
 
 ## `python-engine/scheduler_telemetry.py`
 
 Bounded, read-only scheduler timing evidence. APScheduler's own log lines are useful for a live operator but cannot answer later whether a job was skipped, ran late, or simply returned because the market was closed. This module records what is actually known without inventing scheduled/start times that an older invocation did not expose.
 
-Top-level declarations: `_utc_now` (line 71), `_iso` (line 75), `_session_date` (line 83), `_market_segment` (line 94), `_fold_elapsed` (line 103), `elapsed_quantile_upper_bound` (line 115), `_ensure_summary_columns` (line 129), `_record_daily_summary` (line 137), `init_scheduler_telemetry` (line 189), `record_scheduler_event` (line 195), `start_scheduler_run` (line 238), `complete_scheduler_run` (line 267), `scheduler_daily_summary_report` (line 297), `instrument_async_job` (line 347), `_write_final` (line 408), `_park_completion` (line 439), `_replay_pending` (line 446), `pending_completion_writes` (line 459), `telemetry_job` (line 466), `attach_scheduler_listener` (line 473), `_percentiles` (line 502), `_tier_for` (line 585), `_aggregate_by_tier` (line 592), `_inflight_state` (line 684), `scheduler_timing_report` (line 695)
+Top-level declarations: `_utc_now` (line 71), `_iso` (line 75), `_session_date` (line 83), `_market_segment` (line 94), `_fold_elapsed` (line 103), `elapsed_quantile_upper_bound` (line 115), `_ensure_summary_columns` (line 129), `_record_daily_summary` (line 137), `init_scheduler_telemetry` (line 189), `record_scheduler_event` (line 195), `start_scheduler_run` (line 238), `complete_scheduler_run` (line 267), `scheduler_daily_summary_report` (line 297), `instrument_async_job` (line 347), `_write_final` (line 408), `_park_completion` (line 439), `_replay_pending` (line 446), `pending_completion_writes` (line 459), `telemetry_job` (line 466), `attach_scheduler_listener` (line 473), `_percentiles` (line 502), `_tier_for` (line 586), `_aggregate_by_tier` (line 593), `_inflight_state` (line 685), `scheduler_timing_report` (line 696)
 
 Related tests: `python-engine/tests/test_scheduler_telemetry.py`
 
@@ -2879,6 +2879,16 @@ T2: own-cash Swing portfolio replay and trader candidates (research only). Signa
 Top-level declarations: `SwingReplayConfig` (line 53), `_chandelier_multiple` (line 68), `_target_2` (line 77), `SwingBaselinePolicy` (line 86), `SwingTraderPolicy` (line 113), `_entry_limit` (line 133), `run_swing_portfolio` (line 142)
 
 Engine dependencies: `config`, `daily_portfolio`, `research_daily_decision_replay`
+
+## `python-engine/tick_recorder.py`
+
+[TR01 2026-11-13] Live tick recorder: every price change of the NIFTY and SENSEX option chains, with 5-level depth, from the owner's Kite websocket, kept on disk for research. Why: the minute archive (research_quote_collector) holds one REST snapshot a minute of ~11 strikes. A human scalper sees every change of the whole near-the-money chain; research can only learn from what was kept. The owner, Nov 13: "the system records those things, anything and everything that you want". What it records (one websocket connection, Kite's "full" mode: price, volumes, OI, 5 bids and 5 asks): - the indices NIFTY 50, SENSEX and INDIA VIX; - each index's front and next-month future; - options on the nearest
+
+Top-level declarations: `_fresh_stats` (line 82), `stats` (line 91), `reset` (line 95), `enabled` (line 101), `_now` (line 105), `_api_key` (line 109), `_token` (line 113), `_in_window` (line 125), `_should_run` (line 130), `_url` (line 134), `_set` (line 138), `_error` (line 143), `_code` (line 147), `split_frame` (line 159), `packet_token` (line 180), `_divisor` (line 184), `_u32` (line 189), `packet_ltp` (line 193), `decode_packet` (line 200), `read_chunk` (line 226), `_books` (line 244), `_contract_meta` (line 249), `Universe` (line 256), `_atomic_json` (line 340), `_iso_ns` (line 346), `tree_bytes` (line 350), `prune` (line 361), `DayStore` (line 378), `_connect` (line 488), `_subscribe` (line 494), `_on_frame` (line 502), `_flush` (line 530), `_wrote` (line 540), `run` (line 552), `day_summary` (line 659), `note_text` (line 674), `_day_note` (line 684), `_refused_note` (line 700), `_is_trading_day` (line 712), `ensure_tick` (line 717)
+
+Engine dependencies: `config`, `fno_models`, `fno_underlyings`, `operator_alert`
+
+Related tests: `python-engine/tests/test_tick_recorder.py`
 
 ## `python-engine/token_lifecycle.py`
 

@@ -8115,3 +8115,24 @@ real phase changes remain visible and attributable.
   - The 10:00 hot-day straddle (SN95-L) and hot-day bursts (SN126-L) stay forward watches.
   - Their combined sleeve made +₹19,794 in four years, with intervals that include zero.
 - **Configuration / migration / runtime:** none. Production unchanged.
+
+
+## TR01 live tick recorder (Nov 13, 2026; Dev, for deploy on the owner's word that evening)
+
+- **Problem:** the minute archive (`research_quote_collector`) keeps one REST snapshot a minute of ~11 strikes. Gap-day research (SN121–SN160) could not see what a scalper sees: every change of the whole near-the-money chain. Owner, Nov 13: "the system records those things anything and everything that you want … deploy it in production right now".
+- **Module:** `python-engine/tick_recorder.py`, one Kite websocket connection on the owner's key in `full` mode (price, volumes, OI, 5 bids and 5 asks).
+  - **Instruments:** NIFTY 50, SENSEX and INDIA VIX; each index's front and next future; options on the nearest 3 expiries, 20 strikes either side of the front future, CE and PE (~500 instruments). The window widens when the future moves half a window and never narrows. Cap 2,900 (Kite allows 3,000).
+  - **Files:** `/data/research/ticks/<day>/`:
+    - `chunk-<HHMMSS>-<n>.bin.xz`: 60-second xz chunks of `>qH` (receipt ns, length) + Kite's packet bytes, grouped by instrument;
+    - `instruments.jsonl`, `events.jsonl` (connects, drops, refusals, limits: gaps are explicit);
+    - `manifest.json` (sha256, records, first/last receipt per chunk). `read_chunk()` / `decode_packet()` decode them.
+  - **Limits:** 600 MiB a day and 12 GiB in all (recording stops with an event and one owner line; nothing is deleted to make room); day folders older than 35 days are removed. The `/data` disk lives on the PC's C: drive (52 GB free on Nov 13).
+  - **Runs:** 09:00–15:41 IST on trading days with a token set today, started by the scheduler job `tick_recorder_ensure` (every minute 09:00–15:59, second 40). A drop reconnects (1 s doubling to 60 s), a new login reconnects with the new token, a 401/403 waits 15 minutes and tells the owner once.
+  - **Never:** an order, a REST call (no share of the quote budget), or an input to any trading decision. The token is never logged. Kite's text frames (the owner's order updates) are counted, never stored.
+  - **Owner line after the close:** "📼 Tick recorder <day>: N contracts, N price changes, N MB, live N min".
+- **Config:** `TICK_RECORDER_ENABLED` (default on), `_URL`, `_PATH`, `_EXPIRIES` 3, `_STRIKES` 20, `_CHUNK_SEC` 60, `_DAY_MAX_BYTES` 600 MiB, `_TOTAL_MAX_BYTES` 12 GiB, `_RETENTION_DAYS` 35, `_DAILY_NOTE`. No migration; no stored data changes.
+- **Size estimate:** simulated 500-instrument stream, ~40 bytes a record compressed. At 350 changes a second that is ~320 MB a day. The first real day sets the true figure.
+- **Tests:** full engine suite 6,406 passed, 4 skipped (exit 0, 11 min 24 s). `tests/test_tick_recorder.py` (13, incl. a contract book ready late): packet layout, frames, chunk round trip with sha256, limits and pruning, universe widening and cap, a whole session, a drop, a new login, a refusal, the day limit, the scheduler gate. The golden job lists (`main_surface_golden.json`, `add_job_census_golden.json`) each gain only `tick_recorder_ensure`; its handler carries the calendar-gate marker (the gate is in `ensure_tick`).
+- **Rollback:** set `TICK_RECORDER_ENABLED=false` in Production `.env` and recreate python-engine, or revert the commit. Deleting `/data/research/ticks` removes all recorded data (the owner's call).
+- **Acceptance on the first trading day (Mon Nov 16):** `events.jsonl` shows `connected` before 09:15, chunks every minute, the owner line after 15:41, and no `tick_recorder_*` errors in the engine log. Also check the day's MB against the limits.
+- **Remaining work:** measure the real size and tick rate on Nov 16 and re-set the limits; then the first tick-level studies (spreads across the chain, sub-minute moves on hot days).
