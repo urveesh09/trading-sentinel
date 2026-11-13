@@ -357,3 +357,29 @@ The pass rule everywhere: net > 0 after charges AND net without the single best 
 | SN79 | freeze `add4696e`, results `9ab9f0a8` |
 | SN80–SN85 | `5e3aa825` |
 | SN86–SN90 | `d0208fba` |
+
+
+## SN91–SN100 (Nov 13, 2026; research only, Dev)
+
+The owner asked for the other agent's SN92–SN100 proposal and component review (`docs/SN92_SN100_RESEARCH_PROPOSAL.md`, `docs/SN_COMPONENT_RESEARCH_REVIEW.md`, local files of that agent) to be built and tested at every wallet, cap and start, "and let's see if it improves drastically the current Gold". Folder `docs/research/fno/2026-11-13-sn92` (plan + scripts frozen at `b4295b1c` before scoring; README has every number).
+
+| SN | Idea | Held out | Verdict |
+|---|---|---:|---|
+| 91 | Rupees of wallet per lot (10k / 12.5k / 15k / 20k) | 10–15k equal, 20k worse | v5's 15k stays |
+| 92 | Where the money goes | ₹205/lot stress is Gold's biggest cost (₹28.7k at ₹15k); TPB puts carry the book; on empty days the index moves 3–10× the ~9-point cost hurdle but the direction is a coin flip | Description |
+| 93 | Slow up-drift calls | −₹49,898 (random days at the same clock −₹10,599) | NOT PROVEN |
+| 94 | Confirmed failed breakout | −₹86,916 (unconditional fade −₹1,69,200) | NOT PROVEN |
+| 95 | Cheap straddle (realised vs implied at 10:00) / rich iron fly | Straddle **+₹23,518** (35 trades; 2/4 years; −₹16,930 without best 5); fly −₹1,15,649 | NOT PROVEN; straddle = forward watch `SN95-L` |
+| 96 | NIFTY 50 components (15-minute Kite + Production bars, Feb–Oct 2026) | No information (forecast 0.43% worse; residual breadth correlation +0.009, interval −0.04 to +0.06) | NOT PROVEN |
+| 97 | Futures volume (Gold lots, companion confirmation), events | Trades less, still loses; Gold on RBI days +₹2,297 (4 trades) | NOT PROVEN |
+| 98 | Expiry mornings priced | −₹16,757 | NOT PROVEN |
+| 99 | Gold's lots by setup / cheapness / VIX / volume / one deep lot | +₹3.5k (₹30k fixed) and +₹6.2k (growth) over v5, reversed at +₹400 and 1-minute-late | NOT PROVEN; v5 sizing stays |
+| 100 | Gold + companion in one account | ₹30k growing: Gold alone ₹8,50,882; + SN93 −₹2.21 lakh; + SN94 −₹5.28 lakh | Gold alone best |
+
+**Money levers for Gold v5 (in-sample, `levers.py`):**
+- ₹30k start, stop after 3: ₹8,50,882 (worst day −₹21,113); stepping after 50% profit gives ₹9,47,841 with the same worst day.
+- Stop after 5: ₹15,51,780 (−₹45,464).
+- ₹50k start: ₹14,70,693 (−₹33,689).
+- A 15% day limit costs about a quarter. 25–30% raises the worst day for little gain at small wallets, and SN57 already found 30% worse held out, so 20% stays.
+
+**Conclusion:** Gold v5 is unchanged and stays deployed on paper. Empty days stay flat. New information (BANKNIFTY option minutes, 1-minute constituents, GIFT Nifty, order book) needs a download on the owner's word. Commits: freeze `b4295b1c`, results in the commit that adds this section.

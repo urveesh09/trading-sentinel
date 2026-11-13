@@ -8004,3 +8004,24 @@ skips writes whose bytes already match. If any semantic content changes, a new
 timestamp is assigned and the exact same payload is dual-written to the Python
 and Node consumers. No-op verification therefore leaves a clean checkout while
 real phase changes remain visible and attributable.
+
+
+## SN92–SN100 research (Nov 13, 2026; Dev only, research only)
+
+- **Problem:** the owner asked for the other agent's SN92–SN100 proposal and component review to be built and tested against SN Gold v5 at every wallet, cap and start.
+- **Files:** `docs/research/fno/2026-11-13-sn92/` (`PLAN.md`, `common.py`, `sn92.py`–`sn100.py`, `levers.py`, `README.md`, `results-*.json`, `logs/`).
+  - `common.py` adds a shared-account day player (Gold priority, companion sold at the bid when Gold signals) on top of the SN51 lab.
+  - It reproduces Gold v5 exactly at every wallet.
+- **Data:** the sealed 1-minute caches, plus the 15-minute NIFTY 50 stock bars already on disk (Kite snapshot Jan–Jul 2026, Production export Aug–Nov 2026), India VIX, and SN10's expiry 10-second days. No download, no broker call.
+- **Result:** no change to Gold.
+  - Every empty-day companion (drift calls, failed breakouts, priced straddles / iron flies, NIFTY 50 components, futures volume, expiry mornings) is NOT PROVEN held out.
+  - Gold sizing variants do not survive +₹400 / 1-minute-late.
+  - Adding the companions to Gold's account cuts the ₹30k growth result by ₹2.2–5.3 lakh.
+  - One forward-watch item: SN95-L (10:00 cheap straddle on Gold-free days), frozen in the README.
+- **Verification:**
+  - harness parity with v5 (all wallets);
+  - plan and scripts frozen at `b4295b1c` before any scoring run;
+  - each scorer refuses to run twice;
+  - a smoke test on six sessions before freezing.
+- **Configuration / migration / runtime:** none. Production unchanged (`82b08371`, SN Gold v5 paper, ₹30k). Pushed to the Dev branch; nothing deployed.
+- **Next:** SN Gold v5 forward check (`docs/research/fno/sn-gold/FORWARD_V5.md`). Owner levers: start amount, `SN_GOLD_STEP_TRIGGER=0.5`. New information sources only on the owner's word.
