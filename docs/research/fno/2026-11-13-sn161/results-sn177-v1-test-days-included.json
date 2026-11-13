@@ -1,0 +1,800 @@
+{
+ "Rs 15k | Gold v5": {
+  "trading_net": 151155,
+  "wage 750": {
+   "min_start_never_short": 425000.0,
+   "by_start": {
+    "15,000": {
+     "start": 15000.0,
+     "paid": 124814,
+     "paid_per_month": 2837,
+     "short_days": 549,
+     "short_months": 43,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 4487,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "30,000": {
+     "start": 30000.0,
+     "paid": 139814,
+     "paid_per_month": 3178,
+     "short_days": 530,
+     "short_months": 42,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 5870,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 159814,
+     "paid_per_month": 3632,
+     "short_days": 502,
+     "short_months": 40,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 7867,
+     "first_day_below_wallet": "2023-03-31"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 209814,
+     "paid_per_month": 4768,
+     "short_days": 436,
+     "short_months": 36,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 9053,
+     "first_day_below_wallet": "2023-10-03"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 309814,
+     "paid_per_month": 7041,
+     "short_days": 302,
+     "short_months": 26,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 9053,
+     "first_day_below_wallet": "2024-07-10"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 409814,
+     "paid_per_month": 9314,
+     "short_days": 166,
+     "short_months": 15,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 10045,
+     "first_day_below_wallet": "2025-07-14"
+    }
+   }
+  },
+  "wage 1000": {
+   "min_start_never_short": 600000.0,
+   "by_start": {
+    "15,000": {
+     "start": 15000.0,
+     "paid": 126346,
+     "paid_per_month": 2872,
+     "short_days": 590,
+     "short_months": 43,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 4487,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "30,000": {
+     "start": 30000.0,
+     "paid": 141346,
+     "paid_per_month": 3212,
+     "short_days": 576,
+     "short_months": 43,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 5870,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 161346,
+     "paid_per_month": 3667,
+     "short_days": 555,
+     "short_months": 42,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 6109,
+     "first_day_below_wallet": "2023-02-27"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 211346,
+     "paid_per_month": 4803,
+     "short_days": 505,
+     "short_months": 38,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 8350,
+     "first_day_below_wallet": "2023-06-06"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 311346,
+     "paid_per_month": 7076,
+     "short_days": 404,
+     "short_months": 32,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 8350,
+     "first_day_below_wallet": "2023-12-26"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 411346,
+     "paid_per_month": 9349,
+     "short_days": 303,
+     "short_months": 25,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 8350,
+     "first_day_below_wallet": "2024-10-21"
+    }
+   }
+  },
+  "wage 1500": {
+   "min_start_never_short": 955000.0,
+   "by_start": {
+    "15,000": {
+     "start": 15000.0,
+     "paid": 126346,
+     "paid_per_month": 2872,
+     "short_days": 632,
+     "short_months": 44,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 4487,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "30,000": {
+     "start": 30000.0,
+     "paid": 141346,
+     "paid_per_month": 3212,
+     "short_days": 622,
+     "short_months": 44,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 5870,
+     "first_day_below_wallet": "2023-01-17"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 161346,
+     "paid_per_month": 3667,
+     "short_days": 610,
+     "short_months": 43,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 5870,
+     "first_day_below_wallet": "2023-02-13"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 211346,
+     "paid_per_month": 4803,
+     "short_days": 574,
+     "short_months": 41,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 7078,
+     "first_day_below_wallet": "2023-06-06"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 311346,
+     "paid_per_month": 7076,
+     "short_days": 508,
+     "short_months": 37,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 7078,
+     "first_day_below_wallet": "2023-10-03"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 411346,
+     "paid_per_month": 9349,
+     "short_days": 441,
+     "short_months": 33,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 7078,
+     "first_day_below_wallet": "2023-12-26"
+    }
+   }
+  }
+ },
+ "Rs 15k | Gold v5 + forward watches": {
+  "trading_net": 180693,
+  "wage 750": {
+   "min_start_never_short": 395000.0,
+   "by_start": {
+    "15,000": {
+     "start": 15000.0,
+     "paid": 154352,
+     "paid_per_month": 3508,
+     "short_days": 507,
+     "short_months": 39,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 2099,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "30,000": {
+     "start": 30000.0,
+     "paid": 169352,
+     "paid_per_month": 3849,
+     "short_days": 486,
+     "short_months": 39,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 189352,
+     "paid_per_month": 4303,
+     "short_days": 459,
+     "short_months": 36,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-03-31"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 239352,
+     "paid_per_month": 5440,
+     "short_days": 393,
+     "short_months": 32,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-08-25"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 339352,
+     "paid_per_month": 7713,
+     "short_days": 258,
+     "short_months": 23,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2024-07-24"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 439352,
+     "paid_per_month": 9985,
+     "short_days": 124,
+     "short_months": 13,
+     "months": 44,
+     "end_balance": 11713,
+     "lowest_balance": 8217,
+     "first_day_below_wallet": "2025-07-30"
+    }
+   }
+  },
+  "wage 1000": {
+   "min_start_never_short": 570000.0,
+   "by_start": {
+    "15,000": {
+     "start": 15000.0,
+     "paid": 155884,
+     "paid_per_month": 3543,
+     "short_days": 560,
+     "short_months": 42,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2099,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "30,000": {
+     "start": 30000.0,
+     "paid": 170884,
+     "paid_per_month": 3884,
+     "short_days": 547,
+     "short_months": 42,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 190884,
+     "paid_per_month": 4338,
+     "short_days": 525,
+     "short_months": 41,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-02-27"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 240884,
+     "paid_per_month": 5475,
+     "short_days": 476,
+     "short_months": 37,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-06-06"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 340884,
+     "paid_per_month": 7747,
+     "short_days": 375,
+     "short_months": 31,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-12-26"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 440884,
+     "paid_per_month": 10020,
+     "short_days": 273,
+     "short_months": 23,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2024-10-21"
+    }
+   }
+  },
+  "wage 1500": {
+   "min_start_never_short": 925000.0,
+   "by_start": {
+    "15,000": {
+     "start": 15000.0,
+     "paid": 155884,
+     "paid_per_month": 3543,
+     "short_days": 614,
+     "short_months": 44,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2099,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "30,000": {
+     "start": 30000.0,
+     "paid": 170884,
+     "paid_per_month": 3884,
+     "short_days": 604,
+     "short_months": 44,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-01-17"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 190884,
+     "paid_per_month": 4338,
+     "short_days": 592,
+     "short_months": 43,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-02-13"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 240884,
+     "paid_per_month": 5475,
+     "short_days": 557,
+     "short_months": 41,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-06-06"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 340884,
+     "paid_per_month": 7747,
+     "short_days": 491,
+     "short_months": 37,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-08-25"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 440884,
+     "paid_per_month": 10020,
+     "short_days": 426,
+     "short_months": 33,
+     "months": 44,
+     "end_balance": 10180,
+     "lowest_balance": 2605,
+     "first_day_below_wallet": "2023-12-26"
+    }
+   }
+  }
+ },
+ "Rs 30k fixed | Gold v5": {
+  "trading_net": 280507,
+  "wage 750": {
+   "min_start_never_short": 345000.0,
+   "by_start": {
+    "30,000": {
+     "start": 30000.0,
+     "paid": 218806,
+     "paid_per_month": 4973,
+     "short_days": 419,
+     "short_months": 31,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 13159,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 238806,
+     "paid_per_month": 5427,
+     "short_days": 390,
+     "short_months": 30,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 15918,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 288806,
+     "paid_per_month": 6564,
+     "short_days": 324,
+     "short_months": 26,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 21143,
+     "first_day_below_wallet": "2023-06-09"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 388806,
+     "paid_per_month": 8836,
+     "short_days": 190,
+     "short_months": 16,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 23013,
+     "first_day_below_wallet": "2024-08-19"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 488806,
+     "paid_per_month": 11109,
+     "short_days": 55,
+     "short_months": 6,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 27521,
+     "first_day_below_wallet": "2026-01-19"
+    }
+   }
+  },
+  "wage 1000": {
+   "min_start_never_short": 520000.0,
+   "by_start": {
+    "30,000": {
+     "start": 30000.0,
+     "paid": 218806,
+     "paid_per_month": 4973,
+     "short_days": 495,
+     "short_months": 38,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 13159,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 238806,
+     "paid_per_month": 5427,
+     "short_days": 474,
+     "short_months": 38,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 14124,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 288806,
+     "paid_per_month": 6564,
+     "short_days": 425,
+     "short_months": 34,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 17897,
+     "first_day_below_wallet": "2023-06-06"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 388806,
+     "paid_per_month": 8836,
+     "short_days": 324,
+     "short_months": 28,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 22598,
+     "first_day_below_wallet": "2023-10-31"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 488806,
+     "paid_per_month": 11109,
+     "short_days": 222,
+     "short_months": 20,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 22598,
+     "first_day_below_wallet": "2024-10-21"
+    }
+   }
+  },
+  "wage 1500": {
+   "min_start_never_short": 875000.0,
+   "by_start": {
+    "30,000": {
+     "start": 30000.0,
+     "paid": 222884,
+     "paid_per_month": 5066,
+     "short_days": 562,
+     "short_months": 42,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 12973,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 242884,
+     "paid_per_month": 5520,
+     "short_days": 548,
+     "short_months": 42,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 13893,
+     "first_day_below_wallet": "2023-01-17"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 292884,
+     "paid_per_month": 6656,
+     "short_days": 517,
+     "short_months": 40,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 14943,
+     "first_day_below_wallet": "2023-03-31"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 392884,
+     "paid_per_month": 8929,
+     "short_days": 448,
+     "short_months": 36,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 18283,
+     "first_day_below_wallet": "2023-10-03"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 492884,
+     "paid_per_month": 11202,
+     "short_days": 382,
+     "short_months": 32,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 20246,
+     "first_day_below_wallet": "2023-12-26"
+    }
+   }
+  }
+ },
+ "Rs 30k fixed | Gold v5 + forward watches": {
+  "trading_net": 310045,
+  "wage 750": {
+   "min_start_never_short": 315000.0,
+   "by_start": {
+    "30,000": {
+     "start": 30000.0,
+     "paid": 248343,
+     "paid_per_month": 5644,
+     "short_days": 380,
+     "short_months": 29,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 12213,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 268343,
+     "paid_per_month": 6099,
+     "short_days": 353,
+     "short_months": 28,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 14634,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 318343,
+     "paid_per_month": 7235,
+     "short_days": 286,
+     "short_months": 23,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 18767,
+     "first_day_below_wallet": "2023-06-09"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 418343,
+     "paid_per_month": 9508,
+     "short_days": 152,
+     "short_months": 13,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 18767,
+     "first_day_below_wallet": "2024-08-19"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 518343,
+     "paid_per_month": 11781,
+     "short_days": 14,
+     "short_months": 2,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 27774,
+     "first_day_below_wallet": "2026-08-17"
+    }
+   }
+  },
+  "wage 1000": {
+   "min_start_never_short": 490000.0,
+   "by_start": {
+    "30,000": {
+     "start": 30000.0,
+     "paid": 248343,
+     "paid_per_month": 5644,
+     "short_days": 464,
+     "short_months": 35,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 12213,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 268343,
+     "paid_per_month": 6099,
+     "short_days": 445,
+     "short_months": 34,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 13602,
+     "first_day_below_wallet": "2023-02-01"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 318343,
+     "paid_per_month": 7235,
+     "short_days": 394,
+     "short_months": 30,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 13602,
+     "first_day_below_wallet": "2023-06-06"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 418343,
+     "paid_per_month": 9508,
+     "short_days": 294,
+     "short_months": 24,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 13602,
+     "first_day_below_wallet": "2023-10-31"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 518343,
+     "paid_per_month": 11781,
+     "short_days": 194,
+     "short_months": 17,
+     "months": 44,
+     "end_balance": 27774,
+     "lowest_balance": 13602,
+     "first_day_below_wallet": "2024-10-21"
+    }
+   }
+  },
+  "wage 1500": {
+   "min_start_never_short": 845000.0,
+   "by_start": {
+    "30,000": {
+     "start": 30000.0,
+     "paid": 252422,
+     "paid_per_month": 5737,
+     "short_days": 545,
+     "short_months": 41,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 9839,
+     "first_day_below_wallet": "2023-01-16"
+    },
+    "50,000": {
+     "start": 50000.0,
+     "paid": 272422,
+     "paid_per_month": 6191,
+     "short_days": 531,
+     "short_months": 41,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 9839,
+     "first_day_below_wallet": "2023-01-17"
+    },
+    "100,000": {
+     "start": 100000.0,
+     "paid": 322422,
+     "paid_per_month": 7328,
+     "short_days": 501,
+     "short_months": 39,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 9839,
+     "first_day_below_wallet": "2023-03-31"
+    },
+    "200,000": {
+     "start": 200000.0,
+     "paid": 422422,
+     "paid_per_month": 9600,
+     "short_days": 432,
+     "short_months": 35,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 9839,
+     "first_day_below_wallet": "2023-08-25"
+    },
+    "300,000": {
+     "start": 300000.0,
+     "paid": 522422,
+     "paid_per_month": 11873,
+     "short_days": 365,
+     "short_months": 31,
+     "months": 44,
+     "end_balance": 23696,
+     "lowest_balance": 9839,
+     "first_day_below_wallet": "2023-12-26"
+    }
+   }
+  }
+ }
+}

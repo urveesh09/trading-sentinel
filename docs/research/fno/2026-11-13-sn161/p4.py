@@ -19,7 +19,10 @@ WALLETS = {"Rs 15k": ("A 15k 1 lot", 15000.0, "one", None), "Rs 30k fixed": ("30
            "Rs 1 lakh growing": ("100k grow stop 3", 100000.0, "grow", 3)}
 
 
-def gold(wallet_key, v=None, keep=lambda d: True):
+def gold(wallet_key, v=None, keep=None):
+    """Gold v5 day nets for one wallet; DEVELOPMENT days unless ``keep`` says otherwise (SN181 passes pw.is_test).
+    [Fixed after the first SN177-SN180 run: the default kept every day, so TEST-day Gold nets entered some totals.]"""
+    keep = keep or (lambda d: not pw.is_test(d))
     _row, daylog = pc.gold_days(v or C.V5, WALLETS[wallet_key])
     return {d: n for d, n in daylog if n and keep(d)}
 

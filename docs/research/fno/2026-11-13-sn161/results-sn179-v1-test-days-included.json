@@ -1,0 +1,34 @@
+{
+ "Rs 15k": {
+  "Gold v5 net": 151155,
+  "Gold v5 at Rs 400/lot": 82725,
+  "Gold v5 one minute late": 118956,
+  "player net": 186947,
+  "player without best 5 days": 123533,
+  "bootstrap": {
+   "months": 44,
+   "p_month_negative": 0.386,
+   "p_month_15_wage_days": 0.0,
+   "p_month_10_wage_days": 0.0,
+   "year_net_p5": 1571,
+   "year_net_median": 42207,
+   "p_year_negative": 0.043
+  }
+ },
+ "Rs 30k growing (production)": {
+  "Gold v5 net": 850883,
+  "Gold v5 at Rs 400/lot": 495597,
+  "Gold v5 one minute late": 776641,
+  "player net": 905161,
+  "player without best 5 days": 554186,
+  "bootstrap": {
+   "months": 44,
+   "p_month_negative": 0.386,
+   "p_month_15_wage_days": 0.0,
+   "p_month_10_wage_days": 0.0,
+   "year_net_p5": 7705,
+   "year_net_median": 179962,
+   "p_year_negative": 0.041
+  }
+ }
+}
