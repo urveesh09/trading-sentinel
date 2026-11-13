@@ -1,0 +1,1280 @@
+{
+ "starts": [
+  "2023-01-02",
+  "2023-02-01",
+  "2023-03-03",
+  "2023-04-03",
+  "2023-05-02",
+  "2023-06-02",
+  "2023-07-03",
+  "2023-08-01",
+  "2023-09-01",
+  "2023-10-03",
+  "2023-11-01",
+  "2023-12-01",
+  "2024-01-01",
+  "2024-02-02",
+  "2024-03-01",
+  "2024-04-01",
+  "2024-05-03",
+  "2024-06-03",
+  "2024-07-01",
+  "2024-08-02",
+  "2024-09-02",
+  "2024-10-01",
+  "2024-11-04",
+  "2024-12-02",
+  "2025-01-01",
+  "2025-02-01",
+  "2025-03-03",
+  "2025-04-01",
+  "2025-05-02",
+  "2025-06-02",
+  "2025-07-01",
+  "2025-08-01",
+  "2025-09-01",
+  "2025-10-01",
+  "2025-11-03",
+  "2025-12-01",
+  "2026-01-01",
+  "2026-02-01",
+  "2026-03-04",
+  "2026-04-01",
+  "2026-05-04",
+  "2026-06-01"
+ ],
+ "configs": {
+  "30k uncapped": {
+   "summary": {
+    "starts": 42,
+    "median_final_multiple": 308.82,
+    "share_below_start": 0.0,
+    "share_dead": 0.0,
+    "worst_final": 92731,
+    "worst_start": "2026-04-01",
+    "worst_drawdown_pct": 52.3,
+    "starts_2026_median_final": 178893
+   },
+   "rows": [
+    {
+     "start": "2023-01-02",
+     "final": 43396356,
+     "lowest": 14782,
+     "max_drawdown_pct": 51.4,
+     "dead": false
+    },
+    {
+     "start": "2023-02-01",
+     "final": 43358959,
+     "lowest": 19519,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2023-03-03",
+     "final": 43150366,
+     "lowest": 25893,
+     "max_drawdown_pct": 47.1,
+     "dead": false
+    },
+    {
+     "start": "2023-04-03",
+     "final": 57069515,
+     "lowest": 22181,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2023-05-02",
+     "final": 57069515,
+     "lowest": 22181,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2023-06-02",
+     "final": 57069515,
+     "lowest": 22181,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2023-07-03",
+     "final": 52347482,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.4,
+     "dead": false
+    },
+    {
+     "start": "2023-08-01",
+     "final": 52347482,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.4,
+     "dead": false
+    },
+    {
+     "start": "2023-09-01",
+     "final": 52347482,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.4,
+     "dead": false
+    },
+    {
+     "start": "2023-10-03",
+     "final": 52347482,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.4,
+     "dead": false
+    },
+    {
+     "start": "2023-11-01",
+     "final": 43358937,
+     "lowest": 26895,
+     "max_drawdown_pct": 47.2,
+     "dead": false
+    },
+    {
+     "start": "2023-12-01",
+     "final": 43359005,
+     "lowest": 26025,
+     "max_drawdown_pct": 47.1,
+     "dead": false
+    },
+    {
+     "start": "2024-01-01",
+     "final": 76903019,
+     "lowest": 30000,
+     "max_drawdown_pct": 46.6,
+     "dead": false
+    },
+    {
+     "start": "2024-02-02",
+     "final": 9265089,
+     "lowest": 26531,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2024-03-01",
+     "final": 9264729,
+     "lowest": 27596,
+     "max_drawdown_pct": 46.1,
+     "dead": false
+    },
+    {
+     "start": "2024-04-01",
+     "final": 9264822,
+     "lowest": 27355,
+     "max_drawdown_pct": 46.6,
+     "dead": false
+    },
+    {
+     "start": "2024-05-03",
+     "final": 9264746,
+     "lowest": 26719,
+     "max_drawdown_pct": 46.4,
+     "dead": false
+    },
+    {
+     "start": "2024-06-03",
+     "final": 9264721,
+     "lowest": 28259,
+     "max_drawdown_pct": 46.4,
+     "dead": false
+    },
+    {
+     "start": "2024-07-01",
+     "final": 9264721,
+     "lowest": 28259,
+     "max_drawdown_pct": 46.4,
+     "dead": false
+    },
+    {
+     "start": "2024-08-02",
+     "final": 8548686,
+     "lowest": 24377,
+     "max_drawdown_pct": 47.0,
+     "dead": false
+    },
+    {
+     "start": "2024-09-02",
+     "final": 11407764,
+     "lowest": 25215,
+     "max_drawdown_pct": 45.8,
+     "dead": false
+    },
+    {
+     "start": "2024-10-01",
+     "final": 11407764,
+     "lowest": 25215,
+     "max_drawdown_pct": 45.8,
+     "dead": false
+    },
+    {
+     "start": "2024-11-04",
+     "final": 9838218,
+     "lowest": 30000,
+     "max_drawdown_pct": 45.9,
+     "dead": false
+    },
+    {
+     "start": "2024-12-02",
+     "final": 1618333,
+     "lowest": 24096,
+     "max_drawdown_pct": 52.3,
+     "dead": false
+    },
+    {
+     "start": "2025-01-01",
+     "final": 2571823,
+     "lowest": 25420,
+     "max_drawdown_pct": 44.8,
+     "dead": false
+    },
+    {
+     "start": "2025-02-01",
+     "final": 659047,
+     "lowest": 19623,
+     "max_drawdown_pct": 46.2,
+     "dead": false
+    },
+    {
+     "start": "2025-03-03",
+     "final": 656904,
+     "lowest": 18719,
+     "max_drawdown_pct": 42.0,
+     "dead": false
+    },
+    {
+     "start": "2025-04-01",
+     "final": 720946,
+     "lowest": 21213,
+     "max_drawdown_pct": 39.2,
+     "dead": false
+    },
+    {
+     "start": "2025-05-02",
+     "final": 721866,
+     "lowest": 22922,
+     "max_drawdown_pct": 36.2,
+     "dead": false
+    },
+    {
+     "start": "2025-06-02",
+     "final": 1205877,
+     "lowest": 26025,
+     "max_drawdown_pct": 35.2,
+     "dead": false
+    },
+    {
+     "start": "2025-07-01",
+     "final": 1205831,
+     "lowest": 23261,
+     "max_drawdown_pct": 35.2,
+     "dead": false
+    },
+    {
+     "start": "2025-08-01",
+     "final": 1205466,
+     "lowest": 25098,
+     "max_drawdown_pct": 35.2,
+     "dead": false
+    },
+    {
+     "start": "2025-09-01",
+     "final": 909779,
+     "lowest": 30000,
+     "max_drawdown_pct": 34.2,
+     "dead": false
+    },
+    {
+     "start": "2025-10-01",
+     "final": 658086,
+     "lowest": 28196,
+     "max_drawdown_pct": 34.7,
+     "dead": false
+    },
+    {
+     "start": "2025-11-03",
+     "final": 284814,
+     "lowest": 27773,
+     "max_drawdown_pct": 36.5,
+     "dead": false
+    },
+    {
+     "start": "2025-12-01",
+     "final": 185045,
+     "lowest": 24051,
+     "max_drawdown_pct": 35.9,
+     "dead": false
+    },
+    {
+     "start": "2026-01-01",
+     "final": 284723,
+     "lowest": 27327,
+     "max_drawdown_pct": 36.5,
+     "dead": false
+    },
+    {
+     "start": "2026-02-01",
+     "final": 184371,
+     "lowest": 25103,
+     "max_drawdown_pct": 36.0,
+     "dead": false
+    },
+    {
+     "start": "2026-03-04",
+     "final": 179765,
+     "lowest": 30000,
+     "max_drawdown_pct": 35.8,
+     "dead": false
+    },
+    {
+     "start": "2026-04-01",
+     "final": 92731,
+     "lowest": 21837,
+     "max_drawdown_pct": 29.3,
+     "dead": false
+    },
+    {
+     "start": "2026-05-04",
+     "final": 178021,
+     "lowest": 30000,
+     "max_drawdown_pct": 23.3,
+     "dead": false
+    },
+    {
+     "start": "2026-06-01",
+     "final": 135941,
+     "lowest": 29974,
+     "max_drawdown_pct": 31.3,
+     "dead": false
+    }
+   ]
+  },
+  "30k capped 1,01,250": {
+   "summary": {
+    "starts": 42,
+    "median_final_multiple": 24.62,
+    "share_below_start": 0.0,
+    "share_dead": 0.0,
+    "worst_final": 92731,
+    "worst_start": "2026-04-01",
+    "worst_drawdown_pct": 52.3,
+    "starts_2026_median_final": 173252
+   },
+   "rows": [
+    {
+     "start": "2023-01-02",
+     "final": 919565,
+     "lowest": 14782,
+     "max_drawdown_pct": 51.4,
+     "dead": false
+    },
+    {
+     "start": "2023-02-01",
+     "final": 924577,
+     "lowest": 19519,
+     "max_drawdown_pct": 36.6,
+     "dead": false
+    },
+    {
+     "start": "2023-03-03",
+     "final": 924491,
+     "lowest": 25893,
+     "max_drawdown_pct": 47.1,
+     "dead": false
+    },
+    {
+     "start": "2023-04-03",
+     "final": 994345,
+     "lowest": 22181,
+     "max_drawdown_pct": 33.9,
+     "dead": false
+    },
+    {
+     "start": "2023-05-02",
+     "final": 994345,
+     "lowest": 22181,
+     "max_drawdown_pct": 33.9,
+     "dead": false
+    },
+    {
+     "start": "2023-06-02",
+     "final": 994345,
+     "lowest": 22181,
+     "max_drawdown_pct": 33.9,
+     "dead": false
+    },
+    {
+     "start": "2023-07-03",
+     "final": 980589,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.3,
+     "dead": false
+    },
+    {
+     "start": "2023-08-01",
+     "final": 980589,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.3,
+     "dead": false
+    },
+    {
+     "start": "2023-09-01",
+     "final": 980589,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.3,
+     "dead": false
+    },
+    {
+     "start": "2023-10-03",
+     "final": 980589,
+     "lowest": 22286,
+     "max_drawdown_pct": 46.3,
+     "dead": false
+    },
+    {
+     "start": "2023-11-01",
+     "final": 934190,
+     "lowest": 26895,
+     "max_drawdown_pct": 47.2,
+     "dead": false
+    },
+    {
+     "start": "2023-12-01",
+     "final": 924622,
+     "lowest": 26025,
+     "max_drawdown_pct": 47.1,
+     "dead": false
+    },
+    {
+     "start": "2024-01-01",
+     "final": 1026540,
+     "lowest": 30000,
+     "max_drawdown_pct": 16.1,
+     "dead": false
+    },
+    {
+     "start": "2024-02-02",
+     "final": 738833,
+     "lowest": 26531,
+     "max_drawdown_pct": 27.5,
+     "dead": false
+    },
+    {
+     "start": "2024-03-01",
+     "final": 738477,
+     "lowest": 27596,
+     "max_drawdown_pct": 28.7,
+     "dead": false
+    },
+    {
+     "start": "2024-04-01",
+     "final": 739658,
+     "lowest": 27355,
+     "max_drawdown_pct": 27.3,
+     "dead": false
+    },
+    {
+     "start": "2024-05-03",
+     "final": 739153,
+     "lowest": 26719,
+     "max_drawdown_pct": 27.4,
+     "dead": false
+    },
+    {
+     "start": "2024-06-03",
+     "final": 739008,
+     "lowest": 28259,
+     "max_drawdown_pct": 28.6,
+     "dead": false
+    },
+    {
+     "start": "2024-07-01",
+     "final": 739008,
+     "lowest": 28259,
+     "max_drawdown_pct": 28.6,
+     "dead": false
+    },
+    {
+     "start": "2024-08-02",
+     "final": 736025,
+     "lowest": 24377,
+     "max_drawdown_pct": 26.3,
+     "dead": false
+    },
+    {
+     "start": "2024-09-02",
+     "final": 766792,
+     "lowest": 25215,
+     "max_drawdown_pct": 25.6,
+     "dead": false
+    },
+    {
+     "start": "2024-10-01",
+     "final": 766792,
+     "lowest": 25215,
+     "max_drawdown_pct": 25.6,
+     "dead": false
+    },
+    {
+     "start": "2024-11-04",
+     "final": 765525,
+     "lowest": 30000,
+     "max_drawdown_pct": 25.9,
+     "dead": false
+    },
+    {
+     "start": "2024-12-02",
+     "final": 465906,
+     "lowest": 24096,
+     "max_drawdown_pct": 52.3,
+     "dead": false
+    },
+    {
+     "start": "2025-01-01",
+     "final": 534183,
+     "lowest": 25420,
+     "max_drawdown_pct": 44.8,
+     "dead": false
+    },
+    {
+     "start": "2025-02-01",
+     "final": 351750,
+     "lowest": 19623,
+     "max_drawdown_pct": 46.2,
+     "dead": false
+    },
+    {
+     "start": "2025-03-03",
+     "final": 348352,
+     "lowest": 18719,
+     "max_drawdown_pct": 42.0,
+     "dead": false
+    },
+    {
+     "start": "2025-04-01",
+     "final": 355028,
+     "lowest": 21213,
+     "max_drawdown_pct": 39.2,
+     "dead": false
+    },
+    {
+     "start": "2025-05-02",
+     "final": 356051,
+     "lowest": 22922,
+     "max_drawdown_pct": 36.2,
+     "dead": false
+    },
+    {
+     "start": "2025-06-02",
+     "final": 425378,
+     "lowest": 26025,
+     "max_drawdown_pct": 24.8,
+     "dead": false
+    },
+    {
+     "start": "2025-07-01",
+     "final": 425332,
+     "lowest": 23261,
+     "max_drawdown_pct": 24.8,
+     "dead": false
+    },
+    {
+     "start": "2025-08-01",
+     "final": 424636,
+     "lowest": 25098,
+     "max_drawdown_pct": 25.0,
+     "dead": false
+    },
+    {
+     "start": "2025-09-01",
+     "final": 392413,
+     "lowest": 30000,
+     "max_drawdown_pct": 21.7,
+     "dead": false
+    },
+    {
+     "start": "2025-10-01",
+     "final": 349512,
+     "lowest": 28196,
+     "max_drawdown_pct": 24.8,
+     "dead": false
+    },
+    {
+     "start": "2025-11-03",
+     "final": 236318,
+     "lowest": 27773,
+     "max_drawdown_pct": 36.5,
+     "dead": false
+    },
+    {
+     "start": "2025-12-01",
+     "final": 179705,
+     "lowest": 24051,
+     "max_drawdown_pct": 35.9,
+     "dead": false
+    },
+    {
+     "start": "2026-01-01",
+     "final": 236228,
+     "lowest": 27327,
+     "max_drawdown_pct": 36.5,
+     "dead": false
+    },
+    {
+     "start": "2026-02-01",
+     "final": 179031,
+     "lowest": 25103,
+     "max_drawdown_pct": 36.0,
+     "dead": false
+    },
+    {
+     "start": "2026-03-04",
+     "final": 174124,
+     "lowest": 30000,
+     "max_drawdown_pct": 35.8,
+     "dead": false
+    },
+    {
+     "start": "2026-04-01",
+     "final": 92731,
+     "lowest": 21837,
+     "max_drawdown_pct": 29.3,
+     "dead": false
+    },
+    {
+     "start": "2026-05-04",
+     "final": 172379,
+     "lowest": 30000,
+     "max_drawdown_pct": 23.3,
+     "dead": false
+    },
+    {
+     "start": "2026-06-01",
+     "final": 132797,
+     "lowest": 29974,
+     "max_drawdown_pct": 31.3,
+     "dead": false
+    }
+   ]
+  },
+  "50k uncapped": {
+   "summary": {
+    "starts": 42,
+    "median_final_multiple": 284.44,
+    "share_below_start": 0.0,
+    "share_dead": 0.0,
+    "worst_final": 209750,
+    "worst_start": "2026-04-01",
+    "worst_drawdown_pct": 58.2,
+    "starts_2026_median_final": 326038
+   },
+   "rows": [
+    {
+     "start": "2023-01-02",
+     "final": 42980062,
+     "lowest": 20953,
+     "max_drawdown_pct": 58.2,
+     "dead": false
+    },
+    {
+     "start": "2023-02-01",
+     "final": 59962408,
+     "lowest": 31592,
+     "max_drawdown_pct": 47.8,
+     "dead": false
+    },
+    {
+     "start": "2023-03-03",
+     "final": 96551339,
+     "lowest": 45725,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-04-03",
+     "final": 59962459,
+     "lowest": 31645,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2023-05-02",
+     "final": 59962459,
+     "lowest": 31645,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2023-06-02",
+     "final": 59962459,
+     "lowest": 31645,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2023-07-03",
+     "final": 108844589,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-08-01",
+     "final": 108844589,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-09-01",
+     "final": 108844589,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-10-03",
+     "final": 108844589,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-11-01",
+     "final": 96551584,
+     "lowest": 46935,
+     "max_drawdown_pct": 46.8,
+     "dead": false
+    },
+    {
+     "start": "2023-12-01",
+     "final": 120311159,
+     "lowest": 44570,
+     "max_drawdown_pct": 47.2,
+     "dead": false
+    },
+    {
+     "start": "2024-01-01",
+     "final": 152266000,
+     "lowest": 50000,
+     "max_drawdown_pct": 46.6,
+     "dead": false
+    },
+    {
+     "start": "2024-02-02",
+     "final": 14792325,
+     "lowest": 42200,
+     "max_drawdown_pct": 45.4,
+     "dead": false
+    },
+    {
+     "start": "2024-03-01",
+     "final": 14793598,
+     "lowest": 42454,
+     "max_drawdown_pct": 45.5,
+     "dead": false
+    },
+    {
+     "start": "2024-04-01",
+     "final": 19624690,
+     "lowest": 43735,
+     "max_drawdown_pct": 46.0,
+     "dead": false
+    },
+    {
+     "start": "2024-05-03",
+     "final": 19623949,
+     "lowest": 44341,
+     "max_drawdown_pct": 46.0,
+     "dead": false
+    },
+    {
+     "start": "2024-06-03",
+     "final": 14095942,
+     "lowest": 39074,
+     "max_drawdown_pct": 46.8,
+     "dead": false
+    },
+    {
+     "start": "2024-07-01",
+     "final": 14095942,
+     "lowest": 39074,
+     "max_drawdown_pct": 46.8,
+     "dead": false
+    },
+    {
+     "start": "2024-08-02",
+     "final": 14347826,
+     "lowest": 38314,
+     "max_drawdown_pct": 46.3,
+     "dead": false
+    },
+    {
+     "start": "2024-09-02",
+     "final": 14492668,
+     "lowest": 40517,
+     "max_drawdown_pct": 45.6,
+     "dead": false
+    },
+    {
+     "start": "2024-10-01",
+     "final": 14492668,
+     "lowest": 40517,
+     "max_drawdown_pct": 45.6,
+     "dead": false
+    },
+    {
+     "start": "2024-11-04",
+     "final": 19623897,
+     "lowest": 50000,
+     "max_drawdown_pct": 46.0,
+     "dead": false
+    },
+    {
+     "start": "2024-12-02",
+     "final": 4061038,
+     "lowest": 36352,
+     "max_drawdown_pct": 44.8,
+     "dead": false
+    },
+    {
+     "start": "2025-01-01",
+     "final": 5086330,
+     "lowest": 42910,
+     "max_drawdown_pct": 43.0,
+     "dead": false
+    },
+    {
+     "start": "2025-02-01",
+     "final": 1618200,
+     "lowest": 34868,
+     "max_drawdown_pct": 43.0,
+     "dead": false
+    },
+    {
+     "start": "2025-03-03",
+     "final": 1374259,
+     "lowest": 31724,
+     "max_drawdown_pct": 45.9,
+     "dead": false
+    },
+    {
+     "start": "2025-04-01",
+     "final": 1289724,
+     "lowest": 30992,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2025-05-02",
+     "final": 1618331,
+     "lowest": 35560,
+     "max_drawdown_pct": 42.6,
+     "dead": false
+    },
+    {
+     "start": "2025-06-02",
+     "final": 2011796,
+     "lowest": 42143,
+     "max_drawdown_pct": 34.8,
+     "dead": false
+    },
+    {
+     "start": "2025-07-01",
+     "final": 2043174,
+     "lowest": 38892,
+     "max_drawdown_pct": 34.8,
+     "dead": false
+    },
+    {
+     "start": "2025-08-01",
+     "final": 2131807,
+     "lowest": 42523,
+     "max_drawdown_pct": 35.2,
+     "dead": false
+    },
+    {
+     "start": "2025-09-01",
+     "final": 1803785,
+     "lowest": 50000,
+     "max_drawdown_pct": 35.3,
+     "dead": false
+    },
+    {
+     "start": "2025-10-01",
+     "final": 909493,
+     "lowest": 46320,
+     "max_drawdown_pct": 34.8,
+     "dead": false
+    },
+    {
+     "start": "2025-11-03",
+     "final": 574379,
+     "lowest": 40337,
+     "max_drawdown_pct": 34.8,
+     "dead": false
+    },
+    {
+     "start": "2025-12-01",
+     "final": 658561,
+     "lowest": 38318,
+     "max_drawdown_pct": 34.7,
+     "dead": false
+    },
+    {
+     "start": "2026-01-01",
+     "final": 656857,
+     "lowest": 41287,
+     "max_drawdown_pct": 35.1,
+     "dead": false
+    },
+    {
+     "start": "2026-02-01",
+     "final": 455980,
+     "lowest": 42072,
+     "max_drawdown_pct": 35.5,
+     "dead": false
+    },
+    {
+     "start": "2026-03-04",
+     "final": 373337,
+     "lowest": 50000,
+     "max_drawdown_pct": 34.8,
+     "dead": false
+    },
+    {
+     "start": "2026-04-01",
+     "final": 209750,
+     "lowest": 35711,
+     "max_drawdown_pct": 28.7,
+     "dead": false
+    },
+    {
+     "start": "2026-05-04",
+     "final": 278740,
+     "lowest": 50000,
+     "max_drawdown_pct": 27.9,
+     "dead": false
+    },
+    {
+     "start": "2026-06-01",
+     "final": 275789,
+     "lowest": 50000,
+     "max_drawdown_pct": 28.3,
+     "dead": false
+    }
+   ]
+  },
+  "50k capped 1,01,250": {
+   "summary": {
+    "starts": 42,
+    "median_final_multiple": 16.24,
+    "share_below_start": 0.0,
+    "share_dead": 0.0,
+    "worst_final": 191553,
+    "worst_start": "2026-04-01",
+    "worst_drawdown_pct": 58.2,
+    "starts_2026_median_final": 248978
+   },
+   "rows": [
+    {
+     "start": "2023-01-02",
+     "final": 954561,
+     "lowest": 20953,
+     "max_drawdown_pct": 58.2,
+     "dead": false
+    },
+    {
+     "start": "2023-02-01",
+     "final": 995372,
+     "lowest": 31592,
+     "max_drawdown_pct": 47.8,
+     "dead": false
+    },
+    {
+     "start": "2023-03-03",
+     "final": 1051787,
+     "lowest": 45725,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-04-03",
+     "final": 995416,
+     "lowest": 31645,
+     "max_drawdown_pct": 45.7,
+     "dead": false
+    },
+    {
+     "start": "2023-05-02",
+     "final": 995416,
+     "lowest": 31645,
+     "max_drawdown_pct": 45.7,
+     "dead": false
+    },
+    {
+     "start": "2023-06-02",
+     "final": 995416,
+     "lowest": 31645,
+     "max_drawdown_pct": 45.7,
+     "dead": false
+    },
+    {
+     "start": "2023-07-03",
+     "final": 1072560,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-08-01",
+     "final": 1072560,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-09-01",
+     "final": 1072560,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-10-03",
+     "final": 1072560,
+     "lowest": 39426,
+     "max_drawdown_pct": 46.9,
+     "dead": false
+    },
+    {
+     "start": "2023-11-01",
+     "final": 1051966,
+     "lowest": 46935,
+     "max_drawdown_pct": 46.8,
+     "dead": false
+    },
+    {
+     "start": "2023-12-01",
+     "final": 1089793,
+     "lowest": 44570,
+     "max_drawdown_pct": 47.2,
+     "dead": false
+    },
+    {
+     "start": "2024-01-01",
+     "final": 1114726,
+     "lowest": 50000,
+     "max_drawdown_pct": 11.6,
+     "dead": false
+    },
+    {
+     "start": "2024-02-02",
+     "final": 815244,
+     "lowest": 42200,
+     "max_drawdown_pct": 21.8,
+     "dead": false
+    },
+    {
+     "start": "2024-03-01",
+     "final": 817869,
+     "lowest": 42454,
+     "max_drawdown_pct": 21.7,
+     "dead": false
+    },
+    {
+     "start": "2024-04-01",
+     "final": 847922,
+     "lowest": 43735,
+     "max_drawdown_pct": 21.2,
+     "dead": false
+    },
+    {
+     "start": "2024-05-03",
+     "final": 848528,
+     "lowest": 44341,
+     "max_drawdown_pct": 21.0,
+     "dead": false
+    },
+    {
+     "start": "2024-06-03",
+     "final": 812118,
+     "lowest": 39074,
+     "max_drawdown_pct": 23.0,
+     "dead": false
+    },
+    {
+     "start": "2024-07-01",
+     "final": 812118,
+     "lowest": 39074,
+     "max_drawdown_pct": 23.0,
+     "dead": false
+    },
+    {
+     "start": "2024-08-02",
+     "final": 811358,
+     "lowest": 38314,
+     "max_drawdown_pct": 23.4,
+     "dead": false
+    },
+    {
+     "start": "2024-09-02",
+     "final": 813561,
+     "lowest": 40517,
+     "max_drawdown_pct": 19.7,
+     "dead": false
+    },
+    {
+     "start": "2024-10-01",
+     "final": 813561,
+     "lowest": 40517,
+     "max_drawdown_pct": 19.7,
+     "dead": false
+    },
+    {
+     "start": "2024-11-04",
+     "final": 854187,
+     "lowest": 50000,
+     "max_drawdown_pct": 15.6,
+     "dead": false
+    },
+    {
+     "start": "2024-12-02",
+     "final": 620342,
+     "lowest": 36352,
+     "max_drawdown_pct": 38.1,
+     "dead": false
+    },
+    {
+     "start": "2025-01-01",
+     "final": 652413,
+     "lowest": 42910,
+     "max_drawdown_pct": 33.8,
+     "dead": false
+    },
+    {
+     "start": "2025-02-01",
+     "final": 465154,
+     "lowest": 34868,
+     "max_drawdown_pct": 43.0,
+     "dead": false
+    },
+    {
+     "start": "2025-03-03",
+     "final": 442789,
+     "lowest": 31724,
+     "max_drawdown_pct": 45.9,
+     "dead": false
+    },
+    {
+     "start": "2025-04-01",
+     "final": 435275,
+     "lowest": 30992,
+     "max_drawdown_pct": 46.5,
+     "dead": false
+    },
+    {
+     "start": "2025-05-02",
+     "final": 465846,
+     "lowest": 35560,
+     "max_drawdown_pct": 42.6,
+     "dead": false
+    },
+    {
+     "start": "2025-06-02",
+     "final": 506538,
+     "lowest": 42143,
+     "max_drawdown_pct": 26.1,
+     "dead": false
+    },
+    {
+     "start": "2025-07-01",
+     "final": 505816,
+     "lowest": 38892,
+     "max_drawdown_pct": 23.0,
+     "dead": false
+    },
+    {
+     "start": "2025-08-01",
+     "final": 506902,
+     "lowest": 42523,
+     "max_drawdown_pct": 26.0,
+     "dead": false
+    },
+    {
+     "start": "2025-09-01",
+     "final": 497831,
+     "lowest": 50000,
+     "max_drawdown_pct": 23.0,
+     "dead": false
+    },
+    {
+     "start": "2025-10-01",
+     "final": 393969,
+     "lowest": 46320,
+     "max_drawdown_pct": 27.1,
+     "dead": false
+    },
+    {
+     "start": "2025-11-03",
+     "final": 337149,
+     "lowest": 40337,
+     "max_drawdown_pct": 26.9,
+     "dead": false
+    },
+    {
+     "start": "2025-12-01",
+     "final": 350389,
+     "lowest": 38318,
+     "max_drawdown_pct": 24.6,
+     "dead": false
+    },
+    {
+     "start": "2026-01-01",
+     "final": 348208,
+     "lowest": 41287,
+     "max_drawdown_pct": 25.0,
+     "dead": false
+    },
+    {
+     "start": "2026-02-01",
+     "final": 289560,
+     "lowest": 42072,
+     "max_drawdown_pct": 32.1,
+     "dead": false
+    },
+    {
+     "start": "2026-03-04",
+     "final": 266106,
+     "lowest": 50000,
+     "max_drawdown_pct": 34.8,
+     "dead": false
+    },
+    {
+     "start": "2026-04-01",
+     "final": 191553,
+     "lowest": 35711,
+     "max_drawdown_pct": 28.7,
+     "dead": false
+    },
+    {
+     "start": "2026-05-04",
+     "final": 231849,
+     "lowest": 50000,
+     "max_drawdown_pct": 27.9,
+     "dead": false
+    },
+    {
+     "start": "2026-06-01",
+     "final": 227813,
+     "lowest": 50000,
+     "max_drawdown_pct": 28.3,
+     "dead": false
+    }
+   ]
+  }
+ }
+}

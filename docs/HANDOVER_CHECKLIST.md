@@ -5284,3 +5284,30 @@ Before the next implementation: update the plan slice. With each commit: update 
   - a smoke test on six sessions before freezing.
 - **Configuration / migration / runtime:** none. Production unchanged (`82b08371`, SN Gold v5 paper, ₹30k). Pushed to the Dev branch; nothing deployed.
 - **Next:** SN Gold v5 forward check (`docs/research/fno/sn-gold/FORWARD_V5.md`). Owner levers: start amount, `SN_GOLD_STEP_TRIGGER=0.5`. New information sources only on the owner's word.
+
+
+## SN101–SN120 research (Nov 13, 2026; Dev only, research only)
+
+- **Problem:** the owner asked for the other agent's SN101–SN110, then SN111–SN120, tested correctly.
+- **Folders:** `docs/research/fno/2026-11-13-sn101` (phase A), `…-sn111` (phase B), `…-sn116` (phase C). Each has a `PLAN.md` frozen before scoring, its scripts, `README.md` and `results-*.json`.
+  - Freezes `728f15f8`, `a45b401d`, `2a3683bd`; results `24e769bc`, `21f2bba8` and the commit adding this section.
+  - They import the SN92 harness (Gold v5 parity asserted) and never edit frozen code.
+- **Data:**
+  - sealed 1-minute caches;
+  - Production's forward-panel quote archive and paper-position replay (`sentinel-operations/.../exports/20261112T103005Z`, read in place, SHA-256 checked against its manifest, Nov 12 excluded as unsealed);
+  - N012's Round 36 SENSEX panel (hash-checked);
+  - the 15-minute stock bars.
+  - No download, broker call or Production access.
+- **Corrections after scoring, kept on record:** SN103 and SN109 now require fresh exit quotes (v1 files kept); SN106 had a print crash.
+- **Results:**
+  - no Gold v6, and no change to Gold;
+  - the straddle signal is real (p = 0.002) but thin;
+  - costs are realistic (real quotes, paper fills);
+  - extra capital earns ~27× more in Gold than in a companion;
+  - Gold beats all 400 random-entry Golds;
+  - real money without refills survived every monthly start, but can halve in a bad first year.
+- **Configuration / migration / runtime:** none. Production unchanged (`82b08371`, SN Gold v5 paper, ₹30k). Pushed to the Dev branch only.
+- **Next:**
+  - Gold v5 forward check;
+  - the SN95-L forward watch, scored offline from the quote archive at ≥ 20 signals;
+  - owner levers (start, `SN_GOLD_STEP_TRIGGER=0.5`, cap) only on the owner's word.

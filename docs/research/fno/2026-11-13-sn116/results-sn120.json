@@ -1,0 +1,191 @@
+[
+ {
+  "SN": "91",
+  "candidate": "Rupees of wallet per lot 10k / 12.5k / 15k / 20k (Rs 30k growing, stop 3)",
+  "basis": "IS",
+  "result": "854671 / 824186 / 850882 / 660126",
+  "verdict": "15k stays"
+ },
+ {
+  "SN": "93",
+  "candidate": "drift calls",
+  "basis": "HO",
+  "result": -49898,
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "94",
+  "candidate": "failed breakout",
+  "basis": "HO",
+  "result": -86916,
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "95",
+  "candidate": "10:00 cheap straddle (Gold-free, Rs 100/leg)",
+  "basis": "HO",
+  "result": 23518,
+  "verdict": "NOT PROVEN (forward watch SN95-L)"
+ },
+ {
+  "SN": "95",
+  "candidate": "rich iron fly (Gold-free)",
+  "basis": "HO",
+  "result": -115649,
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "96",
+  "candidate": "NIFTY 50 components: next-30-minute forecast gain",
+  "basis": "test months",
+  "result": "-0.427%",
+  "verdict": "no information"
+ },
+ {
+  "SN": "97",
+  "candidate": "drift / failed-break + futures volume",
+  "basis": "HO",
+  "result": "-47126 / -19605",
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "98",
+  "candidate": "expiry mornings priced",
+  "basis": "chronological",
+  "result": -16757,
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "99",
+  "candidate": "Gold sizing variants (C / G3 held out vs v5)",
+  "basis": "HO",
+  "result": "284020 vs 280508; 406098 vs 399906",
+  "verdict": "NOT PROVEN (reverses under stress / delay)"
+ },
+ {
+  "SN": "100",
+  "candidate": "Gold + SN93 / + SN94 (Rs 30k growing, stop 3)",
+  "basis": "HO picks",
+  "result": "-221074 / -527646",
+  "verdict": "worse"
+ },
+ {
+  "SN": "101",
+  "candidate": "SN95's signal vs matched random days (p)",
+  "basis": "permutation",
+  "result": 0.0022,
+  "verdict": "information YES"
+ },
+ {
+  "SN": "102",
+  "candidate": "remaining-value straddle model",
+  "basis": "HO",
+  "result": "19686 (w/o best 5 -12702)",
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "103",
+  "candidate": "next- vs nearest-expiry straddle per Rs 1,000 premium",
+  "basis": "REAL",
+  "result": [
+   -53.3,
+   -24.9
+  ],
+  "verdict": "description"
+ },
+ {
+  "SN": "104",
+  "candidate": "straddle giveback exit vs hold",
+  "basis": "fixed rule",
+  "result": "-7959 vs 17145",
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "105",
+  "candidate": "bank cancellation continuation (bp, 30 min)",
+  "basis": "test months",
+  "result": 1.2,
+  "verdict": "no information"
+ },
+ {
+  "SN": "106",
+  "candidate": "SN95-L on SENSEX (admitted)",
+  "basis": "partial",
+  "result": -7619,
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "107",
+  "candidate": "RBI-day implied volatility change by 10:30",
+  "basis": "17 events",
+  "result": -0.0474,
+  "verdict": "description"
+ },
+ {
+  "SN": "108",
+  "candidate": "order-book absorption",
+  "basis": "test month",
+  "result": "no gain",
+  "verdict": "no information"
+ },
+ {
+  "SN": "110",
+  "candidate": "Gold + straddle in one wallet (+% at 30k fixed / growing)",
+  "basis": "IS",
+  "result": "4.9% / 4.6%",
+  "verdict": "fails v6 bar"
+ },
+ {
+  "SN": "113",
+  "candidate": "Gold skip on low R_today",
+  "basis": "HO",
+  "result": "v5 picked every year",
+  "verdict": "NOT PROVEN"
+ },
+ {
+  "SN": "114",
+  "candidate": "strangle 1 step vs ATM straddle",
+  "basis": "fixed set",
+  "result": "16485 vs 17145",
+  "verdict": "ATM stays"
+ },
+ {
+  "SN": "115",
+  "candidate": "measured signal-to-fill cost per lot (median / mean)",
+  "basis": "REAL",
+  "result": "56.9 / 109.2",
+  "verdict": "Rs 205 is about right"
+ },
+ {
+  "SN": "116",
+  "candidate": "Rs 45k growing (stop 3): Gold 45k vs Gold 30k + separate sleeve",
+  "basis": "IS",
+  "result": "1320826 vs 868027",
+  "verdict": "capital to Gold"
+ },
+ {
+  "SN": "117",
+  "candidate": "Gold v5 at Rs 30k growing under measured costs (5th / 50th / 95th)",
+  "basis": "calibrated",
+  "result": {
+   "5": 794934,
+   "50": 875332,
+   "95": 980216
+  },
+  "verdict": "expectation"
+ },
+ {
+  "SN": "118",
+  "candidate": "Rs 30k real account, no refills: median final multiple / share dead",
+  "basis": "IS",
+  "result": "308.82 / 0.0",
+  "verdict": "survival"
+ },
+ {
+  "SN": "119",
+  "candidate": "Gold v5 percentile vs random-entry Golds (N1 / N2, Rs 30k growing)",
+  "basis": "null",
+  "result": "100.0 / 100.0",
+  "verdict": "entries are genuine edge"
+ }
+]

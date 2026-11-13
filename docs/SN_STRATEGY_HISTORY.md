@@ -383,3 +383,48 @@ The owner asked for the other agent's SN92–SN100 proposal and component review
 - A 15% day limit costs about a quarter. 25–30% raises the worst day for little gain at small wallets, and SN57 already found 30% worse held out, so 20% stays.
 
 **Conclusion:** Gold v5 is unchanged and stays deployed on paper. Empty days stay flat. New information (BANKNIFTY option minutes, 1-minute constituents, GIFT Nifty, order book) needs a download on the owner's word. Commits: freeze `b4295b1c`, results in the commit that adds this section.
+
+
+## SN101–SN120 (Nov 13, 2026; research only, Dev)
+
+The owner asked for the other agent's SN101–SN110 (`docs/SN101_SN110_RESEARCH_REVIEW.md`, that agent's local file), then SN111–SN115 (better permutations) and SN116–SN120 (the combined learning). "Correct testing is the need."
+
+Three phases, each frozen before scoring:
+- A `docs/research/fno/2026-11-13-sn101` (`728f15f8` / results `24e769bc`);
+- B `…-sn111` (`a45b401d` / `21f2bba8`);
+- C `…-sn116` (`2a3683bd` / results commit that adds this section).
+
+Each folder's README has every number.
+
+**New data used for the first time:**
+- **Production's quote archive:** real bid/ask with 5-level depth, both weekly expiries, 40 sealed days Sep 10 – Nov 11 2026.
+- **Its paper-position replay:** 23 NIFTY entries.
+- **N012's Round 36 SENSEX panel.**
+
+All were read in place and hash-checked.
+
+| SN | Finding | Verdict |
+|---|---|---|
+| 101 | SN95's 10:00 straddle signal vs matched random days: **p = 0.002**. Only the top decile pays; the ₹15k premium cap is part of it | Information real |
+| 102 | Remaining-value model: correlation 0.19; held out +₹19,686 (3/4 years) but −₹12,702 without its best 5 days | NOT PROVEN |
+| 103 | Real quotes: next-week straddle loses half as much per rupee (−₹24.9 vs −₹53.3 per ₹1,000) | Description |
+| 104 | Taking straddle profit early destroys it (−₹7,959 vs hold +₹17,145) | NOT PROVEN |
+| 105 / 106 / 108 | Bank cancellation, SENSEX, order-book absorption: no information | NOT PROVEN |
+| 107 | RBI days: implied volatility −4.7% by 10:30 (17 events) | Description |
+| 109 | Real spreads match the model below ₹300 premium (1.46× at ₹300–450); 1–6 lots fill at the best price; Gold's simulated fills are conservative | Costs honest |
+| 110 | Gold + straddle in one wallet: +4.6–4.9% at ₹30k, worse drawdown, negative at ₹400/leg | Fails the Gold v6 bar |
+| 111 | The straddle's edge is **volatility persistence** (later realised ÷ implied 0.63 → 0.96 across deciles, correlation 0.47); implied does not catch up; not a direction trade | Mechanism |
+| 112 / 114 | One leg, strangles, ITM pair: none better than the ATM straddle | ATM stays |
+| 113 | Gold's per-lot net is flat across volatility terciles; skipping low-volatility entries hurts every wallet | Never filter Gold by volatility |
+| 115 | Production paper entries fill **39 s** after the signal and pay ₹57–109 per lot in, ₹62–98 out vs mid | ₹205 stress about right |
+| 116 | ₹45k growing (stop 3): Gold ₹45k **₹13.21 lakh** vs Gold ₹30k + straddle sleeve ₹8.68 lakh | Extra money belongs in Gold |
+| 117 | Measured costs ≈ ₹175 per lot; Gold v5 ₹30k growing 5th / 50th / 95th: ₹7.95 / 8.75 / 9.80 lakh (house ₹8.51 lakh) | Research realistic |
+| 118 | No refills, every monthly start, ₹30k capped sizing: 0 of 42 starts ended below the start, none dead, median 24.6×. But the **Jan 2023 start fell to ₹14,782 (−51%)** first | Survival with deep drawdowns |
+| 119 | Gold v5 beats **all 400** random-entry Golds with the same machinery (random entries lose ~₹1 lakh on average) | Gold's entries are a genuine edge |
+| 120 | Scoreboard (`sn116/results-sn120.json`) and the frozen forward plan (`sn116/README.md`) | – |
+
+**Conclusion:**
+- Gold v5 stays unchanged.
+- Empty days stay flat; SN95-L stays a forward watch, and if it ever passes it goes in a separate sleeve.
+- The owner's levers are capital, the 50% growth trigger and the cap.
+- The only data worth buying next is small real broker fills (cost calibration), then NIFTY next-week expiry minutes (for the straddle watch).

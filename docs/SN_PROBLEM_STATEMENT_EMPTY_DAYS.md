@@ -146,3 +146,41 @@ New series (GIFT Nifty, global indices, Bank Nifty seconds, events calendar) are
 - **The empty-day test harness (1-minute):** `2026-11-13-sn80/sn80.py` (`day_table()`, `or_break_sig()`; exits via `2026-11-12-sn04/sn04.py run_day`).
 - **The 1-second harness:** `2026-11-13-sn78/sn78.py` + `sec_data.py` (sealed archives; `sn79.py` is the one-shot unseen scorer pattern).
 - **Do not repeat:** any of the 13 approaches in section 3 on the same data. They are documented failures, and re-searching seen data only produces selection luck.
+
+---
+
+## 9. Status after SN92–SN120 (Nov 13, 2026)
+
+Read first: `docs/research/fno/2026-11-13-sn92/README.md`, `…-sn101/README.md`, `…-sn111/README.md`, `…-sn116/README.md`.
+
+**Approaches now also tested and failed** (do not repeat on the same data):
+- slow up-drift calls (SN93);
+- confirmed failed breakouts (SN94);
+- rich iron flies (SN95);
+- NIFTY 50 constituent breadth and agreement at 15 minutes (SN96);
+- futures-volume confirmation (SN97);
+- priced expiry mornings (SN98);
+- straddle giveback exits (SN104);
+- BANKNIFTY-proxy cancellation (SN105);
+- SENSEX transplant (SN106);
+- order-book absorption from minute depth snapshots (SN108);
+- one-leg and strangle expressions (SN112, SN114);
+- volatility filters on Gold (SN113).
+
+**The one real piece of empty-day information:** at 10:00, when realised 1-minute volatility since 09:20 is in the top fifth relative to the ATM straddle's implied volatility, movement persists for the rest of the day.
+- The rest of the day's realised ÷ implied is 0.96 vs 0.63 in the lowest decile; correlation 0.47 (SN111).
+- A long ATM straddle held to 15:10 beats matched random days, p = 0.002 (SN101).
+- It is thin (≈ +₹17k in four years at ₹15k, strict costs) and lumpy (negative without its best 5 days).
+- It is the frozen forward watch **SN95-L**. In Gold's wallet it adds +4.6–4.9% at ₹30k and fails the Gold v6 bar (SN110).
+
+**What the evidence now says about the problem itself:**
+- **Gold's edge is its entries:** v5 beats all 400 random-entry versions of itself (SN119).
+- **Extra capital earns about 27× more inside Gold** than in the best empty-day companion (SN116).
+- **Costs are realistic:** real spreads match the model, and paper fills pay about the ₹205 stress (SN109, SN115, SN117).
+- **Conclusion:** the empty-day problem is not solvable with NIFTY price, volume, depth, constituents or SENSEX at the resolutions available. The best empty-day action remains no trade, keeping capital ready for Gold.
+
+**Still open:**
+1. the straddle watch with next-week expiries (SN103: half the decay per rupee; needs NIFTY next-week minute history);
+2. real broker fills, for cost calibration.
+
+Both need the owner's word.
