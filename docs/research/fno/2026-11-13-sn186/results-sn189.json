@@ -1,0 +1,328 @@
+{
+ "empty_days": 594,
+ "loyo": {
+  "2023": {
+   "variant": "kappa 0.75 goal 1500 stop 3000",
+   "net": -34968,
+   "trades": 36
+  },
+  "2024": {
+   "variant": "kappa 0.75 goal 1000 stop 3000",
+   "net": -46069,
+   "trades": 79
+  },
+  "2025": {
+   "variant": "kappa 0.75 goal 1500 stop 3000",
+   "net": -23004,
+   "trades": 42
+  },
+  "2026": {
+   "variant": "kappa 0.75 goal 1500 stop 3000",
+   "net": -46486,
+   "trades": 68
+  }
+ },
+ "loyo_total": -150527,
+ "years_positive": 0,
+ "null_mean": -158140,
+ "null_p95": -143931,
+ "robust_loyo": {
+  "stress_200_per_leg": -238191,
+  "late_1": -148126,
+  "without_best_5": -154499
+ },
+ "in_sample": {
+  "kappa 0.75 goal 1000 stop 3000": {
+   "sessions": 594,
+   "trade_days": 220,
+   "goal_days": 2,
+   "red_days": 198,
+   "net": -157949,
+   "worst_day": -3892,
+   "month_median": -2847,
+   "month_worst": -10285,
+   "goal_days_per_month": 0.05,
+   "without_best_5": -161921,
+   "by_year": {
+    "2023": -44803,
+    "2024": -42591,
+    "2025": -25901,
+    "2026": -44654
+   }
+  },
+  "kappa 0.75 goal 1000 stop 4500": {
+   "sessions": 594,
+   "trade_days": 220,
+   "goal_days": 2,
+   "red_days": 198,
+   "net": -162376,
+   "worst_day": -4715,
+   "month_median": -2847,
+   "month_worst": -10418,
+   "goal_days_per_month": 0.05,
+   "without_best_5": -166348,
+   "by_year": {
+    "2023": -47886,
+    "2024": -43935,
+    "2025": -25901,
+    "2026": -44654
+   }
+  },
+  "kappa 0.75 goal 1500 stop 3000": {
+   "sessions": 594,
+   "trade_days": 220,
+   "goal_days": 0,
+   "red_days": 198,
+   "net": -157345,
+   "worst_day": -3892,
+   "month_median": -2799,
+   "month_worst": -10285,
+   "goal_days_per_month": 0.0,
+   "without_best_5": -161921,
+   "by_year": {
+    "2023": -44803,
+    "2024": -41987,
+    "2025": -25901,
+    "2026": -44654
+   }
+  },
+  "kappa 0.75 goal 1500 stop 4500": {
+   "sessions": 594,
+   "trade_days": 220,
+   "goal_days": 0,
+   "red_days": 198,
+   "net": -161772,
+   "worst_day": -4715,
+   "month_median": -2799,
+   "month_worst": -10418,
+   "goal_days_per_month": 0.0,
+   "without_best_5": -166348,
+   "by_year": {
+    "2023": -47886,
+    "2024": -43331,
+    "2025": -25901,
+    "2026": -44654
+   }
+  },
+  "kappa 0.85 goal 1000 stop 3000": {
+   "sessions": 594,
+   "trade_days": 373,
+   "goal_days": 3,
+   "red_days": 328,
+   "net": -247251,
+   "worst_day": -3892,
+   "month_median": -5138,
+   "month_worst": -14822,
+   "goal_days_per_month": 0.07,
+   "without_best_5": -251691,
+   "by_year": {
+    "2023": -72219,
+    "2024": -67159,
+    "2025": -50529,
+    "2026": -57344
+   }
+  },
+  "kappa 0.85 goal 1000 stop 4500": {
+   "sessions": 594,
+   "trade_days": 373,
+   "goal_days": 3,
+   "red_days": 328,
+   "net": -252292,
+   "worst_day": -4715,
+   "month_median": -5138,
+   "month_worst": -16279,
+   "goal_days_per_month": 0.07,
+   "without_best_5": -256731,
+   "by_year": {
+    "2023": -75302,
+    "2024": -69117,
+    "2025": -50529,
+    "2026": -57344
+   }
+  },
+  "kappa 0.85 goal 1500 stop 3000": {
+   "sessions": 594,
+   "trade_days": 373,
+   "goal_days": 1,
+   "red_days": 328,
+   "net": -246142,
+   "worst_day": -3892,
+   "month_median": -5138,
+   "month_worst": -14822,
+   "goal_days_per_month": 0.02,
+   "without_best_5": -251691,
+   "by_year": {
+    "2023": -72219,
+    "2024": -66555,
+    "2025": -50024,
+    "2026": -57344
+   }
+  },
+  "kappa 0.85 goal 1500 stop 4500": {
+   "sessions": 594,
+   "trade_days": 373,
+   "goal_days": 1,
+   "red_days": 328,
+   "net": -251183,
+   "worst_day": -4715,
+   "month_median": -5138,
+   "month_worst": -16279,
+   "goal_days_per_month": 0.02,
+   "without_best_5": -256731,
+   "by_year": {
+    "2023": -75302,
+    "2024": -68512,
+    "2025": -50024,
+    "2026": -57344
+   }
+  },
+  "kappa 0.95 goal 1000 stop 3000": {
+   "sessions": 594,
+   "trade_days": 480,
+   "goal_days": 5,
+   "red_days": 418,
+   "net": -325616,
+   "worst_day": -3892,
+   "month_median": -7430,
+   "month_worst": -15406,
+   "goal_days_per_month": 0.11,
+   "without_best_5": -330781,
+   "by_year": {
+    "2023": -97905,
+    "2024": -95042,
+    "2025": -68012,
+    "2026": -64657
+   }
+  },
+  "kappa 0.95 goal 1000 stop 4500": {
+   "sessions": 594,
+   "trade_days": 480,
+   "goal_days": 5,
+   "red_days": 418,
+   "net": -330660,
+   "worst_day": -4715,
+   "month_median": -7430,
+   "month_worst": -16863,
+   "goal_days_per_month": 0.11,
+   "without_best_5": -335825,
+   "by_year": {
+    "2023": -100989,
+    "2024": -97376,
+    "2025": -67405,
+    "2026": -64889
+   }
+  },
+  "kappa 0.95 goal 1500 stop 3000": {
+   "sessions": 594,
+   "trade_days": 480,
+   "goal_days": 2,
+   "red_days": 418,
+   "net": -324252,
+   "worst_day": -3892,
+   "month_median": -7430,
+   "month_worst": -15406,
+   "goal_days_per_month": 0.05,
+   "without_best_5": -330924,
+   "by_year": {
+    "2023": -97905,
+    "2024": -94437,
+    "2025": -67252,
+    "2026": -64657
+   }
+  },
+  "kappa 0.95 goal 1500 stop 4500": {
+   "sessions": 594,
+   "trade_days": 480,
+   "goal_days": 2,
+   "red_days": 418,
+   "net": -329295,
+   "worst_day": -4715,
+   "month_median": -7430,
+   "month_worst": -16863,
+   "goal_days_per_month": 0.05,
+   "without_best_5": -335968,
+   "by_year": {
+    "2023": -100989,
+    "2024": -96772,
+    "2025": -66646,
+    "2026": -64889
+   }
+  }
+ },
+ "all_empty_days_fly": {
+  "goal 1000 stop 3000": {
+   "sessions": 594,
+   "trade_days": 590,
+   "goal_days": 6,
+   "red_days": 516,
+   "net": -411805,
+   "worst_day": -3892,
+   "month_median": -9642,
+   "month_worst": -17919,
+   "goal_days_per_month": 0.14,
+   "without_best_5": -416985,
+   "by_year": {
+    "2023": -122027,
+    "2024": -116322,
+    "2025": -95633,
+    "2026": -77823
+   }
+  },
+  "goal 1000 stop 4500": {
+   "sessions": 594,
+   "trade_days": 590,
+   "goal_days": 6,
+   "red_days": 516,
+   "net": -418125,
+   "worst_day": -4715,
+   "month_median": -9670,
+   "month_worst": -18706,
+   "goal_days_per_month": 0.14,
+   "without_best_5": -423305,
+   "by_year": {
+    "2023": -124723,
+    "2024": -119208,
+    "2025": -95449,
+    "2026": -78746
+   }
+  },
+  "goal 1500 stop 3000": {
+   "sessions": 594,
+   "trade_days": 590,
+   "goal_days": 2,
+   "red_days": 516,
+   "net": -410591,
+   "worst_day": -3892,
+   "month_median": -9642,
+   "month_worst": -17919,
+   "goal_days_per_month": 0.05,
+   "without_best_5": -417323,
+   "by_year": {
+    "2023": -122027,
+    "2024": -115868,
+    "2025": -94874,
+    "2026": -77823
+   }
+  },
+  "goal 1500 stop 4500": {
+   "sessions": 594,
+   "trade_days": 590,
+   "goal_days": 2,
+   "red_days": 516,
+   "net": -416911,
+   "worst_day": -4715,
+   "month_median": -9670,
+   "month_worst": -18706,
+   "goal_days_per_month": 0.05,
+   "without_best_5": -423644,
+   "by_year": {
+    "2023": -124723,
+    "2024": -118754,
+    "2025": -94689,
+    "2026": -78746
+   }
+  }
+ },
+ "final_variant": "kappa 0.75 goal 1500 stop 3000",
+ "dev_pass": false
+}

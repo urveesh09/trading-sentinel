@@ -1,0 +1,110 @@
+{
+ "hot_empty_days": 164,
+ "in_sample": {
+  "goal 1000 stop 1000": {
+   "sessions": 594,
+   "trade_days": 163,
+   "goal_days": 87,
+   "red_days": 76,
+   "net": -63215,
+   "worst_day": -2003,
+   "month_median": -1000,
+   "month_worst": -11009,
+   "goal_days_per_month": 1.98,
+   "without_best_5": -68230,
+   "by_year": {
+    "2023": -8000,
+    "2024": -20197,
+    "2025": -25013,
+    "2026": -10005
+   }
+  },
+  "goal 1000 stop 1500": {
+   "sessions": 594,
+   "trade_days": 163,
+   "goal_days": 80,
+   "red_days": 82,
+   "net": -79932,
+   "worst_day": -2091,
+   "month_median": -1499,
+   "month_worst": -11009,
+   "goal_days_per_month": 1.82,
+   "without_best_5": -84948,
+   "by_year": {
+    "2023": -7993,
+    "2024": -43181,
+    "2025": -21761,
+    "2026": -6998
+   }
+  },
+  "goal 1500 stop 1000": {
+   "sessions": 594,
+   "trade_days": 163,
+   "goal_days": 69,
+   "red_days": 94,
+   "net": -77386,
+   "worst_day": -2096,
+   "month_median": -1254,
+   "month_worst": -10542,
+   "goal_days_per_month": 1.57,
+   "without_best_5": -84902,
+   "by_year": {
+    "2023": -8003,
+    "2024": -36574,
+    "2025": -19778,
+    "2026": -13031
+   }
+  },
+  "goal 1500 stop 1500": {
+   "sessions": 594,
+   "trade_days": 163,
+   "goal_days": 83,
+   "red_days": 78,
+   "net": -73369,
+   "worst_day": -3003,
+   "month_median": 0,
+   "month_worst": -14013,
+   "goal_days_per_month": 1.89,
+   "without_best_5": -80884,
+   "by_year": {
+    "2023": -8103,
+    "2024": -43697,
+    "2025": -14746,
+    "2026": -6822
+   }
+  }
+ },
+ "loyo": {
+  "2023": {
+   "variant": "goal 1000 stop 1000",
+   "net": -8000,
+   "trades": 21
+  },
+  "2024": {
+   "variant": "goal 1500 stop 1500",
+   "net": -43697,
+   "trades": 72
+  },
+  "2025": {
+   "variant": "goal 1000 stop 1000",
+   "net": -25013,
+   "trades": 53
+  },
+  "2026": {
+   "variant": "goal 1000 stop 1000",
+   "net": -10005,
+   "trades": 17
+  }
+ },
+ "loyo_total": -86715,
+ "years_positive": 0,
+ "null_mean": -75827,
+ "null_p95": -45428,
+ "robust_loyo": {
+  "stress_400": -138371,
+  "late_1": -51052,
+  "without_best_5": -94230
+ },
+ "final_variant": "goal 1000 stop 1000",
+ "dev_pass": false
+}
