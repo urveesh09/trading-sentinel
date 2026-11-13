@@ -448,3 +448,22 @@ All were read in place and hash-checked.
 | 128 | Morning IV-crush selling: no better than midday | NOT PROVEN |
 | 129 | Nothing passed. Trading every candidate every gap day: −₹17.6 lakh. Gold ₹55k alone: ₹16.16 lakh | Do not trade every day |
 | 130 | Synthesis: copy the partner's missing discipline (give-back alert, friction counter, edge clock) as coach messages, the owner's call; their tape-reading cannot be copied from minute data | – |
+
+
+## SN131–SN150 (Nov 13, 2026): the Smart Sentinel, learned decisions instead of rules
+
+**The request:** "I don't need rule-based or filtering systems. I need that smart Sentinel ... if you need resources, tell me."
+
+**Folders:** `docs/research/fno/2026-11-13-sn131` (phase D, frozen `1df2dd70`) and `…-sn141` (phase E, frozen `f63a658e`). Each README has every number.
+
+**What was built:** LightGBM learners over 234,472 minute decisions (2023 – Oct 2026, 44 measurements, CE / PE × 5–60 minutes, executable labels), retrained quarterly walk-forward; plus learned exits, event selection, adaptive retraining, ensembles, confidence sizing, a 1-second learner and an order-book learner. Research venv `C:\Users\Urveesh\sentinel-ml-venv`.
+
+| SN | Finding |
+|---|---|
+| 131 | Out-of-sample rank correlations −0.02 to +0.03. Even the top 1% of forecasts lose about their cost (~₹300 a trade). The only consistent signal is the 5-minute put, too small to pay |
+| 132–140 | Learned policy −₹1,71,175 (2024–26; 2026 +₹8,126), no better than random. Adaptive is worse, the ensemble the same, sizing amplifies losses. A shuffled-label control does as well per trade (−₹216 vs −₹262). The 1-second and order-book learners choose not to trade |
+| 141 | More history helps in 2026 (correlation +0.006 → +0.019, policy −₹63,723 → −₹4,572) but not in 2025: not established |
+| 142 | Even at zero slippage it loses (−₹29,503); costs decide |
+| 143–147 | Holding to the close is never chosen. The hot-day learner (−₹18,467) loses to SN95-L's fixed straddle (+₹36,541) on the same days. A learned extension for Gold is worse than v5's exit. Adding the learner to Gold cuts ₹8.63 lakh to ₹6.92 lakh. The reversed 1-second test also finds nothing |
+| 148 | Resources, ranked: (1) live full-chain tick capture (the partner's eyes; free with Kite; a Dev build + deploy); (2) NIFTY 2019 – 2022 minute history (~4 days of Breeze allowance; a probe first); (3) small real broker fills (real money, the owner's decision) |
+| 150 | The learner, given full freedom, chose not to trade gap days: the smart decision at this information and cost level. Edges that pay are mechanism-based (Gold's entries, hot-day volatility persistence) |

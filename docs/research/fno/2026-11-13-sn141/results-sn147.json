@@ -1,0 +1,16 @@
+{
+ "theta": 500.0,
+ "validation_net": 3465,
+ "test_on_A": {
+  "days": 77,
+  "days_traded": 22,
+  "trades": 48,
+  "net": -16304,
+  "without_best_5_days": -21905,
+  "won_days": 7,
+  "lost_days": 15,
+  "worst_day": -3775
+ },
+ "random_mean": -13709,
+ "random_95th": -9099
+}

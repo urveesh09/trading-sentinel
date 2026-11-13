@@ -1,0 +1,589 @@
+{
+ "rows": 234472,
+ "targets": {
+  "CE5": {
+   "n": 173239,
+   "ic_all": 0.013917161023658501,
+   "mean_label": -301,
+   "ic_2024": 0.008478967573318206,
+   "ic_2025": 0.015283732215670854,
+   "ic_2026": 0.01651077008138357,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17324,
+     "mean_pred": -467,
+     "mean_net": -314
+    },
+    {
+     "decile": 2,
+     "n": 17324,
+     "mean_pred": -355,
+     "mean_net": -302
+    },
+    {
+     "decile": 3,
+     "n": 17324,
+     "mean_pred": -324,
+     "mean_net": -309
+    },
+    {
+     "decile": 4,
+     "n": 17324,
+     "mean_pred": -307,
+     "mean_net": -296
+    },
+    {
+     "decile": 5,
+     "n": 17324,
+     "mean_pred": -295,
+     "mean_net": -301
+    },
+    {
+     "decile": 6,
+     "n": 17324,
+     "mean_pred": -284,
+     "mean_net": -299
+    },
+    {
+     "decile": 7,
+     "n": 17325,
+     "mean_pred": -273,
+     "mean_net": -294
+    },
+    {
+     "decile": 8,
+     "n": 17325,
+     "mean_pred": -258,
+     "mean_net": -297
+    },
+    {
+     "decile": 9,
+     "n": 17324,
+     "mean_pred": -227,
+     "mean_net": -299
+    },
+    {
+     "decile": 10,
+     "n": 17324,
+     "mean_pred": -132,
+     "mean_net": -304
+    }
+   ],
+   "top_1pct_mean_net": -296,
+   "pred_above_0_share": 0.0046,
+   "pred_above_0_mean_net": -316
+  },
+  "CE15": {
+   "n": 173199,
+   "ic_all": -0.00422228743506318,
+   "mean_label": -307,
+   "ic_2024": -0.023966205096486056,
+   "ic_2025": 0.007474383135794912,
+   "ic_2026": 0.007529921506303105,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17320,
+     "mean_pred": -725,
+     "mean_net": -275
+    },
+    {
+     "decile": 2,
+     "n": 17320,
+     "mean_pred": -470,
+     "mean_net": -307
+    },
+    {
+     "decile": 3,
+     "n": 17320,
+     "mean_pred": -388,
+     "mean_net": -315
+    },
+    {
+     "decile": 4,
+     "n": 17320,
+     "mean_pred": -342,
+     "mean_net": -313
+    },
+    {
+     "decile": 5,
+     "n": 17320,
+     "mean_pred": -309,
+     "mean_net": -307
+    },
+    {
+     "decile": 6,
+     "n": 17320,
+     "mean_pred": -280,
+     "mean_net": -313
+    },
+    {
+     "decile": 7,
+     "n": 17320,
+     "mean_pred": -250,
+     "mean_net": -316
+    },
+    {
+     "decile": 8,
+     "n": 17320,
+     "mean_pred": -206,
+     "mean_net": -299
+    },
+    {
+     "decile": 9,
+     "n": 17320,
+     "mean_pred": -112,
+     "mean_net": -302
+    },
+    {
+     "decile": 10,
+     "n": 17320,
+     "mean_pred": 174,
+     "mean_net": -326
+    }
+   ],
+   "top_1pct_mean_net": -340,
+   "pred_above_0_share": 0.0869,
+   "pred_above_0_mean_net": -331
+  },
+  "CE30": {
+   "n": 173139,
+   "ic_all": -0.01469251109228011,
+   "mean_label": -322,
+   "ic_2024": -0.035714480485199096,
+   "ic_2025": -0.01360319170397017,
+   "ic_2026": 0.010554848088694729,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17314,
+     "mean_pred": -1062,
+     "mean_net": -278
+    },
+    {
+     "decile": 2,
+     "n": 17314,
+     "mean_pred": -621,
+     "mean_net": -314
+    },
+    {
+     "decile": 3,
+     "n": 17314,
+     "mean_pred": -476,
+     "mean_net": -340
+    },
+    {
+     "decile": 4,
+     "n": 17314,
+     "mean_pred": -388,
+     "mean_net": -352
+    },
+    {
+     "decile": 5,
+     "n": 17314,
+     "mean_pred": -324,
+     "mean_net": -336
+    },
+    {
+     "decile": 6,
+     "n": 17314,
+     "mean_pred": -269,
+     "mean_net": -318
+    },
+    {
+     "decile": 7,
+     "n": 17314,
+     "mean_pred": -207,
+     "mean_net": -341
+    },
+    {
+     "decile": 8,
+     "n": 17314,
+     "mean_pred": -123,
+     "mean_net": -301
+    },
+    {
+     "decile": 9,
+     "n": 17314,
+     "mean_pred": 38,
+     "mean_net": -332
+    },
+    {
+     "decile": 10,
+     "n": 17314,
+     "mean_pred": 574,
+     "mean_net": -311
+    }
+   ],
+   "top_1pct_mean_net": -436,
+   "pred_above_0_share": 0.1623,
+   "pred_above_0_mean_net": -322
+  },
+  "CE60": {
+   "n": 173068,
+   "ic_all": -0.024291641847028003,
+   "mean_label": -348,
+   "ic_2024": -0.04398057065460017,
+   "ic_2025": -0.0426625528653658,
+   "ic_2026": 0.0127400615974608,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17307,
+     "mean_pred": -1537,
+     "mean_net": -315
+    },
+    {
+     "decile": 2,
+     "n": 17307,
+     "mean_pred": -839,
+     "mean_net": -374
+    },
+    {
+     "decile": 3,
+     "n": 17307,
+     "mean_pred": -607,
+     "mean_net": -347
+    },
+    {
+     "decile": 4,
+     "n": 17306,
+     "mean_pred": -459,
+     "mean_net": -310
+    },
+    {
+     "decile": 5,
+     "n": 17307,
+     "mean_pred": -344,
+     "mean_net": -320
+    },
+    {
+     "decile": 6,
+     "n": 17307,
+     "mean_pred": -238,
+     "mean_net": -386
+    },
+    {
+     "decile": 7,
+     "n": 17306,
+     "mean_pred": -124,
+     "mean_net": -344
+    },
+    {
+     "decile": 8,
+     "n": 17307,
+     "mean_pred": 38,
+     "mean_net": -385
+    },
+    {
+     "decile": 9,
+     "n": 17307,
+     "mean_pred": 338,
+     "mean_net": -344
+    },
+    {
+     "decile": 10,
+     "n": 17307,
+     "mean_pred": 1336,
+     "mean_net": -357
+    }
+   ],
+   "top_1pct_mean_net": -397,
+   "pred_above_0_share": 0.2673,
+   "pred_above_0_mean_net": -365
+  },
+  "PE5": {
+   "n": 173236,
+   "ic_all": 0.03169297586861616,
+   "mean_label": -294,
+   "ic_2024": 0.021129280547544253,
+   "ic_2025": 0.03803310508066238,
+   "ic_2026": 0.04166156347742492,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17324,
+     "mean_pred": -513,
+     "mean_net": -313
+    },
+    {
+     "decile": 2,
+     "n": 17324,
+     "mean_pred": -370,
+     "mean_net": -311
+    },
+    {
+     "decile": 3,
+     "n": 17324,
+     "mean_pred": -328,
+     "mean_net": -310
+    },
+    {
+     "decile": 4,
+     "n": 17324,
+     "mean_pred": -306,
+     "mean_net": -294
+    },
+    {
+     "decile": 5,
+     "n": 17324,
+     "mean_pred": -293,
+     "mean_net": -291
+    },
+    {
+     "decile": 6,
+     "n": 17324,
+     "mean_pred": -283,
+     "mean_net": -291
+    },
+    {
+     "decile": 7,
+     "n": 17324,
+     "mean_pred": -273,
+     "mean_net": -281
+    },
+    {
+     "decile": 8,
+     "n": 17324,
+     "mean_pred": -259,
+     "mean_net": -283
+    },
+    {
+     "decile": 9,
+     "n": 17324,
+     "mean_pred": -233,
+     "mean_net": -291
+    },
+    {
+     "decile": 10,
+     "n": 17324,
+     "mean_pred": -139,
+     "mean_net": -279
+    }
+   ],
+   "top_1pct_mean_net": -265,
+   "pred_above_0_share": 0.0068,
+   "pred_above_0_mean_net": -245
+  },
+  "PE15": {
+   "n": 173196,
+   "ic_all": 0.0029360745948195694,
+   "mean_label": -297,
+   "ic_2024": -0.030365074675662743,
+   "ic_2025": 0.023731663777078214,
+   "ic_2026": 0.02598233434477137,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17320,
+     "mean_pred": -883,
+     "mean_net": -279
+    },
+    {
+     "decile": 2,
+     "n": 17320,
+     "mean_pred": -495,
+     "mean_net": -322
+    },
+    {
+     "decile": 3,
+     "n": 17320,
+     "mean_pred": -380,
+     "mean_net": -291
+    },
+    {
+     "decile": 4,
+     "n": 17320,
+     "mean_pred": -327,
+     "mean_net": -265
+    },
+    {
+     "decile": 5,
+     "n": 17321,
+     "mean_pred": -296,
+     "mean_net": -286
+    },
+    {
+     "decile": 6,
+     "n": 17320,
+     "mean_pred": -272,
+     "mean_net": -299
+    },
+    {
+     "decile": 7,
+     "n": 17320,
+     "mean_pred": -245,
+     "mean_net": -289
+    },
+    {
+     "decile": 8,
+     "n": 17320,
+     "mean_pred": -202,
+     "mean_net": -300
+    },
+    {
+     "decile": 9,
+     "n": 17320,
+     "mean_pred": -125,
+     "mean_net": -293
+    },
+    {
+     "decile": 10,
+     "n": 17320,
+     "mean_pred": 117,
+     "mean_net": -345
+    }
+   ],
+   "top_1pct_mean_net": -372,
+   "pred_above_0_share": 0.0692,
+   "pred_above_0_mean_net": -341
+  },
+  "PE30": {
+   "n": 173136,
+   "ic_all": -0.009146330399053368,
+   "mean_label": -296,
+   "ic_2024": -0.04102591071733692,
+   "ic_2025": 0.005343895233122488,
+   "ic_2026": 0.02362404755350449,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17314,
+     "mean_pred": -1330,
+     "mean_net": -277
+    },
+    {
+     "decile": 2,
+     "n": 17314,
+     "mean_pred": -659,
+     "mean_net": -296
+    },
+    {
+     "decile": 3,
+     "n": 17314,
+     "mean_pred": -464,
+     "mean_net": -270
+    },
+    {
+     "decile": 4,
+     "n": 17315,
+     "mean_pred": -370,
+     "mean_net": -255
+    },
+    {
+     "decile": 5,
+     "n": 17314,
+     "mean_pred": -309,
+     "mean_net": -292
+    },
+    {
+     "decile": 6,
+     "n": 17314,
+     "mean_pred": -257,
+     "mean_net": -296
+    },
+    {
+     "decile": 7,
+     "n": 17314,
+     "mean_pred": -199,
+     "mean_net": -272
+    },
+    {
+     "decile": 8,
+     "n": 17314,
+     "mean_pred": -111,
+     "mean_net": -284
+    },
+    {
+     "decile": 9,
+     "n": 17314,
+     "mean_pred": 42,
+     "mean_net": -334
+    },
+    {
+     "decile": 10,
+     "n": 17314,
+     "mean_pred": 504,
+     "mean_net": -380
+    }
+   ],
+   "top_1pct_mean_net": -89,
+   "pred_above_0_share": 0.1679,
+   "pred_above_0_mean_net": -362
+  },
+  "PE60": {
+   "n": 173066,
+   "ic_all": -0.016196639000789083,
+   "mean_label": -291,
+   "ic_2024": -0.04621773128128704,
+   "ic_2025": -0.028214394303418842,
+   "ic_2026": 0.036749800539069205,
+   "deciles": [
+    {
+     "decile": 1,
+     "n": 17307,
+     "mean_pred": -2081,
+     "mean_net": -280
+    },
+    {
+     "decile": 2,
+     "n": 17307,
+     "mean_pred": -927,
+     "mean_net": -289
+    },
+    {
+     "decile": 3,
+     "n": 17307,
+     "mean_pred": -613,
+     "mean_net": -271
+    },
+    {
+     "decile": 4,
+     "n": 17307,
+     "mean_pred": -440,
+     "mean_net": -220
+    },
+    {
+     "decile": 5,
+     "n": 17307,
+     "mean_pred": -323,
+     "mean_net": -232
+    },
+    {
+     "decile": 6,
+     "n": 17307,
+     "mean_pred": -218,
+     "mean_net": -226
+    },
+    {
+     "decile": 7,
+     "n": 17307,
+     "mean_pred": -98,
+     "mean_net": -256
+    },
+    {
+     "decile": 8,
+     "n": 17307,
+     "mean_pred": 53,
+     "mean_net": -300
+    },
+    {
+     "decile": 9,
+     "n": 17307,
+     "mean_pred": 309,
+     "mean_net": -425
+    },
+    {
+     "decile": 10,
+     "n": 17307,
+     "mean_pred": 1103,
+     "mean_net": -407
+    }
+   ],
+   "top_1pct_mean_net": -76,
+   "pred_above_0_share": 0.2795,
+   "pred_above_0_mean_net": -386
+  }
+ }
+}

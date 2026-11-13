@@ -1,0 +1,75 @@
+{
+ "events_scored": 3506,
+ "taken": 119,
+ "thetas": {
+  "2024-01-01": 0.0,
+  "2024-04-01": 0.0,
+  "2024-07-01": 100.0,
+  "2024-10-01": 0.0,
+  "2025-01-01": 0.0,
+  "2025-04-01": 300.0,
+  "2025-07-01": 500.0,
+  "2025-10-01": 800.0,
+  "2026-01-01": 800.0,
+  "2026-04-01": 200.0,
+  "2026-07-01": 300.0,
+  "2026-10-01": 300.0
+ },
+ "all_events": {
+  "2024": {
+   "net": -208676,
+   "trades": 852,
+   "days_traded": 194,
+   "won_days": 48,
+   "lost_days": 146
+  },
+  "2025": {
+   "net": -278727,
+   "trades": 890,
+   "days_traded": 194,
+   "won_days": 39,
+   "lost_days": 155
+  },
+  "2026": {
+   "net": -143592,
+   "trades": 617,
+   "days_traded": 154,
+   "won_days": 39,
+   "lost_days": 115
+  },
+  "total": -630994,
+  "without_best_5_days": -697866,
+  "worst_day": -5801,
+  "positive_years": 0
+ },
+ "learned": {
+  "2024": {
+   "net": 2638,
+   "trades": 53,
+   "days_traded": 39,
+   "won_days": 21,
+   "lost_days": 18
+  },
+  "2025": {
+   "net": -10908,
+   "trades": 48,
+   "days_traded": 31,
+   "won_days": 12,
+   "lost_days": 19
+  },
+  "2026": {
+   "net": 0,
+   "trades": 0,
+   "days_traded": 0,
+   "won_days": 0,
+   "lost_days": 0
+  },
+  "total": -8270,
+  "without_best_5_days": -26726,
+  "worst_day": -3289,
+  "positive_years": 1
+ },
+ "random_mean": -29780,
+ "random_95th": -6747,
+ "PASS_partial": false
+}

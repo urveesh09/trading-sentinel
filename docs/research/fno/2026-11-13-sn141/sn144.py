@@ -39,6 +39,11 @@ if __name__ == "__main__":
         vdays = udays[max(0, k0 - 25): k0]                  # the last ~25 hot days before the quarter
         val = np.isin(day, vdays)
         inner = train & ~val
+        # crash fix after the first run (README): too few hot training days before the quarter -> no trades there
+        if len(np.unique(day[train])) < 50 or len(np.unique(day[inner])) < 20:
+            thetas[q0] = None
+            print(f"   SN144 {q0}: skipped, only {len(np.unique(day[train]))} hot training days", flush=True)
+            continue
         vq = {}
         for k in ACTIONS:
             y = sub["Y"][k]

@@ -1,0 +1,241 @@
+[
+ {
+  "SN": "131",
+  "what": "learned forecast: IC by target (out of sample)",
+  "result": {
+   "CE5": 0.014,
+   "CE15": -0.004,
+   "CE30": -0.015,
+   "CE60": -0.024,
+   "PE5": 0.032,
+   "PE15": 0.003,
+   "PE30": -0.009,
+   "PE60": -0.016
+  }
+ },
+ {
+  "SN": "132",
+  "what": "learned policy (all days, 2024-26)",
+  "result": {
+   "total": -171175,
+   "random_95th": -127613
+  }
+ },
+ {
+  "SN": "137",
+  "what": "adaptive (all days, 2024-26)",
+  "result": {
+   "total": -312558,
+   "random_95th": -224316
+  }
+ },
+ {
+  "SN": "138",
+  "what": "ensemble (all days, 2024-26)",
+  "result": {
+   "total": -166969,
+   "random_95th": -133664
+  }
+ },
+ {
+  "SN": "133",
+  "what": "learned exit vs fixed",
+  "result": {
+   "learned": -197988,
+   "fixed": -171175
+  }
+ },
+ {
+  "SN": "134",
+  "what": "learned event selection",
+  "result": {
+   "learned": -8270,
+   "all events": -630994,
+   "random_95th": -6747
+  }
+ },
+ {
+  "SN": "135",
+  "what": "1-second learner",
+  "result": {
+   "theta": 500.0,
+   "test": {
+    "days": 73,
+    "days_traded": 10,
+    "trades": 12,
+    "net": -6945,
+    "without_best_5_days": -5995,
+    "won_days": 1,
+    "lost_days": 9,
+    "worst_day": -1815
+   },
+   "test_at_100": {
+    "days": 73,
+    "days_traded": 10,
+    "trades": 12,
+    "net": -5685,
+    "without_best_5_days": -5470,
+    "won_days": 3,
+    "lost_days": 7,
+    "worst_day": -1710
+   },
+   "random_95th": -841,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "136",
+  "what": "order-book learner",
+  "result": {
+   "theta": 500.0,
+   "test_at_100": {
+    "days": 6,
+    "days_traded": 0,
+    "trades": 0,
+    "net": 0,
+    "without_best_5_days": 0,
+    "won_days": 0,
+    "lost_days": 0,
+    "worst_day": 0
+   },
+   "test_at_205": {
+    "days": 6,
+    "days_traded": 0,
+    "trades": 0,
+    "net": 0,
+    "without_best_5_days": 0,
+    "won_days": 0,
+    "lost_days": 0,
+    "worst_day": 0
+   },
+   "random_95th": 0,
+   "PASS": false
+  }
+ },
+ {
+  "SN": "139",
+  "what": "confidence sizing at Rs 30k",
+  "result": {
+   "SN132 base": -220951,
+   "SN137 adaptive": -439337,
+   "SN138 ensemble": -225444
+  }
+ },
+ {
+  "SN": "140",
+  "what": "honesty checks",
+  "result": {
+   "SN132 base": {
+    "base": -171175,
+    "stress_400": -297212,
+    "late_1min": -200189,
+    "positive_quarters": 3
+   },
+   "SN137 adaptive": {
+    "base": -312558,
+    "stress_400": -463608,
+    "late_1min": -294783,
+    "positive_quarters": 1
+   },
+   "SN138 ensemble": {
+    "base": -166969,
+    "stress_400": -285597,
+    "late_1min": -182690,
+    "positive_quarters": 3
+   },
+   "shuffled": -54986
+  }
+ },
+ {
+  "SN": "141",
+  "what": "learning curve (mean IC)",
+  "result": {
+   "test 2026 | train 2025": 0.0057,
+   "test 2026 | train 2024+2025": 0.0127,
+   "test 2026 | train 2023+2024+2025": 0.0193,
+   "test 2025 | train 2024": 0.0172,
+   "test 2025 | train 2023+2024": 0.003,
+   "more_data_helps": false
+  }
+ },
+ {
+  "SN": "142",
+  "what": "cost curve (total 2024-26)",
+  "result": {
+   "stress 0": -29503,
+   "stress 50": -161313,
+   "stress 100": -145039,
+   "stress 150": -129194,
+   "stress 205": -171175
+  }
+ },
+ {
+  "SN": "143",
+  "what": "close actions",
+  "result": {
+   "all days": -171175,
+   "gold-free": -164408
+  }
+ },
+ {
+  "SN": "144",
+  "what": "hot-day specialist vs fixed straddle",
+  "result": {
+   "learned": -18467,
+   "fixed": 36541
+  }
+ },
+ {
+  "SN": "145",
+  "what": "learned extension for Gold vs v5",
+  "result": {
+   "learned": 119104,
+   "v5": 136393
+  }
+ },
+ {
+  "SN": "146",
+  "what": "combined account",
+  "result": {
+   "sleeve": "DESCRIPTION ONLY - nothing passed: SN132's all-days policy",
+   "sleeve_by_year": {
+    "2024": -122502,
+    "2025": -56799,
+    "2026": 8126
+   },
+   "sleeve_total": -171175,
+   "Gold 30k fixed": {
+    "by_year": {
+     "2024": 115439,
+     "2025": 70789,
+     "2026": 106387
+    },
+    "total_2024_26": 292615,
+    "with_sleeve_total_2024_26": 121440
+   },
+   "Gold 30k grow stop 3": {
+    "by_year": {
+     "2024": 187476,
+     "2025": 292811,
+     "2026": 382702
+    },
+    "total_2024_26": 862989,
+    "with_sleeve_total_2024_26": 691814
+   }
+  }
+ },
+ {
+  "SN": "147",
+  "what": "1-second learner swapped",
+  "result": {
+   "days": 77,
+   "days_traded": 22,
+   "trades": 48,
+   "net": -16304,
+   "without_best_5_days": -21905,
+   "won_days": 7,
+   "lost_days": 15,
+   "worst_day": -3775
+  }
+ }
+]

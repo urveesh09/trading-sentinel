@@ -8069,3 +8069,16 @@ producer will no longer create them.
   - partner suites 181 passed;
   - full engine suite at commit time (see the commit message).
 - **Status:** Dev, pushed. Deployment after market hours on the owner's word.
+
+
+## SN131–SN150 Smart Sentinel research (Nov 13, 2026; Dev only, research only)
+
+- **Folders:** `docs/research/fno/2026-11-13-sn131` (phase D, freeze `1df2dd70`) and `…-sn141` (phase E, freeze `f63a658e`).
+- **Engine:** `sm.py`. A minute dataset (234,472 rows, 44 features, executable CE / PE labels), quarterly walk-forward LightGBM, a policy simulator.
+- **Environment:** research venv `C:\Users\Urveesh\sentinel-ml-venv`. It is outside the repo and reuses the engine's site-packages through a `.pth`. `winvenv` is unchanged.
+- **Result:** no learned policy passes. The learners choose not to trade gap days; their trades are no better than random or a shuffled-label model.
+- **Resource asks, for the owner:**
+  - live full-chain tick recorder;
+  - NIFTY 2019 – 2022 history (probe first);
+  - small real broker fills.
+- **Configuration / migration / runtime:** none.
