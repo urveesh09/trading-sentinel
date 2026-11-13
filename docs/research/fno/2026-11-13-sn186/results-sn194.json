@@ -1,0 +1,18 @@
+{
+ "loyo": {
+  "2025": {
+   "theta": 0.5,
+   "net": 0,
+   "trade_days": 0
+  },
+  "2026": {
+   "theta": 0.5,
+   "net": 0,
+   "trade_days": 0
+  }
+ },
+ "total": 0,
+ "null_mean": 0,
+ "null_p95": 0,
+ "dev_pass_partial": false
+}

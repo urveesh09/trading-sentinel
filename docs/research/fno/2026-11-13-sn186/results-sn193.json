@@ -1,0 +1,46 @@
+{
+ "accuracy": {
+  "2024": {
+   "lstm": 0.5107,
+   "same_as_last_15": 0.4727,
+   "opposite": 0.5273,
+   "always_up": 0.5115,
+   "n": 3920
+  },
+  "2025": {
+   "lstm": 0.5196,
+   "same_as_last_15": 0.4869,
+   "opposite": 0.5131,
+   "always_up": 0.5129,
+   "n": 3880
+  },
+  "2026": {
+   "lstm": 0.4988,
+   "same_as_last_15": 0.4846,
+   "opposite": 0.5154,
+   "always_up": 0.4984,
+   "n": 2460
+  }
+ },
+ "loyo": {
+  "2024": {
+   "theta": 0.6,
+   "net": -35062,
+   "trade_days": 114
+  },
+  "2025": {
+   "theta": 0.6,
+   "net": -21576,
+   "trade_days": 44
+  },
+  "2026": {
+   "theta": 0.6,
+   "net": -15029,
+   "trade_days": 37
+  }
+ },
+ "total": -71667,
+ "null_mean": -124599,
+ "null_p95": -92904,
+ "dev_pass_partial": false
+}

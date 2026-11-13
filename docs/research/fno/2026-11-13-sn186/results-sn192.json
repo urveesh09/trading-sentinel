@@ -1,0 +1,60 @@
+{
+ "days": 700,
+ "folds": {
+  "2024": {
+   "r2_lstm": 0.1505,
+   "r2_har": 0.2627,
+   "days": 194
+  },
+  "2025": {
+   "r2_lstm": 0.4408,
+   "r2_har": 0.4533,
+   "days": 192
+  },
+  "2026": {
+   "r2_lstm": 0.4006,
+   "r2_har": 0.5517,
+   "days": 122
+  }
+ },
+ "lstm_beats_har_folds": 0,
+ "sn171_rule_on_empty_days_oos": {
+  "LSTM Rs 15k strangle": {
+   "net": 0,
+   "trades": 0,
+   "by_year": {
+    "2024": 0,
+    "2025": 0,
+    "2026": 0
+   }
+  },
+  "LSTM Rs 30k straddle": {
+   "net": -23789,
+   "trades": 9,
+   "by_year": {
+    "2024": -22201,
+    "2025": -1588,
+    "2026": 0
+   }
+  },
+  "HAR Rs 15k strangle": {
+   "net": 6304,
+   "trades": 8,
+   "by_year": {
+    "2024": 0,
+    "2025": 5524,
+    "2026": 779
+   }
+  },
+  "HAR Rs 30k straddle": {
+   "net": 22193,
+   "trades": 12,
+   "by_year": {
+    "2024": 17717,
+    "2025": 3539,
+    "2026": 937
+   }
+  }
+ },
+ "dev_pass": false
+}
