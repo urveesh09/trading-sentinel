@@ -25,3 +25,17 @@ On Apr–May, random entries were as profitable as any rule (300–700 random co
 - The momentum pick beat random out of sample at zero stress, so it may carry a small signal.
 
 **Frozen for an unseen check:** both picks above, unchanged, are to be scored once on the next 1-second months the download agent finishes (sessions before Apr 2, 2026). That check is the only fair test left for them.
+
+## SN79: the one unseen test (frozen `add4696e`, scored once, `results-sn79.json`)
+
+- **Train:** today's archive, 77 sessions Apr 6 – Jul 27.
+- **Test:** yesterday's archive (`nifty-daily-1second-20261112.zip`, sealed copy, sha `95a29a54…`), 75 sessions Jul 28 – Nov 12, 2026. No SN rule had opened them.
+
+| Candidate | Test, +₹100 | Test, +₹0 | Test on Gold-free days (54), +₹100 | Verdict |
+|---|---:|---:|---:|---|
+| C1 = SN78 +₹100 pick (TWAP break) | −28,579 (24 won / 51 lost days) | −21,079 | −20,856 | NOT PROVEN |
+| C2 = SN78 +₹0 pick (2-bar momentum, 3 a day) | −51,078 | −28,678 | −30,697 | NOT PROVEN |
+| C3 = the procedure on all 77 training days (picked TWAP break again) | −28,579 | −21,079 | −20,856 | NOT PROVEN |
+| Random-entry pick | −7,745 | −345 | −10,085 | – |
+
+**Verdict:** on unseen months the 1-second rules did WORSE than random entries. Their training-period profits were selection luck. Gold's empty days have no intraday option-buying edge at 1-second resolution either, within real charges and spreads.
