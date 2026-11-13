@@ -484,3 +484,23 @@ The work dug where the one gap-day edge lives (volatility persistence, the 10:00
 | 158–159 | The hot-day book (SN95-L + SN126-L) +₹19,794 in four years on a ₹15k sleeve, intervals include zero; the same ₹15k inside Gold earns ~₹4.5 lakh more |
 
 **Lesson:** the edge is precise (10:00, hold both legs to the close, hot days only), and the simple mechanism rule beats every model on so few hot days. Gap days stay a paper forward watch (SN95-L + SN126-L). Gold's capital remains the profit lever.
+
+## SN161–SN185: the daily wage (Nov 13, 2026 night; folder `docs/research/fno/2026-11-13-sn161`)
+
+**Owner:** the SN goal was always "a daily 10% target … a daily wage", with ₹15,000 and ₹1,500 a day. Gold v5 "gives insane returns" but trades too rarely for a wage-earner. Train on the data, keep the latest 3–5% for testing, try cheaper contracts, ML, any mix.
+
+- **Method:** the plan was frozen (`8d91837d`) and every phase frozen before it ran. TEST = the latest 5% (37 sessions, 2026-08-20 … 10-28), scored once by SN181.
+- **Development (705 sessions):**
+  - Gold v5 at ₹15k gives 0.8 wage days a month.
+  - Hindsight shows +₹1,500 on 91% of days; a random side keeps it on 25%.
+  - A coin-flip wage trader reaches its wage on up to 58% of days and loses ₹4.1 lakh (₹1.23 lakh even with zero slippage). Cheaper contracts and more attempts lose more.
+  - Triple-barrier ML (SN166–SN168) is worse than random, or learns not to trade. A learned exit trims losses by about 10%. The online bandit learns "no trade".
+  - Only SN171 passes development: a HAR volatility forecast for the 10:00 strangle / straddle (+₹23,087 / +₹56,653 held out, 6–12 trades a year). It is the SN95-L mechanism.
+- **TEST:** nothing passes.
+  - Gold v5 reference: +₹29,628 at ₹15k and +₹2.09 lakh at ₹30k production, 2.0–2.3 wage days a month.
+  - The coin-flip trader: −₹19,511.
+  - SN171: 0 trades at ₹15k, −₹2,901 on 2 trades at ₹30k.
+- **Real quotes (SN182):** the coin-flip trade loses ₹171 a trade, against the model's ₹465. The ₹205 a lot slippage allowance is the measured reaction delay.
+- **The usable answer (SN177):** a salary account pays a fixed wage from Gold's lumpy profit. Paying ₹750 every session needs about ₹3.15 lakh, and ₹1,500 about ₹8.45 lakh (Gold ₹30k fixed + watches, in-sample).
+- **Lesson:** a wage is easy to see and hard to keep. On gap days the smart answer is to sit out. A daily income comes from paying out Gold's edge, not from forcing trades.
+- **Forward:** SN95-L, SN126-L and SN171 stay paper watches, with tick-recorder data from Nov 16. One sealed SENSEX (Oct 2024 – Dec 2025) test of the hot-day trades needs the owner's word.

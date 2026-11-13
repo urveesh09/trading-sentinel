@@ -8152,3 +8152,14 @@ real phase changes remain visible and attributable.
   - In the container: `TICK_RECORDER_ENABLED=True`, `PARTNER_WATCH_GIVEBACK_STOP_ENABLED=True`, websockets 12.0.
   - Only two transient Telegram `getUpdates` ConnectError warnings.
 - **Not yet proven:** the recorder's first live session is Mon Nov 16 (acceptance checks in the TR01 section). The give-back stop speaks only on a partner day that peaks and gives back.
+
+## SN161–SN185 daily-wage research (Nov 13, 2026 night; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn161`. Plan frozen at `8d91837d`; results at `0be4c0cb`, `777b1182`, `b38b606c` and `73af1f1b`.
+- **Result:** no daily-wage strategy passes the frozen TEST (the latest 5%, 2026-08-20 … 10-28). Gold v5 stays the profit engine; the volatility forecast SN171 joins the forward watches.
+- **Salary account (SN177):** to pay a fixed daily wage from Gold v5, an account needs about ₹3.15 lakh (₹750 a session) or ₹8.45 lakh (₹1,500).
+- **Post-score fixes, disclosed:**
+  - `p4.gold` default changed to development days; SN177–SN180 rerun, v1 files kept.
+  - SN182's export path updated after the forward panel rotated its export folder.
+- **Environment:** research venv `C:\Users\Urveesh\sentinel-ml-venv` (LightGBM).
+- **Configuration / migration / runtime:** none. Production unchanged (`826f0727`).
