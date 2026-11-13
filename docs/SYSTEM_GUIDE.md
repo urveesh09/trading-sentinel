@@ -8136,3 +8136,19 @@ real phase changes remain visible and attributable.
 - **Rollback:** set `TICK_RECORDER_ENABLED=false` in Production `.env` and recreate python-engine, or revert the commit. Deleting `/data/research/ticks` removes all recorded data (the owner's call).
 - **Acceptance on the first trading day (Mon Nov 16):** `events.jsonl` shows `connected` before 09:15, chunks every minute, the owner line after 15:41, and no `tick_recorder_*` errors in the engine log. Also check the day's MB against the limits.
 - **Remaining work:** measure the real size and tick rate on Nov 16 and re-set the limits; then the first tick-level studies (spreads across the chain, sub-minute moves on hot days).
+
+## Production deployed at 826f0727 (Nov 13, 2026, after the close; PR #138)
+
+- **Owner's word:** "directly commit and put the changes … and the partner changes altogether and deploy it in production right now".
+- **Contents:** partner give-back stop (`cba0519d`), TR01 live tick recorder (`64ac1f15`), SN92–SN160 research docs.
+- **Steps:**
+  - Production fast-forwarded `82b08371..826f0727`.
+  - No backup: routine code deploy, no stored data changes (owner's Nov 12 rule).
+  - autoheal stopped; python-engine, node-gateway and agent built one at a time with `SENTINEL_RELEASE_SHA` / `SENTINEL_BUILD_UTC` (2026-11-13T11:03:25Z), then force-recreated. nginx restarted; autoheal started.
+- **Verified:**
+  - `scripts/verify_deployment.py` exit 0 (receipt `%USERPROFILE%\sentinel-operations\release-receipts\826f0727….json`).
+  - All containers healthy.
+  - Engine log shows job `_run_tick_recorder_ensure_safe` added.
+  - In the container: `TICK_RECORDER_ENABLED=True`, `PARTNER_WATCH_GIVEBACK_STOP_ENABLED=True`, websockets 12.0.
+  - Only two transient Telegram `getUpdates` ConnectError warnings.
+- **Not yet proven:** the recorder's first live session is Mon Nov 16 (acceptance checks in the TR01 section). The give-back stop speaks only on a partner day that peaks and gives back.
