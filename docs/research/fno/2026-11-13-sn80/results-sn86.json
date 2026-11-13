@@ -1,0 +1,3082 @@
+{
+ "table": {
+  "gold_free puts_break0 HOLD k3": {
+   "2023": {
+    "net": -20456,
+    "green": 16,
+    "red": 35,
+    "none": 65,
+    "refilled": 29816,
+    "days": 116
+   },
+   "2024": {
+    "net": -8178,
+    "green": 22,
+    "red": 51,
+    "none": 96,
+    "refilled": 70072,
+    "days": 169
+   },
+   "2025": {
+    "net": -35251,
+    "green": 19,
+    "red": 58,
+    "none": 87,
+    "refilled": 62374,
+    "days": 164
+   },
+   "2026": {
+    "net": -10158,
+    "green": 19,
+    "red": 45,
+    "none": 69,
+    "refilled": 47921,
+    "days": 133
+   }
+  },
+  "NULL gold_free puts_break0 HOLD k3": {
+   "2023": {
+    "net": -13587,
+    "green": 16,
+    "red": 35,
+    "none": 65,
+    "refilled": 27047,
+    "days": 116
+   },
+   "2024": {
+    "net": 4032,
+    "green": 26,
+    "red": 47,
+    "none": 96,
+    "refilled": 58414,
+    "days": 169
+   },
+   "2025": {
+    "net": -36770,
+    "green": 19,
+    "red": 58,
+    "none": 87,
+    "refilled": 62052,
+    "days": 164
+   },
+   "2026": {
+    "net": -4769,
+    "green": 21,
+    "red": 42,
+    "none": 70,
+    "refilled": 37448,
+    "days": 133
+   }
+  },
+  "gold_free puts_break0 HOLD k6": {
+   "2023": {
+    "net": -18001,
+    "green": 14,
+    "red": 37,
+    "none": 65,
+    "refilled": 50704,
+    "days": 116
+   },
+   "2024": {
+    "net": 16913,
+    "green": 25,
+    "red": 48,
+    "none": 96,
+    "refilled": 101907,
+    "days": 169
+   },
+   "2025": {
+    "net": -32711,
+    "green": 28,
+    "red": 49,
+    "none": 87,
+    "refilled": 91513,
+    "days": 164
+   },
+   "2026": {
+    "net": -27522,
+    "green": 20,
+    "red": 44,
+    "none": 69,
+    "refilled": 84182,
+    "days": 133
+   }
+  },
+  "NULL gold_free puts_break0 HOLD k6": {
+   "2023": {
+    "net": 11721,
+    "green": 20,
+    "red": 31,
+    "none": 65,
+    "refilled": 38339,
+    "days": 116
+   },
+   "2024": {
+    "net": -34166,
+    "green": 22,
+    "red": 51,
+    "none": 96,
+    "refilled": 107384,
+    "days": 169
+   },
+   "2025": {
+    "net": -33609,
+    "green": 29,
+    "red": 48,
+    "none": 87,
+    "refilled": 100185,
+    "days": 164
+   },
+   "2026": {
+    "net": -19078,
+    "green": 24,
+    "red": 39,
+    "none": 70,
+    "refilled": 72653,
+    "days": 133
+   }
+  },
+  "gold_free puts_break0 QUICK 0.5R": {
+   "2023": {
+    "net": -13287,
+    "green": 26,
+    "red": 25,
+    "none": 65,
+    "refilled": 23938,
+    "days": 116
+   },
+   "2024": {
+    "net": -17688,
+    "green": 46,
+    "red": 27,
+    "none": 96,
+    "refilled": 43986,
+    "days": 169
+   },
+   "2025": {
+    "net": -23573,
+    "green": 43,
+    "red": 34,
+    "none": 87,
+    "refilled": 46184,
+    "days": 164
+   },
+   "2026": {
+    "net": -25634,
+    "green": 34,
+    "red": 30,
+    "none": 69,
+    "refilled": 38910,
+    "days": 133
+   }
+  },
+  "NULL gold_free puts_break0 QUICK 0.5R": {
+   "2023": {
+    "net": -17701,
+    "green": 22,
+    "red": 29,
+    "none": 65,
+    "refilled": 22626,
+    "days": 116
+   },
+   "2024": {
+    "net": -20857,
+    "green": 46,
+    "red": 27,
+    "none": 96,
+    "refilled": 40454,
+    "days": 169
+   },
+   "2025": {
+    "net": -25575,
+    "green": 43,
+    "red": 34,
+    "none": 87,
+    "refilled": 46973,
+    "days": 164
+   },
+   "2026": {
+    "net": -14635,
+    "green": 39,
+    "red": 24,
+    "none": 70,
+    "refilled": 29111,
+    "days": 133
+   }
+  },
+  "gold_free puts_break0 QUICK 1R": {
+   "2023": {
+    "net": -20456,
+    "green": 18,
+    "red": 33,
+    "none": 65,
+    "refilled": 30694,
+    "days": 116
+   },
+   "2024": {
+    "net": -29733,
+    "green": 33,
+    "red": 40,
+    "none": 96,
+    "refilled": 65663,
+    "days": 169
+   },
+   "2025": {
+    "net": -23590,
+    "green": 31,
+    "red": 46,
+    "none": 87,
+    "refilled": 59615,
+    "days": 164
+   },
+   "2026": {
+    "net": -20830,
+    "green": 26,
+    "red": 38,
+    "none": 69,
+    "refilled": 46226,
+    "days": 133
+   }
+  },
+  "NULL gold_free puts_break0 QUICK 1R": {
+   "2023": {
+    "net": -16481,
+    "green": 19,
+    "red": 32,
+    "none": 65,
+    "refilled": 27094,
+    "days": 116
+   },
+   "2024": {
+    "net": -31313,
+    "green": 34,
+    "red": 39,
+    "none": 96,
+    "refilled": 62777,
+    "days": 169
+   },
+   "2025": {
+    "net": -37189,
+    "green": 24,
+    "red": 53,
+    "none": 87,
+    "refilled": 64620,
+    "days": 164
+   },
+   "2026": {
+    "net": -7493,
+    "green": 33,
+    "red": 31,
+    "none": 69,
+    "refilled": 35612,
+    "days": 133
+   }
+  },
+  "gold_free drive0.3 HOLD k3": {
+   "2023": {
+    "net": -32023,
+    "green": 22,
+    "red": 57,
+    "none": 37,
+    "refilled": 46827,
+    "days": 116
+   },
+   "2024": {
+    "net": -49499,
+    "green": 36,
+    "red": 78,
+    "none": 55,
+    "refilled": 111992,
+    "days": 169
+   },
+   "2025": {
+    "net": -51292,
+    "green": 38,
+    "red": 87,
+    "none": 39,
+    "refilled": 113089,
+    "days": 164
+   },
+   "2026": {
+    "net": -14813,
+    "green": 32,
+    "red": 60,
+    "none": 41,
+    "refilled": 70485,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.3 HOLD k3": {
+   "2023": {
+    "net": -6225,
+    "green": 31,
+    "red": 48,
+    "none": 37,
+    "refilled": 32367,
+    "days": 116
+   },
+   "2024": {
+    "net": -10799,
+    "green": 38,
+    "red": 76,
+    "none": 55,
+    "refilled": 93145,
+    "days": 169
+   },
+   "2025": {
+    "net": -26604,
+    "green": 37,
+    "red": 89,
+    "none": 38,
+    "refilled": 99632,
+    "days": 164
+   },
+   "2026": {
+    "net": -23584,
+    "green": 27,
+    "red": 64,
+    "none": 42,
+    "refilled": 73869,
+    "days": 133
+   }
+  },
+  "gold_free drive0.3 HOLD k6": {
+   "2023": {
+    "net": -30375,
+    "green": 24,
+    "red": 55,
+    "none": 37,
+    "refilled": 72544,
+    "days": 116
+   },
+   "2024": {
+    "net": -26312,
+    "green": 33,
+    "red": 81,
+    "none": 55,
+    "refilled": 166257,
+    "days": 169
+   },
+   "2025": {
+    "net": -18222,
+    "green": 47,
+    "red": 78,
+    "none": 39,
+    "refilled": 153281,
+    "days": 164
+   },
+   "2026": {
+    "net": -36591,
+    "green": 34,
+    "red": 58,
+    "none": 41,
+    "refilled": 124955,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.3 HOLD k6": {
+   "2023": {
+    "net": -14225,
+    "green": 27,
+    "red": 52,
+    "none": 37,
+    "refilled": 73013,
+    "days": 116
+   },
+   "2024": {
+    "net": -56784,
+    "green": 35,
+    "red": 79,
+    "none": 55,
+    "refilled": 165235,
+    "days": 169
+   },
+   "2025": {
+    "net": -15339,
+    "green": 43,
+    "red": 82,
+    "none": 39,
+    "refilled": 162100,
+    "days": 164
+   },
+   "2026": {
+    "net": -54339,
+    "green": 29,
+    "red": 62,
+    "none": 42,
+    "refilled": 134429,
+    "days": 133
+   }
+  },
+  "gold_free drive0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -22282,
+    "green": 33,
+    "red": 46,
+    "none": 37,
+    "refilled": 36210,
+    "days": 116
+   },
+   "2024": {
+    "net": -49551,
+    "green": 59,
+    "red": 55,
+    "none": 55,
+    "refilled": 86206,
+    "days": 169
+   },
+   "2025": {
+    "net": -51471,
+    "green": 61,
+    "red": 64,
+    "none": 39,
+    "refilled": 93573,
+    "days": 164
+   },
+   "2026": {
+    "net": -23006,
+    "green": 55,
+    "red": 37,
+    "none": 41,
+    "refilled": 53349,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -19323,
+    "green": 35,
+    "red": 44,
+    "none": 37,
+    "refilled": 32407,
+    "days": 116
+   },
+   "2024": {
+    "net": -37063,
+    "green": 65,
+    "red": 49,
+    "none": 55,
+    "refilled": 73069,
+    "days": 169
+   },
+   "2025": {
+    "net": -39998,
+    "green": 66,
+    "red": 58,
+    "none": 40,
+    "refilled": 80752,
+    "days": 164
+   },
+   "2026": {
+    "net": -44508,
+    "green": 46,
+    "red": 46,
+    "none": 41,
+    "refilled": 66028,
+    "days": 133
+   }
+  },
+  "gold_free drive0.3 QUICK 1R": {
+   "2023": {
+    "net": -27157,
+    "green": 27,
+    "red": 52,
+    "none": 37,
+    "refilled": 45407,
+    "days": 116
+   },
+   "2024": {
+    "net": -65906,
+    "green": 38,
+    "red": 76,
+    "none": 55,
+    "refilled": 113041,
+    "days": 169
+   },
+   "2025": {
+    "net": -48470,
+    "green": 44,
+    "red": 81,
+    "none": 39,
+    "refilled": 109104,
+    "days": 164
+   },
+   "2026": {
+    "net": -22568,
+    "green": 38,
+    "red": 54,
+    "none": 41,
+    "refilled": 70352,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.3 QUICK 1R": {
+   "2023": {
+    "net": -15242,
+    "green": 33,
+    "red": 46,
+    "none": 37,
+    "refilled": 36710,
+    "days": 116
+   },
+   "2024": {
+    "net": -40539,
+    "green": 44,
+    "red": 70,
+    "none": 55,
+    "refilled": 94595,
+    "days": 169
+   },
+   "2025": {
+    "net": -33802,
+    "green": 48,
+    "red": 77,
+    "none": 39,
+    "refilled": 97097,
+    "days": 164
+   },
+   "2026": {
+    "net": -43538,
+    "green": 31,
+    "red": 61,
+    "none": 41,
+    "refilled": 79901,
+    "days": 133
+   }
+  },
+  "gold_free drive0.6 HOLD k3": {
+   "2023": {
+    "net": -13723,
+    "green": 10,
+    "red": 25,
+    "none": 81,
+    "refilled": 19218,
+    "days": 116
+   },
+   "2024": {
+    "net": -7036,
+    "green": 20,
+    "red": 32,
+    "none": 117,
+    "refilled": 47101,
+    "days": 169
+   },
+   "2025": {
+    "net": -29324,
+    "green": 21,
+    "red": 46,
+    "none": 97,
+    "refilled": 60594,
+    "days": 164
+   },
+   "2026": {
+    "net": -7246,
+    "green": 14,
+    "red": 27,
+    "none": 92,
+    "refilled": 28404,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.6 HOLD k3": {
+   "2023": {
+    "net": -15682,
+    "green": 7,
+    "red": 28,
+    "none": 81,
+    "refilled": 23526,
+    "days": 116
+   },
+   "2024": {
+    "net": 2918,
+    "green": 17,
+    "red": 35,
+    "none": 117,
+    "refilled": 48995,
+    "days": 169
+   },
+   "2025": {
+    "net": -10741,
+    "green": 19,
+    "red": 47,
+    "none": 98,
+    "refilled": 53000,
+    "days": 164
+   },
+   "2026": {
+    "net": -9954,
+    "green": 11,
+    "red": 30,
+    "none": 92,
+    "refilled": 33574,
+    "days": 133
+   }
+  },
+  "gold_free drive0.6 HOLD k6": {
+   "2023": {
+    "net": -8520,
+    "green": 11,
+    "red": 24,
+    "none": 81,
+    "refilled": 30349,
+    "days": 116
+   },
+   "2024": {
+    "net": 24623,
+    "green": 19,
+    "red": 33,
+    "none": 117,
+    "refilled": 72332,
+    "days": 169
+   },
+   "2025": {
+    "net": -22415,
+    "green": 25,
+    "red": 42,
+    "none": 97,
+    "refilled": 82081,
+    "days": 164
+   },
+   "2026": {
+    "net": -16111,
+    "green": 15,
+    "red": 26,
+    "none": 92,
+    "refilled": 53969,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.6 HOLD k6": {
+   "2023": {
+    "net": -11864,
+    "green": 10,
+    "red": 25,
+    "none": 81,
+    "refilled": 33502,
+    "days": 116
+   },
+   "2024": {
+    "net": -12025,
+    "green": 18,
+    "red": 34,
+    "none": 117,
+    "refilled": 77760,
+    "days": 169
+   },
+   "2025": {
+    "net": 22985,
+    "green": 30,
+    "red": 37,
+    "none": 97,
+    "refilled": 69845,
+    "days": 164
+   },
+   "2026": {
+    "net": -15545,
+    "green": 13,
+    "red": 27,
+    "none": 93,
+    "refilled": 51505,
+    "days": 133
+   }
+  },
+  "gold_free drive0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -6707,
+    "green": 19,
+    "red": 16,
+    "none": 81,
+    "refilled": 14207,
+    "days": 116
+   },
+   "2024": {
+    "net": -16180,
+    "green": 31,
+    "red": 21,
+    "none": 117,
+    "refilled": 34626,
+    "days": 169
+   },
+   "2025": {
+    "net": -33680,
+    "green": 31,
+    "red": 36,
+    "none": 97,
+    "refilled": 55024,
+    "days": 164
+   },
+   "2026": {
+    "net": -5170,
+    "green": 25,
+    "red": 16,
+    "none": 92,
+    "refilled": 19370,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -5987,
+    "green": 18,
+    "red": 17,
+    "none": 81,
+    "refilled": 12038,
+    "days": 116
+   },
+   "2024": {
+    "net": -15018,
+    "green": 30,
+    "red": 22,
+    "none": 117,
+    "refilled": 30979,
+    "days": 169
+   },
+   "2025": {
+    "net": -15035,
+    "green": 38,
+    "red": 29,
+    "none": 97,
+    "refilled": 38712,
+    "days": 164
+   },
+   "2026": {
+    "net": -7910,
+    "green": 23,
+    "red": 18,
+    "none": 92,
+    "refilled": 21625,
+    "days": 133
+   }
+  },
+  "gold_free drive0.6 QUICK 1R": {
+   "2023": {
+    "net": -6960,
+    "green": 15,
+    "red": 20,
+    "none": 81,
+    "refilled": 18161,
+    "days": 116
+   },
+   "2024": {
+    "net": -17104,
+    "green": 22,
+    "red": 30,
+    "none": 117,
+    "refilled": 45872,
+    "days": 169
+   },
+   "2025": {
+    "net": -27358,
+    "green": 24,
+    "red": 43,
+    "none": 97,
+    "refilled": 60822,
+    "days": 164
+   },
+   "2026": {
+    "net": -6980,
+    "green": 17,
+    "red": 24,
+    "none": 92,
+    "refilled": 26877,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive0.6 QUICK 1R": {
+   "2023": {
+    "net": -16141,
+    "green": 8,
+    "red": 27,
+    "none": 81,
+    "refilled": 22585,
+    "days": 116
+   },
+   "2024": {
+    "net": -21932,
+    "green": 20,
+    "red": 32,
+    "none": 117,
+    "refilled": 47822,
+    "days": 169
+   },
+   "2025": {
+    "net": -36226,
+    "green": 22,
+    "red": 45,
+    "none": 97,
+    "refilled": 60702,
+    "days": 164
+   },
+   "2026": {
+    "net": -8,
+    "green": 21,
+    "red": 20,
+    "none": 92,
+    "refilled": 21243,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.3 HOLD k3": {
+   "2023": {
+    "net": -17507,
+    "green": 13,
+    "red": 35,
+    "none": 68,
+    "refilled": 28393,
+    "days": 116
+   },
+   "2024": {
+    "net": -20244,
+    "green": 19,
+    "red": 43,
+    "none": 107,
+    "refilled": 66194,
+    "days": 169
+   },
+   "2025": {
+    "net": -28976,
+    "green": 19,
+    "red": 50,
+    "none": 95,
+    "refilled": 59713,
+    "days": 164
+   },
+   "2026": {
+    "net": -1450,
+    "green": 17,
+    "red": 32,
+    "none": 84,
+    "refilled": 34798,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.3 HOLD k3": {
+   "2023": {
+    "net": -19731,
+    "green": 13,
+    "red": 35,
+    "none": 68,
+    "refilled": 31273,
+    "days": 116
+   },
+   "2024": {
+    "net": 14999,
+    "green": 25,
+    "red": 37,
+    "none": 107,
+    "refilled": 45644,
+    "days": 169
+   },
+   "2025": {
+    "net": -38788,
+    "green": 18,
+    "red": 51,
+    "none": 95,
+    "refilled": 65363,
+    "days": 164
+   },
+   "2026": {
+    "net": -16711,
+    "green": 12,
+    "red": 38,
+    "none": 83,
+    "refilled": 44696,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.3 HOLD k6": {
+   "2023": {
+    "net": -26132,
+    "green": 13,
+    "red": 35,
+    "none": 68,
+    "refilled": 45073,
+    "days": 116
+   },
+   "2024": {
+    "net": -9780,
+    "green": 19,
+    "red": 43,
+    "none": 107,
+    "refilled": 94823,
+    "days": 169
+   },
+   "2025": {
+    "net": 1681,
+    "green": 27,
+    "red": 42,
+    "none": 95,
+    "refilled": 79737,
+    "days": 164
+   },
+   "2026": {
+    "net": -14428,
+    "green": 18,
+    "red": 31,
+    "none": 84,
+    "refilled": 57300,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.3 HOLD k6": {
+   "2023": {
+    "net": -22367,
+    "green": 12,
+    "red": 36,
+    "none": 68,
+    "refilled": 51777,
+    "days": 116
+   },
+   "2024": {
+    "net": -56825,
+    "green": 12,
+    "red": 50,
+    "none": 107,
+    "refilled": 112818,
+    "days": 169
+   },
+   "2025": {
+    "net": -12645,
+    "green": 24,
+    "red": 45,
+    "none": 95,
+    "refilled": 92842,
+    "days": 164
+   },
+   "2026": {
+    "net": -38196,
+    "green": 15,
+    "red": 34,
+    "none": 84,
+    "refilled": 70679,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -14081,
+    "green": 18,
+    "red": 30,
+    "none": 68,
+    "refilled": 22148,
+    "days": 116
+   },
+   "2024": {
+    "net": -26962,
+    "green": 33,
+    "red": 29,
+    "none": 107,
+    "refilled": 48332,
+    "days": 169
+   },
+   "2025": {
+    "net": -21791,
+    "green": 37,
+    "red": 32,
+    "none": 95,
+    "refilled": 44968,
+    "days": 164
+   },
+   "2026": {
+    "net": -13283,
+    "green": 27,
+    "red": 22,
+    "none": 84,
+    "refilled": 27634,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -9469,
+    "green": 22,
+    "red": 26,
+    "none": 68,
+    "refilled": 17017,
+    "days": 116
+   },
+   "2024": {
+    "net": -18972,
+    "green": 35,
+    "red": 27,
+    "none": 107,
+    "refilled": 39641,
+    "days": 169
+   },
+   "2025": {
+    "net": -25808,
+    "green": 38,
+    "red": 31,
+    "none": 95,
+    "refilled": 47356,
+    "days": 164
+   },
+   "2026": {
+    "net": -18676,
+    "green": 22,
+    "red": 27,
+    "none": 84,
+    "refilled": 31219,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.3 QUICK 1R": {
+   "2023": {
+    "net": -13150,
+    "green": 18,
+    "red": 30,
+    "none": 68,
+    "refilled": 25719,
+    "days": 116
+   },
+   "2024": {
+    "net": -40138,
+    "green": 21,
+    "red": 41,
+    "none": 107,
+    "refilled": 66410,
+    "days": 169
+   },
+   "2025": {
+    "net": -26365,
+    "green": 23,
+    "red": 46,
+    "none": 95,
+    "refilled": 57631,
+    "days": 164
+   },
+   "2026": {
+    "net": -7675,
+    "green": 20,
+    "red": 29,
+    "none": 84,
+    "refilled": 32793,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.3 QUICK 1R": {
+   "2023": {
+    "net": -11982,
+    "green": 20,
+    "red": 28,
+    "none": 68,
+    "refilled": 24095,
+    "days": 116
+   },
+   "2024": {
+    "net": -5325,
+    "green": 29,
+    "red": 33,
+    "none": 107,
+    "refilled": 42768,
+    "days": 169
+   },
+   "2025": {
+    "net": -15422,
+    "green": 25,
+    "red": 44,
+    "none": 95,
+    "refilled": 54023,
+    "days": 164
+   },
+   "2026": {
+    "net": -19640,
+    "green": 16,
+    "red": 34,
+    "none": 83,
+    "refilled": 41282,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.6 HOLD k3": {
+   "2023": {
+    "net": -10373,
+    "green": 6,
+    "red": 17,
+    "none": 93,
+    "refilled": 14714,
+    "days": 116
+   },
+   "2024": {
+    "net": -3795,
+    "green": 12,
+    "red": 20,
+    "none": 137,
+    "refilled": 32677,
+    "days": 169
+   },
+   "2025": {
+    "net": -15027,
+    "green": 11,
+    "red": 26,
+    "none": 127,
+    "refilled": 28385,
+    "days": 164
+   },
+   "2026": {
+    "net": 4077,
+    "green": 9,
+    "red": 15,
+    "none": 109,
+    "refilled": 14504,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.6 HOLD k3": {
+   "2023": {
+    "net": -8581,
+    "green": 8,
+    "red": 15,
+    "none": 93,
+    "refilled": 14322,
+    "days": 116
+   },
+   "2024": {
+    "net": 11626,
+    "green": 12,
+    "red": 20,
+    "none": 137,
+    "refilled": 22271,
+    "days": 169
+   },
+   "2025": {
+    "net": -24879,
+    "green": 10,
+    "red": 27,
+    "none": 127,
+    "refilled": 31928,
+    "days": 164
+   },
+   "2026": {
+    "net": -3970,
+    "green": 7,
+    "red": 16,
+    "none": 110,
+    "refilled": 12679,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.6 HOLD k6": {
+   "2023": {
+    "net": -13199,
+    "green": 5,
+    "red": 18,
+    "none": 93,
+    "refilled": 22396,
+    "days": 116
+   },
+   "2024": {
+    "net": 1278,
+    "green": 11,
+    "red": 21,
+    "none": 137,
+    "refilled": 48909,
+    "days": 169
+   },
+   "2025": {
+    "net": -15543,
+    "green": 15,
+    "red": 22,
+    "none": 127,
+    "refilled": 41758,
+    "days": 164
+   },
+   "2026": {
+    "net": -8515,
+    "green": 8,
+    "red": 16,
+    "none": 109,
+    "refilled": 28050,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.6 HOLD k6": {
+   "2023": {
+    "net": -13512,
+    "green": 5,
+    "red": 18,
+    "none": 93,
+    "refilled": 25443,
+    "days": 116
+   },
+   "2024": {
+    "net": 11830,
+    "green": 14,
+    "red": 18,
+    "none": 137,
+    "refilled": 42306,
+    "days": 169
+   },
+   "2025": {
+    "net": -21321,
+    "green": 12,
+    "red": 25,
+    "none": 127,
+    "refilled": 48587,
+    "days": 164
+   },
+   "2026": {
+    "net": -11491,
+    "green": 10,
+    "red": 13,
+    "none": 110,
+    "refilled": 20890,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -6312,
+    "green": 11,
+    "red": 12,
+    "none": 93,
+    "refilled": 10941,
+    "days": 116
+   },
+   "2024": {
+    "net": -15525,
+    "green": 17,
+    "red": 15,
+    "none": 137,
+    "refilled": 26374,
+    "days": 169
+   },
+   "2025": {
+    "net": -12244,
+    "green": 19,
+    "red": 18,
+    "none": 127,
+    "refilled": 23435,
+    "days": 164
+   },
+   "2026": {
+    "net": -591,
+    "green": 15,
+    "red": 9,
+    "none": 109,
+    "refilled": 9794,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -1201,
+    "green": 15,
+    "red": 8,
+    "none": 93,
+    "refilled": 6288,
+    "days": 116
+   },
+   "2024": {
+    "net": -11379,
+    "green": 17,
+    "red": 15,
+    "none": 137,
+    "refilled": 21423,
+    "days": 169
+   },
+   "2025": {
+    "net": -17954,
+    "green": 18,
+    "red": 19,
+    "none": 127,
+    "refilled": 26819,
+    "days": 164
+   },
+   "2026": {
+    "net": -5691,
+    "green": 13,
+    "red": 11,
+    "none": 109,
+    "refilled": 12917,
+    "days": 133
+   }
+  },
+  "gold_free drive_puts0.6 QUICK 1R": {
+   "2023": {
+    "net": -4804,
+    "green": 9,
+    "red": 14,
+    "none": 93,
+    "refilled": 12375,
+    "days": 116
+   },
+   "2024": {
+    "net": -17380,
+    "green": 12,
+    "red": 20,
+    "none": 137,
+    "refilled": 34412,
+    "days": 169
+   },
+   "2025": {
+    "net": -11053,
+    "green": 13,
+    "red": 24,
+    "none": 127,
+    "refilled": 27191,
+    "days": 164
+   },
+   "2026": {
+    "net": 862,
+    "green": 11,
+    "red": 13,
+    "none": 109,
+    "refilled": 12522,
+    "days": 133
+   }
+  },
+  "NULL gold_free drive_puts0.6 QUICK 1R": {
+   "2023": {
+    "net": -10691,
+    "green": 6,
+    "red": 17,
+    "none": 93,
+    "refilled": 16049,
+    "days": 116
+   },
+   "2024": {
+    "net": -13350,
+    "green": 13,
+    "red": 19,
+    "none": 137,
+    "refilled": 29863,
+    "days": 169
+   },
+   "2025": {
+    "net": -96,
+    "green": 16,
+    "red": 21,
+    "none": 127,
+    "refilled": 21698,
+    "days": 164
+   },
+   "2026": {
+    "net": -2401,
+    "green": 11,
+    "red": 12,
+    "none": 110,
+    "refilled": 13259,
+    "days": 133
+   }
+  },
+  "gold_free plain_puts0 HOLD k3": {
+   "2023": {
+    "net": -35647,
+    "green": 33,
+    "red": 83,
+    "none": 0,
+    "refilled": 61607,
+    "days": 116
+   },
+   "2024": {
+    "net": -33448,
+    "green": 51,
+    "red": 115,
+    "none": 3,
+    "refilled": 152551,
+    "days": 169
+   },
+   "2025": {
+    "net": -43243,
+    "green": 44,
+    "red": 118,
+    "none": 2,
+    "refilled": 128837,
+    "days": 164
+   },
+   "2026": {
+    "net": -36103,
+    "green": 39,
+    "red": 91,
+    "none": 3,
+    "refilled": 105772,
+    "days": 133
+   }
+  },
+  "gold_free plain_puts0 HOLD k6": {
+   "2023": {
+    "net": -6070,
+    "green": 42,
+    "red": 74,
+    "none": 0,
+    "refilled": 94675,
+    "days": 116
+   },
+   "2024": {
+    "net": -47620,
+    "green": 51,
+    "red": 115,
+    "none": 3,
+    "refilled": 241247,
+    "days": 169
+   },
+   "2025": {
+    "net": -30897,
+    "green": 54,
+    "red": 108,
+    "none": 2,
+    "refilled": 193477,
+    "days": 164
+   },
+   "2026": {
+    "net": -62721,
+    "green": 42,
+    "red": 88,
+    "none": 3,
+    "refilled": 178554,
+    "days": 133
+   }
+  },
+  "gold_free plain_puts0 QUICK 0.5R": {
+   "2023": {
+    "net": -27210,
+    "green": 46,
+    "red": 70,
+    "none": 0,
+    "refilled": 45218,
+    "days": 116
+   },
+   "2024": {
+    "net": -48210,
+    "green": 98,
+    "red": 68,
+    "none": 3,
+    "refilled": 103853,
+    "days": 169
+   },
+   "2025": {
+    "net": -41926,
+    "green": 92,
+    "red": 70,
+    "none": 2,
+    "refilled": 92559,
+    "days": 164
+   },
+   "2026": {
+    "net": -42068,
+    "green": 70,
+    "red": 60,
+    "none": 3,
+    "refilled": 77945,
+    "days": 133
+   }
+  },
+  "gold_free plain_puts0 QUICK 1R": {
+   "2023": {
+    "net": -19616,
+    "green": 47,
+    "red": 69,
+    "none": 0,
+    "refilled": 51891,
+    "days": 116
+   },
+   "2024": {
+    "net": -75717,
+    "green": 67,
+    "red": 99,
+    "none": 3,
+    "refilled": 149693,
+    "days": 169
+   },
+   "2025": {
+    "net": -60510,
+    "green": 59,
+    "red": 103,
+    "none": 2,
+    "refilled": 128612,
+    "days": 164
+   },
+   "2026": {
+    "net": -45133,
+    "green": 50,
+    "red": 80,
+    "none": 3,
+    "refilled": 99641,
+    "days": 133
+   }
+  },
+  "gold_free&or_wide puts_break0 HOLD k3": {
+   "2023": {
+    "net": -3099,
+    "green": 5,
+    "red": 9,
+    "none": 18,
+    "refilled": 4845,
+    "days": 32
+   },
+   "2024": {
+    "net": -8259,
+    "green": 6,
+    "red": 17,
+    "none": 32,
+    "refilled": 26561,
+    "days": 55
+   },
+   "2025": {
+    "net": -11541,
+    "green": 5,
+    "red": 21,
+    "none": 28,
+    "refilled": 23140,
+    "days": 54
+   },
+   "2026": {
+    "net": -5825,
+    "green": 5,
+    "red": 16,
+    "none": 17,
+    "refilled": 16611,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide puts_break0 HOLD k3": {
+   "2023": {
+    "net": -5827,
+    "green": 2,
+    "red": 12,
+    "none": 18,
+    "refilled": 6866,
+    "days": 32
+   },
+   "2024": {
+    "net": -4918,
+    "green": 6,
+    "red": 17,
+    "none": 32,
+    "refilled": 22962,
+    "days": 55
+   },
+   "2025": {
+    "net": -9470,
+    "green": 9,
+    "red": 17,
+    "none": 28,
+    "refilled": 17421,
+    "days": 54
+   },
+   "2026": {
+    "net": -9379,
+    "green": 5,
+    "red": 15,
+    "none": 18,
+    "refilled": 14576,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide puts_break0 HOLD k6": {
+   "2023": {
+    "net": -2687,
+    "green": 3,
+    "red": 11,
+    "none": 18,
+    "refilled": 15523,
+    "days": 32
+   },
+   "2024": {
+    "net": 16247,
+    "green": 9,
+    "red": 14,
+    "none": 32,
+    "refilled": 35592,
+    "days": 55
+   },
+   "2025": {
+    "net": -16131,
+    "green": 7,
+    "red": 19,
+    "none": 28,
+    "refilled": 35900,
+    "days": 54
+   },
+   "2026": {
+    "net": -18716,
+    "green": 4,
+    "red": 17,
+    "none": 17,
+    "refilled": 32563,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide puts_break0 HOLD k6": {
+   "2023": {
+    "net": 6681,
+    "green": 6,
+    "red": 8,
+    "none": 18,
+    "refilled": 11125,
+    "days": 32
+   },
+   "2024": {
+    "net": 22784,
+    "green": 11,
+    "red": 12,
+    "none": 32,
+    "refilled": 28362,
+    "days": 55
+   },
+   "2025": {
+    "net": -22451,
+    "green": 6,
+    "red": 20,
+    "none": 28,
+    "refilled": 41299,
+    "days": 54
+   },
+   "2026": {
+    "net": 12077,
+    "green": 9,
+    "red": 12,
+    "none": 17,
+    "refilled": 24507,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide puts_break0 QUICK 0.5R": {
+   "2023": {
+    "net": 2597,
+    "green": 11,
+    "red": 3,
+    "none": 18,
+    "refilled": 2633,
+    "days": 32
+   },
+   "2024": {
+    "net": -3971,
+    "green": 16,
+    "red": 7,
+    "none": 32,
+    "refilled": 12043,
+    "days": 55
+   },
+   "2025": {
+    "net": -7522,
+    "green": 15,
+    "red": 11,
+    "none": 28,
+    "refilled": 15986,
+    "days": 54
+   },
+   "2026": {
+    "net": -7528,
+    "green": 12,
+    "red": 9,
+    "none": 17,
+    "refilled": 13549,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide puts_break0 QUICK 0.5R": {
+   "2023": {
+    "net": -750,
+    "green": 9,
+    "red": 5,
+    "none": 18,
+    "refilled": 4338,
+    "days": 32
+   },
+   "2024": {
+    "net": -601,
+    "green": 17,
+    "red": 6,
+    "none": 32,
+    "refilled": 9641,
+    "days": 55
+   },
+   "2025": {
+    "net": -12013,
+    "green": 14,
+    "red": 12,
+    "none": 28,
+    "refilled": 18298,
+    "days": 54
+   },
+   "2026": {
+    "net": -1681,
+    "green": 14,
+    "red": 6,
+    "none": 18,
+    "refilled": 7114,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide puts_break0 QUICK 1R": {
+   "2023": {
+    "net": -3005,
+    "green": 7,
+    "red": 7,
+    "none": 18,
+    "refilled": 6306,
+    "days": 32
+   },
+   "2024": {
+    "net": -12239,
+    "green": 10,
+    "red": 13,
+    "none": 32,
+    "refilled": 24207,
+    "days": 55
+   },
+   "2025": {
+    "net": -5728,
+    "green": 10,
+    "red": 16,
+    "none": 28,
+    "refilled": 20747,
+    "days": 54
+   },
+   "2026": {
+    "net": -8520,
+    "green": 8,
+    "red": 13,
+    "none": 17,
+    "refilled": 15971,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide puts_break0 QUICK 1R": {
+   "2023": {
+    "net": -4295,
+    "green": 7,
+    "red": 7,
+    "none": 18,
+    "refilled": 7242,
+    "days": 32
+   },
+   "2024": {
+    "net": -5704,
+    "green": 10,
+    "red": 13,
+    "none": 32,
+    "refilled": 19361,
+    "days": 55
+   },
+   "2025": {
+    "net": -5253,
+    "green": 11,
+    "red": 15,
+    "none": 28,
+    "refilled": 19338,
+    "days": 54
+   },
+   "2026": {
+    "net": -2056,
+    "green": 10,
+    "red": 11,
+    "none": 17,
+    "refilled": 12002,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.3 HOLD k3": {
+   "2023": {
+    "net": -8727,
+    "green": 6,
+    "red": 15,
+    "none": 11,
+    "refilled": 13410,
+    "days": 32
+   },
+   "2024": {
+    "net": -21881,
+    "green": 13,
+    "red": 28,
+    "none": 14,
+    "refilled": 41948,
+    "days": 55
+   },
+   "2025": {
+    "net": -23922,
+    "green": 15,
+    "red": 34,
+    "none": 5,
+    "refilled": 49234,
+    "days": 54
+   },
+   "2026": {
+    "net": -16819,
+    "green": 8,
+    "red": 22,
+    "none": 8,
+    "refilled": 27768,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.3 HOLD k3": {
+   "2023": {
+    "net": -5067,
+    "green": 6,
+    "red": 15,
+    "none": 11,
+    "refilled": 13610,
+    "days": 32
+   },
+   "2024": {
+    "net": -34223,
+    "green": 9,
+    "red": 32,
+    "none": 14,
+    "refilled": 48949,
+    "days": 55
+   },
+   "2025": {
+    "net": -8966,
+    "green": 14,
+    "red": 34,
+    "none": 6,
+    "refilled": 43288,
+    "days": 54
+   },
+   "2026": {
+    "net": -8103,
+    "green": 9,
+    "red": 21,
+    "none": 8,
+    "refilled": 25779,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.3 HOLD k6": {
+   "2023": {
+    "net": -11783,
+    "green": 7,
+    "red": 14,
+    "none": 11,
+    "refilled": 20747,
+    "days": 32
+   },
+   "2024": {
+    "net": 33006,
+    "green": 13,
+    "red": 28,
+    "none": 14,
+    "refilled": 64773,
+    "days": 55
+   },
+   "2025": {
+    "net": -10146,
+    "green": 16,
+    "red": 33,
+    "none": 5,
+    "refilled": 67165,
+    "days": 54
+   },
+   "2026": {
+    "net": -27870,
+    "green": 8,
+    "red": 22,
+    "none": 8,
+    "refilled": 51709,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.3 HOLD k6": {
+   "2023": {
+    "net": -5538,
+    "green": 7,
+    "red": 14,
+    "none": 11,
+    "refilled": 20939,
+    "days": 32
+   },
+   "2024": {
+    "net": 17881,
+    "green": 15,
+    "red": 26,
+    "none": 14,
+    "refilled": 61671,
+    "days": 55
+   },
+   "2025": {
+    "net": -8916,
+    "green": 19,
+    "red": 31,
+    "none": 4,
+    "refilled": 70943,
+    "days": 54
+   },
+   "2026": {
+    "net": -6612,
+    "green": 12,
+    "red": 17,
+    "none": 9,
+    "refilled": 41984,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -4485,
+    "green": 13,
+    "red": 8,
+    "none": 11,
+    "refilled": 10270,
+    "days": 32
+   },
+   "2024": {
+    "net": -4764,
+    "green": 26,
+    "red": 15,
+    "none": 14,
+    "refilled": 25756,
+    "days": 55
+   },
+   "2025": {
+    "net": -19604,
+    "green": 27,
+    "red": 22,
+    "none": 5,
+    "refilled": 38119,
+    "days": 54
+   },
+   "2026": {
+    "net": -13805,
+    "green": 15,
+    "red": 15,
+    "none": 8,
+    "refilled": 22780,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -4488,
+    "green": 12,
+    "red": 9,
+    "none": 11,
+    "refilled": 9502,
+    "days": 32
+   },
+   "2024": {
+    "net": -7436,
+    "green": 24,
+    "red": 17,
+    "none": 14,
+    "refilled": 27027,
+    "days": 55
+   },
+   "2025": {
+    "net": -16182,
+    "green": 29,
+    "red": 20,
+    "none": 5,
+    "refilled": 32402,
+    "days": 54
+   },
+   "2026": {
+    "net": -12705,
+    "green": 14,
+    "red": 16,
+    "none": 8,
+    "refilled": 22487,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.3 QUICK 1R": {
+   "2023": {
+    "net": -5487,
+    "green": 9,
+    "red": 12,
+    "none": 11,
+    "refilled": 14033,
+    "days": 32
+   },
+   "2024": {
+    "net": -16030,
+    "green": 17,
+    "red": 24,
+    "none": 14,
+    "refilled": 39446,
+    "days": 55
+   },
+   "2025": {
+    "net": -23017,
+    "green": 17,
+    "red": 32,
+    "none": 5,
+    "refilled": 49671,
+    "days": 54
+   },
+   "2026": {
+    "net": -17626,
+    "green": 9,
+    "red": 21,
+    "none": 8,
+    "refilled": 30172,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.3 QUICK 1R": {
+   "2023": {
+    "net": -12675,
+    "green": 7,
+    "red": 14,
+    "none": 11,
+    "refilled": 17667,
+    "days": 32
+   },
+   "2024": {
+    "net": -33488,
+    "green": 11,
+    "red": 30,
+    "none": 14,
+    "refilled": 49395,
+    "days": 55
+   },
+   "2025": {
+    "net": -21837,
+    "green": 19,
+    "red": 30,
+    "none": 5,
+    "refilled": 47723,
+    "days": 54
+   },
+   "2026": {
+    "net": -7246,
+    "green": 11,
+    "red": 19,
+    "none": 8,
+    "refilled": 26175,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.6 HOLD k3": {
+   "2023": {
+    "net": -5410,
+    "green": 5,
+    "red": 10,
+    "none": 17,
+    "refilled": 8619,
+    "days": 32
+   },
+   "2024": {
+    "net": -6471,
+    "green": 9,
+    "red": 15,
+    "none": 31,
+    "refilled": 21541,
+    "days": 55
+   },
+   "2025": {
+    "net": -15758,
+    "green": 11,
+    "red": 21,
+    "none": 22,
+    "refilled": 29375,
+    "days": 54
+   },
+   "2026": {
+    "net": -3702,
+    "green": 3,
+    "red": 11,
+    "none": 24,
+    "refilled": 8670,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.6 HOLD k3": {
+   "2023": {
+    "net": -6507,
+    "green": 5,
+    "red": 10,
+    "none": 17,
+    "refilled": 9162,
+    "days": 32
+   },
+   "2024": {
+    "net": -1024,
+    "green": 6,
+    "red": 18,
+    "none": 31,
+    "refilled": 27432,
+    "days": 55
+   },
+   "2025": {
+    "net": -996,
+    "green": 11,
+    "red": 20,
+    "none": 23,
+    "refilled": 20254,
+    "days": 54
+   },
+   "2026": {
+    "net": -7766,
+    "green": 2,
+    "red": 11,
+    "none": 25,
+    "refilled": 8703,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.6 HOLD k6": {
+   "2023": {
+    "net": -8729,
+    "green": 5,
+    "red": 10,
+    "none": 17,
+    "refilled": 14280,
+    "days": 32
+   },
+   "2024": {
+    "net": 41306,
+    "green": 10,
+    "red": 14,
+    "none": 31,
+    "refilled": 33616,
+    "days": 55
+   },
+   "2025": {
+    "net": -18551,
+    "green": 9,
+    "red": 23,
+    "none": 22,
+    "refilled": 45156,
+    "days": 54
+   },
+   "2026": {
+    "net": -10264,
+    "green": 4,
+    "red": 10,
+    "none": 24,
+    "refilled": 22503,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.6 HOLD k6": {
+   "2023": {
+    "net": -13639,
+    "green": 4,
+    "red": 11,
+    "none": 17,
+    "refilled": 18416,
+    "days": 32
+   },
+   "2024": {
+    "net": 18684,
+    "green": 10,
+    "red": 14,
+    "none": 31,
+    "refilled": 34855,
+    "days": 55
+   },
+   "2025": {
+    "net": -8065,
+    "green": 12,
+    "red": 20,
+    "none": 22,
+    "refilled": 39485,
+    "days": 54
+   },
+   "2026": {
+    "net": -13176,
+    "green": 4,
+    "red": 9,
+    "none": 25,
+    "refilled": 21347,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -2728,
+    "green": 10,
+    "red": 5,
+    "none": 17,
+    "refilled": 7043,
+    "days": 32
+   },
+   "2024": {
+    "net": -2498,
+    "green": 16,
+    "red": 8,
+    "none": 31,
+    "refilled": 13268,
+    "days": 55
+   },
+   "2025": {
+    "net": -14830,
+    "green": 17,
+    "red": 15,
+    "none": 22,
+    "refilled": 25825,
+    "days": 54
+   },
+   "2026": {
+    "net": 125,
+    "green": 8,
+    "red": 6,
+    "none": 24,
+    "refilled": 5004,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -5959,
+    "green": 8,
+    "red": 7,
+    "none": 17,
+    "refilled": 9152,
+    "days": 32
+   },
+   "2024": {
+    "net": -17403,
+    "green": 11,
+    "red": 13,
+    "none": 31,
+    "refilled": 22559,
+    "days": 55
+   },
+   "2025": {
+    "net": -15945,
+    "green": 18,
+    "red": 15,
+    "none": 21,
+    "refilled": 24297,
+    "days": 54
+   },
+   "2026": {
+    "net": -2751,
+    "green": 7,
+    "red": 7,
+    "none": 24,
+    "refilled": 7232,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive0.6 QUICK 1R": {
+   "2023": {
+    "net": -1417,
+    "green": 8,
+    "red": 7,
+    "none": 17,
+    "refilled": 8865,
+    "days": 32
+   },
+   "2024": {
+    "net": -2008,
+    "green": 12,
+    "red": 12,
+    "none": 31,
+    "refilled": 17841,
+    "days": 55
+   },
+   "2025": {
+    "net": -12797,
+    "green": 13,
+    "red": 19,
+    "none": 22,
+    "refilled": 30370,
+    "days": 54
+   },
+   "2026": {
+    "net": -186,
+    "green": 5,
+    "red": 9,
+    "none": 24,
+    "refilled": 7028,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive0.6 QUICK 1R": {
+   "2023": {
+    "net": 1566,
+    "green": 9,
+    "red": 6,
+    "none": 17,
+    "refilled": 6779,
+    "days": 32
+   },
+   "2024": {
+    "net": -20637,
+    "green": 8,
+    "red": 16,
+    "none": 31,
+    "refilled": 27595,
+    "days": 55
+   },
+   "2025": {
+    "net": -13274,
+    "green": 14,
+    "red": 18,
+    "none": 22,
+    "refilled": 29291,
+    "days": 54
+   },
+   "2026": {
+    "net": -798,
+    "green": 4,
+    "red": 10,
+    "none": 24,
+    "refilled": 8273,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.3 HOLD k3": {
+   "2023": {
+    "net": -3948,
+    "green": 4,
+    "red": 9,
+    "none": 19,
+    "refilled": 7920,
+    "days": 32
+   },
+   "2024": {
+    "net": -15355,
+    "green": 5,
+    "red": 16,
+    "none": 34,
+    "refilled": 25254,
+    "days": 55
+   },
+   "2025": {
+    "net": -9263,
+    "green": 8,
+    "red": 19,
+    "none": 27,
+    "refilled": 23197,
+    "days": 54
+   },
+   "2026": {
+    "net": -641,
+    "green": 6,
+    "red": 10,
+    "none": 22,
+    "refilled": 10063,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.3 HOLD k3": {
+   "2023": {
+    "net": -9360,
+    "green": 3,
+    "red": 10,
+    "none": 19,
+    "refilled": 13540,
+    "days": 32
+   },
+   "2024": {
+    "net": -7302,
+    "green": 7,
+    "red": 14,
+    "none": 34,
+    "refilled": 22765,
+    "days": 55
+   },
+   "2025": {
+    "net": -4434,
+    "green": 7,
+    "red": 20,
+    "none": 27,
+    "refilled": 21902,
+    "days": 54
+   },
+   "2026": {
+    "net": 4465,
+    "green": 8,
+    "red": 8,
+    "none": 22,
+    "refilled": 6873,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.3 HOLD k6": {
+   "2023": {
+    "net": -10903,
+    "green": 3,
+    "red": 10,
+    "none": 19,
+    "refilled": 14244,
+    "days": 32
+   },
+   "2024": {
+    "net": 17157,
+    "green": 7,
+    "red": 14,
+    "none": 34,
+    "refilled": 35006,
+    "days": 55
+   },
+   "2025": {
+    "net": 6453,
+    "green": 11,
+    "red": 16,
+    "none": 27,
+    "refilled": 32200,
+    "days": 54
+   },
+   "2026": {
+    "net": -2591,
+    "green": 5,
+    "red": 11,
+    "none": 22,
+    "refilled": 21713,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.3 HOLD k6": {
+   "2023": {
+    "net": 7664,
+    "green": 6,
+    "red": 7,
+    "none": 19,
+    "refilled": 8771,
+    "days": 32
+   },
+   "2024": {
+    "net": -13582,
+    "green": 4,
+    "red": 17,
+    "none": 34,
+    "refilled": 40724,
+    "days": 55
+   },
+   "2025": {
+    "net": 11593,
+    "green": 12,
+    "red": 15,
+    "none": 27,
+    "refilled": 31718,
+    "days": 54
+   },
+   "2026": {
+    "net": 28459,
+    "green": 11,
+    "red": 5,
+    "none": 22,
+    "refilled": 8502,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -2965,
+    "green": 8,
+    "red": 5,
+    "none": 19,
+    "refilled": 6408,
+    "days": 32
+   },
+   "2024": {
+    "net": -1942,
+    "green": 13,
+    "red": 8,
+    "none": 34,
+    "refilled": 14024,
+    "days": 55
+   },
+   "2025": {
+    "net": -593,
+    "green": 18,
+    "red": 9,
+    "none": 27,
+    "refilled": 13806,
+    "days": 54
+   },
+   "2026": {
+    "net": -3139,
+    "green": 9,
+    "red": 7,
+    "none": 22,
+    "refilled": 8562,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.3 QUICK 0.5R": {
+   "2023": {
+    "net": -5172,
+    "green": 7,
+    "red": 6,
+    "none": 19,
+    "refilled": 6809,
+    "days": 32
+   },
+   "2024": {
+    "net": -2249,
+    "green": 13,
+    "red": 8,
+    "none": 34,
+    "refilled": 13327,
+    "days": 55
+   },
+   "2025": {
+    "net": 4097,
+    "green": 19,
+    "red": 8,
+    "none": 27,
+    "refilled": 9802,
+    "days": 54
+   },
+   "2026": {
+    "net": -7689,
+    "green": 6,
+    "red": 9,
+    "none": 23,
+    "refilled": 9661,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.3 QUICK 1R": {
+   "2023": {
+    "net": -734,
+    "green": 6,
+    "red": 7,
+    "none": 19,
+    "refilled": 7182,
+    "days": 32
+   },
+   "2024": {
+    "net": -13837,
+    "green": 7,
+    "red": 14,
+    "none": 34,
+    "refilled": 23592,
+    "days": 55
+   },
+   "2025": {
+    "net": -5766,
+    "green": 10,
+    "red": 17,
+    "none": 27,
+    "refilled": 23274,
+    "days": 54
+   },
+   "2026": {
+    "net": 286,
+    "green": 7,
+    "red": 9,
+    "none": 22,
+    "refilled": 8695,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.3 QUICK 1R": {
+   "2023": {
+    "net": -6525,
+    "green": 4,
+    "red": 9,
+    "none": 19,
+    "refilled": 10322,
+    "days": 32
+   },
+   "2024": {
+    "net": -20764,
+    "green": 5,
+    "red": 16,
+    "none": 34,
+    "refilled": 27019,
+    "days": 55
+   },
+   "2025": {
+    "net": -16575,
+    "green": 7,
+    "red": 20,
+    "none": 27,
+    "refilled": 28693,
+    "days": 54
+   },
+   "2026": {
+    "net": -2740,
+    "green": 6,
+    "red": 9,
+    "none": 23,
+    "refilled": 9785,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.6 HOLD k3": {
+   "2023": {
+    "net": -3986,
+    "green": 3,
+    "red": 7,
+    "none": 22,
+    "refilled": 6484,
+    "days": 32
+   },
+   "2024": {
+    "net": -5943,
+    "green": 4,
+    "red": 8,
+    "none": 43,
+    "refilled": 13300,
+    "days": 55
+   },
+   "2025": {
+    "net": -4638,
+    "green": 5,
+    "red": 10,
+    "none": 39,
+    "refilled": 9419,
+    "days": 54
+   },
+   "2026": {
+    "net": 2245,
+    "green": 2,
+    "red": 6,
+    "none": 30,
+    "refilled": 2514,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.6 HOLD k3": {
+   "2023": {
+    "net": -595,
+    "green": 3,
+    "red": 7,
+    "none": 22,
+    "refilled": 6580,
+    "days": 32
+   },
+   "2024": {
+    "net": -169,
+    "green": 5,
+    "red": 7,
+    "none": 43,
+    "refilled": 10280,
+    "days": 55
+   },
+   "2025": {
+    "net": -3495,
+    "green": 5,
+    "red": 10,
+    "none": 39,
+    "refilled": 8253,
+    "days": 54
+   },
+   "2026": {
+    "net": 4181,
+    "green": 3,
+    "red": 5,
+    "none": 30,
+    "refilled": 2793,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.6 HOLD k6": {
+   "2023": {
+    "net": -8913,
+    "green": 2,
+    "red": 8,
+    "none": 22,
+    "refilled": 10851,
+    "days": 32
+   },
+   "2024": {
+    "net": 9802,
+    "green": 4,
+    "red": 8,
+    "none": 43,
+    "refilled": 19504,
+    "days": 55
+   },
+   "2025": {
+    "net": -8677,
+    "green": 5,
+    "red": 10,
+    "none": 39,
+    "refilled": 19022,
+    "days": 54
+   },
+   "2026": {
+    "net": -1920,
+    "green": 2,
+    "red": 6,
+    "none": 30,
+    "refilled": 11790,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.6 HOLD k6": {
+   "2023": {
+    "net": -2993,
+    "green": 3,
+    "red": 7,
+    "none": 22,
+    "refilled": 11694,
+    "days": 32
+   },
+   "2024": {
+    "net": 4288,
+    "green": 3,
+    "red": 9,
+    "none": 43,
+    "refilled": 22810,
+    "days": 55
+   },
+   "2025": {
+    "net": -12066,
+    "green": 4,
+    "red": 11,
+    "none": 39,
+    "refilled": 22260,
+    "days": 54
+   },
+   "2026": {
+    "net": -4869,
+    "green": 3,
+    "red": 4,
+    "none": 31,
+    "refilled": 9470,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -3243,
+    "green": 6,
+    "red": 4,
+    "none": 22,
+    "refilled": 5554,
+    "days": 32
+   },
+   "2024": {
+    "net": -3987,
+    "green": 7,
+    "red": 5,
+    "none": 43,
+    "refilled": 9825,
+    "days": 55
+   },
+   "2025": {
+    "net": 26,
+    "green": 10,
+    "red": 5,
+    "none": 39,
+    "refilled": 6423,
+    "days": 54
+   },
+   "2026": {
+    "net": 3796,
+    "green": 6,
+    "red": 2,
+    "none": 30,
+    "refilled": 585,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.6 QUICK 0.5R": {
+   "2023": {
+    "net": -4506,
+    "green": 5,
+    "red": 5,
+    "none": 22,
+    "refilled": 6533,
+    "days": 32
+   },
+   "2024": {
+    "net": -1059,
+    "green": 8,
+    "red": 4,
+    "none": 43,
+    "refilled": 5836,
+    "days": 55
+   },
+   "2025": {
+    "net": -1112,
+    "green": 9,
+    "red": 6,
+    "none": 39,
+    "refilled": 6378,
+    "days": 54
+   },
+   "2026": {
+    "net": 1398,
+    "green": 4,
+    "red": 4,
+    "none": 30,
+    "refilled": 1949,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide drive_puts0.6 QUICK 1R": {
+   "2023": {
+    "net": -609,
+    "green": 5,
+    "red": 5,
+    "none": 22,
+    "refilled": 5960,
+    "days": 32
+   },
+   "2024": {
+    "net": -4263,
+    "green": 5,
+    "red": 7,
+    "none": 43,
+    "refilled": 12565,
+    "days": 55
+   },
+   "2025": {
+    "net": 863,
+    "green": 7,
+    "red": 8,
+    "none": 39,
+    "refilled": 8925,
+    "days": 54
+   },
+   "2026": {
+    "net": 4324,
+    "green": 4,
+    "red": 4,
+    "none": 30,
+    "refilled": 717,
+    "days": 38
+   }
+  },
+  "NULL gold_free&or_wide drive_puts0.6 QUICK 1R": {
+   "2023": {
+    "net": -3684,
+    "green": 3,
+    "red": 7,
+    "none": 22,
+    "refilled": 7238,
+    "days": 32
+   },
+   "2024": {
+    "net": -6040,
+    "green": 5,
+    "red": 7,
+    "none": 43,
+    "refilled": 12369,
+    "days": 55
+   },
+   "2025": {
+    "net": -2069,
+    "green": 6,
+    "red": 9,
+    "none": 39,
+    "refilled": 10767,
+    "days": 54
+   },
+   "2026": {
+    "net": -2914,
+    "green": 2,
+    "red": 6,
+    "none": 30,
+    "refilled": 5854,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide plain_puts0 HOLD k3": {
+   "2023": {
+    "net": -5248,
+    "green": 12,
+    "red": 20,
+    "none": 0,
+    "refilled": 16036,
+    "days": 32
+   },
+   "2024": {
+    "net": -24752,
+    "green": 14,
+    "red": 38,
+    "none": 3,
+    "refilled": 61768,
+    "days": 55
+   },
+   "2025": {
+    "net": 1782,
+    "green": 17,
+    "red": 35,
+    "none": 2,
+    "refilled": 37772,
+    "days": 54
+   },
+   "2026": {
+    "net": -314,
+    "green": 12,
+    "red": 24,
+    "none": 2,
+    "refilled": 27099,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide plain_puts0 HOLD k6": {
+   "2023": {
+    "net": 2258,
+    "green": 13,
+    "red": 19,
+    "none": 0,
+    "refilled": 28353,
+    "days": 32
+   },
+   "2024": {
+    "net": -3678,
+    "green": 17,
+    "red": 35,
+    "none": 3,
+    "refilled": 83916,
+    "days": 55
+   },
+   "2025": {
+    "net": 25059,
+    "green": 21,
+    "red": 31,
+    "none": 2,
+    "refilled": 58820,
+    "days": 54
+   },
+   "2026": {
+    "net": -5047,
+    "green": 11,
+    "red": 25,
+    "none": 2,
+    "refilled": 54319,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide plain_puts0 QUICK 0.5R": {
+   "2023": {
+    "net": -3373,
+    "green": 20,
+    "red": 12,
+    "none": 0,
+    "refilled": 12447,
+    "days": 32
+   },
+   "2024": {
+    "net": -19961,
+    "green": 29,
+    "red": 23,
+    "none": 3,
+    "refilled": 44071,
+    "days": 55
+   },
+   "2025": {
+    "net": 228,
+    "green": 37,
+    "red": 15,
+    "none": 2,
+    "refilled": 21904,
+    "days": 54
+   },
+   "2026": {
+    "net": -7561,
+    "green": 21,
+    "red": 15,
+    "none": 2,
+    "refilled": 21382,
+    "days": 38
+   }
+  },
+  "gold_free&or_wide plain_puts0 QUICK 1R": {
+   "2023": {
+    "net": 2183,
+    "green": 17,
+    "red": 15,
+    "none": 0,
+    "refilled": 13829,
+    "days": 32
+   },
+   "2024": {
+    "net": -39531,
+    "green": 17,
+    "red": 35,
+    "none": 3,
+    "refilled": 62719,
+    "days": 55
+   },
+   "2025": {
+    "net": -7686,
+    "green": 23,
+    "red": 29,
+    "none": 2,
+    "refilled": 37587,
+    "days": 54
+   },
+   "2026": {
+    "net": -2786,
+    "green": 17,
+    "red": 19,
+    "none": 2,
+    "refilled": 24806,
+    "days": 38
+   }
+  }
+ },
+ "loyo_real": {
+  "2023": {
+   "pick": "gold_free&or_wide drive_puts0.3 HOLD k6",
+   "net": -10903,
+   "green": 3,
+   "red": 10,
+   "none": 19,
+   "refilled": 14244,
+   "days": 32
+  },
+  "2024": {
+   "pick": "gold_free&or_wide plain_puts0 HOLD k6",
+   "net": -3678,
+   "green": 17,
+   "red": 35,
+   "none": 3,
+   "refilled": 83916,
+   "days": 55
+  },
+  "2025": {
+   "pick": "gold_free&or_wide drive0.6 HOLD k6",
+   "net": -18551,
+   "green": 9,
+   "red": 23,
+   "none": 22,
+   "refilled": 45156,
+   "days": 54
+  },
+  "2026": {
+   "pick": "gold_free&or_wide plain_puts0 HOLD k6",
+   "net": -5047,
+   "green": 11,
+   "red": 25,
+   "none": 2,
+   "refilled": 54319,
+   "days": 38
+  },
+  "sum": {
+   "net": -38179,
+   "red": 93,
+   "green": 40
+  }
+ },
+ "loyo_null": {
+  "2023": {
+   "pick": "NULL gold_free&or_wide drive_puts0.3 HOLD k6",
+   "net": 7664,
+   "green": 6,
+   "red": 7,
+   "none": 19,
+   "refilled": 8771,
+   "days": 32
+  },
+  "2024": {
+   "pick": "NULL gold_free&or_wide drive_puts0.3 HOLD k6",
+   "net": -13582,
+   "green": 4,
+   "red": 17,
+   "none": 34,
+   "refilled": 40724,
+   "days": 55
+  },
+  "2025": {
+   "pick": "NULL gold_free&or_wide puts_break0 HOLD k6",
+   "net": -22451,
+   "green": 6,
+   "red": 20,
+   "none": 28,
+   "refilled": 41299,
+   "days": 54
+  },
+  "2026": {
+   "pick": "NULL gold_free&or_wide puts_break0 HOLD k6",
+   "net": 12077,
+   "green": 9,
+   "red": 12,
+   "none": 17,
+   "refilled": 24507,
+   "days": 38
+  },
+  "sum": {
+   "net": -16292,
+   "red": 56,
+   "green": 25
+  }
+ }
+}

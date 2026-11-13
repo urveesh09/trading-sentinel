@@ -46,3 +46,37 @@ Held out: v5 picked in 15 of 16 folds. Yesterday's volatility already carries th
 - Quick exits with a small cap lose because each round trip costs about ₹85–120 per lot against a coin-flip direction, and the cap removes the rare big days where all the profit is.
 - Day type (big or small) can be predicted; direction on Gold's empty days cannot, from price.
 - SN Gold v5 stays the best.
+
+## SN86–SN88: big-day prediction + the put edge + the opening drive, on Gold-free days (`sn86.py`, `results-sn86.json`)
+
+| Idea (gold-free, wide opening range) | Four years | By year | Note |
+|---|---:|---|---|
+| Plain puts at 09:45, HOLD 6-ATR trail | +18,592 | +2,258 / −3,678 / +25,059 / −5,047 | All 2025 |
+| Down opening drive (≥ 0.6 of the range) → puts, QUICK 1R | +315 | – | – |
+| Opening drive, either side | – | – | Loses |
+| Downside break only | – | – | Loses |
+
+- No variant is positive in every year.
+- **Held out:** −₹38,179, against random sides at −₹16,292.
+
+## SN89: the combination check
+
+SN Gold v5 plus the best empty-day sleeve from SN81–SN88. Every sleeve candidate loses held out (SN81–SN84 and SN86–SN88: −₹34k to −₹40k each), so any combination is worse than v5 alone on years it did not choose on. v5 alone stays the best.
+
+## SN90: what SN76–SN89 settle
+
+1. **Why Gold sits out (SN76):** on 609 of its 620 empty days N11 has no setup. Low-ADX days allow only trend-pullback puts; the empty days are slow up-grinds and narrow ranges.
+2. **Those days have no intraday edge we could find:**
+   - option buying at 1-minute (SN04–SN09) and 1-second resolution (SN78/SN79: worse than random on unseen Jul–Nov);
+   - option selling (SN77);
+   - the web's day-type rules (SN80–SN84: false on NIFTY);
+   - puts and opening drives on predicted big days (SN86–SN88).
+3. **Why quick exits with a small cap lose:** each round trip costs about ₹85–120 per lot, direction there is a coin flip, and the cap removes the rare big days that carry Gold's profit (SN45: the 10 best days hold ~77% of it).
+4. **What is true and useful:**
+   - a wide 09:15–09:45 range predicts a big day (34% vs 8%);
+   - Gold's profit lives on big-range and down days;
+   - yesterday's volatility already sizes Gold well (SN85).
+5. **Recommendation:**
+   - keep SN Gold v5 unchanged and stay flat on its empty days;
+   - judge it by its forward check;
+   - new empty-day work needs information price can't give (event calendar, global cues before the open), not more entry rules on the same data.
