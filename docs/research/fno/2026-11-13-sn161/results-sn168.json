@@ -1,0 +1,122 @@
+{
+ "events_dev": 17615,
+ "by_type_dev": {
+  "RB15": {
+   "events": 677,
+   "target_first": 0.3648,
+   "mean_net": -396.2
+  },
+  "VWAPX": {
+   "events": 1872,
+   "target_first": 0.3226,
+   "mean_net": -478.1
+  },
+  "IMP": {
+   "events": 7844,
+   "target_first": 0.3109,
+   "mean_net": -491.9
+  },
+  "EMAX": {
+   "events": 7222,
+   "target_first": 0.3073,
+   "mean_net": -492.0
+  }
+ },
+ "thetas": {
+  "0.4": {
+   "net": -247123,
+   "wage_share": 0.2768,
+   "trade_days": 396,
+   "red_days": 217,
+   "month_mean": -7723,
+   "by_year": {
+    "2024": -95111,
+    "2025": -93219,
+    "2026": -58793
+   },
+   "trades": 583,
+   "take_rate": 0.076
+  },
+  "0.45": {
+   "net": -141301,
+   "wage_share": 0.2222,
+   "trade_days": 296,
+   "red_days": 160,
+   "month_mean": -4416,
+   "by_year": {
+    "2024": -57318,
+    "2025": -58501,
+    "2026": -25482
+   },
+   "trades": 414,
+   "take_rate": 0.038
+  },
+  "0.5": {
+   "net": -78188,
+   "wage_share": 0.1267,
+   "trade_days": 171,
+   "red_days": 90,
+   "month_mean": -2443,
+   "by_year": {
+    "2024": -45336,
+    "2025": -32853,
+    "2026": 1
+   },
+   "trades": 221,
+   "take_rate": 0.016
+  },
+  "0.55": {
+   "net": -4326,
+   "wage_share": 0.0721,
+   "trade_days": 75,
+   "red_days": 36,
+   "month_mean": -135,
+   "by_year": {
+    "2024": -4314,
+    "2025": -4518,
+    "2026": 4506
+   },
+   "trades": 88,
+   "take_rate": 0.005
+  },
+  "0.6": {
+   "net": -1499,
+   "wage_share": 0.0195,
+   "trade_days": 20,
+   "red_days": 10,
+   "month_mean": -47,
+   "by_year": {
+    "2024": -1500,
+    "2025": 1,
+    "2026": 0
+   },
+   "trades": 21,
+   "take_rate": 0.001
+  }
+ },
+ "ungated": {
+  "net": -391482,
+  "wage_share": 0.3431,
+  "trade_days": 503,
+  "red_days": 267,
+  "month_mean": -12234,
+  "by_year": {
+   "2024": -125897,
+   "2025": -146308,
+   "2026": -119277
+  },
+  "trades": 828
+ },
+ "random_gate": {
+  "net_mean": -9030,
+  "net_p95": 20,
+  "wage_share_mean": 0.0098
+ },
+ "null_random_minutes": {
+  "net_mean": -10211,
+  "net_p95": 194,
+  "wage_share_mean": 0.0124
+ },
+ "chosen_theta": 0.6,
+ "dev_pass_ml_analog": false
+}
