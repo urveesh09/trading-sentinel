@@ -8151,3 +8151,23 @@ producer will no longer create them.
 - **Next downloads** (owner's login, skill only): `nifty-2022-q1-fno`, then `sensex-2024-jan-sep-fno`.
 - **Next build:** a SENSEX lab for one sealed test on SENSEX Oct 2024 – Apr 2026.
 - **Configuration / migration / runtime:** none. Production stays `826f0727`.
+
+## SN201–SN210 weekly option-selling research and the resume point (Nov 14, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-14-sn201`.
+  - Plan `00564b6b`; results `6847a924`, `7bdc7e73`, `4852fc05`, `8192ccf5`.
+  - Engine `wk.py` (one weekly short-premium position per expiry, held to settlement); `feat.py` (HAR, ML features).
+- **Result:** no weekly seller qualifies.
+  - Protected (winged) sellers: 0 of 78 positive.
+  - The unprotected seller WK-S made +₹3.14 lakh per lot in development (NIFTY 2022–26, every year positive), but lost on TEST (−₹23,348) and on both unseen exams:
+    - NIFTY Dec 2021 – Mar 2022: −₹56,743;
+    - SENSEX Oct 2024 – Apr 2026: −₹42,022.
+  - HAR, LightGBM and LSTM filters fail (AUC 0.49–0.56).
+  - Real quotes match the cost model.
+- **Data:**
+  - NIFTY Sep 2021 – Mar 2022 and SENSEX May 2024 – Apr 2026 were sealed read-only (lean mirrors: the index at every minute, options at 14:55–15:29) and are now seen.
+  - ICICI downloads Nov 14: `nifty-2022-q1-fno` done; `nifty-2021-q4-fno` options 410 of 957; the `sensex-2024-jan-sep-fno` probe failed.
+- **Resume point:**
+  - `docs/SN_STRATEGY_HISTORY.md` section 1 and its last section ("Open items, Nov 14, 2026, after SN210");
+  - `docs/SN_TESTING_PROCEDURE.md` section 12.
+- **Configuration / migration / runtime:** none. Production stays `826f0727`.

@@ -197,3 +197,29 @@ The tables show per year profit / refill, won / lost / no-trade days, worst day,
 | A data folder moved after the freeze | SN182 | Path-only fix, disclosed in the script and commit |
 | A fixed rupee target at many lots sits inside per-lot costs | SN165 | Fix lots (usually 1) when the goal is a fixed rupee amount |
 | A frozen source file did not hold what the study needed (aggregates, not day results) | SN183 | Check a source's shape before freezing a study on it |
+
+## 12. Additions for SN201–SN210 (Nov 14, 2026): the weekly book
+
+**New modules (folder `docs/research/fno/2026-11-14-sn201`):**
+
+| Module | What it gives |
+|---|---|
+| `wk.py` | The weekly-book engine. It reads only sealed copies (`read_source` handles the year datasets and the lean mirrors). Pieces: `dev_data()` / `exam_data()` (cached in `_local/wk-*.pkl`); `expiries()`; `split(weeks, "dev" / "test")`; `trade()` (ATM by put–call parity at 15:15, strikes as multiples of the straddle Q, wings clamped inward to priced strikes, settlement at the index's 15:00–15:29 average, stops at 15:15 marks, daily marks); `book()`, `stats()`, `loyo()`, `boot_p5()`; `NIFTY` / `SENSEX` markets (lot, step, NFO / BFO charges, the spread scale) |
+| `feat.py` | `Daily` (realised variance with the overnight gap, HAR with monthly walk-forward refits, rho); entry `features()` and the 20-session `sequence()` for the LSTM |
+
+**Data added (sealed by SN201; seen since SN209):**
+- **Lean mirrors:**
+  - `_local/mirror-nifty-exam.sqlite`: NIFTY index Sep 2021 – Mar 2022, options 14:55–15:29 of the expiries Dec 2 2021 – Mar 24 2022;
+  - `_local/mirror-sensex-exam.sqlite`: SENSEX index from May 17 2024, options 14:55–15:29 of the expiries Oct 4 2024 – Apr 30 2026.
+  - Hashes are in `results-sn201.json`.
+- **Real-quote archive:** the newest export is `…/fno-forward-panel-20261028/…/_local/exports/20261113T103001Z` (41 days, Sep 10 – Nov 12); point `qa.EXPORT` at it.
+
+**Pitfalls found (add to section 9):**
+
+| Pitfall | Where | Fix |
+|---|---|---|
+| The downloaded strikes reach only about ±1 straddle at the week's start, so wide condors cannot be priced. Skipping them biases toward calm weeks | SN203 | Clamp wings inward; only variants entered in ≥ 80% of their weeks are eligible |
+| Comparing the "F" (first session) entry tag with a number crashed the variant list | SN203 | Fixed before any number; disclosed |
+| An entry day without an index row crashed the features | SN206 | Return None; disclosed |
+| A strong, broad in-sample plateau (38 of 38 variants positive) still failed every unseen sample | SN204 → SN209 | A plateau is not proof for an open-risk seller: its shock weeks are rare, and the samples share regimes |
+| `logs/` is git-ignored | all | Crash logs stay local (`logs/*-v1-crash.log`); say so in the README |

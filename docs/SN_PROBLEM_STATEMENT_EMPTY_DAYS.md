@@ -212,3 +212,17 @@ Both need the owner's word.
 4. older NIFTY history (2020–2022) for more hot days.
 
 Until then the best empty-day action remains no trade. A daily income comes from paying out Gold's lumpy profit (SN177's salary account).
+
+## 11. Status after SN201–SN210 (Nov 14, 2026)
+
+- **New perspective tried:** hold an option *sale* for the whole weekly expiry, so costs are paid once a week. Calm days are when sellers get paid.
+- **Development (NIFTY 2022–26):**
+  - protected sellers lose (0 of 78);
+  - the unprotected seller earns in every year (+₹3.14 lakh per lot) and turns Gold's 55 green days into 380.
+- **Unseen data:** it lost on TEST and on both new exams (NIFTY Dec 2021 – Mar 2022, SENSEX Oct 2024 – Apr 2026): −₹1.22 lakh in 96 weeks. Shock weeks decide, and no forecast (HAR, LightGBM, LSTM) sees them coming.
+- **Still open:**
+  1. order flow from the tick recorder (from Nov 16);
+  2. full option chains far from the money (cheap far wings were not in the downloads);
+  3. event days as non-price information;
+  4. NIFTY 2020–2021 history (probe first).
+- Until then, no trade remains the best empty-day action. A daily income comes from Gold's profits (SN177).

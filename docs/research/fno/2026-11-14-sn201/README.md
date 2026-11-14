@@ -17,7 +17,7 @@
 - **Post-freeze fixes (two, both crashes before any number was printed):**
   - the variant list in SN203;
   - a missing index day in SN206.
-  - The first logs are kept in `logs/`.
+  - The first logs are kept locally in `logs/` (git-ignored).
 
 ## The idea (new in the SN series)
 
