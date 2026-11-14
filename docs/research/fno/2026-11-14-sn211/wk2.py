@@ -6,7 +6,8 @@ settlement), so a rule that never fires returns wk.trade's result. Smart rules (
   breach b  - the index beyond a short strike by b*Q;           loss L   - value <= -L x credit (every minute);
   profit p  - value >= p x credit;                               speed z  - |index move over 30 minutes| >= z*Q;
   protect b - at a breach by b*Q buy the wing 0.5*Q beyond that short strike instead of exiting (once per side);
-  calendar  - skip a week whose holding window holds a scheduled shock day.
+  calendar  - skip a week whose holding window holds a scheduled shock day;
+  gate c    - (settle base) at the 15:15 mark before expiry, close unless the index is >= c*Q inside both short strikes.
 A trigger at minute j executes at the first minute >= j + delay where every short leg printed within FRESH minutes;
 exits / hedges before 09:20 pay OPEN_PEN per leg-lot extra; a trigger late in the day executes next morning."""
 from __future__ import annotations
@@ -163,6 +164,11 @@ def simulate(mk, data, mins, e, days, base, rule=None, stress=wk.SCORE_STRESS, d
                     out["marks"][d] = v + adj
                     if st is not None and v <= -st * credit_rs:
                         return finish(v, d, j, "stop")
+                    if "gate" in rule and ex == "settle" and d == days[-1]:       # SN217: hold into expiry only when safe
+                        sg = wk.idx_px(data, d)
+                        if sg is not None and min(Kc - sg, sg - Kp) < rule["gate"] * Q:
+                            out["rule_fired"] = "gate"
+                            return finish(v, d, j, "gate")
                     if ex == "pre" and d == days[-1]:
                         return finish(v, d, j, "pre")
                 elif ex == "pre" and d == days[-1]:

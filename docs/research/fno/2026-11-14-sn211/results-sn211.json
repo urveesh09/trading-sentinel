@@ -1,0 +1,70 @@
+{
+ "mirror NIFTY": {
+  "rows": 768122,
+  "expiries": 17,
+  "sessions": 64,
+  "sha256": "9bd6ed0fcea92570a4b94e448370c44ab54fa151afc0cbec746d11f1af6133b6"
+ },
+ "mirror SENSEX": {
+  "rows": 4364607,
+  "expiries": 83,
+  "sessions": 307,
+  "sha256": "1e7e2af32f1dd49bca09ef0379a600a83179de3aee083d011149924ae2ada2b7"
+ },
+ "parity development": {
+  "settle": {
+   "trades_wk": 223,
+   "trades_wk2": 223,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "pre": {
+   "trades_wk": 223,
+   "trades_wk2": 223,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  }
+ },
+ "parity TEST": {
+  "settle": {
+   "trades_wk": 9,
+   "trades_wk2": 9,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "pre": {
+   "trades_wk": 9,
+   "trades_wk2": 9,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  }
+ },
+ "parity NIFTY": {
+  "settle": {
+   "trades_wk": 17,
+   "trades_wk2": 17,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "pre": {
+   "trades_wk": 17,
+   "trades_wk2": 17,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  }
+ },
+ "parity SENSEX": {
+  "settle": {
+   "trades_wk": 70,
+   "trades_wk2": 70,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "pre": {
+   "trades_wk": 70,
+   "trades_wk2": 70,
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  }
+ }
+}

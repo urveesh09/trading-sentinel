@@ -70,3 +70,17 @@
 2. SN213–SN218 are frozen after SN212 (it describes development only) and before any exit is scored.
 3. SN219 is frozen before it runs, once.
 4. Post-freeze fixes are disclosed, and the first log is kept (locally in `logs/`).
+
+## Amendment after SN212 (development description; written before any exit was scored)
+
+**What SN212 shows on development (WK-S settle):**
+- **Overnight gaps earn:** +₹1.62 lakh in all weeks, +₹29,709 even in the losing weeks.
+- **The losing weeks lose on expiry day (−₹4.17 lakh) and intraday (−₹2.99 lakh).**
+- **Expiry day is the biggest earner overall (+₹2.13 lakh) and the biggest tail.**
+- **Winners rarely go deep:** only 8 of 139 were ever down 1× the credit.
+- **Exiting at a strike touch looks costly:** after the index first touches a short strike (93% of weeks), holding ended better 60% of the time (+₹1,634 a week).
+
+**Added to SN217:** the **expiry-day gate**, settle base only.
+- At the 15:15 mark before expiry, hold into expiry only when the index is ≥ c·Q inside both short strikes; else close then.
+- c ∈ {−0.25, 0, 0.25, 0.5}, chosen by LOYO.
+- It is a candidate family for SN218 like the others.
