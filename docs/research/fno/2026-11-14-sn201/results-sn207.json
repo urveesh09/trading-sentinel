@@ -1,0 +1,77 @@
+{
+ "variant": "STRANGLE 0.5 k3 settle stop1",
+ "days": 897,
+ "Gold alone": {
+  "net": 642173,
+  "green_days": 55,
+  "red_days": 67,
+  "flat_days": 775,
+  "days_at_least_500": 53,
+  "worst_day": -21113,
+  "worst_week": -25188,
+  "worst_month": -38531,
+  "months_positive": "23 of 44",
+  "weeks_positive": "39 of 190",
+  "by_year": {
+   "2023": -12107,
+   "2024": 187476,
+   "2025": 292811,
+   "2026": 173992
+  }
+ },
+ "WK-S alone": {
+  "net": 233780,
+  "green_days": 363,
+  "red_days": 353,
+  "flat_days": 181,
+  "days_at_least_500": 334,
+  "worst_day": -32401,
+  "worst_week": -40460,
+  "worst_month": -50902,
+  "months_positive": "27 of 44",
+  "weeks_positive": "113 of 190",
+  "by_year": {
+   "2023": 43757,
+   "2024": 38494,
+   "2025": 74112,
+   "2026": 77417
+  }
+ },
+ "Gold + WK-S": {
+  "net": 875953,
+  "green_days": 380,
+  "red_days": 356,
+  "flat_days": 161,
+  "days_at_least_500": 350,
+  "worst_day": -33751,
+  "worst_week": -40460,
+  "worst_month": -56645,
+  "months_positive": "28 of 44",
+  "weeks_positive": "112 of 190",
+  "by_year": {
+   "2023": 31650,
+   "2024": 225970,
+   "2025": 366923,
+   "2026": 251409
+  }
+ },
+ "correlation_all_days": -0.085,
+ "correlation_gold_trade_days": -0.271,
+ "WK-S on Gold trade days": {
+  "days": 122,
+  "mean": 284,
+  "green_pct": 36.9
+ },
+ "WK-S on Gold's empty days": {
+  "days": 786,
+  "mean": 266,
+  "median": 0,
+  "green_pct": 40.7,
+  "sum": 209312
+ },
+ "wallets": {
+  "Gold": 30000,
+  "WK-S": 250000
+ },
+ "filters_passed": []
+}

@@ -58,7 +58,7 @@ class Daily:
         """Forecast holding sd / implied holding sd (Q / 0.8 S) for a trade dict; None without history or a fit."""
         t = self.prev(t_entry["entry"])
         b = self.beta_for(t_entry["entry"]) if beta is None else beta
-        if t is None or b is None:
+        if t is None or b is None or not t_entry.get("S0"):
             return None
         h = t_entry["k"]
         f = h * self.forecast(b, t)
@@ -72,8 +72,8 @@ FEATURES = ("qs", "rho", "lrd", "lrw", "lrm", "lrv_today", "r5", "r20", "otd", "
 def features(dl, t, beta=None):
     """Entry features for one trade dict (None when history is short)."""
     i = dl.prev(t["entry"])
-    if i is None or i < 21:
-        return None
+    if i is None or i < 21 or t.get("S0") is None or t["entry"] not in dl.data["idx"]:
+        return None                    # post-freeze fix (SN206 crashed before any number): no index that day
     a = dl.data["idx"][t["entry"]]
     upto = a[:wk.I_ENTRY + 1]
     v = upto[~np.isnan(upto)]
