@@ -224,8 +224,11 @@ def dist(mk, x):
 
 
 def legs_for(mk, K0, Q, struct):
-    if struct == "STRADDLE":                   # description only (SN202): no wings, unlimited risk
+    if struct == "STRADDLE":                   # SN202 description; SN204+ candidate: no wings, unlimited risk
         return [(K0, "CE", -1), (K0, "PE", -1)], None
+    if struct.startswith("STRANGLE"):          # "STRANGLE 0.5": short call / put at ATM -/+ 0.5 Q, no wings
+        d = dist(mk, float(struct.split()[1]) * Q)
+        return [(K0 + d, "CE", -1), (K0 - d, "PE", -1)], None
     m, q = STRUCTS[struct]
     up = K0 + (dist(mk, m * Q) if m > 0 else 0)
     dn = K0 - (dist(mk, m * Q) if m > 0 else 0)
@@ -345,10 +348,25 @@ def variants():
     for s in STRUCTS:                          # k = 1, 2, 3 sessions before expiry, or "F" = the week's first session
         for k in (1, 2, 3, "F"):
             out.append((s, k, "settle", None))
-            if k >= 2:
+            if k == "F" or k >= 2:     # post-freeze fix: "F" vs int comparison crashed before any number (disclosed)
                 out.append((s, k, "settle", 1.0))
                 out.append((s, k, "pre", None))
                 out.append((s, k, "pre", 1.0))
+    return out
+
+
+def naked_variants():
+    """SN204 (amendment): the unprotected seller. STRADDLE / STRANGLE 0.5 x k in {1, 2, 3, F} x exit {settle, pre}
+    x stop {none, 0.5, 1.0 x credit at a 15:15 mark} (pre and stops need k >= 2): 38 variants."""
+    out = []
+    for s in ("STRADDLE", "STRANGLE 0.5"):
+        for k in (1, 2, 3, "F"):
+            out.append((s, k, "settle", None))
+            if k == "F" or k >= 2:
+                for ex in ("settle", "pre"):
+                    for st in (None, 0.5, 1.0):
+                        if (ex, st) != ("settle", None):
+                            out.append((s, k, ex, st))
     return out
 
 

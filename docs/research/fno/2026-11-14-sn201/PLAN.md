@@ -97,3 +97,32 @@ A filter (SN204 / SN205) must also beat the unfiltered pick, and the 95th percen
 3. SN204 / SN205 / SN206 / SN207 scripts are frozen, then run.
 4. SN208 / SN209 scripts are frozen before they run, each once.
 5. Fixes after a freeze are disclosed in the script and the README, and the first log is kept.
+
+## Amendment after SN202–SN203 (Nov 14, written before any SN204–SN210 script)
+
+**What SN202–SN203 found:**
+- **SN202:** the weekly premium exists, but only **unprotected**.
+  - The short ATM straddle held to settlement earned +₹1.40–2.44 lakh per lot over 229 weeks (₹100 per leg-lot).
+  - Settlement payout ÷ Q: mean 0.90–0.96. Worst week −₹48,308.
+  - Every protected structure lost (−₹43k to −₹1.67 lakh). Most lose even before slippage: wings at ±0.5–1 straddle recover only part of their price.
+- **SN203:** **0 of 78** defined-risk variants are positive. WK-A (IC 1.0/1.0 k1 settle) made −₹75,662, LOYO −₹1.38 lakh. **The defined-risk weekly book fails.**
+- **Post-freeze fix (disclosed):** the variant list compared "F" with a number and crashed before printing anything (`logs/sn203-v1-crash.log`).
+
+**Consequence:**
+- SN204–SN210 study the **unprotected weekly seller (WK-S)**. Wings do not cap its risk; size, stops at the 15:15 marks, timing and the wallet do.
+- This direction was chosen on development and is disclosed as such. TEST and the two exams stay unseen and decide.
+
+**Revised studies (same rules as above unless stated):**
+
+| SN | Study |
+|---|---|
+| 204 | **WK-S grid:** {STRADDLE, STRANGLE 0.5 (short ATM ± 0.5 Q)} × k ∈ {1, 2, 3, F} × exit {settle, pre} × stop {none, 0.5, 1.0 × credit at a 15:15 mark}: 38 variants. Eligibility ≥ 80%; LOYO; WK-S = the best eligible total; the runner-up is kept. Pass checks 1–3; the 10 worst weeks; each year's worst month; drawdown. Tail scenarios: index moves of 3 / 5 / 8 / 13% at today's level. WK-S daily marks on Gold's empty days vs Gold days. Wallet ₹2.5 lakh per lot (a margin proxy the owner checks on Zerodha). |
+| 205 | **HAR timing on WK-S** (the SN204 rule above, applied to WK-S) |
+| 206 | **ML risk model on WK-S** (the SN205 rule above; label = WK-S loses) |
+| 207 | **Gold + WK-S in one account** (the SN206 rule above; WK-S wallet ₹2.5 lakh) |
+| 208 | **Robustness of WK-S** (the SN207 rule above) |
+| 209 | **TEST, real quotes and the two unseen exams** (the SN208 and SN209 rules above), each scored once: WK-S, its runner-up and the passing filters |
+| 210 | **Synthesis** |
+
+**One extra pass rule for an open-risk seller:**
+6. The worst development month is better than −₹50,000 per lot (20% of the ₹2.5 lakh wallet).

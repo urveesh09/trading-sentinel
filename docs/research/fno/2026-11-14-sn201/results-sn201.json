@@ -1,0 +1,79 @@
+{
+ "source": "~\\sentinel-operations\\breeze-history-20261029\\data\\breeze-history.sqlite",
+ "specs": {
+  "NIFTY": {
+   "index": [
+    "2021-09-01",
+    "2022-04-01"
+   ],
+   "expiry": [
+    "2021-12-02",
+    "2022-03-24"
+   ]
+  },
+  "SENSEX": {
+   "index": [
+    "2024-01-01",
+    "2026-05-01"
+   ],
+   "expiry": [
+    "2024-10-01",
+    "2026-04-30"
+   ]
+  }
+ },
+ "NIFTY": {
+  "rows_by_kind": {
+   "index": 53075,
+   "option": 72715
+  },
+  "index_sessions": 142,
+  "index_first": "2021-09-01",
+  "index_last": "2022-03-28",
+  "expiries": 17,
+  "first_expiry": "2021-12-02",
+  "last_expiry": "2022-03-24",
+  "expiries_with_settlement_day_index": 17,
+  "option_sessions_per_expiry": {
+   "1": 0,
+   "2": 0,
+   "3": 4,
+   "4": 13,
+   "5": 0,
+   "6": 0
+  },
+  "series_per_session": {
+   "min": 27,
+   "median": 33,
+   "max": 47
+  },
+  "sha256": "cbd227bf60bb3e238d23d0cc3d81120526baf8177b500b66aafb73926147e6b6"
+ },
+ "SENSEX": {
+  "rows_by_kind": {
+   "index": 156676,
+   "option": 406650
+  },
+  "index_sessions": 428,
+  "index_first": "2024-05-17",
+  "index_last": "2026-04-30",
+  "expiries": 83,
+  "first_expiry": "2024-10-04",
+  "last_expiry": "2026-04-30",
+  "expiries_with_settlement_day_index": 83,
+  "option_sessions_per_expiry": {
+   "1": 1,
+   "2": 2,
+   "3": 22,
+   "4": 55,
+   "5": 3,
+   "6": 0
+  },
+  "series_per_session": {
+   "min": 1,
+   "median": 37,
+   "max": 81
+  },
+  "sha256": "a272ad18a16bcbe2af103e08fc4ba2b6359392d518896d5e37f3cab5e6abc2ee"
+ }
+}

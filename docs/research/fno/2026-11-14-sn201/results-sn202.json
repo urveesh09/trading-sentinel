@@ -1,0 +1,799 @@
+{
+ "dev_weeks": 229,
+ "straddle": {
+  "k1": {
+   "2022": {
+    "weeks": 39,
+    "payout_over_Q_mean": 0.913,
+    "payout_over_Q_median": 0.801,
+    "gross_sum": 39247,
+    "net_sum": 26407,
+    "net_mean": 677,
+    "win_pct": 64.1,
+    "worst_week": -19132,
+    "long_straddle_net_sum": -52088
+   },
+   "2023": {
+    "weeks": 52,
+    "payout_over_Q_mean": 0.875,
+    "payout_over_Q_median": 0.711,
+    "gross_sum": 54371,
+    "net_sum": 37768,
+    "net_mean": 726,
+    "win_pct": 65.4,
+    "worst_week": -11585,
+    "long_straddle_net_sum": -70975
+   },
+   "2024": {
+    "weeks": 52,
+    "payout_over_Q_mean": 0.972,
+    "payout_over_Q_median": 0.864,
+    "gross_sum": 34947,
+    "net_sum": 17690,
+    "net_mean": 340,
+    "win_pct": 57.7,
+    "worst_week": -26327,
+    "long_straddle_net_sum": -52205
+   },
+   "2025": {
+    "weeks": 53,
+    "payout_over_Q_mean": 0.844,
+    "payout_over_Q_median": 0.651,
+    "gross_sum": 74241,
+    "net_sum": 56798,
+    "net_mean": 1072,
+    "win_pct": 67.9,
+    "worst_week": -18871,
+    "long_straddle_net_sum": -91683
+   },
+   "2026": {
+    "weeks": 33,
+    "payout_over_Q_mean": 0.919,
+    "payout_over_Q_median": 0.748,
+    "gross_sum": 46312,
+    "net_sum": 35020,
+    "net_mean": 1061,
+    "win_pct": 72.7,
+    "worst_week": -28989,
+    "long_straddle_net_sum": -57604
+   },
+   "all": {
+    "weeks": 229,
+    "payout_over_Q_mean": 0.903,
+    "payout_over_Q_median": 0.736,
+    "gross_sum": 249119,
+    "net_sum": 173682,
+    "net_mean": 758,
+    "win_pct": 65.1,
+    "worst_week": -28989,
+    "long_straddle_net_sum": -324555
+   }
+  },
+  "k2": {
+   "2022": {
+    "weeks": 39,
+    "payout_over_Q_mean": 0.999,
+    "payout_over_Q_median": 0.824,
+    "gross_sum": 3989,
+    "net_sum": -9275,
+    "net_mean": -238,
+    "win_pct": 51.3,
+    "worst_week": -16991,
+    "long_straddle_net_sum": -17254
+   },
+   "2023": {
+    "weeks": 52,
+    "payout_over_Q_mean": 0.967,
+    "payout_over_Q_median": 0.791,
+    "gross_sum": 16644,
+    "net_sum": -411,
+    "net_mean": -8,
+    "win_pct": 61.5,
+    "worst_week": -18094,
+    "long_straddle_net_sum": -33698
+   },
+   "2024": {
+    "weeks": 52,
+    "payout_over_Q_mean": 0.932,
+    "payout_over_Q_median": 0.783,
+    "gross_sum": 46857,
+    "net_sum": 28928,
+    "net_mean": 556,
+    "win_pct": 61.5,
+    "worst_week": -26890,
+    "long_straddle_net_sum": -64786
+   },
+   "2025": {
+    "weeks": 52,
+    "payout_over_Q_mean": 0.9,
+    "payout_over_Q_median": 0.655,
+    "gross_sum": 105852,
+    "net_sum": 88143,
+    "net_mean": 1695,
+    "win_pct": 65.4,
+    "worst_week": -23600,
+    "long_straddle_net_sum": -123561
+   },
+   "2026": {
+    "weeks": 33,
+    "payout_over_Q_mean": 0.959,
+    "payout_over_Q_median": 0.756,
+    "gross_sum": 44908,
+    "net_sum": 32965,
+    "net_mean": 999,
+    "win_pct": 66.7,
+    "worst_week": -42212,
+    "long_straddle_net_sum": -56851
+   },
+   "all": {
+    "weeks": 228,
+    "payout_over_Q_mean": 0.948,
+    "payout_over_Q_median": 0.756,
+    "gross_sum": 218250,
+    "net_sum": 140350,
+    "net_mean": 616,
+    "win_pct": 61.4,
+    "worst_week": -42212,
+    "long_straddle_net_sum": -296150
+   }
+  },
+  "k3": {
+   "2022": {
+    "weeks": 38,
+    "payout_over_Q_mean": 0.842,
+    "payout_over_Q_median": 0.863,
+    "gross_sum": 108487,
+    "net_sum": 95190,
+    "net_mean": 2505,
+    "win_pct": 60.5,
+    "worst_week": -13253,
+    "long_straddle_net_sum": -121785
+   },
+   "2023": {
+    "weeks": 52,
+    "payout_over_Q_mean": 0.993,
+    "payout_over_Q_median": 0.826,
+    "gross_sum": 4333,
+    "net_sum": -13080,
+    "net_mean": -252,
+    "win_pct": 53.8,
+    "worst_week": -32880,
+    "long_straddle_net_sum": -21747
+   },
+   "2024": {
+    "weeks": 51,
+    "payout_over_Q_mean": 1.011,
+    "payout_over_Q_median": 0.703,
+    "gross_sum": 32709,
+    "net_sum": 14435,
+    "net_mean": 283,
+    "win_pct": 60.8,
+    "worst_week": -48308,
+    "long_straddle_net_sum": -50982
+   },
+   "2025": {
+    "weeks": 51,
+    "payout_over_Q_mean": 0.922,
+    "payout_over_Q_median": 0.803,
+    "gross_sum": 82371,
+    "net_sum": 64339,
+    "net_mean": 1262,
+    "win_pct": 58.8,
+    "worst_week": -33216,
+    "long_straddle_net_sum": -100404
+   },
+   "2026": {
+    "weeks": 32,
+    "payout_over_Q_mean": 0.895,
+    "payout_over_Q_median": 0.771,
+    "gross_sum": 95176,
+    "net_sum": 83384,
+    "net_mean": 2606,
+    "win_pct": 68.8,
+    "worst_week": -41327,
+    "long_straddle_net_sum": -106968
+   },
+   "all": {
+    "weeks": 224,
+    "payout_over_Q_mean": 0.941,
+    "payout_over_Q_median": 0.792,
+    "gross_sum": 323076,
+    "net_sum": 244267,
+    "net_mean": 1090,
+    "win_pct": 59.8,
+    "worst_week": -48308,
+    "long_straddle_net_sum": -401886
+   }
+  },
+  "kF": {
+   "2022": {
+    "weeks": 39,
+    "payout_over_Q_mean": 0.892,
+    "payout_over_Q_median": 0.831,
+    "gross_sum": 74862,
+    "net_sum": 60850,
+    "net_mean": 1560,
+    "win_pct": 66.7,
+    "worst_week": -35138,
+    "long_straddle_net_sum": -88874
+   },
+   "2023": {
+    "weeks": 52,
+    "payout_over_Q_mean": 1.032,
+    "payout_over_Q_median": 0.873,
+    "gross_sum": -5445,
+    "net_sum": -23047,
+    "net_mean": -443,
+    "win_pct": 57.7,
+    "worst_week": -32880,
+    "long_straddle_net_sum": -12157
+   },
+   "2024": {
+    "weeks": 52,
+    "payout_over_Q_mean": 0.98,
+    "payout_over_Q_median": 0.709,
+    "gross_sum": 79129,
+    "net_sum": 60183,
+    "net_mean": 1157,
+    "win_pct": 61.5,
+    "worst_week": -48308,
+    "long_straddle_net_sum": -98075
+   },
+   "2025": {
+    "weeks": 53,
+    "payout_over_Q_mean": 0.903,
+    "payout_over_Q_median": 0.689,
+    "gross_sum": 113948,
+    "net_sum": 94812,
+    "net_mean": 1789,
+    "win_pct": 62.3,
+    "worst_week": -38312,
+    "long_straddle_net_sum": -133084
+   },
+   "2026": {
+    "weeks": 33,
+    "payout_over_Q_mean": 0.969,
+    "payout_over_Q_median": 0.744,
+    "gross_sum": 46407,
+    "net_sum": 33879,
+    "net_mean": 1027,
+    "win_pct": 66.7,
+    "worst_week": -41607,
+    "long_straddle_net_sum": -58935
+   },
+   "all": {
+    "weeks": 229,
+    "payout_over_Q_mean": 0.958,
+    "payout_over_Q_median": 0.801,
+    "gross_sum": 308901,
+    "net_sum": 226677,
+    "net_mean": 990,
+    "win_pct": 62.4,
+    "worst_week": -48308,
+    "long_straddle_net_sum": -391125
+   }
+  }
+ },
+ "structures": {
+  "IF 0.5 k1": {
+   "weeks": 229,
+   "net": -144918,
+   "mean": -633,
+   "win_pct": 21.0,
+   "worst": -3009,
+   "best": 6833,
+   "without_best_5": -169097,
+   "without_best_10": -186884,
+   "by_year": {
+    "2022": -21352,
+    "2023": -38015,
+    "2024": -14307,
+    "2025": -42510,
+    "2026": -28734
+   },
+   "years_positive": 0,
+   "max_loss_median": 637,
+   "max_loss_max": 2499,
+   "net_at_stress_0": -53318
+  },
+  "IF 0.5 k2": {
+   "weeks": 228,
+   "net": -167410,
+   "mean": -734,
+   "win_pct": 20.2,
+   "worst": -5048,
+   "best": 9494,
+   "without_best_5": -206945,
+   "without_best_10": -229803,
+   "by_year": {
+    "2022": -38238,
+    "2023": -29069,
+    "2024": -33254,
+    "2025": -46510,
+    "2026": -20339
+   },
+   "years_positive": 0,
+   "max_loss_median": 1131,
+   "max_loss_max": 4264,
+   "net_at_stress_0": -76210
+  },
+  "IF 0.5 k3": {
+   "weeks": 224,
+   "net": -154083,
+   "mean": -688,
+   "win_pct": 22.8,
+   "worst": -7430,
+   "best": 8890,
+   "without_best_5": -192604,
+   "without_best_10": -221992,
+   "by_year": {
+    "2022": -9271,
+    "2023": -46755,
+    "2024": -42387,
+    "2025": -39581,
+    "2026": -16090
+   },
+   "years_positive": 0,
+   "max_loss_median": 1262,
+   "max_loss_max": 6714,
+   "net_at_stress_0": -64483
+  },
+  "IF 0.5 kF": {
+   "weeks": 229,
+   "net": -162963,
+   "mean": -712,
+   "win_pct": 22.7,
+   "worst": -4551,
+   "best": 7804,
+   "without_best_5": -198964,
+   "without_best_10": -229639,
+   "by_year": {
+    "2022": -33073,
+    "2023": -34763,
+    "2024": -27124,
+    "2025": -23332,
+    "2026": -44671
+   },
+   "years_positive": 0,
+   "max_loss_median": 1592,
+   "max_loss_max": 8210,
+   "net_at_stress_0": -71363
+  },
+  "IF 1.0 k1": {
+   "weeks": 229,
+   "net": -124699,
+   "mean": -545,
+   "win_pct": 40.6,
+   "worst": -11562,
+   "best": 9980,
+   "without_best_5": -162637,
+   "without_best_10": -192539,
+   "by_year": {
+    "2022": -19876,
+    "2023": -20113,
+    "2024": -23674,
+    "2025": -36841,
+    "2026": -24196
+   },
+   "years_positive": 0,
+   "max_loss_median": 2967,
+   "max_loss_max": 11277,
+   "net_at_stress_0": -33099
+  },
+  "IF 1.0 k2": {
+   "weeks": 228,
+   "net": -149010,
+   "mean": -654,
+   "win_pct": 40.4,
+   "worst": -16076,
+   "best": 15021,
+   "without_best_5": -212841,
+   "without_best_10": -256626,
+   "by_year": {
+    "2022": -41855,
+    "2023": -30101,
+    "2024": -42241,
+    "2025": -16990,
+    "2026": -17823
+   },
+   "years_positive": 0,
+   "max_loss_median": 4150,
+   "max_loss_max": 17101,
+   "net_at_stress_0": -57810
+  },
+  "IF 1.0 k3": {
+   "weeks": 224,
+   "net": -148219,
+   "mean": -662,
+   "win_pct": 38.8,
+   "worst": -11872,
+   "best": 15321,
+   "without_best_5": -214982,
+   "without_best_10": -267156,
+   "by_year": {
+    "2022": -10868,
+    "2023": -45059,
+    "2024": -30951,
+    "2025": -39446,
+    "2026": -21895
+   },
+   "years_positive": 0,
+   "max_loss_median": 5054,
+   "max_loss_max": 15906,
+   "net_at_stress_0": -58619
+  },
+  "IF 1.0 kF": {
+   "weeks": 229,
+   "net": -143740,
+   "mean": -628,
+   "win_pct": 38.4,
+   "worst": -12774,
+   "best": 12590,
+   "without_best_5": -203457,
+   "without_best_10": -257608,
+   "by_year": {
+    "2022": -46684,
+    "2023": -36069,
+    "2024": -13900,
+    "2025": -1713,
+    "2026": -45373
+   },
+   "years_positive": 0,
+   "max_loss_median": 5655,
+   "max_loss_max": 17612,
+   "net_at_stress_0": -52140
+  },
+  "IC 0.5/0.5 k1": {
+   "weeks": 226,
+   "net": -108707,
+   "mean": -481,
+   "win_pct": 45.1,
+   "worst": -9250,
+   "best": 4800,
+   "without_best_5": -127164,
+   "without_best_10": -141566,
+   "by_year": {
+    "2022": -19203,
+    "2023": -21637,
+    "2024": -23536,
+    "2025": -26580,
+    "2026": -17752
+   },
+   "years_positive": 0,
+   "max_loss_median": 1632,
+   "max_loss_max": 8619,
+   "net_at_stress_0": -18307
+  },
+  "IC 0.5/0.5 k2": {
+   "weeks": 224,
+   "net": -126793,
+   "mean": -566,
+   "win_pct": 44.2,
+   "worst": -11839,
+   "best": 5606,
+   "without_best_5": -152485,
+   "without_best_10": -170716,
+   "by_year": {
+    "2022": -30686,
+    "2023": -22062,
+    "2024": -40196,
+    "2025": -13175,
+    "2026": -20674
+   },
+   "years_positive": 0,
+   "max_loss_median": 3140,
+   "max_loss_max": 14059,
+   "net_at_stress_0": -37193
+  },
+  "IC 0.5/0.5 k3": {
+   "weeks": 221,
+   "net": -142194,
+   "mean": -643,
+   "win_pct": 44.8,
+   "worst": -7217,
+   "best": 6413,
+   "without_best_5": -169935,
+   "without_best_10": -193700,
+   "by_year": {
+    "2022": -31509,
+    "2023": -47710,
+    "2024": -15818,
+    "2025": -27369,
+    "2026": -19789
+   },
+   "years_positive": 0,
+   "max_loss_median": 3348,
+   "max_loss_max": 10595,
+   "net_at_stress_0": -53794
+  },
+  "IC 0.5/0.5 kF": {
+   "weeks": 221,
+   "net": -120062,
+   "mean": -543,
+   "win_pct": 46.6,
+   "worst": -7318,
+   "best": 6413,
+   "without_best_5": -148261,
+   "without_best_10": -171933,
+   "by_year": {
+    "2022": -40316,
+    "2023": -40553,
+    "2024": -31560,
+    "2025": -1174,
+    "2026": -6460
+   },
+   "years_positive": 0,
+   "max_loss_median": 4371,
+   "max_loss_max": 9028,
+   "net_at_stress_0": -31662
+  },
+  "IC 0.5/1.0 k1": {
+   "weeks": 226,
+   "net": -76333,
+   "mean": -338,
+   "win_pct": 53.5,
+   "worst": -8902,
+   "best": 7512,
+   "without_best_5": -105858,
+   "without_best_10": -129249,
+   "by_year": {
+    "2022": -9323,
+    "2023": -3631,
+    "2024": -41013,
+    "2025": -13388,
+    "2026": -8979
+   },
+   "years_positive": 0,
+   "max_loss_median": 5332,
+   "max_loss_max": 16913,
+   "net_at_stress_0": 14067
+  },
+  "IC 0.5/1.0 k2": {
+   "weeks": 224,
+   "net": -134592,
+   "mean": -601,
+   "win_pct": 55.4,
+   "worst": -27338,
+   "best": 7662,
+   "without_best_5": -167887,
+   "without_best_10": -197046,
+   "by_year": {
+    "2022": -48504,
+    "2023": -28325,
+    "2024": -43816,
+    "2025": 3974,
+    "2026": -17921
+   },
+   "years_positive": 1,
+   "max_loss_median": 7514,
+   "max_loss_max": 26673,
+   "net_at_stress_0": -44992
+  },
+  "IC 0.5/1.0 k3": {
+   "weeks": 221,
+   "net": -117968,
+   "mean": -534,
+   "win_pct": 49.3,
+   "worst": -11456,
+   "best": 7984,
+   "without_best_5": -153844,
+   "without_best_10": -184000,
+   "by_year": {
+    "2022": -26810,
+    "2023": -39872,
+    "2024": -5607,
+    "2025": -29279,
+    "2026": -16399
+   },
+   "years_positive": 0,
+   "max_loss_median": 8066,
+   "max_loss_max": 19636,
+   "net_at_stress_0": -29568
+  },
+  "IC 0.5/1.0 kF": {
+   "weeks": 221,
+   "net": -77468,
+   "mean": -351,
+   "win_pct": 50.2,
+   "worst": -14623,
+   "best": 7984,
+   "without_best_5": -114206,
+   "without_best_10": -145529,
+   "by_year": {
+    "2022": -17091,
+    "2023": -38245,
+    "2024": -30739,
+    "2025": 21384,
+    "2026": -12778
+   },
+   "years_positive": 1,
+   "max_loss_median": 8473,
+   "max_loss_max": 19598,
+   "net_at_stress_0": 10932
+  },
+  "IC 1.0/0.5 k1": {
+   "weeks": 212,
+   "net": -90434,
+   "mean": -427,
+   "win_pct": 66.5,
+   "worst": -5299,
+   "best": 1798,
+   "without_best_5": -98940,
+   "without_best_10": -106660,
+   "by_year": {
+    "2022": -11025,
+    "2023": -21108,
+    "2024": -33003,
+    "2025": -20694,
+    "2026": -4604
+   },
+   "years_positive": 0,
+   "max_loss_median": 2408,
+   "max_loss_max": 7735,
+   "net_at_stress_0": -5634
+  },
+  "IC 1.0/0.5 k2": {
+   "weeks": 184,
+   "net": -116230,
+   "mean": -632,
+   "win_pct": 64.1,
+   "worst": -16211,
+   "best": 2064,
+   "without_best_5": -124937,
+   "without_best_10": -132612,
+   "by_year": {
+    "2022": -20096,
+    "2023": -27654,
+    "2024": -39263,
+    "2025": -17312,
+    "2026": -11904
+   },
+   "years_positive": 0,
+   "max_loss_median": 4573,
+   "max_loss_max": 15571,
+   "net_at_stress_0": -42630
+  },
+  "IC 1.0/0.5 k3": {
+   "weeks": 119,
+   "net": -106020,
+   "mean": -891,
+   "win_pct": 59.7,
+   "worst": -5720,
+   "best": 1911,
+   "without_best_5": -114522,
+   "without_best_10": -122371,
+   "by_year": {
+    "2022": -24017,
+    "2023": -42012,
+    "2024": -24605,
+    "2025": -18432,
+    "2026": 3046
+   },
+   "years_positive": 1,
+   "max_loss_median": 4677,
+   "max_loss_max": 7768,
+   "net_at_stress_0": -58420
+  },
+  "IC 1.0/0.5 kF": {
+   "weeks": 89,
+   "net": -53940,
+   "mean": -606,
+   "win_pct": 68.5,
+   "worst": -8186,
+   "best": 1911,
+   "without_best_5": -62414,
+   "without_best_10": -70201,
+   "by_year": {
+    "2022": 1226,
+    "2023": -37804,
+    "2024": -11946,
+    "2025": -1617,
+    "2026": -3799
+   },
+   "years_positive": 1,
+   "max_loss_median": 4810,
+   "max_loss_max": 7872,
+   "net_at_stress_0": -18340
+  },
+  "IC 1.0/1.0 k1": {
+   "weeks": 212,
+   "net": -75662,
+   "mean": -357,
+   "win_pct": 71.7,
+   "worst": -11192,
+   "best": 2494,
+   "without_best_5": -87468,
+   "without_best_10": -98056,
+   "by_year": {
+    "2022": -6552,
+    "2023": -9934,
+    "2024": -41232,
+    "2025": -12726,
+    "2026": -5217
+   },
+   "years_positive": 0,
+   "max_loss_median": 7178,
+   "max_loss_max": 16565,
+   "net_at_stress_0": 9138
+  },
+  "IC 1.0/1.0 k2": {
+   "weeks": 184,
+   "net": -123963,
+   "mean": -674,
+   "win_pct": 64.1,
+   "worst": -20667,
+   "best": 2341,
+   "without_best_5": -134898,
+   "without_best_10": -145019,
+   "by_year": {
+    "2022": -31122,
+    "2023": -25486,
+    "2024": -33061,
+    "2025": -13506,
+    "2026": -20788
+   },
+   "years_positive": 0,
+   "max_loss_median": 7632,
+   "max_loss_max": 33898,
+   "net_at_stress_0": -50363
+  },
+  "IC 1.0/1.0 k3": {
+   "weeks": 119,
+   "net": -102426,
+   "mean": -861,
+   "win_pct": 59.7,
+   "worst": -11037,
+   "best": 2231,
+   "without_best_5": -113154,
+   "without_best_10": -122669,
+   "by_year": {
+    "2022": -31104,
+    "2023": -33107,
+    "2024": -27074,
+    "2025": -15136,
+    "2026": 3995
+   },
+   "years_positive": 1,
+   "max_loss_median": 7563,
+   "max_loss_max": 13416,
+   "net_at_stress_0": -54826
+  },
+  "IC 1.0/1.0 kF": {
+   "weeks": 89,
+   "net": -43157,
+   "mean": -485,
+   "win_pct": 68.5,
+   "worst": -11095,
+   "best": 2407,
+   "without_best_5": -54083,
+   "without_best_10": -63445,
+   "by_year": {
+    "2022": 3873,
+    "2023": -30016,
+    "2024": -13867,
+    "2025": 292,
+    "2026": -3438
+   },
+   "years_positive": 2,
+   "max_loss_median": 7309,
+   "max_loss_max": 13416,
+   "net_at_stress_0": -7557
+  }
+ },
+ "IF 1.0 kF daily marks, 2023 - Aug 2026": {
+  "Gold days": {
+   "days": 110,
+   "mean": -28,
+   "median": -367,
+   "green_pct": 45.5,
+   "sum": -3116
+  },
+  "Gold's empty days": {
+   "days": 778,
+   "mean": -121,
+   "median": -664,
+   "green_pct": 38.6,
+   "sum": -93940
+  }
+ }
+}
