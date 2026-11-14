@@ -5454,3 +5454,18 @@ Before the next implementation: update the plan slice. With each commit: update 
   - `docs/SN_STRATEGY_HISTORY.md` section 1 and its last section ("Open items, Nov 14, 2026, after SN210");
   - `docs/SN_TESTING_PROCEDURE.md` section 12.
 - **Configuration / migration / runtime:** none. Production stays `826f0727`.
+
+## SN211–SN220 smart-exit research for the weekly seller (Nov 14, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-14-sn211`.
+  - Plan `2c2d1b66`; results `2693893f`, `f8a5b533`, `436295ca`.
+  - Engine `wk2.py`: a minute-level replay with exact parity to SN204's WK-S.
+- **Result:**
+  - The expiry-day gate keeps 97% of the development profit and cuts the worst month by 37%.
+  - No exit makes the weekly seller profitable on TEST, NIFTY Dec 2021 – Mar 2022 or SENSEX Oct 2024 – Apr 2026 (−₹71k to −₹1.57 lakh over 96 weeks).
+  - **No Gold v6;** Gold v5 is unchanged.
+- **Data:** full-minute read-only mirrors of the exam expiries (in `_local`, not committed).
+- **Resume point:**
+  - `docs/SN_STRATEGY_HISTORY.md` section 1 and "Open items, Nov 14, 2026, after SN220";
+  - `docs/SN_TESTING_PROCEDURE.md` section 13.
+- **Configuration / migration / runtime:** none. Production stays `826f0727`.

@@ -17,7 +17,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 
 ---
 
-## 1. Current state (updated Nov 14, 2026, after SN210) — read this first
+## 1. Current state (updated Nov 14, 2026, after SN220) — read this first
 
 **In Production (`826f0727`, PR #138, deployed Nov 13 evening, verified):**
 - **SN Gold v5 on PAPER** (`python-engine/sn_gold.py`, since Nov 13, release `82b08371`):
@@ -29,13 +29,14 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
   - limits: 600 MiB a day, 12 GiB in all, 35-day retention;
   - **first live session Mon Nov 16**: check `events.jsonl`, the chunks and the owner line "📼 Tick recorder …" after 15:41.
 
-**What the research says (SN01–SN210, all in this file):**
+**What the research says (SN01–SN220, all in this file):**
 - **Gold v5 is the edge.** It earns in lumps: about 1 trade every 5–6 sessions, about half the months positive, +₹6.4 lakh from ₹30k growing over Jan 2023 – Aug 2026 (development), +₹2.09 lakh on the latest-5% TEST.
 - **Gold's empty days (~84% of sessions)** are weak-trend, calm, flat-closing days (SN186).
 - **Nothing tried makes money on them reliably:**
   - one-day and one-night ideas: rules, cheaper contracts, fixed ₹1,000 / ₹1,500 targets, sellers, LightGBM, LSTM, a bandit, 1-second scalping;
   - the volatility-persistence watches (SN95-L, SN171): earned a little in 2023–26 but **failed the unseen NIFTY 2022 exam (SN196)**;
   - **weekly option selling (SN201–SN210):** the unprotected weekly seller WK-S earned in every development year (+₹3.14 lakh per lot, NIFTY 2022–26). It **lost on all three unseen samples** (TEST −₹23k; NIFTY Dec 2021 – Mar 2022 −₹57k; SENSEX Oct 2024 – Apr 2026 −₹42k). Protected (winged) sellers lose everywhere.
+  - **smart fail-safe exits for the weekly seller (SN211–SN220):** the best exit (the expiry-day gate) kept 97% of the development profit and cut the worst month by 37%, but no exit made the seller profitable on the three samples where it lost (−₹71k to −₹1.57 lakh over 96 weeks). **No Gold v6;** Gold v5 stays as it is.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -52,16 +53,18 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - SN Gold v5 `FORWARD_V5.md`.
 
 **Waiting on the owner:**
-- whether WK-S should run as a paper-only forward watch (not recommended for money);
+- nothing on the weekly seller: no Gold v6, no paper watch recommended;
+- whether to add a NIFTY 2020 / Jan–Sep 2021 Breeze target (probe first), the only true crash test left for any seller;
 - the rest of `nifty-2021-q4-fno` (options) after a login.
 
 **How to resume:**
-- Read this section and the last sections of this file: SN161–SN185, SN186–SN200 and SN201–SN210 (with "Open items, Nov 14, 2026, after SN210").
-- Then read `docs/SN_TESTING_PROCEDURE.md`, sections 1–12 (tools, venvs, pitfalls).
+- Read this section and the last sections of this file: SN161–SN185, SN186–SN200, SN201–SN210 and SN211–SN220 (with "Open items, Nov 14, 2026, after SN220").
+- Then read `docs/SN_TESTING_PROCEDURE.md`, sections 1–13 (tools, venvs, pitfalls).
 - Then read the folder READMEs:
   - `docs/research/fno/2026-11-13-sn161/README.md`
   - `docs/research/fno/2026-11-13-sn186/README.md`
   - `docs/research/fno/2026-11-14-sn201/README.md`
+  - `docs/research/fno/2026-11-14-sn211/README.md`
 - Research Python: `C:\Users\Urveesh\sentinel-ml-venv` (LightGBM, PyTorch CPU); the engine uses `python-engine\winvenv`.
 
 ---
@@ -612,31 +615,62 @@ See "Open items, Nov 14, 2026, after SN210" at the end of this file.
   - about 9 in 10 individual F&O traders lose (SEBI studies, FY22–FY25);
   - the steady earners are firms that make markets (spread, speed, scale) or sell options with large capital and accept heavy weeks.
 
-### Open items, Nov 14, 2026, after SN210 (the current list)
+### Open items, Nov 14, 2026, after SN210 (superseded)
 
-1. **Mon Nov 16 checks:**
-   - the tick recorder's first live day (`events.jsonl`, chunks, the owner line);
-   - SN Gold v5 paper progress;
-   - the partner give-back stop (only when a good day gives back).
-2. **ICICI downloads** (the owner logs in; skill only):
-   - Done Nov 14:
-     - `nifty-2022-q1-fno` (58 sessions);
-     - 60 more NIFTY 1-second sessions (Jan 16 – Apr 2, 2026);
-     - `nifty-2021-q4-fno` index and futures.
-   - **Left:** `nifty-2021-q4-fno` options (410 of 957 done).
-   - **Not possible:** `sensex-2024-jan-sep-fno` (its probe failed; do not retry).
-   - **Later, on the owner's word:** NIFTY Jan–Sep 2021 and 2020 (probe first).
-3. **Owner's call:** WK-S as a paper-only forward watch. It needs a small Dev module and a deploy. Expect about zero, with occasional large losses. Not for money.
-4. **Forward watches:** SN95-L, SN126-L and SN171 stay paper-only.
-5. **Do not repeat on NIFTY 2021–2026 or SENSEX 2024–2026:**
-   - wage-lock searches, cheap contracts, fixed small targets;
-   - iron flies and condors (one day, one night or a week);
-   - weekly unprotected sellers with HAR, LightGBM or LSTM filters;
-   - LightGBM / LSTM entry or direction models, and bandits.
-6. **SENSEX is no longer fully unseen.** SN209 read the SENSEX index minutes, so a SENSEX hot-day test (SN95-L / SN171) would only be partly blind.
+See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 
 ### Commit index, SN201–SN210
 
 - `00564b6b` (plan and engine, before any score), `6847a924` (SN201–SN203 + amendment, SN204 frozen), `7bdc7e73` (SN204, SN205–SN208 frozen), `4852fc05` (SN205–SN208, SN209 frozen), `8192ccf5` (SN209–SN210 and the README).
 - The docs commit adds this section.
 - **Production:** unchanged at `826f0727`.
+
+## SN211–SN220 (Nov 14, 2026): a smart fail-safe exit for the weekly seller (folder `docs/research/fno/2026-11-14-sn211`)
+
+**Owner:** "certain days wiped it all off … a smart fail safe mechanism … master the exit … slice down the losses … while ensuring that the profit is maintained … a gold V6 which includes gold V5 and the gap covering strategy."
+
+**Correction given to the owner:** WK-S is not a better entry. It sells options and is paid on quiet days. On unseen data it lost beyond its single worst week, so the test was whether an exit can cut the big losses and still leave a profit.
+
+**Method:**
+- **Plan:** frozen `2c2d1b66`, with an amendment after SN212 (development only).
+- **Engine:** `wk2.py` replays each week minute by minute (reaction delay, fresh prices only, opening penalty). With no rule it matches WK-S exactly on all four samples.
+- **Development:** NIFTY 2022–26, held out by year.
+- **Second look:** the three samples where WK-S lost. Their paths had never been studied; every exit was frozen first, then each sample was run once.
+
+| SN | Result |
+|---|---|
+| 211 | Full-minute exam mirrors; exact parity |
+| 212 | Overnight gaps earn (+₹1.62 lakh). Losing weeks lose on expiry day (−₹4.17 lakh) and intraday (−₹2.99 lakh). After a strike touch, holding was better 60% of the time |
+| 213 | Exit on a strike break: near the strike destroys the profit; far past it (0.5 straddle) is harmless (+₹2.94 lakh) |
+| 214 | Minute loss stops and profit takes: no tail cut |
+| 215 | Crash-speed exit: FAIL |
+| 216 | Buy protection when threatened: FAIL |
+| 217 | **Expiry-day gate** (hold into expiry only while the index is inside the strikes): +₹3.05 lakh (97%), worst month −₹32,138 (−37%), worst week −18%, every year positive. Calendar skip: −33% profit |
+| 218 | Combined exit (30 candidates): the strict screen fails; the April 2025 weekend gap cannot be exited |
+| **219** | **Second look (96 weeks):** WK-S −₹1,22,113; gate −₹1,56,870; breach + gate −₹1,14,945; never through expiry day −₹71,141. Development, Gold + gate: +₹8.65 lakh with a −₹31,981 worst month. **FAIL** |
+| 220 | **No Gold v6.** An exit can cut the tail once an edge exists; it cannot create one |
+
+### Open items, Nov 14, 2026, after SN220 (the current list)
+
+1. **Mon Nov 16 checks:**
+   - the tick recorder's first live day (`events.jsonl`, chunks, the owner line);
+   - SN Gold v5 paper progress;
+   - the partner give-back stop.
+2. **ICICI:**
+   - `nifty-2021-q4-fno` options are left (410 of 957);
+   - `sensex-2024-jan-sep-fno` is not served (do not retry);
+   - a NIFTY 2020 / Jan–Sep 2021 target is the only true crash test left for any seller: the owner's word and a probe first.
+3. **Weekly seller:** closed. No Gold v6 and no paper watch recommended.
+4. **Forward watches:** SN95-L, SN126-L and SN171 stay paper-only.
+5. **Do not repeat on NIFTY 2021–2026 or SENSEX 2024–2026:**
+   - everything in the SN210 list;
+   - weekly-seller exits: strike breach, minute loss stop, profit take, crash speed, protect-on-breach, the event calendar, the expiry-day gate.
+6. **The next real lever is new information:** order flow from the tick recorder.
+
+### Commit index, SN211–SN220
+
+- `2c2d1b66` (plan, engine, SN211–SN212 before any score)
+- `2693893f` (SN211–SN212 and the amendment; SN213–SN218 frozen)
+- `f8a5b533` (SN213–SN218; SN219 frozen)
+- `436295ca` (SN219–SN220 and the README)
+- The docs commit adds this section. **Production:** unchanged at `826f0727`.

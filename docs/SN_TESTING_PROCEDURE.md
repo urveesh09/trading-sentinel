@@ -223,3 +223,23 @@ The tables show per year profit / refill, won / lost / no-trade days, worst day,
 | An entry day without an index row crashed the features | SN206 | Return None; disclosed |
 | A strong, broad in-sample plateau (38 of 38 variants positive) still failed every unseen sample | SN204 → SN209 | A plateau is not proof for an open-risk seller: its shock weeks are rare, and the samples share regimes |
 | `logs/` is git-ignored | all | Crash logs stay local (`logs/*-v1-crash.log`); say so in the README |
+
+## 13. Additions for SN211–SN220 (Nov 14, 2026): minute-level exits
+
+**New modules (folder `docs/research/fno/2026-11-14-sn211`):**
+
+| Module | What it gives |
+|---|---|
+| `wk2.py` | `Minutes` (option minute closes on demand from the year datasets or the full exam mirrors) and `simulate()`, a minute-by-minute replay of one weekly position. It keeps wk.trade's base rules exactly (proven: 0.0 rupee difference on all samples). Rules: `breach`, `loss`, `profit`, `speed`, `protect`, `calendar`, `gate`. Execution needs fresh prints (within 3 minutes), one minute of reaction delay and an opening penalty before 09:20 |
+| `fam.py` | Runs a rule family on both bases and scores it (net, per year, worst week, worst month, CVaR 5%, how often it fired) with LOYO |
+
+**Data:** `_local/mirror-nifty-exam-full.sqlite` (768,122 rows) and `_local/mirror-sensex-exam-full.sqlite` (4,364,607 rows). These are option rows of the sessions before expiry for the exam expiries; the hashes are in `results-sn211.json`.
+
+**Pitfalls and lessons:**
+
+| Lesson | Where |
+|---|---|
+| The NIFTY datasets hold no option prices on expiry day, so no exit can act during it; compare a "pre" base (close the evening before) | SN211–SN219 |
+| A rule that cannot fire must reproduce the old engine exactly before any exit is scored | SN211 |
+| Exits redistribute losses; they cannot create an edge. Check the second-look samples before believing a tail cut | SN219 |
+| A gap at the open cannot be exited; a worst-week target below the largest gap is unreachable | SN218 |

@@ -226,3 +226,11 @@ Until then the best empty-day action remains no trade. A daily income comes from
   3. event days as non-price information;
   4. NIFTY 2020–2021 history (probe first).
 - Until then, no trade remains the best empty-day action. A daily income comes from Gold's profits (SN177).
+
+## 12. Status after SN211–SN220 (Nov 14, 2026)
+
+- **Smart fail-safe exits for the weekly seller,** each checked minute by minute: strike-break, loss stop, profit take, crash speed, buying protection, the event calendar, and an expiry-day gate.
+- **Development:** the gate keeps 97% of the profit and cuts the worst month by 37%.
+- **The three samples where the seller lost:** no exit makes it profitable (−₹71k to −₹1.57 lakh over 96 weeks). Gaps at the open cannot be exited, and exits cannot create an edge.
+- **No Gold v6.** Empty days stay flat; a daily income comes from Gold's profits (SN177).
+- **What is left:** new information (order flow from the tick recorder) and a true crash test (NIFTY 2020) for any future seller.
