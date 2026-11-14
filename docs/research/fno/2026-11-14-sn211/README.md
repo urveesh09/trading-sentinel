@@ -1,5 +1,7 @@
 # SN211–SN220: a smart fail-safe exit for the weekly seller, and the Gold v6 question (Nov 14, 2026)
 
+**Full record for Gold v6 work:** `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` (every recipe, number, data path and rerun command).
+
 **Owner:** "certain days wiped it all off … a smart fail safe mechanism … master the exit … slice down the losses as much as possible while ensuring that the profit is maintained … a gold V6 which includes gold V5 and the gap covering strategy … till SN 220."
 
 **How it was tested**

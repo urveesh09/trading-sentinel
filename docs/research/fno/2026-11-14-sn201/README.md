@@ -1,5 +1,7 @@
 # SN201–SN210: earning on Gold's quiet days by selling weekly options (Nov 14, 2026)
 
+**Full record for Gold v6 work:** `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` (every recipe, number, data path and rerun command).
+
 **Owner:** "instead of staying flat, why not the system do something where it can earn little money … how do the real traders earn that money on every day? … different perspective, different instruments, different systems … the system should become smarter and smarter … make little profit money first." Also: use the new data, and try ML / LSTM.
 
 **How it was tested**

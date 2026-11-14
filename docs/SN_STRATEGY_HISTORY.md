@@ -12,6 +12,7 @@ This is the one document to read to continue the SN work after a context reset. 
 Companion documents:
 - `docs/SN_TESTING_PROCEDURE.md`: exactly how every SN test was built, run and judged;
 - `docs/SN_PROBLEM_STATEMENT_EMPTY_DAYS.md`: the open problem (Gold's ~84% no-trade days) for a research agent.
+- `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md`: the weekly option seller (SN201–SN220), every recipe and number, and the road to Gold v6.
 
 Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-sentinel`), branch `codex/production-correction-hedge-p0`, except the one Production deployment in section 7.
 
@@ -58,6 +59,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - the rest of `nifty-2021-q4-fno` (options) after a login.
 
 **How to resume:**
+- **For Gold v6 or the weekly seller, read `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` first** (every recipe, number, data path and rerun command for SN201–SN220; the untested ideas for the next attempt).
 - Read this section and the last sections of this file: SN161–SN185, SN186–SN200, SN201–SN210 and SN211–SN220 (with "Open items, Nov 14, 2026, after SN220").
 - Then read `docs/SN_TESTING_PROCEDURE.md`, sections 1–13 (tools, venvs, pitfalls).
 - Then read the folder READMEs:

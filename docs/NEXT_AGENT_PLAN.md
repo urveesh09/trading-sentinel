@@ -8186,3 +8186,11 @@ producer will no longer create them.
   - `docs/SN_STRATEGY_HISTORY.md` section 1 and "Open items, Nov 14, 2026, after SN220";
   - `docs/SN_TESTING_PROCEDURE.md` section 13.
 - **Configuration / migration / runtime:** none. Production stays `826f0727`.
+
+## Gold v6 starting point: the weekly-seller dossier (Nov 14, 2026; docs only)
+
+- `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` records SN201–SN220 in full:
+  - every recipe, development and unseen-sample number, data path and rerun command;
+  - the untested ideas for the next Gold v6 attempt.
+- Its pointer is in `docs/SN_STRATEGY_HISTORY.md` section 1.
+- No runtime change; Production stays `826f0727`.
