@@ -1,0 +1,63 @@
+{
+ "source": "~\\sentinel-operations\\breeze-history-20261029\\data\\breeze-history.sqlite",
+ "exam_expiry_range": [
+  "2020-10-01",
+  "2021-11-25"
+ ],
+ "exam_index_range": [
+  "2020-06-01",
+  "2021-12-01"
+ ],
+ "EXAM": {
+  "lean_rows_by_kind": {
+   "index": 140387,
+   "option": 219327
+  },
+  "index_sessions": 375,
+  "index_first": "2020-06-01",
+  "index_last": "2021-11-30",
+  "expiries": 60,
+  "first_expiry": "2020-10-01",
+  "last_expiry": "2021-11-25",
+  "expiries_with_expiry_day_index": 60,
+  "sessions_per_expiry_at_1515": {
+   "1": 0,
+   "2": 0,
+   "3": 19,
+   "4": 40,
+   "5": 0,
+   "6": 0,
+   "7": 0,
+   "8": 1
+  },
+  "series_at_1515": {
+   "min": 19,
+   "median": 27,
+   "max": 45
+  },
+  "full_rows": 2297724,
+  "full_expiries": 60,
+  "sha256": {
+   "lean": "7ec3e4835a07499a0ebeadbf700cb5c4979347554008b42cbb93d522c1102eaf",
+   "full": "10d9d542e56aa736f64b7c2f5c1feadf5a7a8717091b7b6d21cadf5bc166e78d"
+  }
+ },
+ "futures EXAM": {
+  "rows": 241604,
+  "sessions": 375,
+  "contracts": 19,
+  "sha256": "d623beb9d3eb0f9201c6d3a9ae7b5c6db6a328c1f87cdf9e905d712f1f637e34"
+ },
+ "futures N2122": {
+  "rows": 59193,
+  "sessions": 100,
+  "contracts": 5,
+  "sha256": "8e5df633c3d1f0a8bb1de0107b7d0e4073374ffa3e0b09b0086a47caabe4ed6b"
+ },
+ "futures SENSEX": {
+  "rows": 226094,
+  "sessions": 410,
+  "contracts": 21,
+  "sha256": "64f8a451509f660d57a1857d9988efafc48549272525db8be9653e24e4dbe57a"
+ }
+}
