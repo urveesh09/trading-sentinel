@@ -110,3 +110,60 @@ All tables are in the engine database:
 - **Its weak spot:** in fast markets it earns less than band 0.6.
 - **Back to Gold v6:** `SN_WKH_BAND=0.6` and `SN_WKH_LABEL="Gold v6"`.
 - **Still to come:** the NIFTY 2020 crash test, once that download is complete.
+
+## Gold v7: the complete rule card, expectations and the road to real money (Nov 15, 2026; on paper in Production `052a6d6e`)
+
+**Leg 1, SN Gold v5 (unchanged; option buying, N11's entries):**
+- **Wallet:** ₹30,000. Profits are banked; a losing day is refilled.
+- **Growth:** +50% after net profit equal to the wallet, at most 3 times: ₹30k → ₹45k → ₹67.5k → ₹1,01,250.
+- **Lots:** floor(wallet ÷ ₹15,000), halved on low-volatility days. The deepest in-the-money strike the wallet affords.
+- **Day loss limit:** 20% of the wallet (₹6,000 at ₹30k). A scale-in once at a 1-ATR move.
+- **Exits:** with N11; winners up 25% are kept on a 3-ATR trail to 15:10; everything is out by 15:15.
+
+**Leg 2, WK-H (option selling, hedged), the Gold v7 setting:**
+- **Unit:** ₹5,00,000 = 2 NIFTY option lots (fixed; no growth step in the runtime).
+- **Entry:** 15:15 on the first session after the last weekend or holiday before the weekly expiry (with Tuesday expiries, the Monday). Sell the ATM call and put.
+- **Hedge:**
+  - NIFTY futures, checked every 15 minutes from the next 09:15;
+  - re-hedged when the lean exceeds **0.8 lot**;
+  - no new orders from 14:30 on expiry day; the futures close at their 15:00–15:25 mean.
+- **Settlement:** the options settle at the official close; the week is booked at the next open and banked or refilled.
+- **No stop** (the research's 1× credit stop never fired).
+
+**What the research expects** (Jan 2023 – Oct 2026, both legs; expectations, not promises):
+
+| | Gold v7 |
+|---|---:|
+| Net, 46 months | +₹13,70,643 (≈ ₹29.8k a month on average) |
+| Months positive | 33 of 46 (72%) |
+| Sessions green / red (refilled) / flat | 291 / 361 / 292 of 944 |
+| Sessions earning ≥ ₹750 / ≥ ₹1,500 | 270 / 244 |
+| Average per session | ₹1,452 |
+| Banked on green days / refilled on red days | ₹27.1 lakh / ₹13.4 lakh |
+| Worst day / week / month | −₹48,695 / −₹50,234 / −₹28,981 |
+| By year 2023 / 2024 / 2025 / 2026 (to Oct) | −₹26,648 / +₹3,43,667 / +₹5,68,064 / +₹4,85,561 |
+
+**Refills from the pocket or from profit:**
+- Paying every refill from accumulated profit, the account starting Jan 2023 went at most **₹30,699 below zero** (Jul 24 2023), and was above zero for good from Nov 9 2023.
+- The worst start month (May 2024) went ₹78,681 below zero (Jun 4 2024, election day) and recovered by Jul 23 2024.
+- So the owner should keep **about ₹80,000 ready** for the first weeks. After that, past profit has always covered the refills in the research.
+- **A fixed daily wage from a buffer:** ₹750 every session needed a ₹2.39 lakh buffer from Jan 2023; ₹1,000 needed ₹3.26 lakh.
+
+**Real money: the gates (all must hold; then the owner's word):**
+1. **Paper record:** at least **8 settled WK-H weeks** on Production paper (about 2 months). In it:
+   - no `UNRESOLVED` week;
+   - hedge checks executed in ≥ 95% of the 15-minute slots;
+   - fills no worse than the research costs (the entry credit at least the model bid; futures fills within 1.5 points of the quote mid).
+2. **The pre-registered NIFTY 2020 crash test** run once and passed (C1 net > 0, C2 worst month ≥ −₹34,163 per lot). If it fails, WK-H stays on paper.
+3. **Margin:** Zerodha basket margin for 2 short ATM lots + 2 futures lots confirmed below the ₹5 lakh unit, with headroom for expiry-day margin increases.
+4. **A real-money WK-H module (not built yet).** It must:
+   - place and confirm the straddle and every hedge order;
+   - reconcile positions with Zerodha after each step;
+   - **close everything if the engine misses two hedge slots or the week's loss passes −₹50,000**;
+   - send an owner alarm on any rejected order.
+   - It is tested on paper first, as every live path was.
+5. **Gold v5's own forward check** (`docs/research/fno/sn-gold/FORWARD_V5.md`) consistent with its research.
+
+**Recommended first real step:**
+- **1 unit only** (₹5 lakh margin + ₹30k Gold wallet), with the week stop above.
+- No unit growth for at least 6 months; adding units raised the worst month in proportion (SN240).
