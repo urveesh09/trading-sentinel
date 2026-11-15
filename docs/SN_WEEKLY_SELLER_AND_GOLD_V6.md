@@ -1,6 +1,6 @@
-# The weekly option seller (SN201–SN220) and the road to Gold v6 — the complete record (Nov 14, 2026)
+# The weekly option seller (SN201–SN230) and the road to Gold v6 — the complete record (Nov 14–15, 2026)
 
-**Read this first for any Gold v6 work.** It records everything done on Nov 14, 2026:
+**Read this first for any Gold v6 work.** Section 0 is the latest state (SN221–SN230, Nov 15). Sections 1–10 record everything done on Nov 14, 2026:
 - every version of the weekly seller, with its exact recipe and every number;
 - why it is not deployed;
 - how to rebuild and rerun it from scratch;
@@ -15,7 +15,100 @@ Companion files:
 
 ---
 
-## 1. Status in one paragraph
+## 0. Latest: SN221–SN230 (Nov 15, 2026) — WK-H, the hedged weekly straddle, passes an unseen exam
+
+Folder: `docs/research/fno/2026-11-15-sn221` (README = the full table). Research only: no order, no runtime change, Production unchanged at `826f0727`.
+
+**The owner's ask:**
+> "SN204, SN208, SN207 … worked very well on those gap days and there were issues … improve them or make better ones … till SN230 … try start wallets lot sizes different combinations … we are not replacing GOLD_V5."
+
+**What changed in the method:**
+- versions were chosen on **all four seen samples at once** (DEV, TEST, NIFTY Dec 2021 – Mar 2022, SENSEX 2024–26) by a frozen **max-min rule**: the version whose worst sample is best;
+- the frozen pick was then judged **once** on **unseen NIFTY Oct 1 2020 – Nov 25 2021 (60 weekly expiries)**.
+
+**What failed:**
+- **trend timing** (ADX / efficiency ratio): it skips weeks, and random skipping does as well;
+- **far wings:** the downloaded strikes rarely reach ±2 Q, and wings cost about ₹960 a week.
+- **Weekends lose for sellers on every sample**, so never hold one.
+
+**What worked: a futures delta hedge.** It is the way option market makers earn: sell the premium, neutralise direction with futures, keep premium minus realised moves.
+- Hedging 2 option lots in half-lot steps improved the four-sample worst score in **78 of 78** versions (SN226).
+
+**WK-H (the frozen SN227 PICK, `("STRADDLE", "M", "settle", "H15x2", "none")` in `wk3.py`):**
+- **Entry:** sell the ATM straddle, 2 lots, at 15:15 of the **first session after the last weekend or holiday before expiry**. For a Thursday expiry that is the Monday 15:15; for a Tuesday expiry, the Monday 15:15 as well. No weekend is ever held.
+- **Hedge:** every 15 minutes, compute the straddle's Black–Scholes delta (σ fixed at entry from the straddle price; a session clock with 0.15 per night).
+  - If |2 × delta + futures lots| > 0.6, reset the futures to −round(2 × delta) lots.
+  - Execute at the next minute's futures close ± 0.75 point + Zerodha futures charges + ₹100 per lot per order (+₹100 before 09:20).
+  - The contract is the first futures expiry on or after the option expiry.
+  - No new hedge orders after 14:30 on expiry day.
+- **Exit:** hold to settlement (index 15:00–15:29 mean). The hedge closes at the futures' 15:00–15:29 mean. A 1× credit stop never fired.
+- **Money:** one unit = 2 option lots + 0–2 futures lots ≈ **₹5 lakh margin** (proxy, NOT verified on Zerodha). Results are quoted per option lot, i.e. half a unit.
+
+**Per option lot, every sample:**
+
+| Sample | WK-H net | Worst month | WK-S net (worst month) |
+|---|---:|---:|---:|
+| DEV Apr 2022 – Aug 2026 (212 trades) | +2,11,957 (4 of 5 years +) | −15,915 | +3,13,523 (−51,245) |
+| TEST Aug – Oct 2026 (7) | −2,414 | −2,981 | −23,348 (−19,227) |
+| NIFTY Dec 2021 – Mar 2022 (15) | +10,308 | −8,587 | −56,743 (−36,338) |
+| SENSEX Oct 2024 – Apr 2026 (78) | +1,04,354 | −8,887 | −42,022 (−70,088) |
+| **EXAM NIFTY Oct 2020 – Nov 2021 (56), unseen, once** | **+61,511** (59% of weeks won, 9 of 14 months +, 2020 +13,285 / 2021 +48,225) | **−6,251** | −41,621 (−18,699) |
+| **Five samples** | **+3,85,716** | | +1,49,789 |
+
+**On the exam weeks, for comparison:**
+- the same straddle unhedged: −43,526;
+- k1 ATM straddle: −12,009;
+- WK-G: −6,734;
+- breach + gate: −14,662;
+- best hedged WK-S (STRANGLE 0.5 k3 stop 1, H15x2): +78,395;
+- the plateau of SN227's 20 eligible versions: +37,670.
+
+**Pass rule P1–P4: all true.** It is a forward-paper candidate, not proof.
+
+**Worst weeks:**
+- May 16 2024 (−24,643): the index fell below the strike, the hedge went short, and trading stopped at the 14:30 freeze; the index then rallied 340 points into the close;
+- Feb 3 2026 (−18,283): a +2.7% gap; the hedge cut it from −42k;
+- SENSEX Jan 21 2025 (−19,141).
+
+**Gold v5 + WK-H in one account (SN229, DEV Jan 2 2023 – Aug 19 2026, Gold ₹30k growing):**
+
+| Account | Net | Green days | Worst day | Worst month | 2023 / 2024 / 2025 / 2026 |
+|---|---:|---:|---:|---:|---|
+| Gold alone | +6,42,173 | 55 | −21,113 | −38,531 | −12,107 / +1,87,476 / +2,92,811 / +1,73,992 |
+| Gold + WK-H per option lot | **+8,17,214** | **282** | −27,523 | **−28,184** | −33,757 / +2,25,735 / +4,03,785 / +2,21,452 |
+| Gold + WK-H unit (₹5 lakh, 2 lots) | +9,92,256 | 283 | −55,046 | −38,228 | −55,408 / +2,63,993 / +5,14,760 / +2,68,912 |
+
+- **Correlation with Gold:** −0.17 on Gold's trade days.
+- **On Gold's 775 empty days:** ₹386 a day on average (the 2-lot unit).
+- **The money comes in weeks, not days.**
+
+**Wallets (SN229):**
+- ₹15k / ₹30k / ₹1 lakh / ₹2.5 lakh cannot run WK-H.
+- ₹5 lakh (1 unit): DEV +4.24 lakh (19.3% a year), exam +1.23 lakh (21.3% a year), TEST −4.8k.
+- ₹10 lakh: 2 units.
+- **A 1-lot coarse hedge on ₹2.5 lakh** (`H15`) is shown as information only: DEV +1.66 lakh with 2022 and 2023 negative, exam +86.8k, worst month −34k.
+
+**Next (each on the owner's word):**
+1. **The pre-registered crash test:** score WK-H and the references once, unchanged, on NIFTY Jan–Sep 2020 once those options are downloaded.
+2. **A Dev paper shadow of the Gold v6 candidate (Gold v5 + WK-H):** forward, no orders, Telegram lines to the owner, then a deploy on the owner's word.
+3. **The owner checks Kite basket margin** for 2 short ATM NIFTY straddle lots + 2 futures lots.
+4. **Later SN idea:** flatten the hedge at the 14:30 freeze, the May 16 2024 lesson. Test it on the crash sample as information.
+
+**Rerun:**
+
+```python
+import sys; sys.path.insert(0, "docs/research/fno/2026-11-15-sn221")
+import wk3, grid
+s = wk3.sample("DEV")                                    # or "TEST", "N2122", "SENSEX"; "EXAM" needs wk3.UNSEAL_EXAM = True
+tr = wk3.book3(s, "STRADDLE", "M", "settle", "H15x2")    # rupees for 2 lots; divide by 2 per lot
+print(wk3.summary(tr, s.W, lots=2))
+```
+
+**Data now seen:** NIFTY Oct 2020 – Nov 2021 (SN228). **Still unseen:** NIFTY Jan–Sep 2020 (partly downloaded; Jul–Sep 2020 options 318 of 857).
+
+---
+
+## 1. Status in one paragraph (Nov 14; superseded by section 0)
 
 - **Gold v5 (paper, Production `826f0727`) is unchanged.** There is no Gold v6.
 - **The weekly option seller is the most promising gap-day idea in 220 studies.** On NIFTY 2022–26 every unprotected version made money; the best (WK-S) made +₹3.14 lakh per lot, with every year positive. With Gold in one account it gave 380 green days against Gold's 55.
@@ -189,8 +282,8 @@ Companion files:
 | SENSEX exam, index May 17 2024 – Apr 30 2026; options of the expiries Oct 4 2024 – Apr 30 2026 | lean `…sn201/_local/mirror-sensex-exam.sqlite` (sha `a272ad18…`); full `…sn211/_local/mirror-sensex-exam-full.sqlite` (sha `1e7e2af3…`) | Seen (SN209, SN219) |
 | Real-quote archive Sep 10 – Nov 12 2026 | `~/sentinel-operations/fno-forward-panel-20261028/…/_local/exports/20261113T103001Z` (via `2026-11-13-sn101/qa.py`) | Seen |
 | NIFTY 1-second Jan 16 – Apr 2 2026 | the Breeze folder (downloaded Nov 14) | Not used |
-| NIFTY Oct–Nov 2021 options | `nifty-2021-q4-fno`: 410 of 957 option requests | **Unseen, unfinished** |
-| NIFTY 2020, Jan–Sep 2021 | – | Not downloaded |
+| NIFTY Oct 2020 – Nov 2021 (index from Jun 2020, options of expiries Oct 1 2020 – Nov 25 2021, futures) | `2026-11-15-sn221/_local/mirror-nifty-2021-lean.sqlite` (`7ec3e483…`), `…-full.sqlite` (`10d9d542…`), `fut-nifty-2021.sqlite` (`d623beb9…`); downloaded Nov 14–15 | **Seen (SN228 exam, Nov 15)** |
+| NIFTY Jan–Sep 2020 | Jul–Sep 2020: index + futures done, options 318 of 857; Jan–Jun 2020 not yet | **Unseen: the pre-registered crash test** |
 | SENSEX Jan–Sep 2024 | – | ICICI does not serve it (probe failed) |
 
 **ICICI downloads done Nov 14 (the downloading agent, through the skill):**
@@ -239,5 +332,6 @@ print(wk2.summary(tr))                              # net, worst, worst_month, c
 
 - **SN201–SN210:** `00564b6b` (plan and engine), `6847a924`, `7bdc7e73`, `4852fc05`, `8192ccf5`; docs `09fbf5f8`.
 - **SN211–SN220:** `2c2d1b66` (plan and engine), `2693893f`, `f8a5b533`, `436295ca`; docs `ce51c3ea`.
+- **SN221–SN230:** `ec76f220` (plan, engine, SN221 seal), `dbbf9086` (SN222–SN227, picks frozen), `bb7370c2` (SN228 exam, SN229, README).
 - **Before them (Nov 13–14 night):** SN186–SN200 `4462f86f` … `d08e02fd`, docs `e5f60227`.
 - **Production:** `826f0727` (Nov 13), unchanged all day.

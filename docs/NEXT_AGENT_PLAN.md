@@ -8194,3 +8194,12 @@ producer will no longer create them.
   - the untested ideas for the next Gold v6 attempt.
 - Its pointer is in `docs/SN_STRATEGY_HISTORY.md` section 1.
 - No runtime change; Production stays `826f0727`.
+
+## Gold v6 candidate: WK-H, the hedged weekly straddle, passes an unseen exam (SN221–SN230, Nov 15, 2026; research only)
+
+- Folder `docs/research/fno/2026-11-15-sn221`; full record in `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 0.
+- **WK-H:** the ATM NIFTY straddle (2 lots), sold at the first 15:15 after the last weekend before expiry, delta-hedged with NIFTY futures in half-lot steps every 15 minutes, held to settlement.
+- **Unseen NIFTY Oct 2020 – Nov 2021 (once):** +₹61,511 per lot, worst month −₹6,251; unhedged sellers lost on the same weeks.
+- Gold + WK-H per lot (2023 – Aug 2026): +₹8.17 lakh vs +₹6.42 lakh, worst month −₹28k vs −₹38.5k.
+- Forward-paper candidate only: about ₹5 lakh margin (unverified), about 4.7 futures orders a week. A Dev paper shadow and a deploy need the owner's word.
+- No runtime change; Production stays `826f0727`.

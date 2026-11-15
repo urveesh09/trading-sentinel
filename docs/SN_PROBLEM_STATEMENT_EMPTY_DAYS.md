@@ -234,3 +234,22 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **The three samples where the seller lost:** no exit makes it profitable (−₹71k to −₹1.57 lakh over 96 weeks). Gaps at the open cannot be exited, and exits cannot create an edge.
 - **No Gold v6.** Empty days stay flat; a daily income comes from Gold's profits (SN177).
 - **What is left:** new information (order flow from the tick recorder) and a true crash test (NIFTY 2020) for any future seller.
+
+## 13. Status after SN221–SN230 (Nov 15, 2026)
+
+- **A candidate exists for the first time: WK-H, the hedged weekly straddle.**
+  - It sells the ATM straddle (2 lots) at the first 15:15 after the last weekend before expiry.
+  - It delta-hedges with NIFTY futures in half-lot steps every 15 minutes.
+  - It holds to settlement.
+- **Results:**
+  - positive on three of the four seen samples (TEST −₹2.4k over 7 weeks);
+  - on the **unseen NIFTY Oct 2020 – Nov 2021 exam: +₹61,511 per lot, worst month −₹6,251**, where every unhedged seller lost.
+- **On Gold's empty days** it averages ₹386 a day for the ₹5 lakh unit, paid in weeks rather than days (about 59% of weeks win).
+- **With Gold** (2023 – Aug 2026, per option lot): +₹8.17 lakh vs +₹6.42 lakh, 282 green days vs 55, worst month −₹28k vs −₹38.5k.
+- **Limits:**
+  - about ₹5 lakh margin (unverified);
+  - about 4.7 futures orders a week;
+  - one unseen sample in a bull market;
+  - the crash test (Jan–Sep 2020) is pre-registered;
+  - forward paper is the next step, on the owner's word.
+- Full record: `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 0.

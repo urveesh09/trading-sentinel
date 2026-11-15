@@ -243,3 +243,37 @@ The tables show per year profit / refill, won / lost / no-trade days, worst day,
 | A rule that cannot fire must reproduce the old engine exactly before any exit is scored | SN211 |
 | Exits redistribute losses; they cannot create an edge. Check the second-look samples before believing a tail cut | SN219 |
 | A gap at the open cannot be exited; a worst-week target below the largest gap is unreachable | SN218 |
+
+## 14. Additions for SN221–SN230 (Nov 15, 2026): selection on every seen sample, the futures hedge, one unseen exam
+
+- **Engine:** `docs/research/fno/2026-11-15-sn221/wk3.py` on `wk.py` / `wk2.py` (neither edited).
+  - With no hedge it reproduces `wk.trade` and `wk2.simulate(gate)` exactly: 0.0 rupee, 26 variants, four samples (SN222).
+  - `grid.py` caches every structure × k × exit × hedge per (sample, structure) in `_local/grid-*.pkl`, each slice well under 9 minutes. Filters are applied afterwards from an entry-day pass table (a filter only skips weeks).
+- **Selection (SN227, frozen in PLAN.md):**
+  - the score per sample is net ÷ weekly expiries in that sample (standing aside scores 0);
+  - eligibility E1–E5 (positive on all four, DEV years ≥ 4 of 5, DEV worst month ≥ −₹34,163, trades in ≥ 50% of DEV weeks, wing coverage);
+  - pick = the largest **minimum** score;
+  - a filtered pick must beat a 500-draw random-skip null, or its unfiltered base replaces it.
+- **The exam (SN228):** NIFTY expiries Oct 1 2020 – Nov 25 2021.
+  - Sealed by SN221 (counts and hashes only); `wk3.sample("EXAM")` refuses until `UNSEAL_EXAM`.
+  - A counts-only dry run (trades, orders, fallbacks; no rupee) checked every code path before the one scoring run.
+- **The futures hedge model:**
+  - Black–Scholes deltas with σ fixed at entry from the ATM straddle (Q = 0.7979·S·σ·√T);
+  - a session clock (rest of today ÷ 375 + full sessions + 360/375 + 0.15 per night);
+  - band 0.6 lots, checked every 15 minutes, executed at the next minute's futures close ± 0.75 point (SENSEX 3);
+  - Zerodha futures charges (₹20 or 0.03%, STT 0.02% sell, NSE 0.00173%, SEBI ₹10/crore, stamp 0.002% buy, GST 18%), ₹100 per lot per order, ₹100 extra before 09:20;
+  - no new orders after 14:30 on expiry day; the close at settlement is the futures' 15:00–15:29 mean;
+  - futures come from the year datasets (DEV/TEST) or the SN221 mirrors.
+
+**Pitfalls and lessons:**
+
+| Lesson | Where |
+|---|---|
+| Choose on every seen sample at once (max-min), not on the biggest one; a version tuned on DEV alone failed all three others | SN222, SN227 |
+| A filter's gain must beat random skipping at the same rate; ADX and efficiency-ratio filters did not | SN223, SN227 |
+| Weekend intervals lose for sellers on every sample; the weekend decay is priced in before Friday's close | SN224 |
+| Check wing coverage before trusting a winged result; the downloaded strikes rarely reach ±2 Q | SN225 |
+| A hedge, not an exit, changed the out-of-sample sign: the same straddle unhedged −₹43.5k, hedged +₹61.5k on the exam | SN226, SN228 |
+| Integer futures lots on 1 option lot hedge too coarsely; 2 option lots in half-lot steps helped in 78 of 78 versions | SN226 |
+| Expiry-day gamma: a hedge frozen at 14:30 can be caught by a late move (May 16 2024) | SN229 |
+| numpy integers break `json.dumps`; pass `default=` (SN226/SN227 were rerun unchanged with identical output) | SN226, SN227 |
