@@ -18,7 +18,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 
 ---
 
-## 1. Current state (updated Nov 15, 2026, after SN230) — read this first
+## 1. Current state (updated Nov 15, 2026 evening, after SN250: Gold v6 built in Dev, Gold v7 chosen) — read this first
 
 **In Production (`826f0727`, PR #138, deployed Nov 13 evening, verified):**
 - **SN Gold v5 on PAPER** (`python-engine/sn_gold.py`, since Nov 13, release `82b08371`):
@@ -39,6 +39,10 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
   - **weekly option selling (SN201–SN210):** the unprotected weekly seller WK-S earned in every development year (+₹3.14 lakh per lot, NIFTY 2022–26). It **lost on all three unseen samples** (TEST −₹23k; NIFTY Dec 2021 – Mar 2022 −₹57k; SENSEX Oct 2024 – Apr 2026 −₹42k). Protected (winged) sellers lose everywhere.
   - **smart fail-safe exits for the weekly seller (SN211–SN220):** the best exit (the expiry-day gate) kept 97% of the development profit and cut the worst month by 37%, but no exit made the seller profitable on the three samples where it lost (−₹71k to −₹1.57 lakh over 96 weeks). **No Gold v6;** Gold v5 stays as it is.
 - **SN221–SN230 (Nov 15): the first gap-day leg to pass an unseen exam, WK-H** (ATM straddle sold after the last weekend before expiry, delta-hedged with NIFTY futures in half-lot steps, held to settlement): **+₹61,511 per lot on unseen NIFTY Oct 2020 – Nov 2021 (worst month −₹6,251)**, where every unhedged seller lost; Gold + WK-H per lot +₹8.17 lakh vs Gold +₹6.42 lakh, 282 green days vs 55. Forward-paper candidate only; about ₹5 lakh margin; not deployed.
+- **Gold v6 and Gold v7 (Nov 15 evening):**
+  - the owner made Gold v5 + WK-H the baseline Gold v6; it is built in Dev as `python-engine/sn_wkh.py` (paper, `1690bb71`, not deployed);
+  - SN231–SN250 chose **Gold v7 = the same leg with hedge band 0.8**: over Jan 2023 – Oct 2026, 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228, net +₹13.71 lakh against +₹11.96 lakh. It is the Dev default;
+  - every month positive was not reached. The remaining bad months come from WK-H's quiet or sudden-move weeks and Gold v5's own losing months.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -56,20 +60,21 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - SN Gold v5 `FORWARD_V5.md`.
 
 **Waiting on the owner:**
-- **WK-H passed its exam (SN228):** whether to build and deploy a paper shadow of the Gold v6 candidate (Gold v5 + WK-H, no orders), and a Kite basket-margin check for 2 short NIFTY ATM straddle lots + 2 futures lots;
+- **Gold v7 is built in Dev (`sn_wkh.py`, band 0.8; Gold v6 = band 0.6):** the owner's word for a Production deploy (paper), and a Kite basket-margin check for 2 short NIFTY ATM straddle lots + 2 futures lots;
 - the rest of NIFTY Jul–Sep 2020 options and Jan–Jun 2020 (the owner's downloader continues), then the pre-registered crash test;
 - (done Nov 15: `nifty-2021-q4-fno` options and all of 2021.)
 
 **How to resume:**
 - **For Gold v6 or the weekly seller, read `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` first; its section 0 is WK-H (SN221–SN230)** (every recipe, number, data path and rerun command for SN201–SN230).
-- Read this section and the last sections of this file: SN161–SN185, SN186–SN200, SN201–SN210, SN211–SN220 and SN221–SN230 (with "Open items, Nov 15, 2026, after SN230").
-- Then read `docs/SN_TESTING_PROCEDURE.md`, sections 1–14 (tools, venvs, pitfalls).
+- Read this section and the last sections of this file: SN161–SN185, SN186–SN200, SN201–SN210, SN211–SN220, SN221–SN230 and SN231–SN250 (with "Open items, Nov 15, 2026, after SN250").
+- Then read `docs/SN_TESTING_PROCEDURE.md`, sections 1–15 (tools, venvs, pitfalls).
 - Then read the folder READMEs:
   - `docs/research/fno/2026-11-13-sn161/README.md`
   - `docs/research/fno/2026-11-13-sn186/README.md`
   - `docs/research/fno/2026-11-14-sn201/README.md`
   - `docs/research/fno/2026-11-14-sn211/README.md`
   - `docs/research/fno/2026-11-15-sn221/README.md`
+  - `docs/research/fno/2026-11-15-sn231/README.md`
 - Research Python: `C:\Users\Urveesh\sentinel-ml-venv` (LightGBM, PyTorch CPU); the engine uses `python-engine\winvenv`.
 
 ---
@@ -717,7 +722,7 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 
 **Full record:** `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 0.
 
-### Open items, Nov 15, 2026, after SN230 (the current list)
+### Open items, Nov 15, 2026, after SN230 (superseded; see "Open items, Nov 15, 2026, after SN250" at the end)
 
 - **Mon Nov 16:**
   - check the tick recorder's first live day (`events.jsonl`, chunks, the "Tick recorder" owner line after 15:41);
@@ -737,3 +742,53 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - `ec76f220`: plan, engine, SN221 seal.
 - `dbbf9086`: SN222–SN227, picks frozen.
 - `bb7370c2`: SN228 exam, SN229, README.
+
+## SN231–SN250 (Nov 15, 2026 evening): Gold v6's bad months, and Gold v7 (folder `docs/research/fno/2026-11-15-sn231`)
+
+**Owner:** "this will be our baseline, and we will be calling this Gold V6 … comprehensively analyse the bad months … make every single month positive … I have promised to refill every single penny … give me a Gold V7 if possible."
+
+**Gold v6 built in Dev first:** `python-engine/sn_wkh.py` (commit `1690bb71`), paper, not deployed. SN Gold v5 is unchanged.
+
+**Method:**
+- plan frozen at `5f67bb0b`; diagnosis and amendment at `d87c0031`;
+- the account is SN Gold v5 (₹30k growing) + the WK leg, Jan 2023 – Oct 2026 (46 months);
+- the frozen rule Q1–Q5: more positive months, ≥ 90% of the profit, no worse worst month, the WK leg holding up on the five WK samples, nulls for thresholds.
+
+| SN | Result |
+|---|---|
+| 231 | Gold v6: 31 of 46 months positive, +₹11,96,139, worst −₹38,228; 15 bad months, 8 of them in 2023 |
+| 232–233 | Bad months are quiet months. **Futures hedge charges (₹1.42 lakh per lot on DEV vs a ₹2.12 lakh net)** eat WK-H's small premium. The 14:30 expiry freeze cost −₹83k; gaps; Gold v5's own losing months |
+| 235 | Expiry-afternoon variants: none qualifies |
+| 236 | **Hedge band 0.8: qualifies** (33 months, +₹13.71 lakh, worst −₹28,981, charges −38%); the rest of the cost grid, the synthetic hedge alone and a second unit fail |
+| 237–241 | Daily hedged straddle, SENSEX second leg, low-premium skips, more units, month profit-protection: all fail |
+| 242 | Idle capital at 5%: +1 month, shown apart |
+| 244 | Information: band 0.8 + synthetic options hedge, 34 months, +₹14.83 lakh (the best next idea) |
+| **245** | **Gold v7 = SN Gold v5 + WK-H with hedge band 0.8** |
+| 246 | Robust: bands 0.7–0.9 beat 0.6; it survives cost stress; 2023 has 7 positive months vs 4; bootstrap 75%. Weaker on fast samples (NIFTY 2021–22, SENSEX) |
+| 247 | Gold v7 has 13 bad months left (9 WK-H, 4 Gold). Owner's refills about ₹29k a month (worst ₹67k) vs about ₹58k banked |
+| 248 | NIFTY Jan–Sep 2020 crash test pre-registered (`CRASH_TEST_2020.md`), sealed |
+| 249 | Dev default `SN_WKH_BAND = 0.8`, `SN_WKH_LABEL = "Gold v7"` |
+| 250 | Synthesis: folder README |
+
+### Open items, Nov 15, 2026, after SN250 (the current list)
+
+- **Mon Nov 16 checks:**
+  - the tick recorder's first live day;
+  - SN Gold v5 paper;
+  - the give-back stop.
+- **Owner's word:**
+  1. deploy Gold v7 to Production (paper; WK-H's first entry is the Monday 15:15 after the deploy);
+  2. Kite basket margin for 2 short NIFTY ATM straddle lots + 2 futures lots.
+- **The crash test:** `docs/research/fno/2026-11-15-sn231/sn248.py --data-complete`, once NIFTY Jul–Sep 2020 (options 318 of 857 on Nov 15) and Jan–Jun 2020 are downloaded. Score once, unchanged.
+- **Next ideas:**
+  - band 0.8 + a synthetic options hedge (needs option legs in the runtime);
+  - Gold v5's own unseen-year test (an N11 replay for 2021: a separate job).
+- **Downloads:** the downloading agent continues back through 2020, then SENSEX.
+
+### Commit index, SN231–SN250 and Gold v6 / v7
+
+- `1690bb71`: Gold v6 runtime (`sn_wkh.py`).
+- `5f67bb0b`: plan.
+- `d87c0031`: SN231–SN234 and the amendment.
+- `13850b41`: SN235–SN248.
+- The Gold v7 runtime and docs commit follows.

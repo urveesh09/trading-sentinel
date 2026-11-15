@@ -99,3 +99,14 @@ All tables are in the engine database:
 - `gold_v6_wkh_wallet`: banked, refilled and weeks.
 
 **Off:** `SN_WKH_ENABLED=false` in the engine's `.env`, then recreate the engine. SN Gold v5 keeps running; the tables stay.
+
+## Gold v7 (Nov 15, 2026, Dev default): the same WK-H leg with a wider hedge band
+
+- **The change:** `SN_WKH_BAND = 0.8` instead of Gold v6's 0.6. The futures are re-hedged only when the lean exceeds 0.8 lot, so there are fewer, cheaper orders. Messages read "Gold v7 · WK-H".
+- **Why:** SN231–SN250 (`docs/research/fno/2026-11-15-sn231`). Over Jan 2023 – Oct 2026 with SN Gold v5:
+  - **33 of 46 months positive** against 31;
+  - **worst month −₹28,981** against −₹38,228;
+  - net +₹13.71 lakh against +₹11.96 lakh.
+- **Its weak spot:** in fast markets it earns less than band 0.6.
+- **Back to Gold v6:** `SN_WKH_BAND=0.6` and `SN_WKH_LABEL="Gold v6"`.
+- **Still to come:** the NIFTY 2020 crash test, once that download is complete.

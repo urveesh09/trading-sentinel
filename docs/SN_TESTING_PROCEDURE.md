@@ -277,3 +277,27 @@ The tables show per year profit / refill, won / lost / no-trade days, worst day,
 | Integer futures lots on 1 option lot hedge too coarsely; 2 option lots in half-lot steps helped in 78 of 78 versions | SN226 |
 | Expiry-day gamma: a hedge frozen at 14:30 can be caught by a late move (May 16 2024) | SN229 |
 | numpy integers break `json.dumps`; pass `default=` (SN226/SN227 were rerun unchanged with identical output) | SN226, SN227 |
+
+## 15. Additions for SN231–SN250 (Nov 15, 2026): month-level selection, the Gold v6 account, wk4
+
+- **The account ledger (`docs/research/fno/2026-11-15-sn231/led.py`):**
+  - SN Gold v5's day nets from SN161 `p4.gold("Rs 30k growing (production)", keep=lambda d: True)`, development and TEST days, Jan 2 2023 – Oct 28 2026;
+  - plus a WK leg's daily mark changes (`t["marks"]`).
+  - Month = calendar month of the day. The owner's refill view per month: banked (green days) vs refilled (red days).
+- **`wk4.py`:**
+  - `hedge_path4` re-implements `wk3.hedge_path` with options: band, every, freeze minute, flatten minute, late checks, `instrument="synth"`.
+  - With defaults it matches `wk3` at 0.0 rupee on all five WK samples (SN235).
+  - `daily4` is the 1-session hedged straddle.
+- **Selection by months:** Q1 more positive months, Q2 ≥ 90% of the profit, Q3 a worst month no worse, Q4 WK samples (≥ 4 of 5 positive, positive months no fewer), Q5 nulls for thresholds.
+- **Stress runs:** `wk.trade`'s `stress` default is bound when the function is defined; pass it explicitly, which SN246 does by wrapping `wk3.base_trade`. Clear the hedge caches between runs.
+
+**Pitfalls and lessons:**
+
+| Lesson | Where |
+|---|---|
+| A leg's costs decide quiet months: compare charges with the net before reading direction | SN232, SN233 |
+| A threshold that changes one cost knob (the hedge band) helped; filters, skips and extra legs did not | SN236–SN241 |
+| An extra unit or leg raises positive months but breaks the worst month; judge both | SN236, SN238, SN240 |
+| Rolling daily pays option costs daily; hold to settlement | SN237 |
+| The account window is DEV for Gold; check each change on the other WK samples too (band 0.8 earns less on fast samples) | SN246 |
+| numpy integers break `json.dumps`; give every print a `default=` | SN231, SN238 |

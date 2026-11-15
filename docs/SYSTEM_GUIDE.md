@@ -1,3 +1,28 @@
+## November 15 (evening) - Gold v7 = Gold v6 with WK-H's hedge band 0.8 (Dev default; deploy on the owner's word)
+
+**Authority:** the owner, Nov 15: "give me a Gold V7 if possible". Research SN231–SN250 (`docs/research/fno/2026-11-15-sn231`, frozen rule; SN245 chose it).
+
+**Change:**
+- `config.py` `SN_WKH_BAND = 0.8` (was 0.6) and a new `SN_WKH_LABEL = "Gold v7"`, used in WK-H's owner messages;
+- `sn_wkh.py`: docstring and message prefix only;
+- no table or behaviour change other than the band.
+
+**Why:**
+- Over Jan 2023 – Oct 2026 with SN Gold v5: 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228, net +₹13.71 lakh against +₹11.96 lakh.
+- Fewer futures orders (531 against 868 on DEV), so quiet months stop bleeding charges.
+- **Weaker in fast markets:** NIFTY 2021–22 and SENSEX earned less than with 0.6.
+
+**Verification:**
+- `tests/test_sn_wkh.py` + `tests/test_sn_gold.py`: 33 passed. The settings test pins Gold v7 to `results-sn245.json` and the research's H15x2 band 0.6 as Gold v6.
+- The full suite is recorded in the commit.
+
+**Rollback to Gold v6:** `SN_WKH_BAND=0.6` and `SN_WKH_LABEL="Gold v6"` in the engine `.env`, then recreate the engine.
+
+**Remaining:**
+- a deploy on the owner's word;
+- the pre-registered NIFTY 2020 crash test once that download completes;
+- a Kite basket-margin check.
+
 ## November 15 - Gold v6 = SN Gold v5 + WK-H, the hedged weekly straddle (Dev only; deploy on the owner's word): `python-engine/sn_wkh.py`
 
 **Authority:** the owner, Nov 15: "That gold v5 + wk-h is the new gold v6 … I allow you to do that in Dev right now … this will be our baseline, and we will be calling this Gold V6." Dev only; Production stays `826f0727` until the owner says deploy.

@@ -253,3 +253,16 @@ Until then the best empty-day action remains no trade. A daily income comes from
   - the crash test (Jan–Sep 2020) is pre-registered;
   - forward paper is the next step, on the owner's word.
 - Full record: `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 0.
+
+## 14. Status after SN231–SN250 (Nov 15, 2026)
+
+- **Gold v6 (Gold v5 + WK-H) is built in Dev** (`python-engine/sn_wkh.py`, paper). **Gold v7** is the same leg with hedge band 0.8: 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228.
+- **The empty days now carry WK-H.**
+  - Gold v7's remaining bad months come from WK-H's quiet or sudden-move weeks (9) and Gold v5's own losing months (4).
+  - Every month positive was not reached; trend filters, skips, more legs and month rules did not help.
+- **Open:**
+  - the 2020 crash test (pre-registered);
+  - a forward paper record;
+  - a cheaper synthetic options hedge, the best next idea;
+  - Gold v5's own unseen-year test.
+- Record: `docs/research/fno/2026-11-15-sn231/README.md`, `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 00.

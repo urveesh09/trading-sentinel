@@ -1,5 +1,6 @@
-"""[Gold v6 WK-H 2026-11-15] The hedged weekly NIFTY straddle: the gap-day leg of Gold v6 (= SN Gold v5, unchanged, in
-sn_gold.py + this module), run on PAPER. It never places an order.
+"""[Gold v6 / v7 WK-H 2026-11-15] The hedged weekly NIFTY straddle: the gap-day leg of Gold v6 / Gold v7 (= SN Gold v5,
+unchanged, in sn_gold.py + this module), run on PAPER. It never places an order. Gold v7 (SN245, the Dev default) is the
+same leg with SN_WKH_BAND = 0.8 instead of Gold v6's 0.6 (docs/research/fno/2026-11-15-sn231).
 
 Owner, Nov 15: "That gold v5 + wk-h is the new gold v6 ... I allow you to do that in Dev right now ... this will be our
 baseline, and we will be calling this Gold V6."
@@ -13,7 +14,8 @@ The rules, as the research replayed them (docs/research/fno/2026-11-15-sn221/wk3
   * the position: sell the ATM call and put (the strike whose call and put mids are closest), 2 lots per Rs 5 lakh unit,
     at the bid;
   * the hedge: from the next session's 09:15, at each 15-minute mark (09:15 ... 15:15; on expiry day up to 14:15),
-    net = lots x the straddle's Black-Scholes delta + futures lots; when |net| > 0.6 the futures are reset to
+    net = lots x the straddle's Black-Scholes delta + futures lots; when |net| > the band (SN_WKH_BAND: Gold v7 0.8,
+    Gold v6 0.6) the futures are reset to
     -round(lots x delta) (bought at the ask, sold at the bid). Sigma is fixed at entry from the straddle
     (Q = 0.7979 S sigma sqrt(T)); time runs in sessions (the rest of today / 375 + each full session + 360/375 for
     expiry day + 0.15 a night). The contract is the first NIFTY future expiring on or after the option expiry;
@@ -387,7 +389,7 @@ async def _enter(kite, db_path: str, inst, expiry: date, now: datetime) -> str:
     credit = (cb + pb) * lot_size * lots
     logger.info("gold_v6_wkh_entry", expiry=expiry.isoformat(), strike=strike, lots=lots, ce_bid=cb, pe_bid=pb, spot=spot, sigma=round(sig, 6),
                 front_future=getattr(front, "tradingsymbol", None), hedge_future=fut.tradingsymbol)
-    _tell(f"🥇 Gold v6 · WK-H (paper): sold the NIFTY {int(strike)} straddle for {expiry:%d %b}, {lots} lots, call Rs {cb:.2f} + put Rs {pb:.2f} "
+    _tell(f"🥇 {settings.SN_WKH_LABEL} · WK-H (paper): sold the NIFTY {int(strike)} straddle for {expiry:%d %b}, {lots} lots, call Rs {cb:.2f} + put Rs {pb:.2f} "
           f"(credit Rs {credit:,.0f}). NIFTY futures will hedge its direction every 15 minutes from the next open. Paper only, no orders.")
     return "entered"
 
@@ -447,7 +449,7 @@ async def _manage(kite, db_path: str, week: dict, now: datetime, minute: int, ex
                                  (week["id"], now.isoformat(), side, abs(q), px, c, spot, delta, hedge_lots, "band"))
                 await db.commit()
             logger.info("gold_v6_wkh_hedge", week=week["id"], side=side, lots=abs(q), price=px, spot=spot, delta=round(delta, 3), hedge=hedge_lots)
-            _tell(f"🥇 Gold v6 · WK-H (paper): {'bought' if q > 0 else 'sold'} {abs(q)} NIFTY futures lot{'s' if abs(q) > 1 else ''} at Rs {px:,.2f} "
+            _tell(f"🥇 {settings.SN_WKH_LABEL} · WK-H (paper): {'bought' if q > 0 else 'sold'} {abs(q)} NIFTY futures lot{'s' if abs(q) > 1 else ''} at Rs {px:,.2f} "
                   f"(NIFTY {spot:,.2f}); the hedge is now {hedge_lots:+d} lots. Paper only.")
             did = "hedged"
         async with aiosqlite.connect(db_path) as db:
@@ -465,7 +467,7 @@ async def _manage(kite, db_path: str, week: dict, now: datetime, minute: int, ex
                 await db.execute("INSERT OR IGNORE INTO gold_v6_wkh_marks(week_id,session_date,at,spot,option_value,hedge_value,total) VALUES(?,?,?,?,?,?,?)",
                                  (week["id"], today.isoformat(), now.isoformat(), spot, ov, hv, ov + hv))
                 await db.commit()
-            _tell(f"🥇 Gold v6 · WK-H (paper) at 15:15: the {int(week['strike'])} straddle is worth Rs {ov + hv:+,.0f} if closed now "
+            _tell(f"🥇 {settings.SN_WKH_LABEL} · WK-H (paper) at 15:15: the {int(week['strike'])} straddle is worth Rs {ov + hv:+,.0f} if closed now "
                   f"(options {ov:+,.0f}, futures hedge {hv:+,.0f}, {hedge_lots:+d} lots). It settles on {expiry:%d %b}. Paper only.")
             did = did or "marked"
     return did
@@ -501,7 +503,7 @@ async def _close_hedge(kite, db_path: str, week: dict, now: datetime) -> str:
         await db.execute("UPDATE gold_v6_wkh_weeks SET hedge_lots=0, hedge_cash=?, hedge_costs=?, hedge_stress=?, hedge_orders=?, hedge_closed=1, "
                          "status='SETTLING' WHERE id=?", (cash, costs, stress, orders, week["id"]))
         await db.commit()
-    _tell(f"🥇 Gold v6 · WK-H (paper): expiry day, the futures hedge is closed (Rs {cash:+,.0f} after Rs {costs:,.0f} of charges, {orders} orders "
+    _tell(f"🥇 {settings.SN_WKH_LABEL} · WK-H (paper): expiry day, the futures hedge is closed (Rs {cash:+,.0f} after Rs {costs:,.0f} of charges, {orders} orders "
           f"this week). The {int(week['strike'])} straddle settles at today's official NIFTY close; the week's result comes at the next open. Paper only.")
     return "hedge_closed"
 
@@ -518,7 +520,7 @@ async def _settle(kite, db_path: str, week: dict, now: datetime, previous_close_
             await db.execute("UPDATE gold_v6_wkh_weeks SET status='UNRESOLVED', reason=?, closed_at=? WHERE id=?",
                              (why, now.isoformat(), week["id"]))
             await db.commit()
-        _tell(f"🥇 Gold v6 · WK-H (paper): the {week['expiry']} week could not be booked (the engine was not running at the expiry close). Paper only.")
+        _tell(f"🥇 {settings.SN_WKH_LABEL} · WK-H (paper): the {week['expiry']} week could not be booked (the engine was not running at the expiry close). Paper only.")
         return "unresolved"
     got = await _read(kite, {SPOT_KEY: SPOT_QUOTE})
     pk = got.get(SPOT_KEY) or {}
@@ -542,7 +544,7 @@ async def _settle(kite, db_path: str, week: dict, now: datetime, previous_close_
         await db.execute("UPDATE gold_v6_wkh_wallet SET banked=?, refilled=?, weeks=weeks+1 WHERE id=1", (banked, refilled))
         await db.commit()
     logger.info("gold_v6_wkh_settled", expiry=week["expiry"], settle=settle, option_net=round(opt, 2), hedge_net=round(hedge, 2), net=round(net, 2))
-    _tell(f"🥇 Gold v6 · WK-H (paper), the {date.fromisoformat(week['expiry']):%d %b} week: NIFTY settled at {settle:,.2f} against the {int(week['strike'])} "
+    _tell(f"🥇 {settings.SN_WKH_LABEL} · WK-H (paper), the {date.fromisoformat(week['expiry']):%d %b} week: NIFTY settled at {settle:,.2f} against the {int(week['strike'])} "
           f"straddle. Options Rs {opt:+,.0f}, futures hedge Rs {hedge:+,.0f}: Rs {net:+,.0f} after charges"
           f"{f', refill Rs {-net:,.0f}' if net < 0 else ''}. Since the start: won Rs {banked:,.0f}, refilled Rs {refilled:,.0f}, "
           f"net Rs {banked - refilled:+,.0f}. Paper only, no orders.")

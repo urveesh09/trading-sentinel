@@ -15,7 +15,63 @@ Companion files:
 
 ---
 
-## 0. Latest: SN221–SN230 (Nov 15, 2026) — WK-H, the hedged weekly straddle, passes an unseen exam
+## 00. Latest (Nov 15, 2026 evening): Gold v6 built in Dev; Gold v7 chosen (SN231–SN250)
+
+**The owner:** "gold v5 + wk-h is the new gold v6 … I allow you to do that in Dev right now … this will be our baseline". Then: SN231–SN250, "comprehensively analyse the bad months … make every single month positive … give me a Gold V7 if possible."
+
+**Gold v6 in Dev** (commit `1690bb71`, pushed; **not deployed**: Production stays `826f0727` until the owner's word):
+- SN Gold v5 (`sn_gold.py`) is unchanged.
+- **WK-H** is a new paper module, `python-engine/sn_wkh.py`.
+  - **Entry:** 15:15 on the first session after the last weekend before the weekly expiry; the ATM straddle, 2 lots per ₹5 lakh.
+  - **Hedge:** NIFTY futures every 15 minutes; none from 14:30 on expiry day; the futures close at their 15:00–15:25 mean.
+  - **Settlement:** the options settle at the official close, read at the next open.
+  - **Tables:** `gold_v6_wkh_*`. **Settings:** `SN_WKH_*`. Tests: 13; full suite 6,419 passed.
+
+**Gold v7** (SN245, folder `docs/research/fno/2026-11-15-sn231`, README = the full table) is the same leg with **hedge band 0.8 instead of 0.6** (`SN_WKH_BAND = 0.8`, `SN_WKH_LABEL = "Gold v7"`, the Dev default from SN249). Gold v6 = `SN_WKH_BAND=0.6`.
+
+| Jan 2023 – Oct 2026, Gold v5 ₹30k growing + 1 WK-H unit | Gold v6 | **Gold v7** |
+|---|---:|---:|
+| Net | +11,96,139 | **+13,70,643** |
+| Months positive (of 46) | 31 | **33** |
+| Worst month | −38,228 | **−28,981** |
+| 2023 (the quiet year) | −55,408 (4 positive months) | **−26,648 (7)** |
+
+**Why the bad months happen (SN231–SN233):**
+- **quiet months:** futures hedge charges (₹1.42 lakh per lot on DEV against a ₹2.12 lakh net) eat a small premium although options were priced above the moves;
+- **the 14:30 expiry freeze:** −₹83k on DEV;
+- **overnight gaps;**
+- **Gold v5's own losing months.**
+
+**Band 0.8** trades the futures less (531 orders vs 868), so the quiet months stop bleeding.
+
+**What failed** (SN235–SN244, all scored under the frozen rule):
+- expiry-afternoon variants alone;
+- wider or slower bands;
+- a second hedged unit;
+- the daily hedged straddle;
+- SENSEX WK-H as a second leg;
+- low-premium skips (no better than random);
+- more units (a worse worst month);
+- month profit-protection.
+
+**Robustness (SN246):**
+- bands 0.7–0.9 all beat 0.6 in the account;
+- it holds at option stress ₹200 / ₹300 and a 1.5-point futures half-spread;
+- month bootstrap 75%.
+- **The price:** band 0.8 earns less than 0.6 in fast markets (NIFTY 2021–22 −₹10k vs +₹10k per lot; SENSEX +₹78k vs +₹1.04 lakh).
+
+**Every month positive is not reachable on today's evidence:** 13 bad months remain, 9 from WK-H's sudden-move or quiet weeks and 4 from Gold v5. The owner's refills average about ₹29k a month (worst ₹67k) against about ₹58k banked.
+
+**Next:**
+- **The pre-registered crash test** (`CRASH_TEST_2020.md`, `sn248.py --data-complete`): run once the NIFTY Jan–Sep 2020 download is complete.
+- **The owner's word** for a Production deploy of Gold v7 (paper).
+- **A Kite basket-margin check.**
+- **The best next idea:** band 0.8 + a synthetic options hedge (34 months, +₹14.8 lakh; information only, needs option legs in the runtime).
+- **Gold v5's own unseen-year test:** an N11 replay for 2021, a separate job.
+
+---
+
+## 0. SN221–SN230 (Nov 15, 2026) — WK-H, the hedged weekly straddle, passes an unseen exam
 
 Folder: `docs/research/fno/2026-11-15-sn221` (README = the full table). Research only: no order, no runtime change, Production unchanged at `826f0727`.
 

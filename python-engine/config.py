@@ -1311,7 +1311,10 @@ class Settings(BaseSettings):
     SN_WKH_WALLET: float = 500000.0            # one unit's margin proxy (unverified on Zerodha); results banked / refilled
     SN_WKH_UNIT_MARGIN: float = 500000.0       # each Rs 5 lakh carries ...
     SN_WKH_LOTS_PER_UNIT: int = 2              # ... 2 option lots: the half-lot hedge steps that passed (H15x2)
-    SN_WKH_BAND: float = 0.6                   # re-hedge when |lots x delta + futures lots| exceeds this
+    # [Gold v7 2026-11-15] SN245: the same leg with a wider band (fewer, cheaper hedge orders) is Gold v7: 33 of 46 months
+    # positive vs 31, worst month -28,981 vs -38,228 (docs/research/fno/2026-11-15-sn231). Gold v6 = 0.6 (the SN228 exam).
+    SN_WKH_BAND: float = 0.8                   # re-hedge when |lots x delta + futures lots| exceeds this
+    SN_WKH_LABEL: str = "Gold v7"              # the owner's messages: "Gold v6" with band 0.6
     SN_WKH_EVERY_MIN: int = 15                 # a check at 09:15, 09:30, ... 15:15
     SN_WKH_FREEZE_MIN: int = 14 * 60 + 30      # no new hedge orders from 14:30 on expiry day
     SN_WKH_NIGHT: float = 0.15                 # session units per night in the delta's clock

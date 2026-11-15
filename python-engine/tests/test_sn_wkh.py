@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import math
 import sys
 from datetime import date, datetime, timedelta
@@ -37,7 +38,9 @@ def run(coro):
 def test_settings_are_the_frozen_pick():
     h = wk3.HEDGES["H15x2"]
     assert settings.SN_WKH_LOTS_PER_UNIT == h["lots"] == 2
-    assert settings.SN_WKH_BAND == h["band"] == 0.6 and settings.SN_WKH_EVERY_MIN == h["every"] == 15
+    assert h["band"] == 0.6 and settings.SN_WKH_EVERY_MIN == h["every"] == 15        # Gold v6: the exam-passed band
+    v7 = json.loads((ROOT / "docs/research/fno/2026-11-15-sn231/results-sn245.json").read_text(encoding="utf-8"))["gold_v7"]
+    assert v7 == "SN236 band 0.8 every 15" and settings.SN_WKH_BAND == 0.8 and settings.SN_WKH_LABEL == "Gold v7"   # Gold v7 (SN245)
     assert settings.SN_WKH_NIGHT == wk3.NIGHT == 0.15
     assert settings.SN_WKH_FREEZE_MIN == 9 * 60 + 15 + wk3.FREEZE == 14 * 60 + 30
     assert settings.SN_WKH_FUT_STRESS_PER_LOT == wk3.FUT_STRESS and settings.SN_WKH_OPEN_PENALTY == wk3.OPEN_PEN
