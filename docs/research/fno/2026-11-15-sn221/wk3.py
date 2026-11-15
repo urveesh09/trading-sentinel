@@ -323,7 +323,7 @@ def hedge_path(smp, t, e, days, hp):
             return max(1e-4, (360 - j) / 375.0)
         return (375 - j) / 375.0 + n_after[d] + 360 / 375.0 + NIGHT * (n_after[d] + 1)
 
-    S0 = t["S0"] or wk.idx_px(smp.data, d0)
+    S0 = t["S0"] or wk.idx_px(smp.data, d0) or float(t["K0"])   # post-freeze fix (disclosed): no index print at entry
     T0 = T_of(d0, wk.I_ENTRY)
     sig = t["Q"] / (0.7979 * S0 * math.sqrt(T0))
     legs = t["legs"]
