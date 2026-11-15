@@ -1,0 +1,574 @@
+{
+ "Gold v6": {
+  "net": 1196139,
+  "months": 46,
+  "months_positive": 31,
+  "worst_month": -38228,
+  "second_worst_month": -27730,
+  "mean_month": 26003,
+  "sd_month": 45650,
+  "green_days": 292,
+  "red_days": 360,
+  "worst_day": -55046,
+  "worst_week": -49286,
+  "weeks_positive": "105 of 200",
+  "by_year": {
+   "2023": -55408,
+   "2024": 263993,
+   "2025": 514760,
+   "2026": 472794
+  }
+ },
+ "Gold v7": {
+  "net": 1370643,
+  "months": 46,
+  "months_positive": 33,
+  "worst_month": -28981,
+  "second_worst_month": -19066,
+  "mean_month": 29797,
+  "sd_month": 46573,
+  "green_days": 291,
+  "red_days": 361,
+  "worst_day": -48695,
+  "worst_week": -50234,
+  "weeks_positive": "108 of 200",
+  "by_year": {
+   "2023": -26648,
+   "2024": 343667,
+   "2025": 568064,
+   "2026": 485561
+  }
+ },
+ "months": {
+  "2023-01": {
+   "gold": -6813,
+   "wkh08": -11881,
+   "gold_v7": -18695,
+   "gold_v6": -11073,
+   "v7_banked": 13524,
+   "v7_refilled": 32218,
+   "v6_refilled": 25000
+  },
+  "2023-02": {
+   "gold": -9607,
+   "wkh08": 14131,
+   "gold_v7": 4524,
+   "gold_v6": -471,
+   "v7_banked": 29056,
+   "v7_refilled": 24533,
+   "v6_refilled": 19850
+  },
+  "2023-03": {
+   "gold": 11249,
+   "wkh08": -2547,
+   "gold_v7": 8702,
+   "gold_v6": 15503,
+   "v7_banked": 17907,
+   "v7_refilled": 9205,
+   "v6_refilled": 7881
+  },
+  "2023-04": {
+   "gold": 0,
+   "wkh08": 4511,
+   "gold_v7": 4511,
+   "gold_v6": 1564,
+   "v7_banked": 13306,
+   "v7_refilled": 8795,
+   "v6_refilled": 8767
+  },
+  "2023-05": {
+   "gold": 0,
+   "wkh08": 1768,
+   "gold_v7": 1768,
+   "gold_v6": 9467,
+   "v7_banked": 15555,
+   "v7_refilled": 13787,
+   "v6_refilled": 8061
+  },
+  "2023-06": {
+   "gold": -4218,
+   "wkh08": -14281,
+   "gold_v7": -18499,
+   "gold_v6": -14181,
+   "v7_banked": 8994,
+   "v7_refilled": 27493,
+   "v6_refilled": 23465
+  },
+  "2023-07": {
+   "gold": 0,
+   "wkh08": -892,
+   "gold_v7": -892,
+   "gold_v6": -3212,
+   "v7_banked": 16669,
+   "v7_refilled": 17561,
+   "v6_refilled": 18094
+  },
+  "2023-08": {
+   "gold": 0,
+   "wkh08": 3402,
+   "gold_v7": 3402,
+   "gold_v6": -1752,
+   "v7_banked": 22032,
+   "v7_refilled": 18630,
+   "v6_refilled": 21470
+  },
+  "2023-09": {
+   "gold": 0,
+   "wkh08": 6390,
+   "gold_v7": 6390,
+   "gold_v6": -7277,
+   "v7_banked": 17645,
+   "v7_refilled": 11255,
+   "v6_refilled": 16974
+  },
+  "2023-10": {
+   "gold": -6693,
+   "wkh08": -7038,
+   "gold_v7": -13731,
+   "gold_v6": -21089,
+   "v7_banked": 12628,
+   "v7_refilled": 26358,
+   "v6_refilled": 29164
+  },
+  "2023-11": {
+   "gold": 2998,
+   "wkh08": 7722,
+   "gold_v7": 10721,
+   "gold_v6": 4843,
+   "v7_banked": 31197,
+   "v7_refilled": 20476,
+   "v6_refilled": 20162
+  },
+  "2023-12": {
+   "gold": 977,
+   "wkh08": -15825,
+   "gold_v7": -14848,
+   "gold_v6": -27730,
+   "v7_banked": 36181,
+   "v7_refilled": 51030,
+   "v6_refilled": 55703
+  },
+  "2024-01": {
+   "gold": 84776,
+   "wkh08": -21378,
+   "gold_v7": 63398,
+   "gold_v6": 64864,
+   "v7_banked": 110581,
+   "v7_refilled": 47183,
+   "v6_refilled": 49940
+  },
+  "2024-02": {
+   "gold": 2481,
+   "wkh08": 48582,
+   "gold_v7": 51063,
+   "gold_v6": 28629,
+   "v7_banked": 77086,
+   "v7_refilled": 26023,
+   "v6_refilled": 34140
+  },
+  "2024-03": {
+   "gold": -5932,
+   "wkh08": -2651,
+   "gold_v7": -8582,
+   "gold_v6": -16607,
+   "v7_banked": 32190,
+   "v7_refilled": 40772,
+   "v6_refilled": 35905
+  },
+  "2024-04": {
+   "gold": 4141,
+   "wkh08": 19966,
+   "gold_v7": 24107,
+   "gold_v6": 11714,
+   "v7_banked": 33518,
+   "v7_refilled": 9411,
+   "v6_refilled": 13561
+  },
+  "2024-05": {
+   "gold": -6398,
+   "wkh08": -22583,
+   "gold_v7": -28981,
+   "gold_v6": -38228,
+   "v7_banked": 24994,
+   "v7_refilled": 53975,
+   "v6_refilled": 71314
+  },
+  "2024-06": {
+   "gold": 0,
+   "wkh08": -7367,
+   "gold_v7": -7367,
+   "gold_v6": 7211,
+   "v7_banked": 60040,
+   "v7_refilled": 67407,
+   "v6_refilled": 51328
+  },
+  "2024-07": {
+   "gold": 15357,
+   "wkh08": 32540,
+   "gold_v7": 47898,
+   "gold_v6": 30570,
+   "v7_banked": 54308,
+   "v7_refilled": 6410,
+   "v6_refilled": 12651
+  },
+  "2024-08": {
+   "gold": -2599,
+   "wkh08": 55086,
+   "gold_v7": 52488,
+   "gold_v6": 29866,
+   "v7_banked": 61881,
+   "v7_refilled": 9394,
+   "v6_refilled": 7242
+  },
+  "2024-09": {
+   "gold": 0,
+   "wkh08": 15179,
+   "gold_v7": 15179,
+   "gold_v6": 12980,
+   "v7_banked": 37705,
+   "v7_refilled": 22526,
+   "v6_refilled": 22904
+  },
+  "2024-10": {
+   "gold": -14707,
+   "wkh08": 11677,
+   "gold_v7": -3029,
+   "gold_v6": -18426,
+   "v7_banked": 35501,
+   "v7_refilled": 38530,
+   "v6_refilled": 44554
+  },
+  "2024-11": {
+   "gold": 125172,
+   "wkh08": 8345,
+   "gold_v7": 133517,
+   "gold_v6": 134738,
+   "v7_banked": 145823,
+   "v7_refilled": 12306,
+   "v6_refilled": 19712
+  },
+  "2024-12": {
+   "gold": -14815,
+   "wkh08": 18793,
+   "gold_v7": 3978,
+   "gold_v6": 16683,
+   "v7_banked": 34438,
+   "v7_refilled": 30461,
+   "v6_refilled": 20541
+  },
+  "2025-01": {
+   "gold": 126805,
+   "wkh08": 40321,
+   "gold_v7": 167126,
+   "gold_v6": 158795,
+   "v7_banked": 216459,
+   "v7_refilled": 49333,
+   "v6_refilled": 47187
+  },
+  "2025-02": {
+   "gold": 35801,
+   "wkh08": -2121,
+   "gold_v7": 33681,
+   "gold_v6": 39309,
+   "v7_banked": 90062,
+   "v7_refilled": 56381,
+   "v6_refilled": 48416
+  },
+  "2025-03": {
+   "gold": 11797,
+   "wkh08": 13569,
+   "gold_v7": 25366,
+   "gold_v6": 14149,
+   "v7_banked": 75541,
+   "v7_refilled": 50175,
+   "v6_refilled": 55708
+  },
+  "2025-04": {
+   "gold": -5744,
+   "wkh08": 67621,
+   "gold_v7": 61878,
+   "gold_v6": 45211,
+   "v7_banked": 104259,
+   "v7_refilled": 42382,
+   "v6_refilled": 42835
+  },
+  "2025-05": {
+   "gold": 382,
+   "wkh08": 19761,
+   "gold_v7": 20142,
+   "gold_v6": 13438,
+   "v7_banked": 79083,
+   "v7_refilled": 58940,
+   "v6_refilled": 69290
+  },
+  "2025-06": {
+   "gold": 5433,
+   "wkh08": 51555,
+   "gold_v7": 56988,
+   "gold_v6": 54211,
+   "v7_banked": 78312,
+   "v7_refilled": 21324,
+   "v6_refilled": 15013
+  },
+  "2025-07": {
+   "gold": -8816,
+   "wkh08": 45410,
+   "gold_v7": 36594,
+   "gold_v6": 43513,
+   "v7_banked": 68978,
+   "v7_refilled": 32384,
+   "v6_refilled": 18926
+  },
+  "2025-08": {
+   "gold": 23217,
+   "wkh08": 29909,
+   "gold_v7": 53126,
+   "gold_v6": 42450,
+   "v7_banked": 101894,
+   "v7_refilled": 48768,
+   "v6_refilled": 48829
+  },
+  "2025-09": {
+   "gold": 65106,
+   "wkh08": 7229,
+   "gold_v7": 72336,
+   "gold_v6": 69740,
+   "v7_banked": 77627,
+   "v7_refilled": 5291,
+   "v6_refilled": 5896
+  },
+  "2025-10": {
+   "gold": 38606,
+   "wkh08": 574,
+   "gold_v7": 39180,
+   "gold_v6": 39068,
+   "v7_banked": 52628,
+   "v7_refilled": 13448,
+   "v6_refilled": 14533
+  },
+  "2025-11": {
+   "gold": 12553,
+   "wkh08": 797,
+   "gold_v7": 13350,
+   "gold_v6": 8659,
+   "v7_banked": 18215,
+   "v7_refilled": 4865,
+   "v6_refilled": 8205
+  },
+  "2025-12": {
+   "gold": -12330,
+   "wkh08": 627,
+   "gold_v7": -11703,
+   "gold_v6": -13782,
+   "v7_banked": 12213,
+   "v7_refilled": 23916,
+   "v6_refilled": 23413
+  },
+  "2026-01": {
+   "gold": 52709,
+   "wkh08": -696,
+   "gold_v7": 52013,
+   "gold_v6": 50305,
+   "v7_banked": 76325,
+   "v7_refilled": 24312,
+   "v6_refilled": 25274
+  },
+  "2026-02": {
+   "gold": 22977,
+   "wkh08": -28153,
+   "gold_v7": -5175,
+   "gold_v6": -570,
+   "v7_banked": 58191,
+   "v7_refilled": 63367,
+   "v6_refilled": 63367
+  },
+  "2026-03": {
+   "gold": 113160,
+   "wkh08": 48281,
+   "gold_v7": 161441,
+   "gold_v6": 153550,
+   "v7_banked": 182685,
+   "v7_refilled": 21244,
+   "v6_refilled": 21244
+  },
+  "2026-04": {
+   "gold": -38531,
+   "wkh08": 22809,
+   "gold_v7": -15721,
+   "gold_v6": -17837,
+   "v7_banked": 43179,
+   "v7_refilled": 58901,
+   "v6_refilled": 56939
+  },
+  "2026-05": {
+   "gold": 3809,
+   "wkh08": 7510,
+   "gold_v7": 11319,
+   "gold_v6": 15726,
+   "v7_banked": 29031,
+   "v7_refilled": 17712,
+   "v6_refilled": 12213
+  },
+  "2026-06": {
+   "gold": 19644,
+   "wkh08": 26896,
+   "gold_v7": 46540,
+   "gold_v6": 41869,
+   "v7_banked": 80573,
+   "v7_refilled": 34032,
+   "v6_refilled": 33841
+  },
+  "2026-07": {
+   "gold": 9373,
+   "wkh08": 35344,
+   "gold_v7": 44717,
+   "gold_v6": 47691,
+   "v7_banked": 47436,
+   "v7_refilled": 2719,
+   "v6_refilled": 2719
+  },
+  "2026-08": {
+   "gold": -6039,
+   "wkh08": -13027,
+   "gold_v7": -19066,
+   "gold_v6": -19398,
+   "v7_banked": 3111,
+   "v7_refilled": 22178,
+   "v6_refilled": 22509
+  },
+  "2026-09": {
+   "gold": 79970,
+   "wkh08": -4144,
+   "gold_v7": 75826,
+   "gold_v6": 74695,
+   "v7_banked": 103621,
+   "v7_refilled": 27795,
+   "v6_refilled": 28147
+  },
+  "2026-10": {
+   "gold": 125629,
+   "wkh08": 8039,
+   "gold_v7": 133668,
+   "gold_v6": 126762,
+   "v7_banked": 168691,
+   "v7_refilled": 35023,
+   "v6_refilled": 37783
+  }
+ },
+ "bad_months_v7": {
+  "2023-01": {
+   "gold": -6813,
+   "wkh08": -11881,
+   "total": -18695,
+   "driver": "WK-H"
+  },
+  "2023-06": {
+   "gold": -4218,
+   "wkh08": -14281,
+   "total": -18499,
+   "driver": "WK-H"
+  },
+  "2023-07": {
+   "gold": 0,
+   "wkh08": -892,
+   "total": -892,
+   "driver": "WK-H"
+  },
+  "2023-10": {
+   "gold": -6693,
+   "wkh08": -7038,
+   "total": -13731,
+   "driver": "WK-H"
+  },
+  "2023-12": {
+   "gold": 977,
+   "wkh08": -15825,
+   "total": -14848,
+   "driver": "WK-H"
+  },
+  "2024-03": {
+   "gold": -5932,
+   "wkh08": -2651,
+   "total": -8582,
+   "driver": "Gold"
+  },
+  "2024-05": {
+   "gold": -6398,
+   "wkh08": -22583,
+   "total": -28981,
+   "driver": "WK-H"
+  },
+  "2024-06": {
+   "gold": 0,
+   "wkh08": -7367,
+   "total": -7367,
+   "driver": "WK-H"
+  },
+  "2024-10": {
+   "gold": -14707,
+   "wkh08": 11677,
+   "total": -3029,
+   "driver": "Gold"
+  },
+  "2025-12": {
+   "gold": -12330,
+   "wkh08": 627,
+   "total": -11703,
+   "driver": "Gold"
+  },
+  "2026-02": {
+   "gold": 22977,
+   "wkh08": -28153,
+   "total": -5175,
+   "driver": "WK-H"
+  },
+  "2026-04": {
+   "gold": -38531,
+   "wkh08": 22809,
+   "total": -15721,
+   "driver": "Gold"
+  },
+  "2026-08": {
+   "gold": -6039,
+   "wkh08": -13027,
+   "total": -19066,
+   "driver": "WK-H"
+  }
+ },
+ "bad_v7_by_driver": {
+  "Gold": 4,
+  "WK-H": 9
+ },
+ "refills": {
+  "Gold v6 total refilled": 1340672,
+  "Gold v7 total refilled": 1340231,
+  "Gold v6 worst month refilled": 71314,
+  "Gold v7 worst month refilled": 67407
+ },
+ "wallets": {
+  "Rs 5.3 lakh (1 WK-H unit)": {
+   "net": 1370643,
+   "per_year_pct": 67.5,
+   "months_positive": 33,
+   "worst_month": -28981,
+   "mean_month": 29797,
+   "idle_capital_credit_per_month": 2208
+  },
+  "Rs 10.3 lakh (2 WK-H units)": {
+   "net": 1890404,
+   "per_year_pct": 47.9,
+   "months_positive": 35,
+   "worst_month": -51564,
+   "mean_month": 41096,
+   "idle_capital_credit_per_month": 4292
+  },
+  "Rs 15.3 lakh (3 WK-H units)": {
+   "net": 2410165,
+   "per_year_pct": 41.1,
+   "months_positive": 35,
+   "worst_month": -74146,
+   "mean_month": 52395,
+   "idle_capital_credit_per_month": 6375
+  }
+ }
+}

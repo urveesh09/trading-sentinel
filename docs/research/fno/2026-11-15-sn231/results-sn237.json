@@ -1,0 +1,128 @@
+{
+ "daily hedged straddle, band 0.6": {
+  "hp": {},
+  "wk": {
+   "DEV": {
+    "net": 13691,
+    "months": 53,
+    "months_positive": 23,
+    "worst_month": -33781
+   },
+   "TEST": {
+    "net": -19182,
+    "months": 3,
+    "months_positive": 0,
+    "worst_month": -16109
+   },
+   "N2122": {
+    "net": 10718,
+    "months": 5,
+    "months_positive": 2,
+    "worst_month": -6942
+   },
+   "SENSEX": {
+    "net": 84926,
+    "months": 19,
+    "months_positive": 11,
+    "worst_month": -12805
+   },
+   "EXAM": {
+    "net": -20761,
+    "months": 15,
+    "months_positive": 4,
+    "worst_month": -16598
+   },
+   "positive_samples": 3,
+   "months_positive_total": 40,
+   "months_total": 95
+  },
+  "account": {
+   "net": 868273,
+   "months": 46,
+   "months_positive": 26,
+   "worst_month": -44585,
+   "second_worst_month": -38716,
+   "mean_month": 18875,
+   "sd_month": 45166,
+   "green_days": 322,
+   "red_days": 472,
+   "worst_day": -66932,
+   "worst_week": -68436,
+   "weeks_positive": "101 of 200",
+   "by_year": {
+    "2023": -137543,
+    "2024": 223474,
+    "2025": 465884,
+    "2026": 316458
+   }
+  },
+  "q4_vs_wkh": false,
+  "positions_dev": 603,
+  "win_pct_dev": 53.6,
+  "mean_per_position_per_lot_dev": 23
+ },
+ "daily hedged straddle, band 0.8": {
+  "hp": {
+   "band": 0.8
+  },
+  "wk": {
+   "DEV": {
+    "net": 65186,
+    "months": 53,
+    "months_positive": 27,
+    "worst_month": -41425
+   },
+   "TEST": {
+    "net": -11352,
+    "months": 3,
+    "months_positive": 1,
+    "worst_month": -7797
+   },
+   "N2122": {
+    "net": 23659,
+    "months": 5,
+    "months_positive": 3,
+    "worst_month": -9961
+   },
+   "SENSEX": {
+    "net": 42734,
+    "months": 19,
+    "months_positive": 9,
+    "worst_month": -24727
+   },
+   "EXAM": {
+    "net": 25353,
+    "months": 15,
+    "months_positive": 7,
+    "worst_month": -7687
+   },
+   "positive_samples": 4,
+   "months_positive_total": 47,
+   "months_total": 95
+  },
+  "account": {
+   "net": 932543,
+   "months": 46,
+   "months_positive": 25,
+   "worst_month": -59873,
+   "second_worst_month": -45103,
+   "mean_month": 20273,
+   "sd_month": 46951,
+   "green_days": 313,
+   "red_days": 481,
+   "worst_day": -66932,
+   "worst_week": -69363,
+   "weeks_positive": "104 of 200",
+   "by_year": {
+    "2023": -117077,
+    "2024": 252515,
+    "2025": 463533,
+    "2026": 333572
+   }
+  },
+  "q4_vs_wkh": false,
+  "positions_dev": 603,
+  "win_pct_dev": 51.7,
+  "mean_per_position_per_lot_dev": 108
+ }
+}

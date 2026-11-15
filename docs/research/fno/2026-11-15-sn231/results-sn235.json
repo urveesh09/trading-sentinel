@@ -1,0 +1,278 @@
+{
+ "parity": {
+  "DEV": {
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "TEST": {
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "N2122": {
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "SENSEX": {
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  },
+  "EXAM": {
+   "same_weeks": true,
+   "max_abs_diff_rs": 0.0
+  }
+ },
+ "variants": {
+  "WK-H (as frozen)": {
+   "hp": {},
+   "wk": {
+    "DEV": {
+     "net": 211957,
+     "months": 53,
+     "months_positive": 32,
+     "worst_month": -15915
+    },
+    "TEST": {
+     "net": -2414,
+     "months": 2,
+     "months_positive": 1,
+     "worst_month": -2981
+    },
+    "N2122": {
+     "net": 10308,
+     "months": 4,
+     "months_positive": 1,
+     "worst_month": -8587
+    },
+    "SENSEX": {
+     "net": 104354,
+     "months": 19,
+     "months_positive": 12,
+     "worst_month": -8887
+    },
+    "EXAM": {
+     "net": 61511,
+     "months": 14,
+     "months_positive": 9,
+     "worst_month": -6251
+    },
+    "positive_samples": 4,
+    "months_positive_total": 55,
+    "months_total": 92
+   },
+   "account": {
+    "net": 1196139,
+    "months": 46,
+    "months_positive": 31,
+    "worst_month": -38228,
+    "second_worst_month": -27730,
+    "mean_month": 26003,
+    "sd_month": 45650,
+    "green_days": 292,
+    "red_days": 360,
+    "worst_day": -55046,
+    "worst_week": -49286,
+    "weeks_positive": "105 of 200",
+    "by_year": {
+     "2023": -55408,
+     "2024": 263993,
+     "2025": 514760,
+     "2026": 472794
+    }
+   },
+   "q4_vs_wkh": true,
+   "orders_dev": 868,
+   "hedge_costs_dev_per_lot": 142232
+  },
+  "(a) checks through 15:15": {
+   "hp": {
+    "freeze_j": 361
+   },
+   "wk": {
+    "DEV": {
+     "net": 168556,
+     "months": 53,
+     "months_positive": 31,
+     "worst_month": -14353
+    },
+    "TEST": {
+     "net": -3505,
+     "months": 2,
+     "months_positive": 0,
+     "worst_month": -2981
+    },
+    "N2122": {
+     "net": 8371,
+     "months": 4,
+     "months_positive": 1,
+     "worst_month": -8587
+    },
+    "SENSEX": {
+     "net": 91016,
+     "months": 19,
+     "months_positive": 12,
+     "worst_month": -13427
+    },
+    "EXAM": {
+     "net": 48977,
+     "months": 14,
+     "months_positive": 8,
+     "worst_month": -6219
+    },
+    "positive_samples": 4,
+    "months_positive_total": 52,
+    "months_total": 92
+   },
+   "account": {
+    "net": 1117164,
+    "months": 46,
+    "months_positive": 31,
+    "worst_month": -27730,
+    "second_worst_month": -25252,
+    "mean_month": 24286,
+    "sd_month": 45198,
+    "green_days": 291,
+    "red_days": 361,
+    "worst_day": -41884,
+    "worst_week": -48901,
+    "weeks_positive": "103 of 200",
+    "by_year": {
+     "2023": -82599,
+     "2024": 259830,
+     "2025": 495611,
+     "2026": 444322
+    }
+   },
+   "q4_vs_wkh": false,
+   "orders_dev": 980,
+   "hedge_costs_dev_per_lot": 167046
+  },
+  "(b) flatten futures at 14:30": {
+   "hp": {
+    "flatten_j": 315
+   },
+   "wk": {
+    "DEV": {
+     "net": 230801,
+     "months": 53,
+     "months_positive": 34,
+     "worst_month": -19391
+    },
+    "TEST": {
+     "net": -9697,
+     "months": 2,
+     "months_positive": 0,
+     "worst_month": -5416
+    },
+    "N2122": {
+     "net": 10900,
+     "months": 4,
+     "months_positive": 2,
+     "worst_month": -9340
+    },
+    "SENSEX": {
+     "net": 64153,
+     "months": 19,
+     "months_positive": 13,
+     "worst_month": -16773
+    },
+    "EXAM": {
+     "net": 86237,
+     "months": 14,
+     "months_positive": 10,
+     "worst_month": -5985
+    },
+    "positive_samples": 4,
+    "months_positive_total": 59,
+    "months_total": 92
+   },
+   "account": {
+    "net": 1215698,
+    "months": 46,
+    "months_positive": 33,
+    "worst_month": -45180,
+    "second_worst_month": -25525,
+    "mean_month": 26428,
+    "sd_month": 43523,
+    "green_days": 296,
+    "red_days": 356,
+    "worst_day": -40310,
+    "worst_week": -41716,
+    "weeks_positive": "102 of 200",
+    "by_year": {
+     "2023": -43563,
+     "2024": 286573,
+     "2025": 543315,
+     "2026": 429373
+    }
+   },
+   "q4_vs_wkh": true,
+   "orders_dev": 1059,
+   "hedge_costs_dev_per_lot": 192477
+  },
+  "(c) every 5 min 14:30-15:15": {
+   "hp": {
+    "freeze_j": 361,
+    "late_every": 5,
+    "late_from": 315
+   },
+   "wk": {
+    "DEV": {
+     "net": 168194,
+     "months": 53,
+     "months_positive": 33,
+     "worst_month": -14353
+    },
+    "TEST": {
+     "net": -3260,
+     "months": 2,
+     "months_positive": 0,
+     "worst_month": -2981
+    },
+    "N2122": {
+     "net": 7986,
+     "months": 4,
+     "months_positive": 1,
+     "worst_month": -8587
+    },
+    "SENSEX": {
+     "net": 88241,
+     "months": 19,
+     "months_positive": 11,
+     "worst_month": -11051
+    },
+    "EXAM": {
+     "net": 47976,
+     "months": 14,
+     "months_positive": 8,
+     "worst_month": -6624
+    },
+    "positive_samples": 4,
+    "months_positive_total": 53,
+    "months_total": 92
+   },
+   "account": {
+    "net": 1128455,
+    "months": 46,
+    "months_positive": 31,
+    "worst_month": -27730,
+    "second_worst_month": -23892,
+    "mean_month": 24532,
+    "sd_month": 45075,
+    "green_days": 291,
+    "red_days": 361,
+    "worst_day": -41884,
+    "worst_week": -48901,
+    "weeks_positive": "104 of 200",
+    "by_year": {
+     "2023": -78985,
+     "2024": 259330,
+     "2025": 500984,
+     "2026": 447126
+    }
+   },
+   "q4_vs_wkh": false,
+   "orders_dev": 1027,
+   "hedge_costs_dev_per_lot": 171600
+  }
+ }
+}
