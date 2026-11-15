@@ -32,7 +32,8 @@ def week_vol(t, data):
     """(implied sigma per session from the entry straddle, realised sd of its 15:15-to-15:15 log moves, incl. settlement)."""
     k = t["k"]
     t0 = (375 - 360) / 375.0 + (k - 1) + 360 / 375.0 + 0.15 * k
-    sig = t["Q"] / (0.7979 * t["S0"] * math.sqrt(t0)) if t.get("S0") else None
+    s0 = t.get("S0") or wk.idx_px(data, t["entry"])     # post-run fix (disclosed): wk3 trade rows carry no S0
+    sig = t["Q"] / (0.7979 * s0 * math.sqrt(t0)) if s0 else None
     pts = [wk.idx_px(data, d) for d in sorted(t["marks"]) if d < t["expiry"]]
     st = wk.settle_px(data, t["expiry"])
     pts = [p for p in pts if p] + ([st] if st else [])
@@ -77,7 +78,7 @@ if __name__ == "__main__":
             "wkh_worst_week": round(min((t["net"] for t in mw), default=0.0)), "wkh_orders": sum(t["orders"] for t in mw),
             "wkh_hedge_costs": round(sum(t["hedge_costs"] for t in mw)),
             "wkh_implied_over_realised": round(float(np.mean(ivrv)), 3) if ivrv else None,
-            "wkh_premium_pct": round(float(np.mean([t["Q"] / t["S0"] * 100 for t in mw if t.get("S0")])), 3) if mw else None,
+            "wkh_premium_pct": round(float(np.mean([t["Q"] / wk.idx_px(D, t["entry"]) * 100 for t in mw if wk.idx_px(D, t["entry"])])), 3) if mw else None,
             "rv_ann_pct": round(float(np.std(lr, ddof=1) * math.sqrt(252) * 100), 2) if len(lr) > 2 else None,
             "range_pct": round(float(np.mean(rng)) * 100, 3), "gap_pct": round(float(np.mean(gaps)) * 100, 3) if gaps else None,
             "gaps_over_0.75pct": sum(x > 0.0075 for x in gaps), "days_over_1pct": int(np.sum(np.abs(lr) > 0.01)),

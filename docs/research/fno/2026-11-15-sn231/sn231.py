@@ -38,5 +38,5 @@ if __name__ == "__main__":
     for m, r in res["months"].items():
         print(f"SN231 {m} gold {r['gold']:>9} wkh {r['wkh']:>9} v6 {r['gold_v6']:>9} banked {r['banked']:>9} refilled {r['refilled']:>9} "
               f"green/red {r['green_days']}/{r['red_days']}{'  <-- BAD' if r['gold_v6'] < 0 else ''}", flush=True)
-    print("SN231 bad months", len(bad), json.dumps(res["bad_month_split"]), json.dumps(res["legs_negative_months"]), flush=True)
+    print("SN231 bad months", len(bad), json.dumps(res["bad_month_split"], default=int), json.dumps(res["legs_negative_months"], default=int), flush=True)  # post-run fix: numpy ints
     out_path.write_text(json.dumps(res, indent=1, default=lambda o: o.item() if hasattr(o, "item") else str(o)), encoding="utf-8")
