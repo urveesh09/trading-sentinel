@@ -1,3 +1,51 @@
+## November 15 - Gold v6 = SN Gold v5 + WK-H, the hedged weekly straddle (Dev only; deploy on the owner's word): `python-engine/sn_wkh.py`
+
+**Authority:** the owner, Nov 15: "That gold v5 + wk-h is the new gold v6 … I allow you to do that in Dev right now … this will be our baseline, and we will be calling this Gold V6." Dev only; Production stays `826f0727` until the owner says deploy.
+
+**Problem / plan slice:**
+- Add WK-H, the gap-day leg that passed the unseen NIFTY 2020–21 exam (SN228), beside SN Gold v5 (`sn_gold.py`, unchanged), on paper.
+- **Contract:** the frozen research rules of `docs/research/fno/2026-11-15-sn221/wk3.py` (`("STRADDLE", "M", "settle", "H15x2")`), on live Kite quotes; never an order.
+
+**What runs (`sn_wkh.py`):**
+- **Entry:** at the first F&O tick in 15:15–15:19 on the first session after the last weekend or holiday before the nearest NIFTY weekly expiry (every calendar day from today to the expiry is a session, and yesterday was not).
+  - It sells the ATM call and put at the bid: the strike with the closest call and put mids, ties to the index. 2 lots per ₹5 lakh unit (`SN_WKH_WALLET` ₹5,00,000).
+- **Hedge:**
+  - from the next session, the first tick of each 15-minute slot (09:15 … 15:15; on expiry day none from 14:30) computes the straddle's Black–Scholes delta (σ fixed at entry from the straddle; the session clock with 0.15 a night);
+  - when |2 × delta + futures lots| > 0.6, the futures are reset to −round(2 × delta) lots, bought at the ask and sold at the bid;
+  - the contract is the first NIFTY future expiring on or after the option expiry.
+- **Expiry day:**
+  - the futures are sampled once a minute from 15:00 and closed at their mean at the first tick from 15:24 (the F&O tick window ends 15:25);
+  - the options settle at the official close, read at the next session's first tick from Kite's previous close, with intrinsic value charged as a round trip;
+  - if the engine missed the expiry close with a hedge open, or missed the next session, the week is `UNRESOLVED`, never guessed.
+- **Money:**
+  - option charges from `fno_costs`;
+  - futures charges from the Zerodha schedule in `fut_charges` (STT 0.02% on the sell);
+  - the research stress (₹100 per option leg-lot and per futures lot-order, +₹100 before 09:20) is kept as `net_stressed`.
+- **Quotes:** `kite.get_quote_by_instruments` on the management lane, only when needed (entry, 15-minute checks, the 15:15 mark, expiry-day samples, settlement). It runs at most once per 15-minute slot, plus the mark, plus one read a minute on expiry afternoon.
+- **Messages to the owner:** "🥇 Gold v6 · WK-H (paper): …" for the sale, each futures order, the 15:15 value on the days in between, the hedge close, and the week's result.
+- **Tables (new):** `gold_v6_wkh_weeks`, `gold_v6_wkh_orders`, `gold_v6_wkh_marks`, `gold_v6_wkh_wallet`.
+- **Settings:** `SN_WKH_*` in `config.py`; on by default in Dev. Off with `SN_WKH_ENABLED=false`.
+- **Hook:** one guarded call in `fno_orchestrator._manage_single_leg_books` after SN Gold, skipped with `FNO_DISABLE_PAPER`.
+  - It also runs in fast-exit passes; slots, marks and the once-a-minute sample guard keep the quote reads bounded.
+
+**Verification (Nov 15):**
+- `tests/test_sn_wkh.py`: 13 passed. They cover the rules against `wk3`'s delta, clock, futures charges and settlement, and the entry day matched to `wk3.k_of("M")`. They also run a full Thursday-expiry week on a temporary database, the quote budget, the missed-expiry `UNRESOLVED` path, the disabled switch, and the absence of any order path.
+- `tests/test_sn_gold.py`: 20 passed.
+- The full suite: **6,419 passed, 4 skipped, exit 0** (11:39).
+- Atlas regenerated (312 modules).
+
+**Not verified:**
+- live Kite quote packets for the index key `NSE:NIFTY 50` with `ohlc.close` at the next open (the same call shape as `expiry_paper.py`);
+- Zerodha margin for 2 short ATM lots + 2 futures lots, which the owner can check in Kite's basket.
+
+**Rollout / rollback:**
+- Rollout is a deploy on the owner's word; the first Monday 15:15 after it is the first entry.
+- Rollback: `SN_WKH_ENABLED=false` and recreate the engine, or redeploy `826f0727`. New tables only; nothing else reads them. SN Gold v5 is untouched.
+
+**Remaining work:**
+- the first live week's checks: the sale message, `gold_v6_wkh_orders` at the 15-minute marks, the expiry-day hedge close, settlement at the next open;
+- SN231–SN250 research (Gold v6's bad months, a Gold v7).
+
 ## November 13 (night of Nov 12) - Deployed: Production `82b08371` (PR #137: SN Gold v5 paper module)
 
 **Authority:** the owner's word, Nov 12 night: "push that merge that and deploy it in production ... restart and rebuild everything right away"; and "if you think 30,000 starting amount is better than I am fine with that".
