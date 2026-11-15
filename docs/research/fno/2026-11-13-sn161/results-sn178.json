@@ -1,0 +1,34 @@
+{
+ "Rs 30k fixed, monthly sweep": {
+  "total": 216579,
+  "month_median": 565,
+  "month_worst": -9607,
+  "months_positive": 0.523,
+  "month_mean": 4922,
+  "refilled": 182268
+ },
+ "Rs 30k compounding (production)": {
+  "total": 642173,
+  "month_median": 679,
+  "month_worst": -38531,
+  "months_positive": 0.523,
+  "month_mean": 14595,
+  "refilled": 522187
+ },
+ "Rs 15k fixed, monthly sweep": {
+  "total": 121527,
+  "month_median": 800,
+  "month_worst": -6007,
+  "months_positive": 0.545,
+  "month_mean": 2762,
+  "refilled": 94799
+ },
+ "Rs 15k compounding": {
+  "total": 299283,
+  "month_median": 528,
+  "month_worst": -17467,
+  "months_positive": 0.5,
+  "month_mean": 6802,
+  "refilled": 246840
+ }
+}

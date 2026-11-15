@@ -40,6 +40,7 @@ import fno_broker_backstop
 import fno_live_test
 import fno_n11
 import sn_gold
+import sn_wkh
 import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_trend_lock
@@ -1529,6 +1530,13 @@ async def _manage_single_leg_books(
                 await sn_gold.tick(kite, db_path, now=now_ist, fut_prices=fut_prices, read_quote=_management_quote)
             except Exception as exc:
                 logger.error("sn_gold_tick_failed err=%s", str(exc), exc_info=True)
+    # [Gold v6 WK-H] The hedged weekly straddle, Gold v6's gap-day leg (sn_wkh.py). Paper only, never an order; it reads
+    # its own quotes at most a few times an hour and cannot stop any step above.
+    if settings.SN_WKH_ENABLED and not settings.FNO_DISABLE_PAPER:
+        try:
+            await sn_wkh.tick(kite, db_path, now=now_ist)
+        except Exception as exc:
+            logger.error("gold_v6_wkh_tick_failed err=%s", str(exc), exc_info=True)
 
     return fut_price, now_ist
 

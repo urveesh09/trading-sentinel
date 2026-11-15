@@ -1,0 +1,88 @@
+{
+ "band 0.6": {
+  "without": {
+   "net": 1196139,
+   "months": 46,
+   "months_positive": 31,
+   "worst_month": -38228,
+   "second_worst_month": -27730,
+   "mean_month": 26003,
+   "sd_month": 45650,
+   "green_days": 292,
+   "red_days": 360,
+   "worst_day": -55046,
+   "worst_week": -49286,
+   "weeks_positive": "105 of 200",
+   "by_year": {
+    "2023": -55408,
+    "2024": 263993,
+    "2025": 514760,
+    "2026": 472794
+   }
+  },
+  "with 5% on Rs 5.3 lakh": {
+   "net": 1297722,
+   "months": 46,
+   "months_positive": 34,
+   "worst_month": -36020,
+   "second_worst_month": -25522,
+   "mean_month": 28211,
+   "sd_month": 45650,
+   "green_days": 323,
+   "red_days": 343,
+   "worst_day": -55046,
+   "worst_week": -49286,
+   "weeks_positive": "113 of 200",
+   "by_year": {
+    "2023": -28908,
+    "2024": 290493,
+    "2025": 541260,
+    "2026": 494877
+   }
+  },
+  "monthly_credit": 2208
+ },
+ "band 0.8": {
+  "without": {
+   "net": 1370643,
+   "months": 46,
+   "months_positive": 33,
+   "worst_month": -28981,
+   "second_worst_month": -19066,
+   "mean_month": 29797,
+   "sd_month": 46573,
+   "green_days": 291,
+   "red_days": 361,
+   "worst_day": -48695,
+   "worst_week": -50234,
+   "weeks_positive": "108 of 200",
+   "by_year": {
+    "2023": -26648,
+    "2024": 343667,
+    "2025": 568064,
+    "2026": 485561
+   }
+  },
+  "with 5% on Rs 5.3 lakh": {
+   "net": 1472227,
+   "months": 46,
+   "months_positive": 34,
+   "worst_month": -26773,
+   "second_worst_month": -16858,
+   "mean_month": 32005,
+   "sd_month": 46573,
+   "green_days": 321,
+   "red_days": 345,
+   "worst_day": -48695,
+   "worst_week": -50234,
+   "weeks_positive": "115 of 200",
+   "by_year": {
+    "2023": -148,
+    "2024": 370167,
+    "2025": 594564,
+    "2026": 507644
+   }
+  },
+  "monthly_credit": 2208
+ }
+}

@@ -1,0 +1,512 @@
+{
+ "window": [
+  "2023-01-02",
+  "2026-10-28"
+ ],
+ "sessions": 944,
+ "Gold v5": {
+  "net": 850883,
+  "months": 46,
+  "months_positive": 25,
+  "worst_month": -38531,
+  "second_worst_month": -14815,
+  "mean_month": 18497,
+  "sd_month": 40207,
+  "green_days": 62,
+  "red_days": 71,
+  "worst_day": -21113,
+  "worst_week": -25188,
+  "weeks_positive": "44 of 200",
+  "by_year": {
+   "2023": -12107,
+   "2024": 187476,
+   "2025": 292811,
+   "2026": 382702
+  }
+ },
+ "WK-H": {
+  "net": 345256,
+  "months": 46,
+  "months_positive": 29,
+  "worst_month": -31830,
+  "second_worst_month": -28707,
+  "mean_month": 7506,
+  "sd_month": 19975,
+  "green_days": 252,
+  "red_days": 344,
+  "worst_day": -55046,
+  "worst_week": -49286,
+  "weeks_positive": "103 of 200",
+  "by_year": {
+   "2023": -43302,
+   "2024": 76517,
+   "2025": 221948,
+   "2026": 90092
+  }
+ },
+ "Gold v6": {
+  "net": 1196139,
+  "months": 46,
+  "months_positive": 31,
+  "worst_month": -38228,
+  "second_worst_month": -27730,
+  "mean_month": 26003,
+  "sd_month": 45650,
+  "green_days": 292,
+  "red_days": 360,
+  "worst_day": -55046,
+  "worst_week": -49286,
+  "weeks_positive": "105 of 200",
+  "by_year": {
+   "2023": -55408,
+   "2024": 263993,
+   "2025": 514760,
+   "2026": 472794
+  }
+ },
+ "months": {
+  "2023-01": {
+   "gold": -6813,
+   "wkh": -4260,
+   "gold_v6": -11073,
+   "banked": 13927,
+   "refilled": 25000,
+   "green_days": 6,
+   "red_days": 11
+  },
+  "2023-02": {
+   "gold": -9607,
+   "wkh": 9135,
+   "gold_v6": -471,
+   "banked": 19378,
+   "refilled": 19850,
+   "green_days": 8,
+   "red_days": 7
+  },
+  "2023-03": {
+   "gold": 11249,
+   "wkh": 4254,
+   "gold_v6": 15503,
+   "banked": 23385,
+   "refilled": 7881,
+   "green_days": 7,
+   "red_days": 7
+  },
+  "2023-04": {
+   "gold": 0,
+   "wkh": 1564,
+   "gold_v6": 1564,
+   "banked": 10331,
+   "refilled": 8767,
+   "green_days": 5,
+   "red_days": 9
+  },
+  "2023-05": {
+   "gold": 0,
+   "wkh": 9467,
+   "gold_v6": 9467,
+   "banked": 17528,
+   "refilled": 8061,
+   "green_days": 7,
+   "red_days": 11
+  },
+  "2023-06": {
+   "gold": -4218,
+   "wkh": -9964,
+   "gold_v6": -14181,
+   "banked": 9283,
+   "refilled": 23465,
+   "green_days": 5,
+   "red_days": 12
+  },
+  "2023-07": {
+   "gold": 0,
+   "wkh": -3212,
+   "gold_v6": -3212,
+   "banked": 14882,
+   "refilled": 18094,
+   "green_days": 6,
+   "red_days": 11
+  },
+  "2023-08": {
+   "gold": 0,
+   "wkh": -1752,
+   "gold_v6": -1752,
+   "banked": 19718,
+   "refilled": 21470,
+   "green_days": 9,
+   "red_days": 8
+  },
+  "2023-09": {
+   "gold": 0,
+   "wkh": -7277,
+   "gold_v6": -7277,
+   "banked": 9697,
+   "refilled": 16974,
+   "green_days": 5,
+   "red_days": 9
+  },
+  "2023-10": {
+   "gold": -6693,
+   "wkh": -14397,
+   "gold_v6": -21089,
+   "banked": 8075,
+   "refilled": 29164,
+   "green_days": 3,
+   "red_days": 12
+  },
+  "2023-11": {
+   "gold": 2998,
+   "wkh": 1844,
+   "gold_v6": 4843,
+   "banked": 25005,
+   "refilled": 20162,
+   "green_days": 7,
+   "red_days": 9
+  },
+  "2023-12": {
+   "gold": 977,
+   "wkh": -28707,
+   "gold_v6": -27730,
+   "banked": 27973,
+   "refilled": 55703,
+   "green_days": 6,
+   "red_days": 11
+  },
+  "2024-01": {
+   "gold": 84776,
+   "wkh": -19911,
+   "gold_v6": 64864,
+   "banked": 114804,
+   "refilled": 49940,
+   "green_days": 8,
+   "red_days": 13
+  },
+  "2024-02": {
+   "gold": 2481,
+   "wkh": 26148,
+   "gold_v6": 28629,
+   "banked": 62769,
+   "refilled": 34140,
+   "green_days": 10,
+   "red_days": 7
+  },
+  "2024-03": {
+   "gold": -5932,
+   "wkh": -10675,
+   "gold_v6": -16607,
+   "banked": 19298,
+   "refilled": 35905,
+   "green_days": 5,
+   "red_days": 11
+  },
+  "2024-04": {
+   "gold": 4141,
+   "wkh": 7573,
+   "gold_v6": 11714,
+   "banked": 25275,
+   "refilled": 13561,
+   "green_days": 6,
+   "red_days": 6
+  },
+  "2024-05": {
+   "gold": -6398,
+   "wkh": -31830,
+   "gold_v6": -38228,
+   "banked": 33086,
+   "refilled": 71314,
+   "green_days": 7,
+   "red_days": 8
+  },
+  "2024-06": {
+   "gold": 0,
+   "wkh": 7211,
+   "gold_v6": 7211,
+   "banked": 58539,
+   "refilled": 51328,
+   "green_days": 7,
+   "red_days": 8
+  },
+  "2024-07": {
+   "gold": 15357,
+   "wkh": 15213,
+   "gold_v6": 30570,
+   "banked": 43221,
+   "refilled": 12651,
+   "green_days": 6,
+   "red_days": 9
+  },
+  "2024-08": {
+   "gold": -2599,
+   "wkh": 32464,
+   "gold_v6": 29866,
+   "banked": 37108,
+   "refilled": 7242,
+   "green_days": 10,
+   "red_days": 6
+  },
+  "2024-09": {
+   "gold": 0,
+   "wkh": 12980,
+   "gold_v6": 12980,
+   "banked": 35884,
+   "refilled": 22904,
+   "green_days": 9,
+   "red_days": 7
+  },
+  "2024-10": {
+   "gold": -14707,
+   "wkh": -3719,
+   "gold_v6": -18426,
+   "banked": 26128,
+   "refilled": 44554,
+   "green_days": 7,
+   "red_days": 9
+  },
+  "2024-11": {
+   "gold": 125172,
+   "wkh": 9566,
+   "gold_v6": 134738,
+   "banked": 154450,
+   "refilled": 19712,
+   "green_days": 8,
+   "red_days": 4
+  },
+  "2024-12": {
+   "gold": -14815,
+   "wkh": 31498,
+   "gold_v6": 16683,
+   "banked": 37224,
+   "refilled": 20541,
+   "green_days": 7,
+   "red_days": 5
+  },
+  "2025-01": {
+   "gold": 126805,
+   "wkh": 31991,
+   "gold_v6": 158795,
+   "banked": 205982,
+   "refilled": 47187,
+   "green_days": 13,
+   "red_days": 9
+  },
+  "2025-02": {
+   "gold": 35801,
+   "wkh": 3507,
+   "gold_v6": 39309,
+   "banked": 87725,
+   "refilled": 48416,
+   "green_days": 5,
+   "red_days": 10
+  },
+  "2025-03": {
+   "gold": 11797,
+   "wkh": 2352,
+   "gold_v6": 14149,
+   "banked": 69858,
+   "refilled": 55708,
+   "green_days": 6,
+   "red_days": 10
+  },
+  "2025-04": {
+   "gold": -5744,
+   "wkh": 50954,
+   "gold_v6": 45211,
+   "banked": 88046,
+   "refilled": 42835,
+   "green_days": 10,
+   "red_days": 8
+  },
+  "2025-05": {
+   "gold": 382,
+   "wkh": 13056,
+   "gold_v6": 13438,
+   "banked": 82727,
+   "refilled": 69290,
+   "green_days": 7,
+   "red_days": 11
+  },
+  "2025-06": {
+   "gold": 5433,
+   "wkh": 48777,
+   "gold_v6": 54211,
+   "banked": 69224,
+   "refilled": 15013,
+   "green_days": 9,
+   "red_days": 8
+  },
+  "2025-07": {
+   "gold": -8816,
+   "wkh": 52329,
+   "gold_v6": 43513,
+   "banked": 62439,
+   "refilled": 18926,
+   "green_days": 15,
+   "red_days": 4
+  },
+  "2025-08": {
+   "gold": 23217,
+   "wkh": 19233,
+   "gold_v6": 42450,
+   "banked": 91278,
+   "refilled": 48829,
+   "green_days": 9,
+   "red_days": 5
+  },
+  "2025-09": {
+   "gold": 65106,
+   "wkh": 4633,
+   "gold_v6": 69740,
+   "banked": 75636,
+   "refilled": 5896,
+   "green_days": 5,
+   "red_days": 7
+  },
+  "2025-10": {
+   "gold": 38606,
+   "wkh": 462,
+   "gold_v6": 39068,
+   "banked": 53600,
+   "refilled": 14533,
+   "green_days": 4,
+   "red_days": 4
+  },
+  "2025-11": {
+   "gold": 12553,
+   "wkh": -3894,
+   "gold_v6": 8659,
+   "banked": 16864,
+   "refilled": 8205,
+   "green_days": 3,
+   "red_days": 6
+  },
+  "2025-12": {
+   "gold": -12330,
+   "wkh": -1451,
+   "gold_v6": -13782,
+   "banked": 9632,
+   "refilled": 23413,
+   "green_days": 2,
+   "red_days": 9
+  },
+  "2026-01": {
+   "gold": 52709,
+   "wkh": -2404,
+   "gold_v6": 50305,
+   "banked": 75579,
+   "refilled": 25274,
+   "green_days": 2,
+   "red_days": 5
+  },
+  "2026-02": {
+   "gold": 22977,
+   "wkh": -23547,
+   "gold_v6": -570,
+   "banked": 62797,
+   "refilled": 63367,
+   "green_days": 5,
+   "red_days": 8
+  },
+  "2026-03": {
+   "gold": 113160,
+   "wkh": 40390,
+   "gold_v6": 153550,
+   "banked": 174795,
+   "refilled": 21244,
+   "green_days": 8,
+   "red_days": 3
+  },
+  "2026-04": {
+   "gold": -38531,
+   "wkh": 20693,
+   "gold_v6": -17837,
+   "banked": 39102,
+   "refilled": 56939,
+   "green_days": 4,
+   "red_days": 5
+  },
+  "2026-05": {
+   "gold": 3809,
+   "wkh": 11917,
+   "gold_v6": 15726,
+   "banked": 27939,
+   "refilled": 12213,
+   "green_days": 3,
+   "red_days": 6
+  },
+  "2026-06": {
+   "gold": 19644,
+   "wkh": 22225,
+   "gold_v6": 41869,
+   "banked": 75710,
+   "refilled": 33841,
+   "green_days": 4,
+   "red_days": 8
+  },
+  "2026-07": {
+   "gold": 9373,
+   "wkh": 38318,
+   "gold_v6": 47691,
+   "banked": 50411,
+   "refilled": 2719,
+   "green_days": 5,
+   "red_days": 4
+  },
+  "2026-08": {
+   "gold": -6039,
+   "wkh": -13359,
+   "gold_v6": -19398,
+   "banked": 3111,
+   "refilled": 22509,
+   "green_days": 1,
+   "red_days": 8
+  },
+  "2026-09": {
+   "gold": 79970,
+   "wkh": -5275,
+   "gold_v6": 74695,
+   "banked": 102843,
+   "refilled": 28147,
+   "green_days": 3,
+   "red_days": 5
+  },
+  "2026-10": {
+   "gold": 125629,
+   "wkh": 1133,
+   "gold_v6": 126762,
+   "banked": 164545,
+   "refilled": 37783,
+   "green_days": 5,
+   "red_days": 7
+  }
+ },
+ "bad_months": [
+  "2023-01",
+  "2023-02",
+  "2023-06",
+  "2023-07",
+  "2023-08",
+  "2023-09",
+  "2023-10",
+  "2023-12",
+  "2024-03",
+  "2024-05",
+  "2024-10",
+  "2025-12",
+  "2026-02",
+  "2026-04",
+  "2026-08"
+ ],
+ "bad_month_split": {
+  "both legs negative": 8,
+  "Gold negative, WK-H positive": 2,
+  "WK-H negative, Gold positive": 5,
+  "loss from Gold": -111268,
+  "loss from WK-H": -154149
+ },
+ "legs_negative_months": {
+  "Gold v5": 14,
+  "WK-H": 17,
+  "Gold v5 flat (no trade)": 7
+ }
+}

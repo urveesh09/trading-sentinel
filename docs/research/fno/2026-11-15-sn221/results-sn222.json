@@ -1,0 +1,674 @@
+{
+ "parity": {
+  "DEV": {
+   "naked_variants": 26,
+   "mismatches": 0,
+   "max_abs_diff_rs": 0.0,
+   "gate_same_weeks": true,
+   "gate_max_abs_diff_rs": 0.0
+  },
+  "TEST": {
+   "naked_variants": 26,
+   "mismatches": 0,
+   "max_abs_diff_rs": 0.0,
+   "gate_same_weeks": true,
+   "gate_max_abs_diff_rs": 0.0
+  },
+  "N2122": {
+   "naked_variants": 26,
+   "mismatches": 0,
+   "max_abs_diff_rs": 0.0,
+   "gate_same_weeks": true,
+   "gate_max_abs_diff_rs": 0.0
+  },
+  "SENSEX": {
+   "naked_variants": 26,
+   "mismatches": 0,
+   "max_abs_diff_rs": 0.0,
+   "gate_same_weeks": true,
+   "gate_max_abs_diff_rs": 0.0
+  }
+ },
+ "board": {
+  "DEV": {
+   "WK-S (SN204)": {
+    "weeks": 229,
+    "trades": 223,
+    "net": 313523,
+    "per_week": 1369.1,
+    "win_pct": 62.3,
+    "worst": -39844,
+    "worst_month": -51245,
+    "months_positive": "32 of 53",
+    "cvar5": -22252,
+    "by_year": {
+     "2022": 79743,
+     "2023": 43757,
+     "2024": 38494,
+     "2025": 74112,
+     "2026": 77417
+    },
+    "years_positive": 5,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-G (SN217)": {
+    "weeks": 229,
+    "trades": 223,
+    "net": 304942,
+    "per_week": 1331.6,
+    "win_pct": 57.4,
+    "worst": -32745,
+    "worst_month": -32138,
+    "months_positive": "33 of 53",
+    "cvar5": -16438,
+    "by_year": {
+     "2022": 81818,
+     "2023": 7694,
+     "2024": 43727,
+     "2025": 131144,
+     "2026": 40559
+    },
+    "years_positive": 5,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "pre base": {
+    "weeks": 229,
+    "trades": 223,
+    "net": 172695,
+    "per_week": 754.1,
+    "win_pct": 66.8,
+    "worst": -32745,
+    "worst_month": -30886,
+    "months_positive": "36 of 53",
+    "cvar5": -15757,
+    "by_year": {
+     "2022": 62693,
+     "2023": -8578,
+     "2024": 35622,
+     "2025": 61061,
+     "2026": 21896
+    },
+    "years_positive": 4,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "k1 ATM straddle": {
+    "weeks": 229,
+    "trades": 229,
+    "net": 173682,
+    "per_week": 758.4,
+    "win_pct": 65.1,
+    "worst": -28989,
+    "worst_month": -28209,
+    "months_positive": "36 of 53",
+    "cvar5": -19206,
+    "by_year": {
+     "2022": 26407,
+     "2023": 37768,
+     "2024": 17690,
+     "2025": 56798,
+     "2026": 35020
+    },
+    "years_positive": 5,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "runner-up STRADDLE kF stop 0.5": {
+    "weeks": 229,
+    "trades": 229,
+    "net": 313166,
+    "per_week": 1367.5,
+    "win_pct": 59.4,
+    "worst": -33692,
+    "worst_month": -62677,
+    "months_positive": "30 of 53",
+    "cvar5": -24541,
+    "by_year": {
+     "2022": 37033,
+     "2023": 33842,
+     "2024": 107579,
+     "2025": 84598,
+     "2026": 50113
+    },
+    "years_positive": 5,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-A IC 1.0/1.0 k1": {
+    "weeks": 229,
+    "trades": 212,
+    "net": -75662,
+    "per_week": -330.4,
+    "win_pct": 71.7,
+    "worst": -11192,
+    "worst_month": -18309,
+    "months_positive": "22 of 53",
+    "cvar5": -8372,
+    "by_year": {
+     "2022": -6552,
+     "2023": -9934,
+     "2024": -41232,
+     "2025": -12726,
+     "2026": -5217
+    },
+    "years_positive": 0,
+    "clamped": 77,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "breach 0.5 + gate (SN218)": {
+    "weeks": 229,
+    "trades": 223,
+    "net": 216866,
+    "per_week": 947.0,
+    "win_pct": 47.1,
+    "worst": -32745,
+    "worst_month": -29771,
+    "months_positive": "31 of 53",
+    "cvar5": -14826,
+    "by_year": {
+     "2022": 50085,
+     "2023": -15293,
+     "2024": 76846,
+     "2025": 97793,
+     "2026": 7435
+    },
+    "years_positive": 4,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "TEST": {
+   "WK-S (SN204)": {
+    "weeks": 9,
+    "trades": 9,
+    "net": -23348,
+    "per_week": -2594.3,
+    "win_pct": 44.4,
+    "worst": -14270,
+    "worst_month": -19227,
+    "months_positive": "0 of 2",
+    "cvar5": -14270,
+    "by_year": {
+     "2026": -23348
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-G (SN217)": {
+    "weeks": 9,
+    "trades": 9,
+    "net": -5074,
+    "per_week": -563.8,
+    "win_pct": 55.6,
+    "worst": -14270,
+    "worst_month": -4121,
+    "months_positive": "0 of 2",
+    "cvar5": -14270,
+    "by_year": {
+     "2026": -5074
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "pre base": {
+    "weeks": 9,
+    "trades": 9,
+    "net": 6308,
+    "per_week": 700.9,
+    "win_pct": 77.8,
+    "worst": -14270,
+    "worst_month": 1542,
+    "months_positive": "3 of 3",
+    "cvar5": -14270,
+    "by_year": {
+     "2026": 6308
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "k1 ATM straddle": {
+    "weeks": 9,
+    "trades": 9,
+    "net": -16229,
+    "per_week": -1803.2,
+    "win_pct": 33.3,
+    "worst": -13686,
+    "worst_month": -8578,
+    "months_positive": "0 of 2",
+    "cvar5": -13686,
+    "by_year": {
+     "2026": -16229
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "runner-up STRADDLE kF stop 0.5": {
+    "weeks": 9,
+    "trades": 9,
+    "net": -11373,
+    "per_week": -1263.7,
+    "win_pct": 33.3,
+    "worst": -11779,
+    "worst_month": -23336,
+    "months_positive": "1 of 2",
+    "cvar5": -11779,
+    "by_year": {
+     "2026": -11373
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-A IC 1.0/1.0 k1": {
+    "weeks": 9,
+    "trades": 9,
+    "net": -11003,
+    "per_week": -1222.5,
+    "win_pct": 55.6,
+    "worst": -8500,
+    "worst_month": -6934,
+    "months_positive": "0 of 2",
+    "cvar5": -8500,
+    "by_year": {
+     "2026": -11003
+    },
+    "years_positive": 0,
+    "clamped": 2,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "breach 0.5 + gate (SN218)": {
+    "weeks": 9,
+    "trades": 9,
+    "net": -19923,
+    "per_week": -2213.7,
+    "win_pct": 22.2,
+    "worst": -6561,
+    "worst_month": -22032,
+    "months_positive": "1 of 3",
+    "cvar5": -6561,
+    "by_year": {
+     "2026": -19923
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "N2122": {
+   "WK-S (SN204)": {
+    "weeks": 17,
+    "trades": 17,
+    "net": -56743,
+    "per_week": -3337.8,
+    "win_pct": 35.3,
+    "worst": -40884,
+    "worst_month": -36338,
+    "months_positive": "1 of 4",
+    "cvar5": -40884,
+    "by_year": {
+     "2021": -13982,
+     "2022": -42760
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-G (SN217)": {
+    "weeks": 17,
+    "trades": 17,
+    "net": -52773,
+    "per_week": -3104.3,
+    "win_pct": 29.4,
+    "worst": -40884,
+    "worst_month": -43351,
+    "months_positive": "1 of 4",
+    "cvar5": -40884,
+    "by_year": {
+     "2021": -12077,
+     "2022": -40696
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "pre base": {
+    "weeks": 17,
+    "trades": 17,
+    "net": -7241,
+    "per_week": -425.9,
+    "win_pct": 47.1,
+    "worst": -16166,
+    "worst_month": -27716,
+    "months_positive": "2 of 4",
+    "cvar5": -16166,
+    "by_year": {
+     "2021": -8584,
+     "2022": 1343
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "k1 ATM straddle": {
+    "weeks": 17,
+    "trades": 17,
+    "net": -25113,
+    "per_week": -1477.2,
+    "win_pct": 41.2,
+    "worst": -41675,
+    "worst_month": -41750,
+    "months_positive": "2 of 4",
+    "cvar5": -41675,
+    "by_year": {
+     "2021": 12106,
+     "2022": -37219
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "runner-up STRADDLE kF stop 0.5": {
+    "weeks": 17,
+    "trades": 17,
+    "net": -61620,
+    "per_week": -3624.7,
+    "win_pct": 41.2,
+    "worst": -43949,
+    "worst_month": -60334,
+    "months_positive": "2 of 4",
+    "cvar5": -43949,
+    "by_year": {
+     "2021": -4990,
+     "2022": -56630
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-A IC 1.0/1.0 k1": {
+    "weeks": 17,
+    "trades": 15,
+    "net": -14700,
+    "per_week": -864.7,
+    "win_pct": 53.3,
+    "worst": -5586,
+    "worst_month": -10608,
+    "months_positive": "2 of 4",
+    "cvar5": -5586,
+    "by_year": {
+     "2021": 1386,
+     "2022": -16086
+    },
+    "years_positive": 1,
+    "clamped": 9,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "breach 0.5 + gate (SN218)": {
+    "weeks": 17,
+    "trades": 17,
+    "net": 7971,
+    "per_week": 468.9,
+    "win_pct": 29.4,
+    "worst": -7602,
+    "worst_month": -9986,
+    "months_positive": "1 of 4",
+    "cvar5": -7602,
+    "by_year": {
+     "2021": -3285,
+     "2022": 11256
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "SENSEX": {
+   "WK-S (SN204)": {
+    "weeks": 83,
+    "trades": 70,
+    "net": -42022,
+    "per_week": -506.3,
+    "win_pct": 60.0,
+    "worst": -46018,
+    "worst_month": -70088,
+    "months_positive": "9 of 19",
+    "cvar5": -35016,
+    "by_year": {
+     "2024": -14051,
+     "2025": 6147,
+     "2026": -34118
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-G (SN217)": {
+    "weeks": 83,
+    "trades": 70,
+    "net": -99023,
+    "per_week": -1193.0,
+    "win_pct": 54.3,
+    "worst": -46018,
+    "worst_month": -70088,
+    "months_positive": "11 of 19",
+    "cvar5": -31199,
+    "by_year": {
+     "2024": -31464,
+     "2025": -32823,
+     "2026": -34737
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "pre base": {
+    "weeks": 83,
+    "trades": 70,
+    "net": -70208,
+    "per_week": -845.9,
+    "win_pct": 62.9,
+    "worst": -46018,
+    "worst_month": -59749,
+    "months_positive": "10 of 19",
+    "cvar5": -31199,
+    "by_year": {
+     "2024": -23614,
+     "2025": -23872,
+     "2026": -22722
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "k1 ATM straddle": {
+    "weeks": 83,
+    "trades": 83,
+    "net": 31042,
+    "per_week": 374.0,
+    "win_pct": 61.4,
+    "worst": -36270,
+    "worst_month": -36996,
+    "months_positive": "9 of 19",
+    "cvar5": -26086,
+    "by_year": {
+     "2024": -12124,
+     "2025": 76787,
+     "2026": -33621
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "runner-up STRADDLE kF stop 0.5": {
+    "weeks": 83,
+    "trades": 83,
+    "net": -8309,
+    "per_week": -100.1,
+    "win_pct": 51.8,
+    "worst": -50798,
+    "worst_month": -80944,
+    "months_positive": "7 of 19",
+    "cvar5": -34522,
+    "by_year": {
+     "2024": -35151,
+     "2025": -49951,
+     "2026": 76794
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "WK-A IC 1.0/1.0 k1": {
+    "weeks": 83,
+    "trades": 48,
+    "net": -15219,
+    "per_week": -183.4,
+    "win_pct": 70.8,
+    "worst": -8678,
+    "worst_month": -6689,
+    "months_positive": "8 of 18",
+    "cvar5": -7008,
+    "by_year": {
+     "2024": -10452,
+     "2025": -306,
+     "2026": -4461
+    },
+    "years_positive": 0,
+    "clamped": 43,
+    "orders": 0,
+    "hedge_costs": 0
+   },
+   "breach 0.5 + gate (SN218)": {
+    "weeks": 83,
+    "trades": 70,
+    "net": -102993,
+    "per_week": -1240.9,
+    "win_pct": 47.1,
+    "worst": -46018,
+    "worst_month": -64145,
+    "months_positive": "9 of 19",
+    "cvar5": -30352,
+    "by_year": {
+     "2024": -726,
+     "2025": -65898,
+     "2026": -36370
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  }
+ },
+ "min_score": {
+  "WK-S (SN204)": {
+   "scores": {
+    "DEV": 1369.1,
+    "TEST": -2594.3,
+    "N2122": -3337.8,
+    "SENSEX": -506.3
+   },
+   "min": -3337.8,
+   "positive_samples": 1,
+   "total": 191410
+  },
+  "WK-G (SN217)": {
+   "scores": {
+    "DEV": 1331.6,
+    "TEST": -563.8,
+    "N2122": -3104.3,
+    "SENSEX": -1193.0
+   },
+   "min": -3104.3,
+   "positive_samples": 1,
+   "total": 148072
+  },
+  "pre base": {
+   "scores": {
+    "DEV": 754.1,
+    "TEST": 700.9,
+    "N2122": -425.9,
+    "SENSEX": -845.9
+   },
+   "min": -845.9,
+   "positive_samples": 2,
+   "total": 101554
+  },
+  "k1 ATM straddle": {
+   "scores": {
+    "DEV": 758.4,
+    "TEST": -1803.2,
+    "N2122": -1477.2,
+    "SENSEX": 374.0
+   },
+   "min": -1803.2,
+   "positive_samples": 2,
+   "total": 163382
+  },
+  "runner-up STRADDLE kF stop 0.5": {
+   "scores": {
+    "DEV": 1367.5,
+    "TEST": -1263.7,
+    "N2122": -3624.7,
+    "SENSEX": -100.1
+   },
+   "min": -3624.7,
+   "positive_samples": 1,
+   "total": 231864
+  },
+  "WK-A IC 1.0/1.0 k1": {
+   "scores": {
+    "DEV": -330.4,
+    "TEST": -1222.5,
+    "N2122": -864.7,
+    "SENSEX": -183.4
+   },
+   "min": -1222.5,
+   "positive_samples": 0,
+   "total": -116584
+  },
+  "breach 0.5 + gate (SN218)": {
+   "scores": {
+    "DEV": 947.0,
+    "TEST": -2213.7,
+    "N2122": 468.9,
+    "SENSEX": -1240.9
+   },
+   "min": -2213.7,
+   "positive_samples": 2,
+   "total": 101921
+  }
+ }
+}

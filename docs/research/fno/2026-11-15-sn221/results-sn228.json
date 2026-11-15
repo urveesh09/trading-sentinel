@@ -1,0 +1,345 @@
+{
+ "exam_weeks": 60,
+ "first_expiry": "2020-10-01",
+ "last_expiry": "2021-11-25",
+ "candidates": {
+  "PICK": {
+   "variant": "STRADDLE kM settle H15x2",
+   "exam": {
+    "weeks": 60,
+    "trades": 56,
+    "net": 61511,
+    "per_week": 1025.2,
+    "win_pct": 58.9,
+    "worst": -8980,
+    "worst_month": -6251,
+    "months_positive": "9 of 14",
+    "cvar5": -6562,
+    "by_year": {
+     "2020": 13285,
+     "2021": 48225
+    },
+    "years_positive": 2,
+    "clamped": 0,
+    "orders": 264,
+    "hedge_costs": 68524
+   }
+  },
+  "PICK original (filtered, information)": {
+   "variant": "STRADDLE kM settle H15x2 ADX<25",
+   "exam": {
+    "weeks": 60,
+    "trades": 30,
+    "net": 42620,
+    "per_week": 710.3,
+    "win_pct": 56.7,
+    "worst": -3715,
+    "worst_month": -5461,
+    "months_positive": "5 of 9",
+    "cvar5": -3715,
+    "by_year": {
+     "2020": 3268,
+     "2021": 39352
+    },
+    "years_positive": 2,
+    "clamped": 0,
+    "orders": 144,
+    "hedge_costs": 37648
+   }
+  },
+  "RUNNER 1": {
+   "variant": "STRADDLE kM settle stop1 H15x2",
+   "exam": {
+    "weeks": 60,
+    "trades": 56,
+    "net": 61511,
+    "per_week": 1025.2,
+    "win_pct": 58.9,
+    "worst": -8980,
+    "worst_month": -6251,
+    "months_positive": "9 of 14",
+    "cvar5": -6562,
+    "by_year": {
+     "2020": 13285,
+     "2021": 48225
+    },
+    "years_positive": 2,
+    "clamped": 0,
+    "orders": 264,
+    "hedge_costs": 68524
+   }
+  },
+  "RUNNER 1 original (filtered, information)": {
+   "variant": "STRADDLE kM settle stop1 H15x2 ADX<25",
+   "exam": {
+    "weeks": 60,
+    "trades": 30,
+    "net": 42620,
+    "per_week": 710.3,
+    "win_pct": 56.7,
+    "worst": -3715,
+    "worst_month": -5461,
+    "months_positive": "5 of 9",
+    "cvar5": -3715,
+    "by_year": {
+     "2020": 3268,
+     "2021": 39352
+    },
+    "years_positive": 2,
+    "clamped": 0,
+    "orders": 144,
+    "hedge_costs": 37648
+   }
+  },
+  "RUNNER 2": {
+   "variant": "STRADDLE kM gate H15x2",
+   "exam": {
+    "weeks": 60,
+    "trades": 56,
+    "net": 10163,
+    "per_week": 169.4,
+    "win_pct": 50.0,
+    "worst": -7426,
+    "worst_month": -9569,
+    "months_positive": "7 of 15",
+    "cvar5": -7225,
+    "by_year": {
+     "2020": 1727,
+     "2021": 8436
+    },
+    "years_positive": 2,
+    "clamped": 0,
+    "orders": 264,
+    "hedge_costs": 68524
+   }
+  },
+  "RUNNER 2 original (filtered, information)": {
+   "variant": "STRADDLE kM gate H15x2 ADX<25",
+   "exam": {
+    "weeks": 60,
+    "trades": 30,
+    "net": 3756,
+    "per_week": 62.6,
+    "win_pct": 50.0,
+    "worst": -7025,
+    "worst_month": -9569,
+    "months_positive": "3 of 10",
+    "cvar5": -7025,
+    "by_year": {
+     "2020": -3506,
+     "2021": 7262
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 144,
+    "hedge_costs": 37648
+   }
+  },
+  "ref WK-S": {
+   "variant": "STRANGLE 0.5 k3 settle stop1",
+   "exam": {
+    "weeks": 60,
+    "trades": 60,
+    "net": -41621,
+    "per_week": -693.7,
+    "win_pct": 51.7,
+    "worst": -18142,
+    "worst_month": -18699,
+    "months_positive": "5 of 14",
+    "cvar5": -16363,
+    "by_year": {
+     "2020": -3736,
+     "2021": -37885
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "ref WK-G": {
+   "variant": "STRANGLE 0.5 k3 gate stop1",
+   "exam": {
+    "weeks": 60,
+    "trades": 60,
+    "net": -6734,
+    "per_week": -112.2,
+    "win_pct": 51.7,
+    "worst": -17421,
+    "worst_month": -25403,
+    "months_positive": "5 of 14",
+    "cvar5": -14786,
+    "by_year": {
+     "2020": 8174,
+     "2021": -14908
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "ref k1 ATM straddle": {
+   "variant": "STRADDLE k1 settle",
+   "exam": {
+    "weeks": 60,
+    "trades": 60,
+    "net": -12009,
+    "per_week": -200.2,
+    "win_pct": 53.3,
+    "worst": -16889,
+    "worst_month": -23239,
+    "months_positive": "7 of 14",
+    "cvar5": -14862,
+    "by_year": {
+     "2020": -7332,
+     "2021": -4677
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "ref best hedged WK-S": {
+   "variant": "STRANGLE 0.5 k3 settle stop1 H15x2",
+   "exam": {
+    "weeks": 60,
+    "trades": 60,
+    "net": 78395,
+    "per_week": 1306.6,
+    "win_pct": 65.0,
+    "worst": -6853,
+    "worst_month": -4422,
+    "months_positive": "11 of 14",
+    "cvar5": -4646,
+    "by_year": {
+     "2020": 14771,
+     "2021": 63624
+    },
+    "years_positive": 2,
+    "clamped": 0,
+    "orders": 215,
+    "hedge_costs": 56596
+   }
+  },
+  "info: unhedged STRADDLE kM settle": {
+   "variant": "STRADDLE kM settle",
+   "exam": {
+    "weeks": 60,
+    "trades": 56,
+    "net": -43526,
+    "per_week": -725.4,
+    "win_pct": 48.2,
+    "worst": -21711,
+    "worst_month": -26380,
+    "months_positive": "6 of 14",
+    "cvar5": -19651,
+    "by_year": {
+     "2020": -8857,
+     "2021": -34670
+    },
+    "years_positive": 0,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "ref breach 0.5 + gate": {
+   "variant": "WK-S + breach 0.5 + gate -0.25 (wk2)",
+   "exam": {
+    "weeks": 60,
+    "trades": 60,
+    "net": -14662,
+    "per_week": -244.4,
+    "win_pct": 45.0,
+    "worst": -17421,
+    "worst_month": -20095,
+    "months_positive": "6 of 14",
+    "cvar5": -14786,
+    "by_year": {
+     "2020": 13903,
+     "2021": -28565
+    },
+    "years_positive": 1,
+    "clamped": 0,
+    "orders": 0,
+    "hedge_costs": 0
+   }
+  },
+  "PLATEAU": {
+   "members": 20,
+   "exam": {
+    "net": 37670,
+    "worst_week": -2939,
+    "worst_month": -3877,
+    "months_positive": "11 of 14"
+   }
+  }
+ },
+ "pass": {
+  "P1_exam_net_positive": true,
+  "P2_worst_month_ok": true,
+  "P3_five_sample_total": 385716,
+  "P4_beats_k1_straddle": true,
+  "forward_paper_candidate": true
+ },
+ "pick_ledger_per_lot": {
+  "2020-10-01": -1390,
+  "2020-10-08": -659,
+  "2020-10-15": 3472,
+  "2020-10-22": -3274,
+  "2020-10-29": 1549,
+  "2020-11-05": 4986,
+  "2020-11-12": -1414,
+  "2020-11-19": -1020,
+  "2020-11-26": -2426,
+  "2020-12-03": 5095,
+  "2020-12-10": -692,
+  "2020-12-17": 1705,
+  "2020-12-24": 1586,
+  "2020-12-31": 5770,
+  "2021-01-07": 2424,
+  "2021-01-14": 3188,
+  "2021-01-21": 302,
+  "2021-01-28": -2809,
+  "2021-02-04": -8980,
+  "2021-02-11": 1968,
+  "2021-02-18": 761,
+  "2021-03-04": -4145,
+  "2021-03-10": 6064,
+  "2021-03-18": 8699,
+  "2021-03-25": 2362,
+  "2021-04-01": 8060,
+  "2021-04-08": 4124,
+  "2021-04-29": 3789,
+  "2021-05-06": 3414,
+  "2021-05-12": 140,
+  "2021-05-20": 3002,
+  "2021-05-27": 3848,
+  "2021-06-03": -511,
+  "2021-06-10": 4210,
+  "2021-06-17": -532,
+  "2021-06-24": 2094,
+  "2021-07-08": -3715,
+  "2021-07-15": 1080,
+  "2021-07-29": -2826,
+  "2021-08-05": -1778,
+  "2021-08-12": -2918,
+  "2021-08-18": 3536,
+  "2021-08-26": -26,
+  "2021-09-02": 671,
+  "2021-09-09": 5749,
+  "2021-09-16": -1008,
+  "2021-09-23": 2619,
+  "2021-09-30": 459,
+  "2021-10-07": -127,
+  "2021-10-14": 2152,
+  "2021-10-21": -215,
+  "2021-10-28": 3558,
+  "2021-11-03": -129,
+  "2021-11-11": 2435,
+  "2021-11-18": -1273,
+  "2021-11-25": -1488
+ }
+}

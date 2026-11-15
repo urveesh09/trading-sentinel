@@ -1,0 +1,140 @@
+{
+ "per_lot_trades": 59,
+ "per_lot_net": 39086,
+ "Rs 15,000 fixed": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 39086,
+  "worst_day": -3165,
+  "month_worst": -6961,
+  "by_year": {
+   "2023": 9152,
+   "2024": 24999,
+   "2025": -8112,
+   "2026": 13047
+  },
+  "refilled": 52613,
+  "final_wallet": 15000.0,
+  "goal_days_1000": 20,
+  "goal_days_1500": 17
+ },
+ "Rs 15,000 growing": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 39086,
+  "worst_day": -3165,
+  "month_worst": -6961,
+  "by_year": {
+   "2023": 9152,
+   "2024": 24999,
+   "2025": -8112,
+   "2026": 13047
+  },
+  "refilled": 52613,
+  "final_wallet": 22500.0,
+  "goal_days_1000": 20,
+  "goal_days_1500": 17
+ },
+ "Rs 30,000 fixed": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 78171,
+  "worst_day": -6329,
+  "month_worst": -13921,
+  "by_year": {
+   "2023": 18304,
+   "2024": 49997,
+   "2025": -16224,
+   "2026": 26093
+  },
+  "refilled": 105226,
+  "final_wallet": 30000.0,
+  "goal_days_1000": 22,
+  "goal_days_1500": 21
+ },
+ "Rs 30,000 growing": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 98103,
+  "worst_day": -12658,
+  "month_worst": -27842,
+  "by_year": {
+   "2023": 18304,
+   "2024": 60060,
+   "2025": -32448,
+   "2026": 52186
+  },
+  "refilled": 188072,
+  "final_wallet": 67500.0,
+  "goal_days_1000": 23,
+  "goal_days_1500": 21
+ },
+ "Rs 50,000 fixed": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 117257,
+  "worst_day": -9494,
+  "month_worst": -20882,
+  "by_year": {
+   "2023": 27457,
+   "2024": 74996,
+   "2025": -24336,
+   "2026": 39140
+  },
+  "refilled": 157839,
+  "final_wallet": 50000.0,
+  "goal_days_1000": 23,
+  "goal_days_1500": 22
+ },
+ "Rs 50,000 growing": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 157121,
+  "worst_day": -22152,
+  "month_worst": -48724,
+  "by_year": {
+   "2023": 27457,
+   "2024": 95122,
+   "2025": -56784,
+   "2026": 91326
+  },
+  "refilled": 323531,
+  "final_wallet": 112500.0,
+  "goal_days_1000": 24,
+  "goal_days_1500": 24
+ },
+ "Rs 150,000 fixed": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 390856,
+  "worst_day": -31646,
+  "month_worst": -69605,
+  "by_year": {
+   "2023": 91522,
+   "2024": 249987,
+   "2025": -81120,
+   "2026": 130466
+  },
+  "refilled": 526130,
+  "final_wallet": 150000.0,
+  "goal_days_1000": 25,
+  "goal_days_1500": 25
+ },
+ "Rs 150,000 growing": {
+  "trade_days": 59,
+  "red_days": 34,
+  "net": 493501,
+  "worst_day": -69621,
+  "month_worst": -153131,
+  "by_year": {
+   "2023": 91522,
+   "2024": 293416,
+   "2025": -178463,
+   "2026": 287026
+  },
+  "refilled": 1015934,
+  "final_wallet": 337500.0,
+  "goal_days_1000": 25,
+  "goal_days_1500": 25
+ }
+}

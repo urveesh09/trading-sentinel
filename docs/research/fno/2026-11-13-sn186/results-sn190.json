@@ -1,0 +1,48 @@
+{
+ "by_year": {
+  "2023": {
+   "net": -26076,
+   "straddles": 5,
+   "flies": 36
+  },
+  "2024": {
+   "net": -16333,
+   "straddles": 6,
+   "flies": 79
+  },
+  "2025": {
+   "net": -22167,
+   "straddles": 9,
+   "flies": 42
+  },
+  "2026": {
+   "net": -45549,
+   "straddles": 4,
+   "flies": 68
+  }
+ },
+ "total": -110125,
+ "years_positive": 0,
+ "null_mean": -173752,
+ "null_p95": -144141,
+ "without_best_5": -167435,
+ "goal_stats_1000": {
+  "sessions": 594,
+  "trade_days": 249,
+  "goal_days": 11,
+  "red_days": 213,
+  "net": -110126,
+  "worst_day": -4282,
+  "month_median": -2742,
+  "month_worst": -10203,
+  "goal_days_per_month": 0.25,
+  "without_best_5": -167435,
+  "by_year": {
+   "2023": -26076,
+   "2024": -16333,
+   "2025": -22167,
+   "2026": -45549
+  }
+ },
+ "dev_pass": false
+}

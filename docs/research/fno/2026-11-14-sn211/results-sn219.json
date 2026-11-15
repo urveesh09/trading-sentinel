@@ -1,0 +1,3595 @@
+{
+ "candidates": {
+  "A WK-S": {
+   "base": "settle",
+   "rule": null
+  },
+  "B WK-X settle | loss: loss 2.0": {
+   "base": "settle",
+   "rule": {
+    "loss": 2.0
+   }
+  },
+  "C WK-G (WK-S + gate -0.25)": {
+   "base": "settle",
+   "rule": {
+    "gate": -0.25
+   }
+  },
+  "D breach 0.5 + gate -0.25": {
+   "base": "settle",
+   "rule": {
+    "breach": 0.5,
+    "gate": -0.25
+   }
+  },
+  "E pre base": {
+   "base": "pre",
+   "rule": null
+  }
+ },
+ "development": {
+  "Gold alone": {
+   "net": 642173,
+   "green_days": 55,
+   "red_days": 67,
+   "flat_days": 775,
+   "days_at_least_500": 53,
+   "worst_day": -21113,
+   "worst_week": -25188,
+   "worst_month": -38531,
+   "months_positive": "23 of 44",
+   "weeks_positive": "39 of 190",
+   "by_year": {
+    "2023": -12107,
+    "2024": 187476,
+    "2025": 292811,
+    "2026": 173992
+   }
+  },
+  "A WK-S": {
+   "alone": {
+    "net": 233780,
+    "green_days": 363,
+    "red_days": 353,
+    "flat_days": 181,
+    "days_at_least_500": 334,
+    "worst_day": -32401,
+    "worst_week": -40460,
+    "worst_month": -50902,
+    "months_positive": "27 of 44",
+    "weeks_positive": "113 of 190",
+    "by_year": {
+     "2023": 43757,
+     "2024": 38494,
+     "2025": 74112,
+     "2026": 77417
+    }
+   },
+   "Gold +": {
+    "net": 875953,
+    "green_days": 380,
+    "red_days": 356,
+    "flat_days": 161,
+    "days_at_least_500": 350,
+    "worst_day": -33751,
+    "worst_week": -40460,
+    "worst_month": -56645,
+    "months_positive": "28 of 44",
+    "weeks_positive": "112 of 190",
+    "by_year": {
+     "2023": 31650,
+     "2024": 225970,
+     "2025": 366923,
+     "2026": 251409
+    }
+   },
+   "weeks": {
+    "weeks": 223,
+    "net": 313523,
+    "mean": 1406,
+    "win_pct": 62.3,
+    "worst": -39844,
+    "best": 20420,
+    "without_best_5": 223476,
+    "without_best_10": 149712,
+    "by_year": {
+     "2022": 79743,
+     "2023": 43757,
+     "2024": 38494,
+     "2025": 74112,
+     "2026": 77417
+    },
+    "years_positive": 5,
+    "worst_month": -51245,
+    "months_positive": "32 of 53",
+    "cvar5": -22252,
+    "fired": 0,
+    "hedges": 0
+   }
+  },
+  "B WK-X settle | loss: loss 2.0": {
+   "alone": {
+    "net": 228548,
+    "green_days": 363,
+    "red_days": 353,
+    "flat_days": 181,
+    "days_at_least_500": 334,
+    "worst_day": -32401,
+    "worst_week": -40460,
+    "worst_month": -50902,
+    "months_positive": "27 of 44",
+    "weeks_positive": "113 of 190",
+    "by_year": {
+     "2023": 38525,
+     "2024": 38494,
+     "2025": 74112,
+     "2026": 77417
+    }
+   },
+   "Gold +": {
+    "net": 870721,
+    "green_days": 380,
+    "red_days": 356,
+    "flat_days": 161,
+    "days_at_least_500": 350,
+    "worst_day": -33751,
+    "worst_week": -40460,
+    "worst_month": -56645,
+    "months_positive": "28 of 44",
+    "weeks_positive": "112 of 190",
+    "by_year": {
+     "2023": 26419,
+     "2024": 225970,
+     "2025": 366923,
+     "2026": 251409
+    }
+   },
+   "weeks": {
+    "weeks": 223,
+    "net": 308292,
+    "mean": 1382,
+    "win_pct": 62.3,
+    "worst": -39844,
+    "best": 20420,
+    "without_best_5": 218244,
+    "without_best_10": 144480,
+    "by_year": {
+     "2022": 79743,
+     "2023": 38525,
+     "2024": 38494,
+     "2025": 74112,
+     "2026": 77417
+    },
+    "years_positive": 5,
+    "worst_month": -51245,
+    "months_positive": "32 of 53",
+    "cvar5": -22252,
+    "fired": 3,
+    "hedges": 0
+   }
+  },
+  "C WK-G (WK-S + gate -0.25)": {
+   "alone": {
+    "net": 223124,
+    "green_days": 333,
+    "red_days": 322,
+    "flat_days": 242,
+    "days_at_least_500": 305,
+    "worst_day": -32401,
+    "worst_week": -32792,
+    "worst_month": -30704,
+    "months_positive": "28 of 44",
+    "weeks_positive": "107 of 190",
+    "by_year": {
+     "2023": 7694,
+     "2024": 43727,
+     "2025": 131144,
+     "2026": 40559
+    }
+   },
+   "Gold +": {
+    "net": 865297,
+    "green_days": 350,
+    "red_days": 325,
+    "flat_days": 222,
+    "days_at_least_500": 321,
+    "worst_day": -33751,
+    "worst_week": -39662,
+    "worst_month": -31981,
+    "months_positive": "29 of 44",
+    "weeks_positive": "106 of 190",
+    "by_year": {
+     "2023": -4413,
+     "2024": 231203,
+     "2025": 423955,
+     "2026": 214551
+    }
+   },
+   "weeks": {
+    "weeks": 223,
+    "net": 304942,
+    "mean": 1367,
+    "win_pct": 57.4,
+    "worst": -32745,
+    "best": 19334,
+    "without_best_5": 219650,
+    "without_best_10": 148267,
+    "by_year": {
+     "2022": 81818,
+     "2023": 7694,
+     "2024": 43727,
+     "2025": 131144,
+     "2026": 40559
+    },
+    "years_positive": 5,
+    "worst_month": -32138,
+    "months_positive": "33 of 53",
+    "cvar5": -16438,
+    "fired": 72,
+    "hedges": 0
+   }
+  },
+  "D breach 0.5 + gate -0.25": {
+   "alone": {
+    "net": 166781,
+    "green_days": 285,
+    "red_days": 319,
+    "flat_days": 293,
+    "days_at_least_500": 262,
+    "worst_day": -32401,
+    "worst_week": -32792,
+    "worst_month": -29771,
+    "months_positive": "24 of 44",
+    "weeks_positive": "92 of 190",
+    "by_year": {
+     "2023": -15293,
+     "2024": 76846,
+     "2025": 97793,
+     "2026": 7435
+    }
+   },
+   "Gold +": {
+    "net": 808954,
+    "green_days": 306,
+    "red_days": 321,
+    "flat_days": 270,
+    "days_at_least_500": 281,
+    "worst_day": -33751,
+    "worst_week": -39662,
+    "worst_month": -36169,
+    "months_positive": "28 of 44",
+    "weeks_positive": "94 of 190",
+    "by_year": {
+     "2023": -27399,
+     "2024": 264322,
+     "2025": 390605,
+     "2026": 181427
+    }
+   },
+   "weeks": {
+    "weeks": 223,
+    "net": 216866,
+    "mean": 972,
+    "win_pct": 47.1,
+    "worst": -32745,
+    "best": 19334,
+    "without_best_5": 131574,
+    "without_best_10": 60719,
+    "by_year": {
+     "2022": 50085,
+     "2023": -15293,
+     "2024": 76846,
+     "2025": 97793,
+     "2026": 7435
+    },
+    "years_positive": 4,
+    "worst_month": -29771,
+    "months_positive": "31 of 53",
+    "cvar5": -14826,
+    "fired": 121,
+    "hedges": 0
+   }
+  },
+  "E pre base": {
+   "alone": {
+    "net": 110002,
+    "green_days": 260,
+    "red_days": 289,
+    "flat_days": 348,
+    "days_at_least_500": 233,
+    "worst_day": -32401,
+    "worst_week": -32792,
+    "worst_month": -30886,
+    "months_positive": "27 of 44",
+    "weeks_positive": "126 of 190",
+    "by_year": {
+     "2023": -8578,
+     "2024": 35622,
+     "2025": 61061,
+     "2026": 21896
+    }
+   },
+   "Gold +": {
+    "net": 752174,
+    "green_days": 277,
+    "red_days": 292,
+    "flat_days": 328,
+    "days_at_least_500": 249,
+    "worst_day": -33751,
+    "worst_week": -39662,
+    "worst_month": -31981,
+    "months_positive": "32 of 44",
+    "weeks_positive": "120 of 190",
+    "by_year": {
+     "2023": -20684,
+     "2024": 223098,
+     "2025": 353872,
+     "2026": 195888
+    }
+   },
+   "weeks": {
+    "weeks": 223,
+    "net": 172695,
+    "mean": 774,
+    "win_pct": 66.8,
+    "worst": -32745,
+    "best": 14041,
+    "without_best_5": 114282,
+    "without_best_10": 69472,
+    "by_year": {
+     "2022": 62693,
+     "2023": -8578,
+     "2024": 35622,
+     "2025": 61061,
+     "2026": 21896
+    },
+    "years_positive": 4,
+    "worst_month": -30886,
+    "months_positive": "36 of 53",
+    "cvar5": -15757,
+    "fired": 0,
+    "hedges": 0
+   }
+  }
+ },
+ "TEST": {
+  "A WK-S": {
+   "weeks": 9,
+   "net": -23348,
+   "mean": -2594,
+   "win_pct": 44.4,
+   "worst": -14270,
+   "best": 10793,
+   "by_quarter": {
+    "2026Q3": -9599,
+    "2026Q4": -13749
+   },
+   "months_positive": "0 of 2",
+   "worst_month": -19227,
+   "worst_5": [
+    {
+     "entry": "2026-10-14",
+     "expiry": "2026-10-19",
+     "net": -14270,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-09-24",
+     "expiry": "2026-09-29",
+     "net": -12236,
+     "reason": "settle",
+     "move_pct": -1.96
+    },
+    {
+     "entry": "2026-09-09",
+     "expiry": "2026-09-15",
+     "net": -10730,
+     "reason": "settle",
+     "move_pct": -1.41
+    },
+    {
+     "entry": "2026-10-08",
+     "expiry": "2026-10-13",
+     "net": -10272,
+     "reason": "settle",
+     "move_pct": 2.2
+    },
+    {
+     "entry": "2026-09-03",
+     "expiry": "2026-09-08",
+     "net": -7169,
+     "reason": "settle",
+     "move_pct": -1.2
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2026-08-27",
+     "net": 1837,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-03",
+     "net": -7169,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-09",
+     "net": -10730,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-17",
+     "net": 9070,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-24",
+     "net": -12236,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-30",
+     "net": 9628,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-08",
+     "net": -10272,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-14",
+     "net": -14270,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-22",
+     "net": 10793,
+     "lots": 1
+    }
+   ]
+  },
+  "B WK-X settle | loss: loss 2.0": {
+   "weeks": 9,
+   "net": -23348,
+   "mean": -2594,
+   "win_pct": 44.4,
+   "worst": -14270,
+   "best": 10793,
+   "by_quarter": {
+    "2026Q3": -9599,
+    "2026Q4": -13749
+   },
+   "months_positive": "0 of 2",
+   "worst_month": -19227,
+   "worst_5": [
+    {
+     "entry": "2026-10-14",
+     "expiry": "2026-10-19",
+     "net": -14270,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-09-24",
+     "expiry": "2026-09-29",
+     "net": -12236,
+     "reason": "settle",
+     "move_pct": -1.96
+    },
+    {
+     "entry": "2026-09-09",
+     "expiry": "2026-09-15",
+     "net": -10730,
+     "reason": "settle",
+     "move_pct": -1.41
+    },
+    {
+     "entry": "2026-10-08",
+     "expiry": "2026-10-13",
+     "net": -10272,
+     "reason": "settle",
+     "move_pct": 2.2
+    },
+    {
+     "entry": "2026-09-03",
+     "expiry": "2026-09-08",
+     "net": -7169,
+     "reason": "settle",
+     "move_pct": -1.2
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2026-08-27",
+     "net": 1837,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-03",
+     "net": -7169,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-09",
+     "net": -10730,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-17",
+     "net": 9070,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-24",
+     "net": -12236,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-30",
+     "net": 9628,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-08",
+     "net": -10272,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-14",
+     "net": -14270,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-22",
+     "net": 10793,
+     "lots": 1
+    }
+   ]
+  },
+  "C WK-G (WK-S + gate -0.25)": {
+   "weeks": 9,
+   "net": -5074,
+   "mean": -564,
+   "win_pct": 55.6,
+   "worst": -14270,
+   "best": 10793,
+   "by_quarter": {
+    "2026Q3": 8675,
+    "2026Q4": -13749
+   },
+   "months_positive": "0 of 2",
+   "worst_month": -4121,
+   "worst_5": [
+    {
+     "entry": "2026-10-14",
+     "expiry": "2026-10-19",
+     "net": -14270,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-09-09",
+     "expiry": "2026-09-15",
+     "net": -10730,
+     "reason": "settle",
+     "move_pct": -1.41
+    },
+    {
+     "entry": "2026-10-08",
+     "expiry": "2026-10-13",
+     "net": -10272,
+     "reason": "settle",
+     "move_pct": 2.2
+    },
+    {
+     "entry": "2026-09-24",
+     "expiry": "2026-09-29",
+     "net": -2864,
+     "reason": "gate",
+     "move_pct": -1.96
+    },
+    {
+     "entry": "2026-09-03",
+     "expiry": "2026-09-08",
+     "net": 1734,
+     "reason": "gate",
+     "move_pct": -1.2
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2026-08-27",
+     "net": 1837,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-03",
+     "net": 1734,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-09",
+     "net": -10730,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-17",
+     "net": 9070,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-24",
+     "net": -2864,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-30",
+     "net": 9628,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-08",
+     "net": -10272,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-14",
+     "net": -14270,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-22",
+     "net": 10793,
+     "lots": 1
+    }
+   ]
+  },
+  "D breach 0.5 + gate -0.25": {
+   "weeks": 9,
+   "net": -19923,
+   "mean": -2214,
+   "win_pct": 22.2,
+   "worst": -6561,
+   "best": 9070,
+   "by_quarter": {
+    "2026Q3": -4111,
+    "2026Q4": -15812
+   },
+   "months_positive": "1 of 3",
+   "worst_month": -22032,
+   "worst_5": [
+    {
+     "entry": "2026-10-14",
+     "expiry": "2026-10-19",
+     "net": -6561,
+     "reason": "rule:breach",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-09-30",
+     "expiry": "2026-10-06",
+     "net": -6219,
+     "reason": "rule:breach",
+     "move_pct": 0.63
+    },
+    {
+     "entry": "2026-09-09",
+     "expiry": "2026-09-15",
+     "net": -6124,
+     "reason": "rule:breach",
+     "move_pct": -1.41
+    },
+    {
+     "entry": "2026-10-08",
+     "expiry": "2026-10-13",
+     "net": -5842,
+     "reason": "rule:breach",
+     "move_pct": 2.2
+    },
+    {
+     "entry": "2026-10-22",
+     "expiry": "2026-10-27",
+     "net": -3410,
+     "reason": "rule:breach",
+     "move_pct": 0.44
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2026-08-27",
+     "net": -30,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-03",
+     "net": 560,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-09",
+     "net": -6124,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-17",
+     "net": 9070,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-24",
+     "net": -1369,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-30",
+     "net": -6219,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-08",
+     "net": -5842,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-14",
+     "net": -6561,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-22",
+     "net": -3410,
+     "lots": 1
+    }
+   ]
+  },
+  "E pre base": {
+   "weeks": 9,
+   "net": 6308,
+   "mean": 701,
+   "win_pct": 77.8,
+   "worst": -14270,
+   "best": 5769,
+   "by_quarter": {
+    "2026Q3": 9631,
+    "2026Q4": -3323
+   },
+   "months_positive": "3 of 3",
+   "worst_month": 1542,
+   "worst_5": [
+    {
+     "entry": "2026-10-14",
+     "expiry": "2026-10-19",
+     "net": -14270,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-09-24",
+     "expiry": "2026-09-29",
+     "net": -2864,
+     "reason": "pre",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-09-09",
+     "expiry": "2026-09-15",
+     "net": 1463,
+     "reason": "pre",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-09-03",
+     "expiry": "2026-09-08",
+     "net": 1734,
+     "reason": "pre",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-08-27",
+     "expiry": "2026-09-01",
+     "net": 1911,
+     "reason": "pre",
+     "move_pct": null
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2026-08-27",
+     "net": 1911,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-03",
+     "net": 1734,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-09",
+     "net": 1463,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-17",
+     "net": 2522,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-24",
+     "net": -2864,
+     "lots": 1
+    },
+    {
+     "entry": "2026-09-30",
+     "net": 4865,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-08",
+     "net": 5769,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-14",
+     "net": -14270,
+     "lots": 1
+    },
+    {
+     "entry": "2026-10-22",
+     "net": 5177,
+     "lots": 1
+    }
+   ]
+  }
+ },
+ "NIFTY exam": {
+  "A WK-S": {
+   "weeks": 17,
+   "net": -56743,
+   "mean": -3338,
+   "win_pct": 35.3,
+   "worst": -40884,
+   "best": 17757,
+   "by_quarter": {
+    "2021Q4": -13982,
+    "2022Q1": -42760
+   },
+   "months_positive": "1 of 4",
+   "worst_month": -36338,
+   "worst_5": [
+    {
+     "entry": "2022-02-21",
+     "expiry": "2022-02-24",
+     "net": -40884,
+     "reason": "settle",
+     "move_pct": -5.49
+    },
+    {
+     "entry": "2021-12-06",
+     "expiry": "2021-12-09",
+     "net": -16166,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-01-21",
+     "expiry": "2022-01-27",
+     "net": -14174,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-03-07",
+     "expiry": "2022-03-10",
+     "net": -12725,
+     "reason": "settle",
+     "move_pct": 4.5
+    },
+    {
+     "entry": "2022-01-07",
+     "expiry": "2022-01-13",
+     "net": -10153,
+     "reason": "settle",
+     "move_pct": 2.48
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2021-11-29",
+     "net": -3462,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-06",
+     "net": -16166,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-13",
+     "net": 5661,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-20",
+     "net": -8713,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-27",
+     "net": 8699,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-03",
+     "net": 7954,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-07",
+     "net": -10153,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-17",
+     "net": -8266,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-21",
+     "net": -14174,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-31",
+     "net": 16807,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-07",
+     "net": -7517,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-14",
+     "net": -4744,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-21",
+     "net": -40884,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-25",
+     "net": 17757,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-07",
+     "net": -12725,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-14",
+     "net": -99,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-21",
+     "net": 13284,
+     "lots": 1
+    }
+   ]
+  },
+  "B WK-X settle | loss: loss 2.0": {
+   "weeks": 17,
+   "net": -64286,
+   "mean": -3782,
+   "win_pct": 35.3,
+   "worst": -40884,
+   "best": 17757,
+   "by_quarter": {
+    "2021Q4": -13982,
+    "2022Q1": -50303
+   },
+   "months_positive": "1 of 4",
+   "worst_month": -36338,
+   "worst_5": [
+    {
+     "entry": "2022-02-21",
+     "expiry": "2022-02-24",
+     "net": -40884,
+     "reason": "settle",
+     "move_pct": -5.49
+    },
+    {
+     "entry": "2022-01-21",
+     "expiry": "2022-01-27",
+     "net": -21717,
+     "reason": "rule:loss",
+     "move_pct": null
+    },
+    {
+     "entry": "2021-12-06",
+     "expiry": "2021-12-09",
+     "net": -16166,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-03-07",
+     "expiry": "2022-03-10",
+     "net": -12725,
+     "reason": "settle",
+     "move_pct": 4.5
+    },
+    {
+     "entry": "2022-01-07",
+     "expiry": "2022-01-13",
+     "net": -10153,
+     "reason": "settle",
+     "move_pct": 2.48
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2021-11-29",
+     "net": -3462,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-06",
+     "net": -16166,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-13",
+     "net": 5661,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-20",
+     "net": -8713,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-27",
+     "net": 8699,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-03",
+     "net": 7954,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-07",
+     "net": -10153,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-17",
+     "net": -8266,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-21",
+     "net": -21717,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-31",
+     "net": 16807,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-07",
+     "net": -7517,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-14",
+     "net": -4744,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-21",
+     "net": -40884,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-25",
+     "net": 17757,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-07",
+     "net": -12725,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-14",
+     "net": -99,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-21",
+     "net": 13284,
+     "lots": 1
+    }
+   ]
+  },
+  "C WK-G (WK-S + gate -0.25)": {
+   "weeks": 17,
+   "net": -52773,
+   "mean": -3104,
+   "win_pct": 29.4,
+   "worst": -40884,
+   "best": 17757,
+   "by_quarter": {
+    "2021Q4": -12077,
+    "2022Q1": -40696
+   },
+   "months_positive": "1 of 4",
+   "worst_month": -43351,
+   "worst_5": [
+    {
+     "entry": "2022-02-21",
+     "expiry": "2022-02-24",
+     "net": -40884,
+     "reason": "settle",
+     "move_pct": -5.49
+    },
+    {
+     "entry": "2021-12-06",
+     "expiry": "2021-12-09",
+     "net": -16166,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-01-21",
+     "expiry": "2022-01-27",
+     "net": -14174,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-01-17",
+     "expiry": "2022-01-20",
+     "net": -8266,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-02-14",
+     "expiry": "2022-02-17",
+     "net": -6608,
+     "reason": "gate",
+     "move_pct": 2.73
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2021-11-29",
+     "net": -3462,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-06",
+     "net": -16166,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-13",
+     "net": 994,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-20",
+     "net": -2141,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-27",
+     "net": 8699,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-03",
+     "net": -4973,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-07",
+     "net": -302,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-17",
+     "net": -8266,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-21",
+     "net": -14174,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-31",
+     "net": 4155,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-07",
+     "net": -15,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-14",
+     "net": -6608,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-21",
+     "net": -40884,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-25",
+     "net": 17757,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-07",
+     "net": -571,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-14",
+     "net": -99,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-21",
+     "net": 13284,
+     "lots": 1
+    }
+   ]
+  },
+  "D breach 0.5 + gate -0.25": {
+   "weeks": 17,
+   "net": 7971,
+   "mean": 469,
+   "win_pct": 29.4,
+   "worst": -7602,
+   "best": 17757,
+   "by_quarter": {
+    "2021Q4": -3285,
+    "2022Q1": 11256
+   },
+   "months_positive": "1 of 4",
+   "worst_month": -9986,
+   "worst_5": [
+    {
+     "entry": "2022-02-21",
+     "expiry": "2022-02-24",
+     "net": -7602,
+     "reason": "rule:breach",
+     "move_pct": -5.49
+    },
+    {
+     "entry": "2022-02-14",
+     "expiry": "2022-02-17",
+     "net": -5669,
+     "reason": "rule:breach",
+     "move_pct": 2.73
+    },
+    {
+     "entry": "2021-12-06",
+     "expiry": "2021-12-09",
+     "net": -5092,
+     "reason": "rule:breach",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-01-21",
+     "expiry": "2022-01-27",
+     "net": -4641,
+     "reason": "rule:breach",
+     "move_pct": null
+    },
+    {
+     "entry": "2021-12-20",
+     "expiry": "2021-12-23",
+     "net": -4423,
+     "reason": "rule:breach",
+     "move_pct": 2.71
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2021-11-29",
+     "net": -3462,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-06",
+     "net": -5092,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-13",
+     "net": 994,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-20",
+     "net": -4423,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-27",
+     "net": 8699,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-03",
+     "net": -1406,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-07",
+     "net": -302,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-17",
+     "net": -3636,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-21",
+     "net": -4641,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-31",
+     "net": 4155,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-07",
+     "net": -15,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-14",
+     "net": -5669,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-21",
+     "net": -7602,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-25",
+     "net": 17757,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-07",
+     "net": -571,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-14",
+     "net": -99,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-21",
+     "net": 13284,
+     "lots": 1
+    }
+   ]
+  },
+  "E pre base": {
+   "weeks": 17,
+   "net": -7241,
+   "mean": -426,
+   "win_pct": 47.1,
+   "worst": -16166,
+   "best": 10458,
+   "by_quarter": {
+    "2021Q4": -8584,
+    "2022Q1": 1343
+   },
+   "months_positive": "2 of 4",
+   "worst_month": -27716,
+   "worst_5": [
+    {
+     "entry": "2021-12-06",
+     "expiry": "2021-12-09",
+     "net": -16166,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-01-21",
+     "expiry": "2022-01-27",
+     "net": -14174,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-01-17",
+     "expiry": "2022-01-20",
+     "net": -8266,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-02-14",
+     "expiry": "2022-02-17",
+     "net": -6608,
+     "reason": "pre",
+     "move_pct": null
+    },
+    {
+     "entry": "2022-01-03",
+     "expiry": "2022-01-06",
+     "net": -4973,
+     "reason": "pre",
+     "move_pct": null
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2021-11-29",
+     "net": 5167,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-06",
+     "net": -16166,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-13",
+     "net": 994,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-20",
+     "net": -2141,
+     "lots": 1
+    },
+    {
+     "entry": "2021-12-27",
+     "net": 3562,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-03",
+     "net": -4973,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-07",
+     "net": -302,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-17",
+     "net": -8266,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-21",
+     "net": -14174,
+     "lots": 1
+    },
+    {
+     "entry": "2022-01-31",
+     "net": 4155,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-07",
+     "net": -15,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-14",
+     "net": -6608,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-21",
+     "net": 5885,
+     "lots": 1
+    },
+    {
+     "entry": "2022-02-25",
+     "net": 10458,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-07",
+     "net": -571,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-14",
+     "net": 7254,
+     "lots": 1
+    },
+    {
+     "entry": "2022-03-21",
+     "net": 8501,
+     "lots": 1
+    }
+   ]
+  }
+ },
+ "SENSEX exam": {
+  "A WK-S": {
+   "weeks": 70,
+   "net": -42022,
+   "mean": -600,
+   "win_pct": 60.0,
+   "worst": -46018,
+   "best": 14680,
+   "by_quarter": {
+    "2024Q4": -14051,
+    "2025Q1": -41605,
+    "2025Q2": 19845,
+    "2025Q3": -5271,
+    "2025Q4": 33178,
+    "2026Q1": -48782,
+    "2026Q2": 14664
+   },
+   "months_positive": "9 of 19",
+   "worst_month": -70088,
+   "worst_5": [
+    {
+     "entry": "2025-04-03",
+     "expiry": "2025-04-08",
+     "net": -46018,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-12-17",
+     "expiry": "2024-12-20",
+     "net": -34620,
+     "reason": "settle",
+     "move_pct": -3.29
+    },
+    {
+     "entry": "2026-02-27",
+     "expiry": "2026-03-05",
+     "net": -24411,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-11-11",
+     "expiry": "2024-11-14",
+     "net": -23167,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-02",
+     "expiry": "2026-02-05",
+     "net": -20626,
+     "reason": "stop",
+     "move_pct": null
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2024-10-01",
+     "net": -19052,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-08",
+     "net": 12964,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-14",
+     "net": 3345,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-22",
+     "net": 3763,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-28",
+     "net": 2739,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-05",
+     "net": 13864,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-11",
+     "net": -23167,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-18",
+     "net": -13364,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-26",
+     "net": 10821,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-03",
+     "net": 6289,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-10",
+     "net": 8364,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-17",
+     "net": -34620,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-23",
+     "net": 9919,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-31",
+     "net": 4085,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-09",
+     "net": -5528,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-16",
+     "net": -3737,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-23",
+     "net": 7620,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-06",
+     "net": -12885,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-13",
+     "net": 11141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-27",
+     "net": -12826,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-06",
+     "net": 9850,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-12",
+     "net": -6518,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-20",
+     "net": -18384,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-26",
+     "net": -10339,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-03",
+     "net": -46018,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-16",
+     "net": -13731,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-30",
+     "net": 14680,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-08",
+     "net": 12470,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-15",
+     "net": 1526,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-22",
+     "net": 11133,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-29",
+     "net": 5106,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-05",
+     "net": 4025,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-12",
+     "net": 10082,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-19",
+     "net": 9664,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-26",
+     "net": 10907,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-03",
+     "net": 8832,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-10",
+     "net": -165,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-17",
+     "net": 7981,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-24",
+     "net": -14160,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-31",
+     "net": 7415,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-07",
+     "net": 5081,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-13",
+     "net": -2501,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-21",
+     "net": -12757,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-01",
+     "net": 7378,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-08",
+     "net": 122,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-15",
+     "net": -9804,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-22",
+     "net": -9824,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-26",
+     "net": 7130,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-06",
+     "net": 5529,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-13",
+     "net": -7141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-27",
+     "net": 7517,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-31",
+     "net": -1306,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-10",
+     "net": -1461,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-17",
+     "net": 3289,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-24",
+     "net": 4329,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-01",
+     "net": 6609,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-08",
+     "net": 7212,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-15",
+     "net": -483,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-19",
+     "net": 5055,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-29",
+     "net": 4030,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-05",
+     "net": -12340,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-09",
+     "net": 9214,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-19",
+     "net": -13042,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-23",
+     "net": 7269,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-02",
+     "net": -20626,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-09",
+     "net": 7553,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-16",
+     "net": 512,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-23",
+     "net": -2911,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-27",
+     "net": -24411,
+     "lots": 1
+    },
+    {
+     "entry": "2026-04-20",
+     "net": 14664,
+     "lots": 1
+    }
+   ]
+  },
+  "B WK-X settle | loss: loss 2.0": {
+   "weeks": 70,
+   "net": -42022,
+   "mean": -600,
+   "win_pct": 60.0,
+   "worst": -46018,
+   "best": 14680,
+   "by_quarter": {
+    "2024Q4": -14051,
+    "2025Q1": -41605,
+    "2025Q2": 19845,
+    "2025Q3": -5271,
+    "2025Q4": 33178,
+    "2026Q1": -48782,
+    "2026Q2": 14664
+   },
+   "months_positive": "9 of 19",
+   "worst_month": -70088,
+   "worst_5": [
+    {
+     "entry": "2025-04-03",
+     "expiry": "2025-04-08",
+     "net": -46018,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-12-17",
+     "expiry": "2024-12-20",
+     "net": -34620,
+     "reason": "settle",
+     "move_pct": -3.29
+    },
+    {
+     "entry": "2026-02-27",
+     "expiry": "2026-03-05",
+     "net": -24411,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-11-11",
+     "expiry": "2024-11-14",
+     "net": -23167,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-02",
+     "expiry": "2026-02-05",
+     "net": -20626,
+     "reason": "stop",
+     "move_pct": null
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2024-10-01",
+     "net": -19052,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-08",
+     "net": 12964,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-14",
+     "net": 3345,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-22",
+     "net": 3763,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-28",
+     "net": 2739,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-05",
+     "net": 13864,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-11",
+     "net": -23167,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-18",
+     "net": -13364,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-26",
+     "net": 10821,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-03",
+     "net": 6289,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-10",
+     "net": 8364,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-17",
+     "net": -34620,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-23",
+     "net": 9919,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-31",
+     "net": 4085,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-09",
+     "net": -5528,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-16",
+     "net": -3737,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-23",
+     "net": 7620,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-06",
+     "net": -12885,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-13",
+     "net": 11141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-27",
+     "net": -12826,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-06",
+     "net": 9850,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-12",
+     "net": -6518,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-20",
+     "net": -18384,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-26",
+     "net": -10339,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-03",
+     "net": -46018,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-16",
+     "net": -13731,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-30",
+     "net": 14680,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-08",
+     "net": 12470,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-15",
+     "net": 1526,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-22",
+     "net": 11133,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-29",
+     "net": 5106,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-05",
+     "net": 4025,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-12",
+     "net": 10082,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-19",
+     "net": 9664,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-26",
+     "net": 10907,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-03",
+     "net": 8832,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-10",
+     "net": -165,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-17",
+     "net": 7981,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-24",
+     "net": -14160,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-31",
+     "net": 7415,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-07",
+     "net": 5081,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-13",
+     "net": -2501,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-21",
+     "net": -12757,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-01",
+     "net": 7378,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-08",
+     "net": 122,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-15",
+     "net": -9804,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-22",
+     "net": -9824,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-26",
+     "net": 7130,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-06",
+     "net": 5529,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-13",
+     "net": -7141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-27",
+     "net": 7517,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-31",
+     "net": -1306,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-10",
+     "net": -1461,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-17",
+     "net": 3289,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-24",
+     "net": 4329,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-01",
+     "net": 6609,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-08",
+     "net": 7212,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-15",
+     "net": -483,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-19",
+     "net": 5055,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-29",
+     "net": 4030,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-05",
+     "net": -12340,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-09",
+     "net": 9214,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-19",
+     "net": -13042,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-23",
+     "net": 7269,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-02",
+     "net": -20626,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-09",
+     "net": 7553,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-16",
+     "net": 512,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-23",
+     "net": -2911,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-27",
+     "net": -24411,
+     "lots": 1
+    },
+    {
+     "entry": "2026-04-20",
+     "net": 14664,
+     "lots": 1
+    }
+   ]
+  },
+  "C WK-G (WK-S + gate -0.25)": {
+   "weeks": 70,
+   "net": -99023,
+   "mean": -1415,
+   "win_pct": 54.3,
+   "worst": -46018,
+   "best": 14680,
+   "by_quarter": {
+    "2024Q4": -31464,
+    "2025Q1": -37293,
+    "2025Q2": -29752,
+    "2025Q3": 18438,
+    "2025Q4": 15785,
+    "2026Q1": -49401,
+    "2026Q2": 14664
+   },
+   "months_positive": "11 of 19",
+   "worst_month": -70088,
+   "worst_5": [
+    {
+     "entry": "2025-04-03",
+     "expiry": "2025-04-08",
+     "net": -46018,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-27",
+     "expiry": "2026-03-05",
+     "net": -24411,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-11-11",
+     "expiry": "2024-11-14",
+     "net": -23167,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-02",
+     "expiry": "2026-02-05",
+     "net": -20626,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-10-01",
+     "expiry": "2024-10-04",
+     "net": -19052,
+     "reason": "stop",
+     "move_pct": null
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2024-10-01",
+     "net": -19052,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-08",
+     "net": 12964,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-14",
+     "net": 3345,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-22",
+     "net": 3763,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-28",
+     "net": 2739,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-05",
+     "net": 13864,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-11",
+     "net": -23167,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-18",
+     "net": -13364,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-26",
+     "net": -4375,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-03",
+     "net": -2956,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-10",
+     "net": 8364,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-17",
+     "net": -11798,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-23",
+     "net": 9919,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-31",
+     "net": -11710,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-09",
+     "net": -7935,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-16",
+     "net": -3737,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-23",
+     "net": -3223,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-06",
+     "net": 4677,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-13",
+     "net": 11141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-27",
+     "net": -12826,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-06",
+     "net": 9850,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-12",
+     "net": -6518,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-20",
+     "net": -18384,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-26",
+     "net": -10339,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-03",
+     "net": -46018,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-16",
+     "net": -13731,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-30",
+     "net": 14680,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-08",
+     "net": -15818,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-15",
+     "net": 1526,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-22",
+     "net": -6786,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-29",
+     "net": 5106,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-05",
+     "net": 635,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-12",
+     "net": 10082,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-19",
+     "net": 9664,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-26",
+     "net": 10907,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-03",
+     "net": 8832,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-10",
+     "net": -5854,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-17",
+     "net": 7981,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-24",
+     "net": -14160,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-31",
+     "net": 7415,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-07",
+     "net": 5081,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-13",
+     "net": -2501,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-21",
+     "net": 2503,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-01",
+     "net": 7378,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-08",
+     "net": -531,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-15",
+     "net": -5797,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-22",
+     "net": 960,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-26",
+     "net": 7130,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-06",
+     "net": 5529,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-13",
+     "net": -7141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-27",
+     "net": 7517,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-31",
+     "net": 807,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-10",
+     "net": -3696,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-17",
+     "net": 3289,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-24",
+     "net": 4329,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-01",
+     "net": 1271,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-08",
+     "net": -623,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-15",
+     "net": -146,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-19",
+     "net": 622,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-29",
+     "net": 4030,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-05",
+     "net": -12340,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-09",
+     "net": 9214,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-19",
+     "net": -13042,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-23",
+     "net": 7269,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-02",
+     "net": -20626,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-09",
+     "net": 7553,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-16",
+     "net": 512,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-23",
+     "net": -3530,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-27",
+     "net": -24411,
+     "lots": 1
+    },
+    {
+     "entry": "2026-04-20",
+     "net": 14664,
+     "lots": 1
+    }
+   ]
+  },
+  "D breach 0.5 + gate -0.25": {
+   "weeks": 70,
+   "net": -102993,
+   "mean": -1471,
+   "win_pct": 47.1,
+   "worst": -46018,
+   "best": 14680,
+   "by_quarter": {
+    "2024Q4": -726,
+    "2025Q1": -37293,
+    "2025Q2": -31807,
+    "2025Q3": -6575,
+    "2025Q4": 9777,
+    "2026Q1": -51034,
+    "2026Q2": 14664
+   },
+   "months_positive": "9 of 19",
+   "worst_month": -64145,
+   "worst_5": [
+    {
+     "entry": "2025-04-03",
+     "expiry": "2025-04-08",
+     "net": -46018,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-27",
+     "expiry": "2026-03-05",
+     "net": -24411,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-02",
+     "expiry": "2026-02-05",
+     "net": -20626,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-10-01",
+     "expiry": "2024-10-04",
+     "net": -19052,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2025-03-20",
+     "expiry": "2025-03-25",
+     "net": -18384,
+     "reason": "stop",
+     "move_pct": null
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2024-10-01",
+     "net": -19052,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-08",
+     "net": 12964,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-14",
+     "net": 3345,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-22",
+     "net": 3763,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-28",
+     "net": 2739,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-05",
+     "net": 13864,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-11",
+     "net": -4602,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-18",
+     "net": -451,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-26",
+     "net": -2192,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-03",
+     "net": -5879,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-10",
+     "net": 8364,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-17",
+     "net": -11798,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-23",
+     "net": 9919,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-31",
+     "net": -11710,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-09",
+     "net": -7935,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-16",
+     "net": -3737,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-23",
+     "net": -3223,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-06",
+     "net": 4677,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-13",
+     "net": 11141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-27",
+     "net": -12826,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-06",
+     "net": 9850,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-12",
+     "net": -6518,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-20",
+     "net": -18384,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-26",
+     "net": -10339,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-03",
+     "net": -46018,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-16",
+     "net": -7787,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-30",
+     "net": 14680,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-08",
+     "net": -15818,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-15",
+     "net": 1526,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-22",
+     "net": -6786,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-29",
+     "net": 5106,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-05",
+     "net": 635,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-12",
+     "net": 2084,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-19",
+     "net": 9664,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-26",
+     "net": 10907,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-03",
+     "net": 8832,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-10",
+     "net": -5854,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-17",
+     "net": -3829,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-24",
+     "net": -14160,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-31",
+     "net": 7415,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-07",
+     "net": -2753,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-13",
+     "net": -2501,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-21",
+     "net": -2865,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-01",
+     "net": 7378,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-08",
+     "net": -531,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-15",
+     "net": -5797,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-22",
+     "net": 960,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-26",
+     "net": 7130,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-06",
+     "net": 5529,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-13",
+     "net": -7141,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-27",
+     "net": 7517,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-31",
+     "net": 807,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-10",
+     "net": -3696,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-17",
+     "net": 3289,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-24",
+     "net": 4329,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-01",
+     "net": 1271,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-08",
+     "net": -1690,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-15",
+     "net": -146,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-19",
+     "net": 622,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-29",
+     "net": -911,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-05",
+     "net": -12340,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-09",
+     "net": -2185,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-19",
+     "net": -3276,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-23",
+     "net": 7269,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-02",
+     "net": -20626,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-09",
+     "net": 7553,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-16",
+     "net": 512,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-23",
+     "net": -3530,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-27",
+     "net": -24411,
+     "lots": 1
+    },
+    {
+     "entry": "2026-04-20",
+     "net": 14664,
+     "lots": 1
+    }
+   ]
+  },
+  "E pre base": {
+   "weeks": 70,
+   "net": -70208,
+   "mean": -1003,
+   "win_pct": 62.9,
+   "worst": -46018,
+   "best": 15003,
+   "by_quarter": {
+    "2024Q4": -23614,
+    "2025Q1": -5444,
+    "2025Q2": -40901,
+    "2025Q3": 6750,
+    "2025Q4": 15723,
+    "2026Q1": -37726,
+    "2026Q2": 15003
+   },
+   "months_positive": "10 of 19",
+   "worst_month": -59749,
+   "worst_5": [
+    {
+     "entry": "2025-04-03",
+     "expiry": "2025-04-08",
+     "net": -46018,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-27",
+     "expiry": "2026-03-05",
+     "net": -24411,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-11-11",
+     "expiry": "2024-11-14",
+     "net": -23167,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2026-02-02",
+     "expiry": "2026-02-05",
+     "net": -20626,
+     "reason": "stop",
+     "move_pct": null
+    },
+    {
+     "entry": "2024-10-01",
+     "expiry": "2024-10-04",
+     "net": -19052,
+     "reason": "stop",
+     "move_pct": null
+    }
+   ],
+   "weeks_list": [
+    {
+     "entry": "2024-10-01",
+     "net": -19052,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-08",
+     "net": 8234,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-14",
+     "net": 2141,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-22",
+     "net": 8450,
+     "lots": 1
+    },
+    {
+     "entry": "2024-10-28",
+     "net": 4002,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-05",
+     "net": 11274,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-11",
+     "net": -23167,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-18",
+     "net": 5011,
+     "lots": 1
+    },
+    {
+     "entry": "2024-11-26",
+     "net": -4375,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-03",
+     "net": -2956,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-10",
+     "net": 6818,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-17",
+     "net": -11798,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-23",
+     "net": 3515,
+     "lots": 1
+    },
+    {
+     "entry": "2024-12-31",
+     "net": -11710,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-09",
+     "net": -7935,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-16",
+     "net": 5940,
+     "lots": 1
+    },
+    {
+     "entry": "2025-01-23",
+     "net": -3223,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-06",
+     "net": 4677,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-13",
+     "net": 6426,
+     "lots": 1
+    },
+    {
+     "entry": "2025-02-27",
+     "net": -12826,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-06",
+     "net": 6951,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-12",
+     "net": 5773,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-20",
+     "net": -18384,
+     "lots": 1
+    },
+    {
+     "entry": "2025-03-26",
+     "net": 7156,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-03",
+     "net": -46018,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-16",
+     "net": -13731,
+     "lots": 1
+    },
+    {
+     "entry": "2025-04-30",
+     "net": 12083,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-08",
+     "net": -15818,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-15",
+     "net": 7772,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-22",
+     "net": -6786,
+     "lots": 1
+    },
+    {
+     "entry": "2025-05-29",
+     "net": 3672,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-05",
+     "net": 635,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-12",
+     "net": 5784,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-19",
+     "net": 5048,
+     "lots": 1
+    },
+    {
+     "entry": "2025-06-26",
+     "net": 6458,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-03",
+     "net": 5100,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-10",
+     "net": -5854,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-17",
+     "net": 4421,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-24",
+     "net": -14160,
+     "lots": 1
+    },
+    {
+     "entry": "2025-07-31",
+     "net": 6412,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-07",
+     "net": 4455,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-13",
+     "net": -140,
+     "lots": 1
+    },
+    {
+     "entry": "2025-08-21",
+     "net": 2503,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-01",
+     "net": 3959,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-08",
+     "net": -531,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-15",
+     "net": -5797,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-22",
+     "net": 960,
+     "lots": 1
+    },
+    {
+     "entry": "2025-09-26",
+     "net": 5422,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-06",
+     "net": 2302,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-13",
+     "net": 3333,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-27",
+     "net": 4276,
+     "lots": 1
+    },
+    {
+     "entry": "2025-10-31",
+     "net": 807,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-10",
+     "net": -3696,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-17",
+     "net": 4068,
+     "lots": 1
+    },
+    {
+     "entry": "2025-11-24",
+     "net": 3479,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-01",
+     "net": 1271,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-08",
+     "net": -623,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-15",
+     "net": -146,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-19",
+     "net": 622,
+     "lots": 1
+    },
+    {
+     "entry": "2025-12-29",
+     "net": 31,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-05",
+     "net": 1385,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-09",
+     "net": 6654,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-19",
+     "net": -13042,
+     "lots": 1
+    },
+    {
+     "entry": "2026-01-23",
+     "net": 6383,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-02",
+     "net": -20626,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-09",
+     "net": 5239,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-16",
+     "net": 4224,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-23",
+     "net": -3530,
+     "lots": 1
+    },
+    {
+     "entry": "2026-02-27",
+     "net": -24411,
+     "lots": 1
+    },
+    {
+     "entry": "2026-04-20",
+     "net": 15003,
+     "lots": 1
+    }
+   ]
+  }
+ },
+ "second look total": {
+  "A WK-S": -122113,
+  "B WK-X settle | loss: loss 2.0": -129656,
+  "C WK-G (WK-S + gate -0.25)": -156870,
+  "D breach 0.5 + gate -0.25": -114945,
+  "E pre base": -71141
+ },
+ "pass 4": {
+  "B WK-X settle | loss: loss 2.0": false,
+  "C WK-G (WK-S + gate -0.25)": false,
+  "D breach 0.5 + gate -0.25": false,
+  "E pre base": false
+ }
+}

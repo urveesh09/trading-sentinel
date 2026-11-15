@@ -1,0 +1,23 @@
+{
+ "mirror_rows_by_kind": {
+  "daily": 496,
+  "future": 119884,
+  "index": 69713,
+  "option": 1635382
+ },
+ "mirror_sha256": "94e2b28f692093f5172c1e0a34213ae42633524f86a2a27fc6eb797676d0d2b7",
+ "dataset_manifest_sha256": "4655d4986ae57c7c10e251f9b345c072357b45db610887ab1221b118bdbafba1",
+ "dataset_files_sha256": {
+  "breeze.sqlite": "8cae6c571684adca99b0e0eafef06769c911e3df0e6a7deb3ed78cd3374adaca"
+ },
+ "export_sessions": 184,
+ "lab_sessions_non_expiry_with_options": 145,
+ "first": "2022-04-01",
+ "last": "2022-12-30",
+ "option_series_per_session": {
+  "min": 25,
+  "median": 29.0,
+  "max": 43
+ },
+ "index_minute_coverage_median": 1.0
+}

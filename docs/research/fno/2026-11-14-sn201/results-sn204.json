@@ -1,0 +1,769 @@
+{
+ "dev_weeks": 229,
+ "variants": 38,
+ "eligible": 38,
+ "coverage": {
+  "STRADDLE k1 settle": 1.0,
+  "STRADDLE k2 settle": 1.0,
+  "STRADDLE k2 settle stop0.5": 1.0,
+  "STRADDLE k2 settle stop1": 1.0,
+  "STRADDLE k2 pre": 1.0,
+  "STRADDLE k2 pre stop0.5": 1.0,
+  "STRADDLE k2 pre stop1": 1.0,
+  "STRADDLE k3 settle": 1.0,
+  "STRADDLE k3 settle stop0.5": 1.0,
+  "STRADDLE k3 settle stop1": 1.0,
+  "STRADDLE k3 pre": 1.0,
+  "STRADDLE k3 pre stop0.5": 1.0,
+  "STRADDLE k3 pre stop1": 1.0,
+  "STRADDLE kF settle": 1.0,
+  "STRADDLE kF settle stop0.5": 1.0,
+  "STRADDLE kF settle stop1": 1.0,
+  "STRADDLE kF pre": 0.996,
+  "STRADDLE kF pre stop0.5": 0.996,
+  "STRADDLE kF pre stop1": 0.996,
+  "STRANGLE 0.5 k1 settle": 1.0,
+  "STRANGLE 0.5 k2 settle": 0.996,
+  "STRANGLE 0.5 k2 settle stop0.5": 0.996,
+  "STRANGLE 0.5 k2 settle stop1": 0.996,
+  "STRANGLE 0.5 k2 pre": 0.996,
+  "STRANGLE 0.5 k2 pre stop0.5": 0.996,
+  "STRANGLE 0.5 k2 pre stop1": 0.996,
+  "STRANGLE 0.5 k3 settle": 0.996,
+  "STRANGLE 0.5 k3 settle stop0.5": 0.996,
+  "STRANGLE 0.5 k3 settle stop1": 0.996,
+  "STRANGLE 0.5 k3 pre": 0.996,
+  "STRANGLE 0.5 k3 pre stop0.5": 0.996,
+  "STRANGLE 0.5 k3 pre stop1": 0.996,
+  "STRANGLE 0.5 kF settle": 0.991,
+  "STRANGLE 0.5 kF settle stop0.5": 0.991,
+  "STRANGLE 0.5 kF settle stop1": 0.991,
+  "STRANGLE 0.5 kF pre": 0.987,
+  "STRANGLE 0.5 kF pre stop0.5": 0.987,
+  "STRANGLE 0.5 kF pre stop1": 0.987
+ },
+ "loyo": {
+  "2022": {
+   "pick": "STRADDLE kF settle stop0.5",
+   "net": 37033
+  },
+  "2023": {
+   "pick": "STRADDLE kF pre",
+   "net": -25735
+  },
+  "2024": {
+   "pick": "STRANGLE 0.5 k3 settle stop1",
+   "net": 38494
+  },
+  "2025": {
+   "pick": "STRANGLE 0.5 k3 settle stop1",
+   "net": 74112
+  },
+  "2026": {
+   "pick": "STRADDLE kF pre",
+   "net": 25825
+  },
+  "sum": 149729,
+  "years_positive": 4
+ },
+ "ranked": [
+  {
+   "variant": "STRANGLE 0.5 k3 settle stop1",
+   "net": 313523,
+   "by_year": {
+    "2022": 79743,
+    "2023": 43757,
+    "2024": 38494,
+    "2025": 74112,
+    "2026": 77417
+   }
+  },
+  {
+   "variant": "STRADDLE kF settle stop0.5",
+   "net": 313165,
+   "by_year": {
+    "2022": 37033,
+    "2023": 33842,
+    "2024": 107579,
+    "2025": 84598,
+    "2026": 50113
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 kF settle stop1",
+   "net": 306425,
+   "by_year": {
+    "2022": 95131,
+    "2023": 41487,
+    "2024": 53048,
+    "2025": 74969,
+    "2026": 41790
+   }
+  },
+  {
+   "variant": "STRADDLE kF pre",
+   "net": 292533,
+   "by_year": {
+    "2022": 55152,
+    "2023": -25735,
+    "2024": 115463,
+    "2025": 121828,
+    "2026": 25825
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k3 settle stop0.5",
+   "net": 277606,
+   "by_year": {
+    "2022": 40010,
+    "2023": 44177,
+    "2024": 50818,
+    "2025": 73291,
+    "2026": 69310
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 kF pre",
+   "net": 259887,
+   "by_year": {
+    "2022": 62966,
+    "2023": -19507,
+    "2024": 81005,
+    "2025": 108905,
+    "2026": 26518
+   }
+  },
+  {
+   "variant": "STRADDLE kF pre stop1",
+   "net": 248958,
+   "by_year": {
+    "2022": 55152,
+    "2023": -21101,
+    "2024": 97083,
+    "2025": 98642,
+    "2026": 19182
+   }
+  },
+  {
+   "variant": "STRADDLE k3 settle",
+   "net": 244268,
+   "by_year": {
+    "2022": 95190,
+    "2023": -13080,
+    "2024": 14435,
+    "2025": 64339,
+    "2026": 83384
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k3 settle",
+   "net": 232259,
+   "by_year": {
+    "2022": 79743,
+    "2023": 490,
+    "2024": 3637,
+    "2025": 70359,
+    "2026": 78030
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 kF settle stop0.5",
+   "net": 229052,
+   "by_year": {
+    "2022": 32951,
+    "2023": 48620,
+    "2024": 61903,
+    "2025": 50260,
+    "2026": 35318
+   }
+  },
+  {
+   "variant": "STRADDLE kF settle",
+   "net": 226677,
+   "by_year": {
+    "2022": 60850,
+    "2023": -23047,
+    "2024": 60183,
+    "2025": 94812,
+    "2026": 33879
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k3 pre",
+   "net": 203679,
+   "by_year": {
+    "2022": 62693,
+    "2023": -15711,
+    "2024": 51776,
+    "2025": 83561,
+    "2026": 21360
+   }
+  },
+  {
+   "variant": "STRADDLE k3 settle stop0.5",
+   "net": 202270,
+   "by_year": {
+    "2022": 68410,
+    "2023": 36243,
+    "2024": -18448,
+    "2025": 64616,
+    "2026": 51449
+   }
+  },
+  {
+   "variant": "STRADDLE kF settle stop1",
+   "net": 202002,
+   "by_year": {
+    "2022": 60850,
+    "2023": -1244,
+    "2024": 56452,
+    "2025": 81245,
+    "2026": 4699
+   }
+  },
+  {
+   "variant": "STRADDLE kF pre stop0.5",
+   "net": 200637,
+   "by_year": {
+    "2022": 38846,
+    "2023": 3135,
+    "2024": 89227,
+    "2025": 48712,
+    "2026": 20717
+   }
+  },
+  {
+   "variant": "STRADDLE k3 settle stop1",
+   "net": 194376,
+   "by_year": {
+    "2022": 95190,
+    "2023": 4317,
+    "2024": -44821,
+    "2025": 47718,
+    "2026": 91972
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 kF pre stop1",
+   "net": 194152,
+   "by_year": {
+    "2022": 62966,
+    "2023": 7187,
+    "2024": 47941,
+    "2025": 53562,
+    "2026": 22496
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k2 settle stop0.5",
+   "net": 185569,
+   "by_year": {
+    "2022": -2906,
+    "2023": 9308,
+    "2024": 15281,
+    "2025": 129618,
+    "2026": 34268
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 kF settle",
+   "net": 182431,
+   "by_year": {
+    "2022": 68202,
+    "2023": -21680,
+    "2024": 16344,
+    "2025": 63567,
+    "2026": 55998
+   }
+  },
+  {
+   "variant": "STRADDLE k3 pre",
+   "net": 179700,
+   "by_year": {
+    "2022": 61002,
+    "2023": -25749,
+    "2024": 52093,
+    "2025": 76574,
+    "2026": 15780
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k1 settle",
+   "net": 174351,
+   "by_year": {
+    "2022": 23259,
+    "2023": 43651,
+    "2024": -1035,
+    "2025": 65963,
+    "2026": 42513
+   }
+  },
+  {
+   "variant": "STRADDLE k1 settle",
+   "net": 173683,
+   "by_year": {
+    "2022": 26407,
+    "2023": 37768,
+    "2024": 17690,
+    "2025": 56798,
+    "2026": 35020
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k3 pre stop1",
+   "net": 172694,
+   "by_year": {
+    "2022": 62693,
+    "2023": -8578,
+    "2024": 35622,
+    "2025": 61061,
+    "2026": 21896
+   }
+  },
+  {
+   "variant": "STRADDLE k2 settle stop0.5",
+   "net": 157692,
+   "by_year": {
+    "2022": -18336,
+    "2023": 19770,
+    "2024": 16555,
+    "2025": 106738,
+    "2026": 32965
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k2 settle stop1",
+   "net": 156240,
+   "by_year": {
+    "2022": -12291,
+    "2023": 13254,
+    "2024": 21800,
+    "2025": 120079,
+    "2026": 13398
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 kF pre stop0.5",
+   "net": 144254,
+   "by_year": {
+    "2022": 33543,
+    "2023": 12825,
+    "2024": 57097,
+    "2025": 38898,
+    "2026": 1891
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k2 settle",
+   "net": 142906,
+   "by_year": {
+    "2022": 3863,
+    "2023": -4068,
+    "2024": 28449,
+    "2025": 101264,
+    "2026": 13398
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k3 pre stop0.5",
+   "net": 141699,
+   "by_year": {
+    "2022": 41094,
+    "2023": -4341,
+    "2024": 48729,
+    "2025": 58700,
+    "2026": -2483
+   }
+  },
+  {
+   "variant": "STRADDLE k2 settle",
+   "net": 140350,
+   "by_year": {
+    "2022": -9275,
+    "2023": -411,
+    "2024": 28928,
+    "2025": 88143,
+    "2026": 32965
+   }
+  },
+  {
+   "variant": "STRADDLE k2 settle stop1",
+   "net": 112161,
+   "by_year": {
+    "2022": -25374,
+    "2023": -5986,
+    "2024": 22413,
+    "2025": 88143,
+    "2026": 32965
+   }
+  },
+  {
+   "variant": "STRADDLE k3 pre stop1",
+   "net": 100952,
+   "by_year": {
+    "2022": 61002,
+    "2023": -25749,
+    "2024": -4587,
+    "2025": 54506,
+    "2026": 15780
+   }
+  },
+  {
+   "variant": "STRADDLE k3 pre stop0.5",
+   "net": 55652,
+   "by_year": {
+    "2022": 56921,
+    "2023": -18131,
+    "2024": -22587,
+    "2025": 45038,
+    "2026": -5589
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k2 pre",
+   "net": 46112,
+   "by_year": {
+    "2022": -2506,
+    "2023": -26005,
+    "2024": 1555,
+    "2025": 56929,
+    "2026": 16139
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k2 pre stop0.5",
+   "net": 46112,
+   "by_year": {
+    "2022": -2506,
+    "2023": -26005,
+    "2024": 1555,
+    "2025": 56929,
+    "2026": 16139
+   }
+  },
+  {
+   "variant": "STRANGLE 0.5 k2 pre stop1",
+   "net": 46112,
+   "by_year": {
+    "2022": -2506,
+    "2023": -26005,
+    "2024": 1555,
+    "2025": 56929,
+    "2026": 16139
+   }
+  },
+  {
+   "variant": "STRADDLE k2 pre",
+   "net": 43005,
+   "by_year": {
+    "2022": -4803,
+    "2023": -26660,
+    "2024": -132,
+    "2025": 61459,
+    "2026": 13141
+   }
+  },
+  {
+   "variant": "STRADDLE k2 pre stop0.5",
+   "net": 43005,
+   "by_year": {
+    "2022": -4803,
+    "2023": -26660,
+    "2024": -132,
+    "2025": 61459,
+    "2026": 13141
+   }
+  },
+  {
+   "variant": "STRADDLE k2 pre stop1",
+   "net": 43005,
+   "by_year": {
+    "2022": -4803,
+    "2023": -26660,
+    "2024": -132,
+    "2025": 61459,
+    "2026": 13141
+   }
+  }
+ ],
+ "positive_eligible": 38,
+ "WK-S": {
+  "weeks": 223,
+  "net": 313523,
+  "mean": 1406,
+  "win_pct": 62.3,
+  "worst": -39844,
+  "best": 20420,
+  "without_best_5": 223476,
+  "without_best_10": 149712,
+  "by_year": {
+   "2022": 79743,
+   "2023": 43757,
+   "2024": 38494,
+   "2025": 74112,
+   "2026": 77417
+  },
+  "years_positive": 5,
+  "max_loss_median": null,
+  "max_loss_max": null,
+  "variant": "STRANGLE 0.5 k3 settle stop1",
+  "boot_p5": 89868,
+  "stops": 18,
+  "estimated_marks": 64,
+  "drawdown": 68120,
+  "by_stress": {
+   "0.0": 343051,
+   "50.0": 320751,
+   "100.0": 313523,
+   "200.0": 253555
+  },
+  "worst_10": [
+   {
+    "entry": "2026-05-07",
+    "expiry": "2026-05-12",
+    "net": -39844,
+    "move_pct": -3.83,
+    "reason": "settle"
+   },
+   {
+    "entry": "2025-04-04",
+    "expiry": "2025-04-09",
+    "net": -32745,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2025-04-11",
+    "expiry": "2025-04-17",
+    "net": -30456,
+    "move_pct": 4.5,
+    "reason": "settle"
+   },
+   {
+    "entry": "2024-11-11",
+    "expiry": "2024-11-14",
+    "net": -22004,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2026-02-25",
+    "expiry": "2026-03-02",
+    "net": -20103,
+    "move_pct": -2.39,
+    "reason": "settle"
+   },
+   {
+    "entry": "2024-04-12",
+    "expiry": "2024-04-18",
+    "net": -19636,
+    "move_pct": -2.28,
+    "reason": "settle"
+   },
+   {
+    "entry": "2024-01-15",
+    "expiry": "2024-01-18",
+    "net": -18995,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2025-06-23",
+    "expiry": "2025-06-26",
+    "net": -16529,
+    "move_pct": 2.28,
+    "reason": "settle"
+   },
+   {
+    "entry": "2024-06-24",
+    "expiry": "2024-06-27",
+    "net": -16423,
+    "move_pct": 2.14,
+    "reason": "settle"
+   },
+   {
+    "entry": "2024-05-06",
+    "expiry": "2024-05-09",
+    "net": -14139,
+    "move_pct": -2.17,
+    "reason": "settle"
+   }
+  ],
+  "worst_month_by_year": {
+   "2022": -14421,
+   "2023": -6742,
+   "2024": -35105,
+   "2025": -51245,
+   "2026": -23502
+  },
+  "months_positive": "32 of 53",
+  "worst_month": -51245,
+  "yearly_return_on_wallet_pct": {
+   "2022": 31.9,
+   "2023": 17.5,
+   "2024": 15.4,
+   "2025": 29.6,
+   "2026": 31.0
+  },
+  "scenarios": {
+   "index": 24674,
+   "Q_points": 254.8,
+   "credit_points": 148.3,
+   "3% move": -28722,
+   "5% move": -60798,
+   "8% move": -108912,
+   "13% move": -189103
+  }
+ },
+ "runner-up": {
+  "weeks": 229,
+  "net": 313166,
+  "mean": 1368,
+  "win_pct": 59.4,
+  "worst": -33692,
+  "best": 42703,
+  "without_best_5": 168967,
+  "without_best_10": 67260,
+  "by_year": {
+   "2022": 37033,
+   "2023": 33842,
+   "2024": 107579,
+   "2025": 84598,
+   "2026": 50113
+  },
+  "years_positive": 5,
+  "max_loss_median": null,
+  "max_loss_max": null,
+  "variant": "STRADDLE kF settle stop0.5",
+  "boot_p5": 5586,
+  "stops": 39,
+  "estimated_marks": 45,
+  "drawdown": 94453,
+  "by_stress": {
+   "0.0": 350522,
+   "50.0": 336066,
+   "100.0": 313166,
+   "200.0": 262417
+  },
+  "worst_10": [
+   {
+    "entry": "2025-04-04",
+    "expiry": "2025-04-09",
+    "net": -33692,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2025-04-11",
+    "expiry": "2025-04-17",
+    "net": -33216,
+    "move_pct": 4.5,
+    "reason": "settle"
+   },
+   {
+    "entry": "2025-05-09",
+    "expiry": "2025-05-15",
+    "net": -29127,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2026-03-25",
+    "expiry": "2026-03-30",
+    "net": -27191,
+    "move_pct": -4.16,
+    "reason": "settle"
+   },
+   {
+    "entry": "2026-03-18",
+    "expiry": "2026-03-24",
+    "net": -23511,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2024-08-02",
+    "expiry": "2024-08-08",
+    "net": -22328,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2026-02-25",
+    "expiry": "2026-03-02",
+    "net": -21923,
+    "move_pct": -2.39,
+    "reason": "settle"
+   },
+   {
+    "entry": "2024-05-03",
+    "expiry": "2024-05-09",
+    "net": -20876,
+    "move_pct": -2.38,
+    "reason": "settle"
+   },
+   {
+    "entry": "2026-06-10",
+    "expiry": "2026-06-16",
+    "net": -20409,
+    "move_pct": null,
+    "reason": "stop"
+   },
+   {
+    "entry": "2022-05-06",
+    "expiry": "2022-05-12",
+    "net": -19056,
+    "move_pct": -3.76,
+    "reason": "settle"
+   }
+  ],
+  "worst_month_by_year": {
+   "2022": -21721,
+   "2023": -29837,
+   "2024": -45751,
+   "2025": -62677,
+   "2026": -27517
+  },
+  "months_positive": "30 of 53",
+  "worst_month": -62677,
+  "yearly_return_on_wallet_pct": {
+   "2022": 14.8,
+   "2023": 13.5,
+   "2024": 43.0,
+   "2025": 33.8,
+   "2026": 20.0
+  },
+  "scenarios": {
+   "index": 24404,
+   "Q_points": 290.2,
+   "credit_points": 289.8,
+   "3% move": -28753,
+   "5% move": -60479,
+   "8% move": -108067,
+   "13% move": -187381
+  }
+ },
+ "pass": {
+  "1 LOYO > 0 and >= 4 of 5 years": true,
+  "2a > 0 at Rs 200": true,
+  "2b > 0 without the best 5": true,
+  "3 week-resampled p5 > 0": true,
+  "6 worst month > -Rs 50,000": false
+ },
+ "WK-S daily marks, 2023 - Aug 2026": {
+  "Gold days": {
+   "days": 95,
+   "mean": 258,
+   "median": -338,
+   "green_pct": 45.3,
+   "sum": 24468
+  },
+  "Gold's empty days": {
+   "days": 621,
+   "mean": 337,
+   "median": 224,
+   "green_pct": 51.5,
+   "sum": 209312
+  }
+ }
+}

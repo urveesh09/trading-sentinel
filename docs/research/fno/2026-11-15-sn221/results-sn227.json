@@ -1,0 +1,1182 @@
+{
+ "variants": 2080,
+ "positive_on_all_four": 65,
+ "eligible": 20,
+ "fail_counts": {
+  "E1": 2015,
+  "E2": 1695,
+  "E4": 600,
+  "E3": 370,
+  "E5": 832
+ },
+ "eligible_list": [
+  "STRADDLE kM settle H15x2 ADX<25",
+  "STRADDLE kM settle stop1 H15x2 ADX<25",
+  "STRADDLE kM gate H15x2 ADX<25",
+  "STRADDLE kM gate stop1 H15x2 ADX<25",
+  "STRANGLE 0.25 kM settle H15x2 ADX<25",
+  "STRANGLE 0.25 kM settle stop1 H15x2 ADX<25",
+  "STRANGLE 0.25 kM gate H15x2 ADX<25",
+  "STRANGLE 0.25 kM gate stop1 H15x2 ADX<25",
+  "STRANGLE 0.5 kM settle H1 ER<0.4",
+  "STRANGLE 0.5 kM settle stop1 H1 ER<0.4",
+  "STRANGLE 0.5 kM gate H1 ER<0.4",
+  "STRANGLE 0.5 kM gate stop1 H1 ER<0.4",
+  "STRANGLE 0.5 kM gate H15x2 ER<0.4",
+  "STRANGLE 0.5 kM gate stop1 H15x2 ER<0.4",
+  "STRADDLE kM settle H15x2 ER<0.4",
+  "STRADDLE kM settle stop1 H15x2 ER<0.4",
+  "STRANGLE 0.25 k3 settle H15x2 ADX<25",
+  "STRANGLE 0.25 k3 settle stop1 H15x2 ADX<25",
+  "STRANGLE 0.5 kM gate H15x2 ADX<25",
+  "STRANGLE 0.5 kM gate stop1 H15x2 ADX<25"
+ ],
+ "plateau": {
+  "members": 20,
+  "by_sample": {
+   "DEV": {
+    "net": 149145,
+    "per_week": 651.3
+   },
+   "TEST": {
+    "net": 2707,
+    "per_week": 300.7
+   },
+   "N2122": {
+    "net": 7303,
+    "per_week": 429.6
+   },
+   "SENSEX": {
+    "net": 30353,
+    "per_week": 365.7
+   }
+  }
+ },
+ "references": {
+  "WK-S": {
+   "variant": [
+    "STRANGLE 0.5",
+    3,
+    "settle stop1",
+    "none",
+    "none"
+   ],
+   "name": "STRANGLE 0.5 k3 settle stop1",
+   "min_score": -3337.8,
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 223,
+     "net": 313523,
+     "per_week": 1369.1,
+     "win_pct": 62.3,
+     "worst": -39844,
+     "worst_month": -51245,
+     "months_positive": "32 of 53",
+     "cvar5": -22252,
+     "by_year": {
+      "2022": 79743,
+      "2023": 43757,
+      "2024": 38494,
+      "2025": 74112,
+      "2026": 77417
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": -23348,
+     "per_week": -2594.3,
+     "win_pct": 44.4,
+     "worst": -14270,
+     "worst_month": -19227,
+     "months_positive": "0 of 2",
+     "cvar5": -14270,
+     "by_year": {
+      "2026": -23348
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": -56743,
+     "per_week": -3337.8,
+     "win_pct": 35.3,
+     "worst": -40884,
+     "worst_month": -36338,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -13982,
+      "2022": -42760
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 70,
+     "net": -42022,
+     "per_week": -506.3,
+     "win_pct": 60.0,
+     "worst": -46018,
+     "worst_month": -70088,
+     "months_positive": "9 of 19",
+     "cvar5": -35016,
+     "by_year": {
+      "2024": -14051,
+      "2025": 6147,
+      "2026": -34118
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   }
+  },
+  "WK-G": {
+   "variant": [
+    "STRANGLE 0.5",
+    3,
+    "gate stop1",
+    "none",
+    "none"
+   ],
+   "name": "STRANGLE 0.5 k3 gate stop1",
+   "min_score": -3104.3,
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 223,
+     "net": 304942,
+     "per_week": 1331.6,
+     "win_pct": 57.4,
+     "worst": -32745,
+     "worst_month": -32138,
+     "months_positive": "33 of 53",
+     "cvar5": -16438,
+     "by_year": {
+      "2022": 81818,
+      "2023": 7694,
+      "2024": 43727,
+      "2025": 131144,
+      "2026": 40559
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": -5074,
+     "per_week": -563.8,
+     "win_pct": 55.6,
+     "worst": -14270,
+     "worst_month": -4121,
+     "months_positive": "0 of 2",
+     "cvar5": -14270,
+     "by_year": {
+      "2026": -5074
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": -52773,
+     "per_week": -3104.3,
+     "win_pct": 29.4,
+     "worst": -40884,
+     "worst_month": -43351,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -12077,
+      "2022": -40696
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 70,
+     "net": -99023,
+     "per_week": -1193.0,
+     "win_pct": 54.3,
+     "worst": -46018,
+     "worst_month": -70088,
+     "months_positive": "11 of 19",
+     "cvar5": -31199,
+     "by_year": {
+      "2024": -31464,
+      "2025": -32823,
+      "2026": -34737
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   }
+  },
+  "k1 ATM straddle": {
+   "variant": [
+    "STRADDLE",
+    1,
+    "settle",
+    "none",
+    "none"
+   ],
+   "name": "STRADDLE k1 settle",
+   "min_score": -1803.2,
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 229,
+     "net": 173682,
+     "per_week": 758.4,
+     "win_pct": 65.1,
+     "worst": -28989,
+     "worst_month": -28209,
+     "months_positive": "36 of 53",
+     "cvar5": -19206,
+     "by_year": {
+      "2022": 26407,
+      "2023": 37768,
+      "2024": 17690,
+      "2025": 56798,
+      "2026": 35020
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": -16229,
+     "per_week": -1803.2,
+     "win_pct": 33.3,
+     "worst": -13686,
+     "worst_month": -8578,
+     "months_positive": "0 of 2",
+     "cvar5": -13686,
+     "by_year": {
+      "2026": -16229
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": -25113,
+     "per_week": -1477.2,
+     "win_pct": 41.2,
+     "worst": -41675,
+     "worst_month": -41750,
+     "months_positive": "2 of 4",
+     "cvar5": -41675,
+     "by_year": {
+      "2021": 12106,
+      "2022": -37219
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 83,
+     "net": 31042,
+     "per_week": 374.0,
+     "win_pct": 61.4,
+     "worst": -36270,
+     "worst_month": -36996,
+     "months_positive": "9 of 19",
+     "cvar5": -26086,
+     "by_year": {
+      "2024": -12124,
+      "2025": 76787,
+      "2026": -33621
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   }
+  },
+  "best hedged WK-S": {
+   "variant": [
+    "STRANGLE 0.5",
+    3,
+    "settle stop1",
+    "H15x2",
+    "none"
+   ],
+   "name": "STRANGLE 0.5 k3 settle stop1 H15x2",
+   "min_score": -68.5,
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 223,
+     "net": 91966,
+     "per_week": 401.6,
+     "win_pct": 57.8,
+     "worst": -39532,
+     "worst_month": -31134,
+     "months_positive": "34 of 53",
+     "cvar5": -13686,
+     "by_year": {
+      "2022": -1871,
+      "2023": -23582,
+      "2024": 61253,
+      "2025": 58381,
+      "2026": -2215
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 871,
+     "hedge_costs": 287424
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": 16983,
+     "per_week": 1887.0,
+     "win_pct": 66.7,
+     "worst": -3140,
+     "worst_month": 2438,
+     "months_positive": "2 of 2",
+     "cvar5": -3140,
+     "by_year": {
+      "2026": 16983
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 27,
+     "hedge_costs": 9517
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": 5017,
+     "per_week": 295.1,
+     "win_pct": 47.1,
+     "worst": -5961,
+     "worst_month": -3281,
+     "months_positive": "1 of 4",
+     "cvar5": -5961,
+     "by_year": {
+      "2021": -3281,
+      "2022": 8298
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 61,
+     "hedge_costs": 16941
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 70,
+     "net": -5682,
+     "per_week": -68.5,
+     "win_pct": 54.3,
+     "worst": -21757,
+     "worst_month": -20241,
+     "months_positive": "9 of 19",
+     "cvar5": -20465,
+     "by_year": {
+      "2024": 44931,
+      "2025": -13388,
+      "2026": -37226
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 274,
+     "hedge_costs": 101741
+    }
+   }
+  },
+  "breach 0.5 + gate": {
+   "engine": "wk2",
+   "base": "WK-S",
+   "rule": {
+    "breach": 0.5,
+    "gate": -0.25
+   }
+  }
+ },
+ "picks": {
+  "PICK": {
+   "variant": [
+    "STRADDLE",
+    "M",
+    "settle",
+    "H15x2",
+    "ADX<25"
+   ],
+   "name": "STRADDLE kM settle H15x2 ADX<25",
+   "min_score": 242.6,
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 141,
+     "net": 172571,
+     "per_week": 753.6,
+     "win_pct": 62.4,
+     "worst": -24643,
+     "worst_month": -15915,
+     "months_positive": "31 of 47",
+     "cvar5": -9001,
+     "by_year": {
+      "2022": 34597,
+      "2023": -10321,
+      "2024": 23502,
+      "2025": 88454,
+      "2026": 36341
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 572,
+     "hedge_costs": 193318
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 2,
+     "net": 2184,
+     "per_week": 242.6,
+     "win_pct": 50.0,
+     "worst": -3172,
+     "worst_month": 2184,
+     "months_positive": "1 of 1",
+     "cvar5": -3172,
+     "by_year": {
+      "2026": 2184
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 6,
+     "hedge_costs": 2635
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 8,
+     "net": 7395,
+     "per_week": 435.0,
+     "win_pct": 62.5,
+     "worst": -7609,
+     "worst_month": -8076,
+     "months_positive": "2 of 4",
+     "cvar5": -7609,
+     "by_year": {
+      "2021": 2022,
+      "2022": 5373
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 32,
+     "hedge_costs": 8877
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 46,
+     "net": 44501,
+     "per_week": 536.2,
+     "win_pct": 54.3,
+     "worst": -17234,
+     "worst_month": -5967,
+     "months_positive": "8 of 16",
+     "cvar5": -13730,
+     "by_year": {
+      "2024": -5967,
+      "2025": 44367,
+      "2026": 6101
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 156,
+     "hedge_costs": 57022
+    }
+   },
+   "null_min_score_p95": 426.1,
+   "replaced_by_unfiltered_base": {
+    "variant": [
+     "STRADDLE",
+     "M",
+     "settle",
+     "H15x2",
+     "none"
+    ],
+    "name": "STRADDLE kM settle H15x2",
+    "min_score": -268.2,
+    "eligible_failures": [
+     "E1"
+    ],
+    "rows": {
+     "DEV": {
+      "weeks": 229,
+      "trades": 212,
+      "net": 211957,
+      "per_week": 925.6,
+      "win_pct": 59.4,
+      "worst": -24643,
+      "worst_month": -15915,
+      "months_positive": "32 of 53",
+      "cvar5": -10079,
+      "by_year": {
+       "2022": 36915,
+       "2023": -21651,
+       "2024": 38259,
+       "2025": 110974,
+       "2026": 47460
+      },
+      "years_positive": 4,
+      "clamped": 0,
+      "orders": 868,
+      "hedge_costs": 284465
+     },
+     "TEST": {
+      "weeks": 9,
+      "trades": 7,
+      "net": -2414,
+      "per_week": -268.2,
+      "win_pct": 28.6,
+      "worst": -4079,
+      "worst_month": -2981,
+      "months_positive": "1 of 2",
+      "cvar5": -4079,
+      "by_year": {
+       "2026": -2414
+      },
+      "years_positive": 0,
+      "clamped": 0,
+      "orders": 21,
+      "hedge_costs": 7651
+     },
+     "N2122": {
+      "weeks": 17,
+      "trades": 15,
+      "net": 10308,
+      "per_week": 606.4,
+      "win_pct": 53.3,
+      "worst": -7609,
+      "worst_month": -8587,
+      "months_positive": "1 of 4",
+      "cvar5": -7609,
+      "by_year": {
+       "2021": -2381,
+       "2022": 12690
+      },
+      "years_positive": 1,
+      "clamped": 0,
+      "orders": 66,
+      "hedge_costs": 17748
+     },
+     "SENSEX": {
+      "weeks": 83,
+      "trades": 78,
+      "net": 104354,
+      "per_week": 1257.3,
+      "win_pct": 60.3,
+      "worst": -19141,
+      "worst_month": -8887,
+      "months_positive": "12 of 19",
+      "cvar5": -17024,
+      "by_year": {
+       "2024": 44312,
+       "2025": 45809,
+       "2026": 14233
+      },
+      "years_positive": 3,
+      "clamped": 0,
+      "orders": 261,
+      "hedge_costs": 96876
+     }
+    }
+   }
+  },
+  "RUNNER 1": {
+   "variant": [
+    "STRADDLE",
+    "M",
+    "settle stop1",
+    "H15x2",
+    "ADX<25"
+   ],
+   "name": "STRADDLE kM settle stop1 H15x2 ADX<25",
+   "min_score": 242.6,
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 141,
+     "net": 172571,
+     "per_week": 753.6,
+     "win_pct": 62.4,
+     "worst": -24643,
+     "worst_month": -15915,
+     "months_positive": "31 of 47",
+     "cvar5": -9001,
+     "by_year": {
+      "2022": 34597,
+      "2023": -10321,
+      "2024": 23502,
+      "2025": 88454,
+      "2026": 36341
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 572,
+     "hedge_costs": 193318
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 2,
+     "net": 2184,
+     "per_week": 242.6,
+     "win_pct": 50.0,
+     "worst": -3172,
+     "worst_month": 2184,
+     "months_positive": "1 of 1",
+     "cvar5": -3172,
+     "by_year": {
+      "2026": 2184
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 6,
+     "hedge_costs": 2635
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 8,
+     "net": 7395,
+     "per_week": 435.0,
+     "win_pct": 62.5,
+     "worst": -7609,
+     "worst_month": -8076,
+     "months_positive": "2 of 4",
+     "cvar5": -7609,
+     "by_year": {
+      "2021": 2022,
+      "2022": 5373
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 32,
+     "hedge_costs": 8877
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 46,
+     "net": 44501,
+     "per_week": 536.2,
+     "win_pct": 54.3,
+     "worst": -17234,
+     "worst_month": -5967,
+     "months_positive": "8 of 16",
+     "cvar5": -13730,
+     "by_year": {
+      "2024": -5967,
+      "2025": 44367,
+      "2026": 6101
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 156,
+     "hedge_costs": 57022
+    }
+   },
+   "null_min_score_p95": 426.1,
+   "replaced_by_unfiltered_base": {
+    "variant": [
+     "STRADDLE",
+     "M",
+     "settle stop1",
+     "H15x2",
+     "none"
+    ],
+    "name": "STRADDLE kM settle stop1 H15x2",
+    "min_score": -268.2,
+    "eligible_failures": [
+     "E1"
+    ],
+    "rows": {
+     "DEV": {
+      "weeks": 229,
+      "trades": 212,
+      "net": 211957,
+      "per_week": 925.6,
+      "win_pct": 59.4,
+      "worst": -24643,
+      "worst_month": -15915,
+      "months_positive": "32 of 53",
+      "cvar5": -10079,
+      "by_year": {
+       "2022": 36915,
+       "2023": -21651,
+       "2024": 38259,
+       "2025": 110974,
+       "2026": 47460
+      },
+      "years_positive": 4,
+      "clamped": 0,
+      "orders": 868,
+      "hedge_costs": 284465
+     },
+     "TEST": {
+      "weeks": 9,
+      "trades": 7,
+      "net": -2414,
+      "per_week": -268.2,
+      "win_pct": 28.6,
+      "worst": -4079,
+      "worst_month": -2981,
+      "months_positive": "1 of 2",
+      "cvar5": -4079,
+      "by_year": {
+       "2026": -2414
+      },
+      "years_positive": 0,
+      "clamped": 0,
+      "orders": 21,
+      "hedge_costs": 7651
+     },
+     "N2122": {
+      "weeks": 17,
+      "trades": 15,
+      "net": 10308,
+      "per_week": 606.4,
+      "win_pct": 53.3,
+      "worst": -7609,
+      "worst_month": -8587,
+      "months_positive": "1 of 4",
+      "cvar5": -7609,
+      "by_year": {
+       "2021": -2381,
+       "2022": 12690
+      },
+      "years_positive": 1,
+      "clamped": 0,
+      "orders": 66,
+      "hedge_costs": 17748
+     },
+     "SENSEX": {
+      "weeks": 83,
+      "trades": 78,
+      "net": 104354,
+      "per_week": 1257.3,
+      "win_pct": 60.3,
+      "worst": -19141,
+      "worst_month": -8887,
+      "months_positive": "12 of 19",
+      "cvar5": -17024,
+      "by_year": {
+       "2024": 44312,
+       "2025": 45809,
+       "2026": 14233
+      },
+      "years_positive": 3,
+      "clamped": 0,
+      "orders": 261,
+      "hedge_costs": 96876
+     }
+    }
+   }
+  },
+  "RUNNER 2": {
+   "variant": [
+    "STRADDLE",
+    "M",
+    "gate",
+    "H15x2",
+    "ADX<25"
+   ],
+   "name": "STRADDLE kM gate H15x2 ADX<25",
+   "min_score": 242.6,
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 141,
+     "net": 139296,
+     "per_week": 608.3,
+     "win_pct": 56.7,
+     "worst": -9089,
+     "worst_month": -10968,
+     "months_positive": "29 of 47",
+     "cvar5": -6338,
+     "by_year": {
+      "2022": 20686,
+      "2023": -19444,
+      "2024": 36185,
+      "2025": 65529,
+      "2026": 36341
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 572,
+     "hedge_costs": 193318
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 2,
+     "net": 2184,
+     "per_week": 242.6,
+     "win_pct": 50.0,
+     "worst": -3172,
+     "worst_month": 2184,
+     "months_positive": "1 of 1",
+     "cvar5": -3172,
+     "by_year": {
+      "2026": 2184
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 6,
+     "hedge_costs": 2635
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 8,
+     "net": 11760,
+     "per_week": 691.7,
+     "win_pct": 75.0,
+     "worst": -1716,
+     "worst_month": -1353,
+     "months_positive": "2 of 4",
+     "cvar5": -1716,
+     "by_year": {
+      "2021": 1293,
+      "2022": 10467
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 32,
+     "hedge_costs": 8877
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 46,
+     "net": 28136,
+     "per_week": 339.0,
+     "win_pct": 58.7,
+     "worst": -17234,
+     "worst_month": -11627,
+     "months_positive": "8 of 16",
+     "cvar5": -16382,
+     "by_year": {
+      "2024": -11627,
+      "2025": 33971,
+      "2026": 5792
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 156,
+     "hedge_costs": 57022
+    }
+   },
+   "null_min_score_p95": 348.2,
+   "replaced_by_unfiltered_base": {
+    "variant": [
+     "STRADDLE",
+     "M",
+     "gate",
+     "H15x2",
+     "none"
+    ],
+    "name": "STRADDLE kM gate H15x2",
+    "min_score": -268.2,
+    "eligible_failures": [
+     "E1"
+    ],
+    "rows": {
+     "DEV": {
+      "weeks": 229,
+      "trades": 212,
+      "net": 183702,
+      "per_week": 802.2,
+      "win_pct": 55.2,
+      "worst": -9089,
+      "worst_month": -13761,
+      "months_positive": "31 of 53",
+      "cvar5": -6570,
+      "by_year": {
+       "2022": 14063,
+       "2023": -33895,
+       "2024": 50299,
+       "2025": 84834,
+       "2026": 68402
+      },
+      "years_positive": 4,
+      "clamped": 0,
+      "orders": 868,
+      "hedge_costs": 284465
+     },
+     "TEST": {
+      "weeks": 9,
+      "trades": 7,
+      "net": -2414,
+      "per_week": -268.2,
+      "win_pct": 28.6,
+      "worst": -4079,
+      "worst_month": -2981,
+      "months_positive": "1 of 2",
+      "cvar5": -4079,
+      "by_year": {
+       "2026": -2414
+      },
+      "years_positive": 0,
+      "clamped": 0,
+      "orders": 21,
+      "hedge_costs": 7651
+     },
+     "N2122": {
+      "weeks": 17,
+      "trades": 15,
+      "net": 8033,
+      "per_week": 472.5,
+      "win_pct": 60.0,
+      "worst": -5728,
+      "worst_month": -3328,
+      "months_positive": "1 of 4",
+      "cvar5": -5728,
+      "by_year": {
+       "2021": -3328,
+       "2022": 11361
+      },
+      "years_positive": 1,
+      "clamped": 0,
+      "orders": 66,
+      "hedge_costs": 17748
+     },
+     "SENSEX": {
+      "weeks": 83,
+      "trades": 78,
+      "net": 84158,
+      "per_week": 1013.9,
+      "win_pct": 62.8,
+      "worst": -19141,
+      "worst_month": -10425,
+      "months_positive": "11 of 19",
+      "cvar5": -17537,
+      "by_year": {
+       "2024": 25651,
+       "2025": 35414,
+       "2026": 23093
+      },
+      "years_positive": 3,
+      "clamped": 0,
+      "orders": 261,
+      "hedge_costs": 96876
+     }
+    }
+   }
+  }
+ },
+ "best_eligible_unfiltered (information, not the frozen PICK)": null,
+ "eligible_rows": {
+  "STRADDLE kM settle H15x2 ADX<25": {
+   "min_score": 242.6,
+   "nets": {
+    "DEV": 172571,
+    "TEST": 2184,
+    "N2122": 7395,
+    "SENSEX": 44501
+   }
+  },
+  "STRADDLE kM settle stop1 H15x2 ADX<25": {
+   "min_score": 242.6,
+   "nets": {
+    "DEV": 172571,
+    "TEST": 2184,
+    "N2122": 7395,
+    "SENSEX": 44501
+   }
+  },
+  "STRADDLE kM gate H15x2 ADX<25": {
+   "min_score": 242.6,
+   "nets": {
+    "DEV": 139296,
+    "TEST": 2184,
+    "N2122": 11760,
+    "SENSEX": 28136
+   }
+  },
+  "STRADDLE kM gate stop1 H15x2 ADX<25": {
+   "min_score": 242.6,
+   "nets": {
+    "DEV": 139296,
+    "TEST": 2184,
+    "N2122": 11760,
+    "SENSEX": 28136
+   }
+  },
+  "STRANGLE 0.25 kM settle H15x2 ADX<25": {
+   "min_score": 220.0,
+   "nets": {
+    "DEV": 164106,
+    "TEST": 1980,
+    "N2122": 4371,
+    "SENSEX": 37260
+   }
+  },
+  "STRANGLE 0.25 kM settle stop1 H15x2 ADX<25": {
+   "min_score": 220.0,
+   "nets": {
+    "DEV": 164106,
+    "TEST": 1980,
+    "N2122": 4371,
+    "SENSEX": 37260
+   }
+  },
+  "STRANGLE 0.25 kM gate H15x2 ADX<25": {
+   "min_score": 220.0,
+   "nets": {
+    "DEV": 127400,
+    "TEST": 1980,
+    "N2122": 3947,
+    "SENSEX": 29504
+   }
+  },
+  "STRANGLE 0.25 kM gate stop1 H15x2 ADX<25": {
+   "min_score": 220.0,
+   "nets": {
+    "DEV": 127400,
+    "TEST": 1980,
+    "N2122": 3947,
+    "SENSEX": 29504
+   }
+  },
+  "STRANGLE 0.5 kM settle H1 ER<0.4": {
+   "min_score": 176.6,
+   "nets": {
+    "DEV": 178914,
+    "TEST": 1589,
+    "N2122": 7333,
+    "SENSEX": 49073
+   }
+  },
+  "STRANGLE 0.5 kM settle stop1 H1 ER<0.4": {
+   "min_score": 176.6,
+   "nets": {
+    "DEV": 179298,
+    "TEST": 1589,
+    "N2122": 7333,
+    "SENSEX": 43227
+   }
+  },
+  "STRANGLE 0.5 kM gate H1 ER<0.4": {
+   "min_score": 176.6,
+   "nets": {
+    "DEV": 175587,
+    "TEST": 1589,
+    "N2122": 8279,
+    "SENSEX": 35344
+   }
+  },
+  "STRANGLE 0.5 kM gate stop1 H1 ER<0.4": {
+   "min_score": 176.6,
+   "nets": {
+    "DEV": 176517,
+    "TEST": 1589,
+    "N2122": 8279,
+    "SENSEX": 33752
+   }
+  },
+  "STRANGLE 0.5 kM gate H15x2 ER<0.4": {
+   "min_score": 79.9,
+   "nets": {
+    "DEV": 95099,
+    "TEST": 1850,
+    "N2122": 1357,
+    "SENSEX": 19276
+   }
+  },
+  "STRANGLE 0.5 kM gate stop1 H15x2 ER<0.4": {
+   "min_score": 79.9,
+   "nets": {
+    "DEV": 95099,
+    "TEST": 1850,
+    "N2122": 1357,
+    "SENSEX": 19276
+   }
+  },
+  "STRADDLE kM settle H15x2 ER<0.4": {
+   "min_score": 72.6,
+   "nets": {
+    "DEV": 128641,
+    "TEST": 3326,
+    "N2122": 14052,
+    "SENSEX": 6028
+   }
+  },
+  "STRADDLE kM settle stop1 H15x2 ER<0.4": {
+   "min_score": 72.6,
+   "nets": {
+    "DEV": 128641,
+    "TEST": 3326,
+    "N2122": 14052,
+    "SENSEX": 6028
+   }
+  },
+  "STRANGLE 0.25 k3 settle H15x2 ADX<25": {
+   "min_score": 68.0,
+   "nets": {
+    "DEV": 154283,
+    "TEST": 8404,
+    "N2122": 13955,
+    "SENSEX": 5642
+   }
+  },
+  "STRANGLE 0.25 k3 settle stop1 H15x2 ADX<25": {
+   "min_score": 55.1,
+   "nets": {
+    "DEV": 154283,
+    "TEST": 8404,
+    "N2122": 13955,
+    "SENSEX": 4574
+   }
+  },
+  "STRANGLE 0.5 kM gate H15x2 ADX<25": {
+   "min_score": 34.2,
+   "nets": {
+    "DEV": 154901,
+    "TEST": 1980,
+    "N2122": 581,
+    "SENSEX": 53015
+   }
+  },
+  "STRANGLE 0.5 kM gate stop1 H15x2 ADX<25": {
+   "min_score": 34.2,
+   "nets": {
+    "DEV": 154901,
+    "TEST": 1980,
+    "N2122": 581,
+    "SENSEX": 53015
+   }
+  }
+ }
+}

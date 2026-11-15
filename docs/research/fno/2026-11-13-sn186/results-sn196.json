@@ -1,0 +1,132 @@
+{
+ "sessions": 145,
+ "proxy_empty_days": 134,
+ "adx_days": 219,
+ "sn95l_threshold_dev_p80": 1.332,
+ "har_days": 128,
+ "candidates": {
+  "SN95-L (Rs 15k)": {
+   "proxy-empty days": {
+    "net": -4490,
+    "trades": 10,
+    "wins": 3.0,
+    "worst": -1955,
+    "null_mean": -6081,
+    "null_p95": 6211,
+    "stress_400": -8390,
+    "late_1": -7299,
+    "days": [
+     "2022-04-12",
+     "2022-04-20",
+     "2022-11-11",
+     "2022-11-25",
+     "2022-12-12",
+     "2022-12-16",
+     "2022-12-19",
+     "2022-12-26",
+     "2022-12-27",
+     "2022-12-30"
+    ],
+    "PASS": false
+   },
+   "all days": {
+    "net": -6516,
+    "trades": 11,
+    "wins": 3.0,
+    "worst": -2026,
+    "null_mean": -5467,
+    "null_p95": 9050,
+    "stress_400": -10806,
+    "late_1": -9511,
+    "days": [
+     "2022-04-12",
+     "2022-04-20",
+     "2022-08-23",
+     "2022-11-11",
+     "2022-11-25",
+     "2022-12-12",
+     "2022-12-16",
+     "2022-12-19",
+     "2022-12-26",
+     "2022-12-27",
+     "2022-12-30"
+    ],
+    "PASS": false
+   }
+  },
+  "SN171 Rs 15k strangle": {
+   "proxy-empty days": {
+    "net": -1740,
+    "trades": 2,
+    "wins": 0.0,
+    "worst": -1265,
+    "null_mean": -1204,
+    "null_p95": 3497,
+    "stress_400": -2520,
+    "late_1": -1526,
+    "days": [
+     "2022-12-26",
+     "2022-12-27"
+    ],
+    "PASS": false
+   },
+   "all days": {
+    "net": -1740,
+    "trades": 2,
+    "wins": 0.0,
+    "worst": -1265,
+    "null_mean": -921,
+    "null_p95": 5167,
+    "stress_400": -2520,
+    "late_1": -1526,
+    "days": [
+     "2022-12-26",
+     "2022-12-27"
+    ],
+    "PASS": false
+   }
+  },
+  "SN171 Rs 30k straddle": {
+   "proxy-empty days": {
+    "net": -1657,
+    "trades": 2,
+    "wins": 0.0,
+    "worst": -1253,
+    "null_mean": -1705,
+    "null_p95": 2672,
+    "stress_400": -2437,
+    "late_1": -1456,
+    "days": [
+     "2022-12-26",
+     "2022-12-27"
+    ],
+    "PASS": false
+   },
+   "all days": {
+    "net": -1657,
+    "trades": 2,
+    "wins": 0.0,
+    "worst": -1253,
+    "null_mean": -1490,
+    "null_p95": 3257,
+    "stress_400": -2437,
+    "late_1": -1456,
+    "days": [
+     "2022-12-26",
+     "2022-12-27"
+    ],
+    "PASS": false
+   }
+  }
+ },
+ "coin_flip_rs1000_1lot_2022": {
+  "mean": -50301,
+  "p5": -65001,
+  "p95": -34846
+ },
+ "record_failed_development": {
+  "SN187 pair 10:00 goal 1500 stop 2000": -97523,
+  "SN188 goal 1000 stop 1000 (all proxy-empty days, no hot filter)": -79450,
+  "SN189 fly goal 1500 stop 3000 (rho < 0.75)": -47484
+ }
+}

@@ -1,0 +1,96 @@
+{
+ "band 0.6": {
+  "without": {
+   "net": 1196139,
+   "months": 46,
+   "months_positive": 31,
+   "worst_month": -38228,
+   "second_worst_month": -27730,
+   "mean_month": 26003,
+   "sd_month": 45650,
+   "green_days": 292,
+   "red_days": 360,
+   "worst_day": -55046,
+   "worst_week": -49286,
+   "weeks_positive": "105 of 200",
+   "by_year": {
+    "2023": -55408,
+    "2024": 263993,
+    "2025": 514760,
+    "2026": 472794
+   }
+  },
+  "with SENSEX WK-H": {
+   "net": 1404846,
+   "months": 46,
+   "months_positive": 32,
+   "worst_month": -38228,
+   "second_worst_month": -35611,
+   "mean_month": 30540,
+   "sd_month": 52668,
+   "green_days": 333,
+   "red_days": 391,
+   "worst_day": -72110,
+   "worst_week": -75000,
+   "weeks_positive": "111 of 200",
+   "by_year": {
+    "2023": -55408,
+    "2024": 338363,
+    "2025": 617543,
+    "2026": 504348
+   }
+  },
+  "overlap_months": 19,
+  "overlap_positive_without": 15,
+  "overlap_positive_with": 16,
+  "overlap_worst_without": -18426,
+  "overlap_worst_with": -35611
+ },
+ "band 0.8": {
+  "without": {
+   "net": 1370643,
+   "months": 46,
+   "months_positive": 33,
+   "worst_month": -28981,
+   "second_worst_month": -19066,
+   "mean_month": 29797,
+   "sd_month": 46573,
+   "green_days": 291,
+   "red_days": 361,
+   "worst_day": -48695,
+   "worst_week": -50234,
+   "weeks_positive": "108 of 200",
+   "by_year": {
+    "2023": -26648,
+    "2024": 343667,
+    "2025": 568064,
+    "2026": 485561
+   }
+  },
+  "with SENSEX WK-H": {
+   "net": 1526685,
+   "months": 46,
+   "months_positive": 34,
+   "worst_month": -48335,
+   "second_worst_month": -28981,
+   "mean_month": 33189,
+   "sd_month": 52694,
+   "green_days": 332,
+   "red_days": 392,
+   "worst_day": -72110,
+   "worst_week": -77686,
+   "weeks_positive": "115 of 200",
+   "by_year": {
+    "2023": -26648,
+    "2024": 376879,
+    "2025": 675823,
+    "2026": 500630
+   }
+  },
+  "overlap_months": 19,
+  "overlap_positive_without": 15,
+  "overlap_positive_with": 16,
+  "overlap_worst_without": -15721,
+  "overlap_worst_with": -48335
+ }
+}

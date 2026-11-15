@@ -1,0 +1,122 @@
+{
+ "band 0.6, 1 unit (Rs 5 lakh)": {
+  "net": 1196139,
+  "months": 46,
+  "months_positive": 31,
+  "worst_month": -38228,
+  "second_worst_month": -27730,
+  "mean_month": 26003,
+  "sd_month": 45650,
+  "green_days": 292,
+  "red_days": 360,
+  "worst_day": -55046,
+  "worst_week": -49286,
+  "weeks_positive": "105 of 200",
+  "by_year": {
+   "2023": -55408,
+   "2024": 263993,
+   "2025": 514760,
+   "2026": 472794
+  }
+ },
+ "band 0.6, 2 units (Rs 10 lakh)": {
+  "net": 1541395,
+  "months": 46,
+  "months_positive": 33,
+  "worst_month": -70058,
+  "second_worst_month": -56437,
+  "mean_month": 33509,
+  "sd_month": 57873,
+  "green_days": 294,
+  "red_days": 358,
+  "worst_day": -110091,
+  "worst_week": -98572,
+  "weeks_positive": "110 of 200",
+  "by_year": {
+   "2023": -98710,
+   "2024": 340511,
+   "2025": 736708,
+   "2026": 562886
+  }
+ },
+ "band 0.6, 3 units (Rs 15 lakh)": {
+  "net": 1886650,
+  "months": 46,
+  "months_positive": 33,
+  "worst_month": -101888,
+  "second_worst_month": -85144,
+  "mean_month": 41014,
+  "sd_month": 73570,
+  "green_days": 294,
+  "red_days": 358,
+  "worst_day": -165137,
+  "worst_week": -147858,
+  "weeks_positive": "113 of 200",
+  "by_year": {
+   "2023": -142012,
+   "2024": 417028,
+   "2025": 958656,
+   "2026": 652978
+  }
+ },
+ "band 0.8, 1 unit (Rs 5 lakh)": {
+  "net": 1370643,
+  "months": 46,
+  "months_positive": 33,
+  "worst_month": -28981,
+  "second_worst_month": -19066,
+  "mean_month": 29797,
+  "sd_month": 46573,
+  "green_days": 291,
+  "red_days": 361,
+  "worst_day": -48695,
+  "worst_week": -50234,
+  "weeks_positive": "108 of 200",
+  "by_year": {
+   "2023": -26648,
+   "2024": 343667,
+   "2025": 568064,
+   "2026": 485561
+  }
+ },
+ "band 0.8, 2 units (Rs 10 lakh)": {
+  "net": 1890404,
+  "months": 46,
+  "months_positive": 35,
+  "worst_month": -51564,
+  "second_worst_month": -33328,
+  "mean_month": 41096,
+  "sd_month": 60878,
+  "green_days": 294,
+  "red_days": 358,
+  "worst_day": -97389,
+  "worst_week": -87310,
+  "weeks_positive": "114 of 200",
+  "by_year": {
+   "2023": -41189,
+   "2024": 499858,
+   "2025": 843316,
+   "2026": 588419
+  }
+ },
+ "band 0.8, 3 units (Rs 15 lakh)": {
+  "net": 2410165,
+  "months": 46,
+  "months_positive": 35,
+  "worst_month": -74146,
+  "second_worst_month": -61481,
+  "mean_month": 52395,
+  "sd_month": 78917,
+  "green_days": 294,
+  "red_days": 358,
+  "worst_day": -146084,
+  "worst_week": -124386,
+  "weeks_positive": "115 of 200",
+  "by_year": {
+   "2023": -55731,
+   "2024": 656049,
+   "2025": 1118569,
+   "2026": 691277
+  }
+ }
+}

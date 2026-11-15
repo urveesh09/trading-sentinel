@@ -1,0 +1,163 @@
+{
+ "neighbours": {
+  "band 0.6": {
+   "account": {
+    "net": 1196139,
+    "months_positive": 31,
+    "worst_month": -38228
+   },
+   "wk": {
+    "DEV": 211957,
+    "TEST": -2414,
+    "N2122": 10308,
+    "SENSEX": 104354,
+    "EXAM": 61511
+   },
+   "positive_samples": 4,
+   "months_positive_total": 55
+  },
+  "band 0.7": {
+   "account": {
+    "net": 1318003,
+    "months_positive": 34,
+    "worst_month": -23435
+   },
+   "wk": {
+    "DEV": 280519,
+    "TEST": -2740,
+    "N2122": -15115,
+    "SENSEX": 108399,
+    "EXAM": 58895
+   },
+   "positive_samples": 3,
+   "months_positive_total": 61
+  },
+  "band 0.8": {
+   "account": {
+    "net": 1370643,
+    "months_positive": 33,
+    "worst_month": -28981
+   },
+   "wk": {
+    "DEV": 289469,
+    "TEST": 1604,
+    "N2122": -10065,
+    "SENSEX": 78021,
+    "EXAM": 59553
+   },
+   "positive_samples": 4,
+   "months_positive_total": 55
+  },
+  "band 0.9": {
+   "account": {
+    "net": 1406402,
+    "months_positive": 32,
+    "worst_month": -34724
+   },
+   "wk": {
+    "DEV": 337076,
+    "TEST": -5930,
+    "N2122": 6469,
+    "SENSEX": 51173,
+    "EXAM": 29023
+   },
+   "positive_samples": 4,
+   "months_positive_total": 55
+  },
+  "band 1.0": {
+   "account": {
+    "net": 1410498,
+    "months_positive": 34,
+    "worst_month": -64872
+   },
+   "wk": {
+    "DEV": 347766,
+    "TEST": -7841,
+    "N2122": -15748,
+    "SENSEX": 45494,
+    "EXAM": 22589
+   },
+   "positive_samples": 3,
+   "months_positive_total": 50
+  }
+ },
+ "stress": {
+  "stress 200 / fut 200 / half 1.5": {
+   "band 0.6": {
+    "net": 970921,
+    "months_positive": 29,
+    "worst_month": -43100
+   },
+   "band 0.8": {
+    "net": 1189752,
+    "months_positive": 31,
+    "worst_month": -32961
+   }
+  },
+  "stress 300 / fut 200 / half 1.5": {
+   "band 0.6": {
+    "net": 897721,
+    "months_positive": 29,
+    "worst_month": -44700
+   },
+   "band 0.8": {
+    "net": 1116552,
+    "months_positive": 29,
+    "worst_month": -34561
+   }
+  }
+ },
+ "years": {
+  "2023": {
+   "band 0.6": 4,
+   "band 0.8": 7,
+   "months": 12,
+   "net 0.6": -55408,
+   "net 0.8": -26648
+  },
+  "2024": {
+   "band 0.6": 9,
+   "band 0.8": 8,
+   "months": 12,
+   "net 0.6": 263993,
+   "net 0.8": 343667
+  },
+  "2025": {
+   "band 0.6": 11,
+   "band 0.8": 11,
+   "months": 12,
+   "net 0.6": 514760,
+   "net 0.8": 568064
+  },
+  "2026": {
+   "band 0.6": 7,
+   "band 0.8": 7,
+   "months": 10,
+   "net 0.6": 472794,
+   "net 0.8": 485561
+  }
+ },
+ "bootstrap": {
+  "share_band08_more_months": 0.754,
+  "share_equal": 0.141,
+  "mean_extra_months": 1.91
+ },
+ "months_that_changed": {
+  "2023-02": {
+   "band 0.6": -471,
+   "band 0.8": 4524
+  },
+  "2023-08": {
+   "band 0.6": -1752,
+   "band 0.8": 3402
+  },
+  "2023-09": {
+   "band 0.6": -7277,
+   "band 0.8": 6390
+  },
+  "2024-06": {
+   "band 0.6": 7211,
+   "band 0.8": -7367
+  }
+ }
+}

@@ -1,0 +1,259 @@
+{
+ "test": {
+  "from": "2026-08-20",
+  "to": "2026-10-28",
+  "sessions": 37
+ },
+ "reference": {
+  "Gold v5 Rs 15k": {
+   "sessions": 37,
+   "trade_days": 11,
+   "wage_days": 6,
+   "wage_share": 0.1622,
+   "red_days": 4,
+   "net": 29628,
+   "per_session": 800.8,
+   "month": {
+    "n": 3,
+    "mean": 9876,
+    "median": 8366,
+    "worst": 479,
+    "best": 20783,
+    "wage_days_mean": 2.0
+   },
+   "worst_day": -1906,
+   "by_year": {
+    "2026": {
+     "net": 29628,
+     "wage_days": 6,
+     "red_days": 4,
+     "sessions": 37
+    }
+   }
+  },
+  "Gold v5 Rs 30k growing (production)": {
+   "sessions": 37,
+   "trade_days": 11,
+   "wage_days": 7,
+   "wage_share": 0.1892,
+   "red_days": 4,
+   "net": 208710,
+   "per_session": 5640.8,
+   "month": {
+    "n": 3,
+    "mean": 69570,
+    "median": 79970,
+    "worst": 3111,
+    "best": 125629,
+    "wage_days_mean": 2.3
+   },
+   "worst_day": -12163,
+   "by_year": {
+    "2026": {
+     "net": 208710,
+     "wage_days": 7,
+     "red_days": 4,
+     "sessions": 37
+    }
+   }
+  },
+  "coin-flip wage trader (SN163 main cell)": {
+   "net_mean": -19511,
+   "net_p5": -31222,
+   "net_p95": -7309,
+   "wage_share_mean": 0.2996
+  },
+  "SN176 wage day player Rs 15k": {
+   "sessions": 37,
+   "trade_days": 12,
+   "wage_days": 6,
+   "wage_share": 0.1622,
+   "red_days": 5,
+   "net": 27914,
+   "per_session": 754.4,
+   "month": {
+    "n": 3,
+    "mean": 9305,
+    "median": 8366,
+    "worst": 479,
+    "best": 19069,
+    "wage_days_mean": 2.0
+   },
+   "worst_day": -1906,
+   "by_year": {
+    "2026": {
+     "net": 27914,
+     "wage_days": 6,
+     "red_days": 5,
+     "sessions": 37
+    }
+   }
+  },
+  "SN176 wage day player Rs 30k growing (production)": {
+   "sessions": 37,
+   "trade_days": 13,
+   "wage_days": 7,
+   "wage_share": 0.1892,
+   "red_days": 6,
+   "net": 204785,
+   "per_session": 5534.7,
+   "month": {
+    "n": 3,
+    "mean": 68262,
+    "median": 77758,
+    "worst": 3111,
+    "best": 123915,
+    "wage_days_mean": 2.3
+   },
+   "worst_day": -12163,
+   "by_year": {
+    "2026": {
+     "net": 204785,
+     "wage_days": 7,
+     "red_days": 6,
+     "sessions": 37
+    }
+   }
+  }
+ },
+ "candidates": {
+  "SN164 range break ATM": {
+   "net": -28616,
+   "trade_days": 37,
+   "wage_days": 9,
+   "wage_share": 0.2432,
+   "red_days": 28,
+   "null_p95": -5086,
+   "null_wage_share": 0.3072,
+   "net_400": -40657,
+   "late_1": -28557,
+   "without_best_2": -31626,
+   "dev_pass": false,
+   "PASS": false
+  },
+  "SN167 wage classifier": {
+   "net": -4515,
+   "trade_days": 10,
+   "wage_days": 3,
+   "wage_share": 0.0811,
+   "red_days": 5,
+   "null_p95": 2437,
+   "null_wage_share": 0.0865,
+   "net_400": null,
+   "late_1": null,
+   "without_best_2": -7517,
+   "dev_pass": false,
+   "PASS": false
+  },
+  "SN168 meta-labelled signals": {
+   "net": 0,
+   "trade_days": 0,
+   "wage_days": 0,
+   "wage_share": 0.0,
+   "red_days": 0,
+   "null_p95": 0,
+   "null_wage_share": 0,
+   "net_400": null,
+   "late_1": null,
+   "without_best_2": 0,
+   "dev_pass": false,
+   "PASS": false
+  },
+  "SN169 learned exit": {
+   "random": {
+    "entries": 111,
+    "barriers only": -60161,
+    "learned exit": -54024
+   },
+   "signal": {
+    "entries": 257,
+    "barriers only": -130091,
+    "learned exit": -116824
+   },
+   "dev_profitable": false
+  },
+  "SN170 bandit": {
+   "test_net_mean": -4329,
+   "seed_min": -10530,
+   "seed_max": 1607,
+   "random_play_p95": -5166,
+   "fixed_arms_test": {
+    "none": 0,
+    "RB30 follow": -18045,
+    "open fade": -25609,
+    "10:00 strangle": -22969,
+    "RB30 OTM2": -24121,
+    "VWAP reversion": -6005
+   },
+   "dev_pass": false
+  },
+  "SN171 Rs 15k strangle (kappa 1.1 hold)": {
+   "net": 0,
+   "trade_days": 0,
+   "wage_days": 0,
+   "wage_share": 0.0,
+   "red_days": 0,
+   "null_p95": 0,
+   "null_wage_share": 0.0,
+   "net_400": 0,
+   "late_1": 0,
+   "without_best_2": 0,
+   "dev_pass": true,
+   "PASS": false,
+   "null_mean": 0,
+   "days": []
+  },
+  "SN171 Rs 30k straddle (kappa 1.1 hold)": {
+   "net": -2901,
+   "trade_days": 2,
+   "wage_days": 0,
+   "wage_share": 0.0,
+   "red_days": 2,
+   "null_p95": 2936,
+   "null_wage_share": 0.0044,
+   "net_400": -3681,
+   "late_1": -3761,
+   "without_best_2": 0,
+   "dev_pass": true,
+   "PASS": false,
+   "null_mean": -2092,
+   "days": [
+    "2026-09-16",
+    "2026-10-14"
+   ]
+  },
+  "SN172 strangle": {
+   "net": -20072,
+   "trade_days": 28,
+   "dev_pass": false
+  },
+  "SN173 gap 0.8 fade @09:30": {
+   "net": 0,
+   "trade_days": 0,
+   "dev_pass": false
+  },
+  "SN174 k 1.5": {
+   "net": -35889,
+   "trade_days": 29,
+   "dev_pass": false
+  },
+  "SN175 1-second learned exit": {
+   "hold 60s": -51921,
+   "hold 180s": -50821,
+   "learned": -49349,
+   "entries": 161,
+   "test_days": [
+    "2026-11-02",
+    "2026-11-03",
+    "2026-11-04",
+    "2026-11-05",
+    "2026-11-06",
+    "2026-11-09",
+    "2026-11-11",
+    "2026-11-12"
+   ],
+   "dev_pass": false
+  }
+ },
+ "passing": []
+}

@@ -1,0 +1,1397 @@
+{
+ "WK-S": {
+  "none": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 223,
+     "net": 313523,
+     "per_week": 1369.1,
+     "win_pct": 62.3,
+     "worst": -39844,
+     "worst_month": -51245,
+     "months_positive": "32 of 53",
+     "cvar5": -22252,
+     "by_year": {
+      "2022": 79743,
+      "2023": 43757,
+      "2024": 38494,
+      "2025": 74112,
+      "2026": 77417
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": -23348,
+     "per_week": -2594.3,
+     "win_pct": 44.4,
+     "worst": -14270,
+     "worst_month": -19227,
+     "months_positive": "0 of 2",
+     "cvar5": -14270,
+     "by_year": {
+      "2026": -23348
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": -56743,
+     "per_week": -3337.8,
+     "win_pct": 35.3,
+     "worst": -40884,
+     "worst_month": -36338,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -13982,
+      "2022": -42760
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 70,
+     "net": -42022,
+     "per_week": -506.3,
+     "win_pct": 60.0,
+     "worst": -46018,
+     "worst_month": -70088,
+     "months_positive": "9 of 19",
+     "cvar5": -35016,
+     "by_year": {
+      "2024": -14051,
+      "2025": 6147,
+      "2026": -34118
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -3337.8
+  },
+  "ADX<25": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 148,
+     "net": 180851,
+     "per_week": 789.7,
+     "win_pct": 61.5,
+     "worst": -39844,
+     "worst_month": -35105,
+     "months_positive": "28 of 48",
+     "cvar5": -22447,
+     "by_year": {
+      "2022": 31142,
+      "2023": -10210,
+      "2024": 64059,
+      "2025": 94870,
+      "2026": 991
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 3,
+     "net": -16062,
+     "per_week": -1784.7,
+     "win_pct": 33.3,
+     "worst": -10730,
+     "worst_month": -16062,
+     "months_positive": "0 of 1",
+     "cvar5": -10730,
+     "by_year": {
+      "2026": -16062
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 10,
+     "net": -55456,
+     "per_week": -3262.1,
+     "win_pct": 30.0,
+     "worst": -40884,
+     "worst_month": -53145,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -8713,
+      "2022": -46743
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 44,
+     "net": 25858,
+     "per_week": 311.5,
+     "win_pct": 65.9,
+     "worst": -34620,
+     "worst_month": -24411,
+     "months_positive": "7 of 15",
+     "cvar5": -29516,
+     "by_year": {
+      "2024": -10048,
+      "2025": 71615,
+      "2026": -35710
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -3262.1,
+   "null": {
+    "dev_net_p95": 321048,
+    "min_score_p95": -575.5
+   }
+  },
+  "ADX<20": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 100,
+     "net": 26850,
+     "per_week": 117.2,
+     "win_pct": 58.0,
+     "worst": -39844,
+     "worst_month": -35105,
+     "months_positive": "17 of 34",
+     "cvar5": -22507,
+     "by_year": {
+      "2022": -9100,
+      "2023": -11312,
+      "2024": 35614,
+      "2025": 8735,
+      "2026": 2913
+     },
+     "years_positive": 3,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 2,
+     "net": -5332,
+     "per_week": -592.5,
+     "win_pct": 50.0,
+     "worst": -7169,
+     "worst_month": -5332,
+     "months_positive": "0 of 1",
+     "cvar5": -7169,
+     "by_year": {
+      "2026": -5332
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 1,
+     "net": -40884,
+     "per_week": -2404.9,
+     "win_pct": 0.0,
+     "worst": -40884,
+     "worst_month": -40884,
+     "months_positive": "0 of 1",
+     "cvar5": -40884,
+     "by_year": {
+      "2022": -40884
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 20,
+     "net": -13050,
+     "per_week": -157.2,
+     "win_pct": 60.0,
+     "worst": -34620,
+     "worst_month": -34620,
+     "months_positive": "6 of 10",
+     "cvar5": -34620,
+     "by_year": {
+      "2024": -34620,
+      "2025": 40649,
+      "2026": -19079
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2404.9,
+   "null": {
+    "dev_net_p95": 250134,
+    "min_score_p95": 57.8
+   }
+  },
+  "ER<0.4": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 139,
+     "net": 210751,
+     "per_week": 920.3,
+     "win_pct": 63.3,
+     "worst": -39844,
+     "worst_month": -52830,
+     "months_positive": "33 of 53",
+     "cvar5": -27465,
+     "by_year": {
+      "2022": 59229,
+      "2023": 22650,
+      "2024": 23306,
+      "2025": 52621,
+      "2026": 52944
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 4,
+     "net": -13876,
+     "per_week": -1541.8,
+     "win_pct": 50.0,
+     "worst": -14270,
+     "worst_month": -10399,
+     "months_positive": "0 of 2",
+     "cvar5": -14270,
+     "by_year": {
+      "2026": -13876
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 11,
+     "net": -46897,
+     "per_week": -2758.6,
+     "win_pct": 36.4,
+     "worst": -40884,
+     "worst_month": -53145,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -10520,
+      "2022": -36377
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 48,
+     "net": -68227,
+     "per_week": -822.0,
+     "win_pct": 58.3,
+     "worst": -46018,
+     "worst_month": -59749,
+     "months_positive": "9 of 18",
+     "cvar5": -40319,
+     "by_year": {
+      "2024": -57155,
+      "2025": 31936,
+      "2026": -43009
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2758.6,
+   "null": {
+    "dev_net_p95": 305322,
+    "min_score_p95": -560.5
+   }
+  }
+ },
+ "WK-G": {
+  "none": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 223,
+     "net": 304942,
+     "per_week": 1331.6,
+     "win_pct": 57.4,
+     "worst": -32745,
+     "worst_month": -32138,
+     "months_positive": "33 of 53",
+     "cvar5": -16438,
+     "by_year": {
+      "2022": 81818,
+      "2023": 7694,
+      "2024": 43727,
+      "2025": 131144,
+      "2026": 40559
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": -5074,
+     "per_week": -563.8,
+     "win_pct": 55.6,
+     "worst": -14270,
+     "worst_month": -4121,
+     "months_positive": "0 of 2",
+     "cvar5": -14270,
+     "by_year": {
+      "2026": -5074
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": -52773,
+     "per_week": -3104.3,
+     "win_pct": 29.4,
+     "worst": -40884,
+     "worst_month": -43351,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -12077,
+      "2022": -40696
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 70,
+     "net": -99023,
+     "per_week": -1193.0,
+     "win_pct": 54.3,
+     "worst": -46018,
+     "worst_month": -70088,
+     "months_positive": "11 of 19",
+     "cvar5": -31199,
+     "by_year": {
+      "2024": -31464,
+      "2025": -32823,
+      "2026": -34737
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -3104.3
+  },
+  "ADX<25": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 148,
+     "net": 199076,
+     "per_week": 869.3,
+     "win_pct": 54.7,
+     "worst": -15555,
+     "worst_month": -32138,
+     "months_positive": "28 of 48",
+     "cvar5": -13403,
+     "by_year": {
+      "2022": 37047,
+      "2023": -33291,
+      "2024": 85374,
+      "2025": 124868,
+      "2026": -14922
+     },
+     "years_positive": 3,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 3,
+     "net": -7159,
+     "per_week": -795.4,
+     "win_pct": 66.7,
+     "worst": -10730,
+     "worst_month": -7159,
+     "months_positive": "0 of 1",
+     "cvar5": -10730,
+     "by_year": {
+      "2026": -7159
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 10,
+     "net": -46322,
+     "per_week": -2724.8,
+     "win_pct": 20.0,
+     "worst": -40884,
+     "worst_month": -47507,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -2141,
+      "2022": -44182
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 44,
+     "net": -3918,
+     "per_week": -47.2,
+     "win_pct": 59.1,
+     "worst": -24411,
+     "worst_month": -24411,
+     "months_positive": "9 of 15",
+     "cvar5": -21398,
+     "by_year": {
+      "2024": 3529,
+      "2025": 28881,
+      "2026": -36328
+     },
+     "years_positive": 2,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2724.8,
+   "null": {
+    "dev_net_p95": 285058,
+    "min_score_p95": -523.7
+   }
+  },
+  "ADX<20": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 100,
+     "net": 80285,
+     "per_week": 350.6,
+     "win_pct": 52.0,
+     "worst": -14139,
+     "worst_month": -21466,
+     "months_positive": "18 of 33",
+     "cvar5": -12874,
+     "by_year": {
+      "2022": 8381,
+      "2023": -16979,
+      "2024": 58737,
+      "2025": 29174,
+      "2026": 973
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 2,
+     "net": 3571,
+     "per_week": 396.8,
+     "win_pct": 100.0,
+     "worst": 1734,
+     "worst_month": 3571,
+     "months_positive": "1 of 1",
+     "cvar5": 1734,
+     "by_year": {
+      "2026": 3571
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 1,
+     "net": -40884,
+     "per_week": -2404.9,
+     "win_pct": 0.0,
+     "worst": -40884,
+     "worst_month": -40884,
+     "months_positive": "0 of 1",
+     "cvar5": -40884,
+     "by_year": {
+      "2022": -40884
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 20,
+     "net": -2162,
+     "per_week": -26.0,
+     "win_pct": 55.0,
+     "worst": -14160,
+     "worst_month": -12138,
+     "months_positive": "5 of 10",
+     "cvar5": -14160,
+     "by_year": {
+      "2024": -11798,
+      "2025": 29334,
+      "2026": -19698
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2404.9,
+   "null": {
+    "dev_net_p95": 221772,
+    "min_score_p95": 7.4
+   }
+  },
+  "ER<0.4": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 139,
+     "net": 238454,
+     "per_week": 1041.3,
+     "win_pct": 59.0,
+     "worst": -32745,
+     "worst_month": -31083,
+     "months_positive": "34 of 52",
+     "cvar5": -19008,
+     "by_year": {
+      "2022": 71821,
+      "2023": 12271,
+      "2024": 10071,
+      "2025": 82116,
+      "2026": 62176
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 4,
+     "net": -4505,
+     "per_week": -500.5,
+     "win_pct": 50.0,
+     "worst": -14270,
+     "worst_month": -3477,
+     "months_positive": "0 of 2",
+     "cvar5": -14270,
+     "by_year": {
+      "2026": -4505
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 11,
+     "net": -39353,
+     "per_week": -2314.9,
+     "win_pct": 36.4,
+     "worst": -40884,
+     "worst_month": -47507,
+     "months_positive": "1 of 4",
+     "cvar5": -40884,
+     "by_year": {
+      "2021": -8615,
+      "2022": -30738
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 48,
+     "net": -114980,
+     "per_week": -1385.3,
+     "win_pct": 52.1,
+     "worst": -46018,
+     "worst_month": -59749,
+     "months_positive": "9 of 18",
+     "cvar5": -35215,
+     "by_year": {
+      "2024": -49528,
+      "2025": -21825,
+      "2026": -43628
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2314.9,
+   "null": {
+    "dev_net_p95": 282948,
+    "min_score_p95": -628.6
+   }
+  }
+ },
+ "k1 straddle": {
+  "none": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 229,
+     "net": 173682,
+     "per_week": 758.4,
+     "win_pct": 65.1,
+     "worst": -28989,
+     "worst_month": -28209,
+     "months_positive": "36 of 53",
+     "cvar5": -19206,
+     "by_year": {
+      "2022": 26407,
+      "2023": 37768,
+      "2024": 17690,
+      "2025": 56798,
+      "2026": 35020
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": -16229,
+     "per_week": -1803.2,
+     "win_pct": 33.3,
+     "worst": -13686,
+     "worst_month": -8578,
+     "months_positive": "0 of 2",
+     "cvar5": -13686,
+     "by_year": {
+      "2026": -16229
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": -25113,
+     "per_week": -1477.2,
+     "win_pct": 41.2,
+     "worst": -41675,
+     "worst_month": -41750,
+     "months_positive": "2 of 4",
+     "cvar5": -41675,
+     "by_year": {
+      "2021": 12106,
+      "2022": -37219
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 83,
+     "net": 31042,
+     "per_week": 374.0,
+     "win_pct": 61.4,
+     "worst": -36270,
+     "worst_month": -36996,
+     "months_positive": "9 of 19",
+     "cvar5": -26086,
+     "by_year": {
+      "2024": -12124,
+      "2025": 76787,
+      "2026": -33621
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -1803.2
+  },
+  "ADX<25": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 156,
+     "net": 123787,
+     "per_week": 540.6,
+     "win_pct": 66.0,
+     "worst": -22558,
+     "worst_month": -28209,
+     "months_positive": "29 of 47",
+     "cvar5": -18162,
+     "by_year": {
+      "2022": 29810,
+      "2023": 10783,
+      "2024": 38692,
+      "2025": 18385,
+      "2026": 26117
+     },
+     "years_positive": 5,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 3,
+     "net": -7672,
+     "per_week": -852.5,
+     "win_pct": 33.3,
+     "worst": -7742,
+     "worst_month": -7672,
+     "months_positive": "0 of 1",
+     "cvar5": -7742,
+     "by_year": {
+      "2026": -7672
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 12,
+     "net": -27021,
+     "per_week": -1589.5,
+     "win_pct": 41.7,
+     "worst": -41675,
+     "worst_month": -41750,
+     "months_positive": "2 of 4",
+     "cvar5": -41675,
+     "by_year": {
+      "2021": 6211,
+      "2022": -33232
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 50,
+     "net": 88296,
+     "per_week": 1063.8,
+     "win_pct": 70.0,
+     "worst": -19358,
+     "worst_month": -15104,
+     "months_positive": "9 of 16",
+     "cvar5": -15597,
+     "by_year": {
+      "2024": -2148,
+      "2025": 111575,
+      "2026": -21131
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -1589.5,
+   "null": {
+    "dev_net_p95": 197524,
+    "min_score_p95": 75.7
+   }
+  },
+  "ADX<20": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 98,
+     "net": 18696,
+     "per_week": 81.6,
+     "win_pct": 63.3,
+     "worst": -22558,
+     "worst_month": -28209,
+     "months_positive": "20 of 35",
+     "cvar5": -17776,
+     "by_year": {
+      "2022": 7841,
+      "2023": -3563,
+      "2024": 10055,
+      "2025": -1325,
+      "2026": 5689
+     },
+     "years_positive": 3,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 2,
+     "net": 70,
+     "per_week": 7.8,
+     "win_pct": 50.0,
+     "worst": -3716,
+     "worst_month": 70,
+     "months_positive": "1 of 1",
+     "cvar5": -3716,
+     "by_year": {
+      "2026": 70
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 1,
+     "net": -41675,
+     "per_week": -2451.5,
+     "win_pct": 0.0,
+     "worst": -41675,
+     "worst_month": -41675,
+     "months_positive": "0 of 1",
+     "cvar5": -41675,
+     "by_year": {
+      "2022": -41675
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 25,
+     "net": 35503,
+     "per_week": 427.7,
+     "win_pct": 68.0,
+     "worst": -19358,
+     "worst_month": -10005,
+     "months_positive": "5 of 9",
+     "cvar5": -19358,
+     "by_year": {
+      "2024": -8915,
+      "2025": 60578,
+      "2026": -16161
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2451.5,
+   "null": {
+    "dev_net_p95": 160943,
+    "min_score_p95": 48.9
+   }
+  },
+  "ER<0.4": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 148,
+     "net": 69249,
+     "per_week": 302.4,
+     "win_pct": 64.2,
+     "worst": -28989,
+     "worst_month": -26327,
+     "months_positive": "32 of 53",
+     "cvar5": -21684,
+     "by_year": {
+      "2022": 26604,
+      "2023": 6352,
+      "2024": -16277,
+      "2025": 14957,
+      "2026": 37613
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 6,
+     "net": -1424,
+     "per_week": -158.2,
+     "win_pct": 50.0,
+     "worst": -13686,
+     "worst_month": -4305,
+     "months_positive": "1 of 2",
+     "cvar5": -13686,
+     "by_year": {
+      "2026": -1424
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 12,
+     "net": -22692,
+     "per_week": -1334.8,
+     "win_pct": 41.7,
+     "worst": -41675,
+     "worst_month": -41750,
+     "months_positive": "2 of 4",
+     "cvar5": -41675,
+     "by_year": {
+      "2021": 16691,
+      "2022": -39383
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 49,
+     "net": 18555,
+     "per_week": 223.6,
+     "win_pct": 63.3,
+     "worst": -36270,
+     "worst_month": -41908,
+     "months_positive": "11 of 18",
+     "cvar5": -27814,
+     "by_year": {
+      "2024": -2158,
+      "2025": 66709,
+      "2026": -45995
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -1334.8,
+   "null": {
+    "dev_net_p95": 191431,
+    "min_score_p95": -258.4
+   }
+  }
+ },
+ "straddle kF stop1": {
+  "none": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 229,
+     "net": 202002,
+     "per_week": 882.1,
+     "win_pct": 62.4,
+     "worst": -53301,
+     "worst_month": -58588,
+     "months_positive": "27 of 53",
+     "cvar5": -36383,
+     "by_year": {
+      "2022": 60850,
+      "2023": -1244,
+      "2024": 56452,
+      "2025": 81245,
+      "2026": 4699
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 9,
+     "net": -1695,
+     "per_week": -188.4,
+     "win_pct": 44.4,
+     "worst": -28199,
+     "worst_month": -39756,
+     "months_positive": "1 of 2",
+     "cvar5": -28199,
+     "by_year": {
+      "2026": -1695
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 17,
+     "net": -40147,
+     "per_week": -2361.6,
+     "win_pct": 47.1,
+     "worst": -43949,
+     "worst_month": -69899,
+     "months_positive": "2 of 4",
+     "cvar5": -43949,
+     "by_year": {
+      "2021": -13131,
+      "2022": -27015
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 83,
+     "net": 60021,
+     "per_week": 723.1,
+     "win_pct": 55.4,
+     "worst": -50798,
+     "worst_month": -94962,
+     "months_positive": "8 of 19",
+     "cvar5": -35088,
+     "by_year": {
+      "2024": -19131,
+      "2025": -35303,
+      "2026": 114455
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2361.6
+  },
+  "ADX<25": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 153,
+     "net": 156318,
+     "per_week": 682.6,
+     "win_pct": 60.8,
+     "worst": -41607,
+     "worst_month": -45751,
+     "months_positive": "23 of 48",
+     "cvar5": -33284,
+     "by_year": {
+      "2022": 11396,
+      "2023": -27061,
+      "2024": 36938,
+      "2025": 116469,
+      "2026": 18575
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 3,
+     "net": -25616,
+     "per_week": -2846.2,
+     "win_pct": 0.0,
+     "worst": -11712,
+     "worst_month": -25616,
+     "months_positive": "0 of 1",
+     "cvar5": -11712,
+     "by_year": {
+      "2026": -25616
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 12,
+     "net": -31961,
+     "per_week": -1880.1,
+     "win_pct": 50.0,
+     "worst": -43949,
+     "worst_month": -69899,
+     "months_positive": "2 of 4",
+     "cvar5": -43949,
+     "by_year": {
+      "2021": -10869,
+      "2022": -21092
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 50,
+     "net": 13045,
+     "per_week": 157.2,
+     "win_pct": 54.0,
+     "worst": -30592,
+     "worst_month": -49639,
+     "months_positive": "8 of 16",
+     "cvar5": -30228,
+     "by_year": {
+      "2024": -4687,
+      "2025": 23985,
+      "2026": -6253
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2846.2,
+   "null": {
+    "dev_net_p95": 278878,
+    "min_score_p95": 220.7
+   }
+  },
+  "ADX<20": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 96,
+     "net": 47228,
+     "per_week": 206.2,
+     "win_pct": 58.3,
+     "worst": -41607,
+     "worst_month": -45751,
+     "months_positive": "15 of 33",
+     "cvar5": -30258,
+     "by_year": {
+      "2022": -43145,
+      "2023": -48670,
+      "2024": 49133,
+      "2025": 73273,
+      "2026": 16636
+     },
+     "years_positive": 3,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 2,
+     "net": -13904,
+     "per_week": -1544.9,
+     "win_pct": 0.0,
+     "worst": -8303,
+     "worst_month": -13904,
+     "months_positive": "0 of 1",
+     "cvar5": -8303,
+     "by_year": {
+      "2026": -13904
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 1,
+     "net": -43949,
+     "per_week": -2585.2,
+     "win_pct": 0.0,
+     "worst": -43949,
+     "worst_month": -43949,
+     "months_positive": "0 of 1",
+     "cvar5": -43949,
+     "by_year": {
+      "2022": -43949
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 22,
+     "net": -51275,
+     "per_week": -617.8,
+     "win_pct": 40.9,
+     "worst": -25284,
+     "worst_month": -26894,
+     "months_positive": "4 of 9",
+     "cvar5": -25284,
+     "by_year": {
+      "2025": -28198,
+      "2026": -23077
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -2585.2,
+   "null": {
+    "dev_net_p95": 259846,
+    "min_score_p95": 248.8
+   }
+  },
+  "ER<0.4": {
+   "rows": {
+    "DEV": {
+     "weeks": 229,
+     "trades": 136,
+     "net": 142643,
+     "per_week": 622.9,
+     "win_pct": 62.5,
+     "worst": -53301,
+     "worst_month": -102415,
+     "months_positive": "29 of 51",
+     "cvar5": -39211,
+     "by_year": {
+      "2022": 18248,
+      "2023": 30754,
+      "2024": 107981,
+      "2025": 36429,
+      "2026": -50768
+     },
+     "years_positive": 4,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "TEST": {
+     "weeks": 9,
+     "trades": 6,
+     "net": -14491,
+     "per_week": -1610.1,
+     "win_pct": 33.3,
+     "worst": -28199,
+     "worst_month": -42103,
+     "months_positive": "1 of 2",
+     "cvar5": -28199,
+     "by_year": {
+      "2026": -14491
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "N2122": {
+     "weeks": 17,
+     "trades": 12,
+     "net": -18427,
+     "per_week": -1083.9,
+     "win_pct": 50.0,
+     "worst": -43949,
+     "worst_month": -39066,
+     "months_positive": "2 of 4",
+     "cvar5": -43949,
+     "by_year": {
+      "2021": -11164,
+      "2022": -7263
+     },
+     "years_positive": 0,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    },
+    "SENSEX": {
+     "weeks": 83,
+     "trades": 52,
+     "net": 31173,
+     "per_week": 375.6,
+     "win_pct": 53.8,
+     "worst": -50798,
+     "worst_month": -79897,
+     "months_positive": "9 of 19",
+     "cvar5": -39949,
+     "by_year": {
+      "2024": -50606,
+      "2025": -20577,
+      "2026": 102356
+     },
+     "years_positive": 1,
+     "clamped": 0,
+     "orders": 0,
+     "hedge_costs": 0
+    }
+   },
+   "min_score": -1610.1,
+   "null": {
+    "dev_net_p95": 294944,
+    "min_score_p95": -68.4
+   }
+  }
+ }
+}

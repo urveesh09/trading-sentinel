@@ -1,0 +1,280 @@
+{
+ "wage 750 stop 750 attempts 1": {
+  "wage_share": 0.1552,
+  "red_share": 0.8119,
+  "net_mean": -363652,
+  "net_p5": -381796,
+  "net_p95": -342887,
+  "month_mean": -8265,
+  "wage_days_per_month": 2.5,
+  "by_year_net": {
+   "2023": -130439,
+   "2024": -88648,
+   "2025": -95429,
+   "2026": -49137
+  }
+ },
+ "wage 750 stop 750 attempts 2": {
+  "wage_share": 0.2326,
+  "red_share": 0.7421,
+  "net_mean": -677506,
+  "net_p5": -703190,
+  "net_p95": -654272,
+  "month_mean": -15398,
+  "wage_days_per_month": 3.7,
+  "by_year_net": {
+   "2023": -252553,
+   "2024": -159709,
+   "2025": -177924,
+   "2026": -87321
+  }
+ },
+ "wage 750 stop 750 attempts 3": {
+  "wage_share": 0.2718,
+  "red_share": 0.7048,
+  "net_mean": -943960,
+  "net_p5": -980836,
+  "net_p95": -913249,
+  "month_mean": -21454,
+  "wage_days_per_month": 4.4,
+  "by_year_net": {
+   "2023": -362458,
+   "2024": -216557,
+   "2025": -244419,
+   "2026": -120526
+  }
+ },
+ "wage 750 stop 1500 attempts 1": {
+  "wage_share": 0.3932,
+  "red_share": 0.5712,
+  "net_mean": -387428,
+  "net_p5": -425177,
+  "net_p95": -352161,
+  "month_mean": -8805,
+  "wage_days_per_month": 6.3,
+  "by_year_net": {
+   "2023": -137073,
+   "2024": -100930,
+   "2025": -101553,
+   "2026": -47872
+  }
+ },
+ "wage 750 stop 1500 attempts 2": {
+  "wage_share": 0.5016,
+  "red_share": 0.4703,
+  "net_mean": -610134,
+  "net_p5": -672761,
+  "net_p95": -560656,
+  "month_mean": -13867,
+  "wage_days_per_month": 8.0,
+  "by_year_net": {
+   "2023": -218622,
+   "2024": -151386,
+   "2025": -160333,
+   "2026": -79793
+  }
+ },
+ "wage 750 stop 1500 attempts 3": {
+  "wage_share": 0.504,
+  "red_share": 0.4704,
+  "net_mean": -611965,
+  "net_p5": -671679,
+  "net_p95": -565713,
+  "month_mean": -13908,
+  "wage_days_per_month": 8.1,
+  "by_year_net": {
+   "2023": -218622,
+   "2024": -152023,
+   "2025": -161093,
+   "2026": -80227
+  }
+ },
+ "wage 750 stop 3000 attempts 1": {
+  "wage_share": 0.5778,
+  "red_share": 0.3837,
+  "net_mean": -407941,
+  "net_p5": -482456,
+  "net_p95": -364548,
+  "month_mean": -9271,
+  "wage_days_per_month": 9.3,
+  "by_year_net": {
+   "2023": -146589,
+   "2024": -112907,
+   "2025": -100403,
+   "2026": -48042
+  }
+ },
+ "wage 750 stop 3000 attempts 2": {
+  "wage_share": 0.5833,
+  "red_share": 0.3872,
+  "net_mean": -410313,
+  "net_p5": -482807,
+  "net_p95": -364318,
+  "month_mean": -9325,
+  "wage_days_per_month": 9.3,
+  "by_year_net": {
+   "2023": -146589,
+   "2024": -113817,
+   "2025": -100749,
+   "2026": -49157
+  }
+ },
+ "wage 750 stop 3000 attempts 3": {
+  "wage_share": 0.5847,
+  "red_share": 0.3882,
+  "net_mean": -411147,
+  "net_p5": -482958,
+  "net_p95": -367103,
+  "month_mean": -9344,
+  "wage_days_per_month": 9.4,
+  "by_year_net": {
+   "2023": -146589,
+   "2024": -113859,
+   "2025": -100879,
+   "2026": -49820
+  }
+ },
+ "wage 1500 stop 750 attempts 1": {
+  "wage_share": 0.1006,
+  "red_share": 0.8636,
+  "net_mean": -365487,
+  "net_p5": -384868,
+  "net_p95": -329447,
+  "month_mean": -8307,
+  "wage_days_per_month": 1.6,
+  "by_year_net": {
+   "2023": -128961,
+   "2024": -90314,
+   "2025": -94664,
+   "2026": -51547
+  }
+ },
+ "wage 1500 stop 750 attempts 2": {
+  "wage_share": 0.1582,
+  "red_share": 0.8096,
+  "net_mean": -694701,
+  "net_p5": -726995,
+  "net_p95": -644776,
+  "month_mean": -15788,
+  "wage_days_per_month": 2.5,
+  "by_year_net": {
+   "2023": -251907,
+   "2024": -167012,
+   "2025": -181310,
+   "2026": -94472
+  }
+ },
+ "wage 1500 stop 750 attempts 3": {
+  "wage_share": 0.1904,
+  "red_share": 0.7767,
+  "net_mean": -971922,
+  "net_p5": -994362,
+  "net_p95": -940654,
+  "month_mean": -22089,
+  "wage_days_per_month": 3.0,
+  "by_year_net": {
+   "2023": -363531,
+   "2024": -227840,
+   "2025": -249957,
+   "2026": -130595
+  }
+ },
+ "wage 1500 stop 1500 attempts 1": {
+  "wage_share": 0.2892,
+  "red_share": 0.665,
+  "net_mean": -378251,
+  "net_p5": -429521,
+  "net_p95": -330763,
+  "month_mean": -8597,
+  "wage_days_per_month": 4.6,
+  "by_year_net": {
+   "2023": -135817,
+   "2024": -97630,
+   "2025": -97365,
+   "2026": -47439
+  }
+ },
+ "wage 1500 stop 1500 attempts 2": {
+  "wage_share": 0.3824,
+  "red_share": 0.5727,
+  "net_mean": -627790,
+  "net_p5": -709853,
+  "net_p95": -548040,
+  "month_mean": -14268,
+  "wage_days_per_month": 6.1,
+  "by_year_net": {
+   "2023": -227130,
+   "2024": -152656,
+   "2025": -164740,
+   "2026": -83264
+  }
+ },
+ "wage 1500 stop 1500 attempts 3": {
+  "wage_share": 0.3841,
+  "red_share": 0.5733,
+  "net_mean": -629774,
+  "net_p5": -711828,
+  "net_p95": -552585,
+  "month_mean": -14313,
+  "wage_days_per_month": 6.2,
+  "by_year_net": {
+   "2023": -227130,
+   "2024": -153419,
+   "2025": -165546,
+   "2026": -83679
+  }
+ },
+ "wage 1500 stop 3000 attempts 1": {
+  "wage_share": 0.4514,
+  "red_share": 0.4902,
+  "net_mean": -402233,
+  "net_p5": -473708,
+  "net_p95": -347365,
+  "month_mean": -9142,
+  "wage_days_per_month": 7.2,
+  "by_year_net": {
+   "2023": -146398,
+   "2024": -109231,
+   "2025": -95194,
+   "2026": -51410
+  }
+ },
+ "wage 1500 stop 3000 attempts 2": {
+  "wage_share": 0.4553,
+  "red_share": 0.495,
+  "net_mean": -404460,
+  "net_p5": -479537,
+  "net_p95": -345096,
+  "month_mean": -9192,
+  "wage_days_per_month": 7.3,
+  "by_year_net": {
+   "2023": -146398,
+   "2024": -110566,
+   "2025": -95549,
+   "2026": -51948
+  }
+ },
+ "wage 1500 stop 3000 attempts 3": {
+  "wage_share": 0.4565,
+  "red_share": 0.4962,
+  "net_mean": -405009,
+  "net_p5": -485751,
+  "net_p95": -348688,
+  "month_mean": -9205,
+  "wage_days_per_month": 7.3,
+  "by_year_net": {
+   "2023": -146398,
+   "2024": -110458,
+   "2025": -95533,
+   "2026": -52620
+  }
+ },
+ "one lot: wage 1500 stop 1500 attempts 1": {
+  "wage_share": 0.3087,
+  "net_mean": -223285
+ },
+ "zero stress: wage 1500 stop 1500 attempts 1": {
+  "wage_share": 0.4055,
+  "net_mean": -123463
+ }
+}

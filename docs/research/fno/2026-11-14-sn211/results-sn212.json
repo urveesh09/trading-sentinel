@@ -1,0 +1,294 @@
+{
+ "settle": {
+  "weeks": 223,
+  "net": 313523,
+  "losing_weeks": 84,
+  "all weeks by component": {
+   "entry evening": 44425,
+   "overnight": 162235,
+   "intraday": -29826,
+   "to exit (expiry day for settle)": 212906,
+   "entry cost": -76217
+  },
+  "losing weeks by component": {
+   "entry evening": 16456,
+   "overnight": 29709,
+   "intraday": -298888,
+   "to exit (expiry day for settle)": -417222,
+   "entry cost": -28454
+  },
+  "worst 10": [
+   {
+    "entry": "2026-05-07",
+    "expiry": "2026-05-12",
+    "net": -39844,
+    "reason": "settle",
+    "entry evening": 432,
+    "overnight": -660,
+    "intraday": -12460,
+    "to exit (expiry day for settle)": -26798,
+    "entry cost": -359
+   },
+   {
+    "entry": "2025-04-04",
+    "expiry": "2025-04-09",
+    "net": -32745,
+    "reason": "stop",
+    "entry evening": 257,
+    "overnight": 0,
+    "intraday": 0,
+    "to exit (expiry day for settle)": -32658,
+    "entry cost": -344
+   },
+   {
+    "entry": "2025-04-11",
+    "expiry": "2025-04-17",
+    "net": -30456,
+    "reason": "settle",
+    "entry evening": 784,
+    "overnight": 0,
+    "intraday": -10362,
+    "to exit (expiry day for settle)": -20486,
+    "entry cost": -391
+   },
+   {
+    "entry": "2024-11-11",
+    "expiry": "2024-11-14",
+    "net": -22004,
+    "reason": "stop",
+    "entry evening": 163,
+    "overnight": 127,
+    "intraday": -24516,
+    "to exit (expiry day for settle)": 2565,
+    "entry cost": -343
+   },
+   {
+    "entry": "2026-02-25",
+    "expiry": "2026-03-02",
+    "net": -20103,
+    "reason": "settle",
+    "entry evening": 400,
+    "overnight": 1681,
+    "intraday": -2991,
+    "to exit (expiry day for settle)": -18846,
+    "entry cost": -347
+   },
+   {
+    "entry": "2024-04-12",
+    "expiry": "2024-04-18",
+    "net": -19636,
+    "reason": "settle",
+    "entry evening": 55,
+    "overnight": -1525,
+    "intraday": -7582,
+    "to exit (expiry day for settle)": -10240,
+    "entry cost": -344
+   },
+   {
+    "entry": "2024-01-15",
+    "expiry": "2024-01-18",
+    "net": -18995,
+    "reason": "stop",
+    "entry evening": 361,
+    "overnight": 488,
+    "intraday": -20858,
+    "to exit (expiry day for settle)": 1356,
+    "entry cost": -342
+   },
+   {
+    "entry": "2025-06-23",
+    "expiry": "2025-06-26",
+    "net": -16529,
+    "reason": "settle",
+    "entry evening": 410,
+    "overnight": -3580,
+    "intraday": 2120,
+    "to exit (expiry day for settle)": -15136,
+    "entry cost": -343
+   },
+   {
+    "entry": "2024-06-24",
+    "expiry": "2024-06-27",
+    "net": -16423,
+    "reason": "settle",
+    "entry evening": 169,
+    "overnight": 1362,
+    "intraday": -6626,
+    "to exit (expiry day for settle)": -10985,
+    "entry cost": -343
+   },
+   {
+    "entry": "2024-05-06",
+    "expiry": "2024-05-09",
+    "net": -14139,
+    "reason": "settle",
+    "entry evening": 312,
+    "overnight": -2107,
+    "intraday": 5671,
+    "to exit (expiry day for settle)": -17675,
+    "entry cost": -340
+   }
+  ],
+  "MAE": {
+   "winners": 139,
+   "winners_down_1x_credit_at_some_minute": 8,
+   "winners_down_0.5x": 32,
+   "losers_mae_median": -4810,
+   "credit_median": 9006
+  },
+  "first breach of a short strike": {
+   "weeks": 207,
+   "share_of_weeks_pct": 92.8,
+   "holding_ended_worse_pct": 39.6,
+   "mean_final_minus_value_at_breach": 1634,
+   "sum_final_minus_value_at_breach": 338329,
+   "breached_weeks_net": 234928
+  }
+ },
+ "pre": {
+  "weeks": 223,
+  "net": 172695,
+  "losing_weeks": 74,
+  "all weeks by component": {
+   "entry evening": 44425,
+   "overnight": 162235,
+   "intraday": -35298,
+   "to exit (expiry day for settle)": 77551,
+   "entry cost": -76217
+  },
+  "losing weeks by component": {
+   "entry evening": 11702,
+   "overnight": 21056,
+   "intraday": -450194,
+   "to exit (expiry day for settle)": 37067,
+   "entry cost": -25149
+  },
+  "worst 10": [
+   {
+    "entry": "2025-04-04",
+    "expiry": "2025-04-09",
+    "net": -32745,
+    "reason": "stop",
+    "entry evening": 257,
+    "overnight": 0,
+    "intraday": 0,
+    "to exit (expiry day for settle)": -32658,
+    "entry cost": -344
+   },
+   {
+    "entry": "2024-11-11",
+    "expiry": "2024-11-14",
+    "net": -22004,
+    "reason": "stop",
+    "entry evening": 163,
+    "overnight": 127,
+    "intraday": -24516,
+    "to exit (expiry day for settle)": 2565,
+    "entry cost": -343
+   },
+   {
+    "entry": "2024-01-15",
+    "expiry": "2024-01-18",
+    "net": -18995,
+    "reason": "stop",
+    "entry evening": 361,
+    "overnight": 488,
+    "intraday": -20858,
+    "to exit (expiry day for settle)": 1356,
+    "entry cost": -342
+   },
+   {
+    "entry": "2026-03-05",
+    "expiry": "2026-03-10",
+    "net": -15555,
+    "reason": "pre",
+    "entry evening": 231,
+    "overnight": 0,
+    "intraday": -6701,
+    "to exit (expiry day for settle)": -8711,
+    "entry cost": -374
+   },
+   {
+    "entry": "2026-06-11",
+    "expiry": "2026-06-16",
+    "net": -13899,
+    "reason": "stop",
+    "entry evening": -169,
+    "overnight": 0,
+    "intraday": -18185,
+    "to exit (expiry day for settle)": 4802,
+    "entry cost": -347
+   },
+   {
+    "entry": "2024-01-20",
+    "expiry": "2024-01-25",
+    "net": -13253,
+    "reason": "stop",
+    "entry evening": 143,
+    "overnight": 1427,
+    "intraday": -14810,
+    "to exit (expiry day for settle)": 328,
+    "entry cost": -342
+   },
+   {
+    "entry": "2026-05-27",
+    "expiry": "2026-06-02",
+    "net": -12846,
+    "reason": "stop",
+    "entry evening": -127,
+    "overnight": 1122,
+    "intraday": -15919,
+    "to exit (expiry day for settle)": 2426,
+    "entry cost": -348
+   },
+   {
+    "entry": "2024-12-16",
+    "expiry": "2024-12-19",
+    "net": -12275,
+    "reason": "stop",
+    "entry evening": 140,
+    "overnight": -985,
+    "intraday": -12606,
+    "to exit (expiry day for settle)": 1525,
+    "entry cost": -349
+   },
+   {
+    "entry": "2024-03-11",
+    "expiry": "2024-03-14",
+    "net": -11142,
+    "reason": "stop",
+    "entry evening": 416,
+    "overnight": 826,
+    "intraday": -12983,
+    "to exit (expiry day for settle)": 943,
+    "entry cost": -344
+   },
+   {
+    "entry": "2025-03-17",
+    "expiry": "2025-03-20",
+    "net": -10649,
+    "reason": "stop",
+    "entry evening": 286,
+    "overnight": -657,
+    "intraday": -10948,
+    "to exit (expiry day for settle)": 1011,
+    "entry cost": -342
+   }
+  ],
+  "MAE": {
+   "winners": 149,
+   "winners_down_1x_credit_at_some_minute": 6,
+   "winners_down_0.5x": 20,
+   "losers_mae_median": -8065,
+   "credit_median": 9006
+  },
+  "first breach of a short strike": {
+   "weeks": 207,
+   "share_of_weeks_pct": 92.8,
+   "holding_ended_worse_pct": 32.9,
+   "mean_final_minus_value_at_breach": 897,
+   "sum_final_minus_value_at_breach": 185652,
+   "breached_weeks_net": 82251
+  }
+ }
+}

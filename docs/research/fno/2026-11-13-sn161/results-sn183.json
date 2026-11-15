@@ -1,0 +1,78 @@
+{
+ "source": "docs/research/simulation/2026-11-03-expiry-e032/late-results.json",
+ "arms": {
+  "L_E02 2024": {
+   "net": 1536,
+   "trades": 3,
+   "wins": 1,
+   "loss_days": 2,
+   "worst": -343,
+   "net_per_trade": 512.0
+  },
+  "L_E02 2025": {
+   "net": 0,
+   "trades": 0,
+   "wins": 0,
+   "loss_days": 0,
+   "worst": 0,
+   "net_per_trade": null
+  },
+  "L_E02 both": {
+   "net": 1536,
+   "trades": 3,
+   "wins": 1,
+   "loss_days": 2,
+   "worst": -343,
+   "net_per_trade": 512.0
+  },
+  "L_E03 2024": {
+   "net": 1240,
+   "trades": 3,
+   "wins": 1,
+   "loss_days": 2,
+   "worst": -640,
+   "net_per_trade": 413.3
+  },
+  "L_E03 2025": {
+   "net": 0,
+   "trades": 0,
+   "wins": 0,
+   "loss_days": 0,
+   "worst": 0,
+   "net_per_trade": null
+  },
+  "L_E03 both": {
+   "net": 1240,
+   "trades": 3,
+   "wins": 1,
+   "loss_days": 2,
+   "worst": -640,
+   "net_per_trade": 413.3
+  },
+  "L_E031 2024": {
+   "net": 1506,
+   "trades": 3,
+   "wins": 1,
+   "loss_days": 2,
+   "worst": -374,
+   "net_per_trade": 502.0
+  },
+  "L_E031 2025": {
+   "net": 0,
+   "trades": 0,
+   "wins": 0,
+   "loss_days": 0,
+   "worst": 0,
+   "net_per_trade": null
+  },
+  "L_E031 both": {
+   "net": 1506,
+   "trades": 3,
+   "wins": 1,
+   "loss_days": 2,
+   "worst": -374,
+   "net_per_trade": 502.0
+  }
+ },
+ "expiry_days_per_year_note": "NIFTY weekly expiry: ~52 days a year (Thursday until Aug 2025, Tuesday since Sep 2025)"
+}

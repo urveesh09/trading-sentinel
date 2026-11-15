@@ -1303,6 +1303,24 @@ class Settings(BaseSettings):
     SN_GOLD_SCALE_ATR: float = 1.0             # the scale-in: the future this many 1-minute ATRs in favour
     SN_GOLD_EXTEND_AT: float = 0.25            # a winner up this much at N11's exit is kept ...
     SN_GOLD_EXTEND_ATR: float = 3.0            # ... with a trail this many 1-minute ATRs behind the best future
+    # [Gold v6 WK-H 2026-11-15] Gold v6 = SN Gold v5 above (unchanged) + WK-H (sn_wkh.py): the hedged weekly NIFTY
+    # straddle for Gold's empty days, on PAPER, never an order. Owner, Nov 15: "gold v5 + wk-h is the new gold v6 ... I
+    # allow you to do that in Dev right now". Research docs/research/fno/2026-11-15-sn221 (SN227 pick, SN228 unseen
+    # NIFTY 2020-21 exam passed). Off: SN_WKH_ENABLED=false (its tables stay; nothing else reads them).
+    SN_WKH_ENABLED: bool = True
+    SN_WKH_WALLET: float = 500000.0            # one unit's margin proxy (unverified on Zerodha); results banked / refilled
+    SN_WKH_UNIT_MARGIN: float = 500000.0       # each Rs 5 lakh carries ...
+    SN_WKH_LOTS_PER_UNIT: int = 2              # ... 2 option lots: the half-lot hedge steps that passed (H15x2)
+    # [Gold v7 2026-11-15] SN245: the same leg with a wider band (fewer, cheaper hedge orders) is Gold v7: 33 of 46 months
+    # positive vs 31, worst month -28,981 vs -38,228 (docs/research/fno/2026-11-15-sn231). Gold v6 = 0.6 (the SN228 exam).
+    SN_WKH_BAND: float = 0.8                   # re-hedge when |lots x delta + futures lots| exceeds this
+    SN_WKH_LABEL: str = "Gold v7"              # the owner's messages: "Gold v6" with band 0.6
+    SN_WKH_EVERY_MIN: int = 15                 # a check at 09:15, 09:30, ... 15:15
+    SN_WKH_FREEZE_MIN: int = 14 * 60 + 30      # no new hedge orders from 14:30 on expiry day
+    SN_WKH_NIGHT: float = 0.15                 # session units per night in the delta's clock
+    SN_WKH_STRESS_PER_LEG_LOT: float = 100.0   # research stress per option leg-lot (net_stressed only)
+    SN_WKH_FUT_STRESS_PER_LOT: float = 100.0   # research stress per futures lot per order (net_stressed only)
+    SN_WKH_OPEN_PENALTY: float = 100.0         # ... and per lot for an order before 09:20
     # [SX-F1] Keep every exit check of a held option (fno_exit_paths.py) so
     # exit rules can be replayed at the live clock. Research only.
     FNO_EXIT_PATH_RECORDING: bool = True

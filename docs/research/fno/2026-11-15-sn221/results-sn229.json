@@ -1,0 +1,382 @@
+{
+ "unit_margin_rs": 500000.0,
+ "wallets": {
+  "Rs 15,000": {
+   "units": 0,
+   "DEV": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "TEST": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "N2122": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "SENSEX": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "EXAM": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   }
+  },
+  "Rs 30,000": {
+   "units": 0,
+   "DEV": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "TEST": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "N2122": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "SENSEX": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "EXAM": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   }
+  },
+  "Rs 100,000": {
+   "units": 0,
+   "DEV": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "TEST": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "N2122": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "SENSEX": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "EXAM": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   }
+  },
+  "Rs 250,000": {
+   "units": 0,
+   "DEV": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "TEST": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "N2122": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "SENSEX": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   },
+   "EXAM": {
+    "fixed_net": 0,
+    "per_year_pct": 0.0,
+    "per_week": 0,
+    "growing": null
+   }
+  },
+  "Rs 500,000": {
+   "units": 1,
+   "DEV": {
+    "fixed_net": 423913,
+    "per_year_pct": 19.3,
+    "per_week": 1851,
+    "growing": {
+     "net": 423913,
+     "units_end": 1,
+     "steps": 0
+    }
+   },
+   "TEST": {
+    "fixed_net": -4828,
+    "per_year_pct": -5.6,
+    "per_week": -536,
+    "growing": {
+     "net": -4828,
+     "units_end": 1,
+     "steps": 0
+    }
+   },
+   "N2122": {
+    "fixed_net": 20617,
+    "per_year_pct": 12.6,
+    "per_week": 1213,
+    "growing": {
+     "net": 20617,
+     "units_end": 1,
+     "steps": 0
+    }
+   },
+   "SENSEX": {
+    "fixed_net": 208707,
+    "per_year_pct": 26.2,
+    "per_week": 2515,
+    "growing": {
+     "net": 208707,
+     "units_end": 1,
+     "steps": 0
+    }
+   },
+   "EXAM": {
+    "fixed_net": 123021,
+    "per_year_pct": 21.3,
+    "per_week": 2050,
+    "growing": {
+     "net": 123021,
+     "units_end": 1,
+     "steps": 0
+    }
+   }
+  },
+  "Rs 1,000,000": {
+   "units": 2,
+   "DEV": {
+    "fixed_net": 847827,
+    "per_year_pct": 19.3,
+    "per_week": 3702,
+    "growing": {
+     "net": 1015030,
+     "units_end": 3,
+     "steps": 1
+    }
+   },
+   "TEST": {
+    "fixed_net": -9656,
+    "per_year_pct": -5.6,
+    "per_week": -1073,
+    "growing": {
+     "net": -9656,
+     "units_end": 2,
+     "steps": 0
+    }
+   },
+   "N2122": {
+    "fixed_net": 41233,
+    "per_year_pct": 12.6,
+    "per_week": 2425,
+    "growing": {
+     "net": 41233,
+     "units_end": 2,
+     "steps": 0
+    }
+   },
+   "SENSEX": {
+    "fixed_net": 417415,
+    "per_year_pct": 26.2,
+    "per_week": 5029,
+    "growing": {
+     "net": 417415,
+     "units_end": 2,
+     "steps": 0
+    }
+   },
+   "EXAM": {
+    "fixed_net": 246043,
+    "per_year_pct": 21.3,
+    "per_week": 4101,
+    "growing": {
+     "net": 246043,
+     "units_end": 2,
+     "steps": 0
+    }
+   }
+  }
+ },
+ "one_lot_H15_information": {
+  "DEV": {
+   "net": 166131,
+   "trades": 212,
+   "worst": -32047,
+   "worst_month": -33952,
+   "by_year": {
+    "2022": -23040,
+    "2023": -59965,
+    "2024": 55649,
+    "2025": 118623,
+    "2026": 74864
+   }
+  },
+  "TEST": {
+   "net": -14516,
+   "trades": 7,
+   "worst": -10939,
+   "worst_month": -9957,
+   "by_year": {
+    "2026": -14516
+   }
+  },
+  "N2122": {
+   "net": -1021,
+   "trades": 15,
+   "worst": -30714,
+   "worst_month": -30327,
+   "by_year": {
+    "2021": -10955,
+    "2022": 9934
+   }
+  },
+  "SENSEX": {
+   "net": 101287,
+   "trades": 78,
+   "worst": -34815,
+   "worst_month": -25186,
+   "by_year": {
+    "2024": 56712,
+    "2025": 82654,
+    "2026": -38079
+   }
+  },
+  "EXAM": {
+   "net": 86849,
+   "trades": 56,
+   "worst": -15419,
+   "worst_month": -12236,
+   "by_year": {
+    "2020": 27305,
+    "2021": 59545
+   }
+  }
+ },
+ "account": {
+  "Gold alone": {
+   "net": 642173,
+   "green_days": 55,
+   "red_days": 67,
+   "flat_days": 775,
+   "days_at_least_500": 53,
+   "worst_day": -21113,
+   "worst_week": -25188,
+   "worst_month": -38531,
+   "months_positive": "23 of 44",
+   "weeks_positive": "39 of 190",
+   "by_year": {
+    "2023": -12107,
+    "2024": 187476,
+    "2025": 292811,
+    "2026": 173992
+   }
+  },
+  "PICK alone (Rs 5 lakh, 2 lots)": {
+   "net": 350084,
+   "green_days": 250,
+   "red_days": 332,
+   "flat_days": 315,
+   "days_at_least_500": 231,
+   "worst_day": -55046,
+   "worst_week": -49286,
+   "worst_month": -31830,
+   "months_positive": "28 of 44",
+   "weeks_positive": "101 of 190",
+   "by_year": {
+    "2023": -43302,
+    "2024": 76517,
+    "2025": 221948,
+    "2026": 94920
+   }
+  },
+  "Gold + PICK": {
+   "net": 992256,
+   "green_days": 283,
+   "red_days": 347,
+   "flat_days": 267,
+   "days_at_least_500": 264,
+   "worst_day": -55046,
+   "worst_week": -49286,
+   "worst_month": -38228,
+   "months_positive": "29 of 44",
+   "weeks_positive": "98 of 190",
+   "by_year": {
+    "2023": -55408,
+    "2024": 263993,
+    "2025": 514760,
+    "2026": 268912
+   }
+  },
+  "Gold + PICK per option lot (comparable with SN207's Gold + WK-S)": {
+   "net": 817214,
+   "green_days": 282,
+   "red_days": 348,
+   "flat_days": 267,
+   "days_at_least_500": 246,
+   "worst_day": -27523,
+   "worst_week": -31029,
+   "worst_month": -28184,
+   "months_positive": "30 of 44",
+   "weeks_positive": "95 of 190",
+   "by_year": {
+    "2023": -33757,
+    "2024": 225735,
+    "2025": 403785,
+    "2026": 221452
+   }
+  },
+  "PICK on Gold's empty days": {
+   "days": 775,
+   "mean_per_day": 386.1,
+   "green_share_pct": 29.0,
+   "days_with_position": 508
+  },
+  "correlation": {
+   "all_days": -0.045,
+   "gold_trade_days": -0.168
+  }
+ }
+}

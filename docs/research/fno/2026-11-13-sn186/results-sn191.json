@@ -1,0 +1,72 @@
+{
+ "rows": 3525,
+ "base_rate_dev": [
+  0.3103,
+  0.3215
+ ],
+ "models": {
+  "LSTM": {
+   "loyo": {
+    "2024": {
+     "theta": 0.5,
+     "net": 0,
+     "trade_days": 0,
+     "goal_days": 0
+    },
+    "2025": {
+     "theta": 0.5,
+     "net": 0,
+     "trade_days": 0,
+     "goal_days": 0
+    },
+    "2026": {
+     "theta": 0.5,
+     "net": 0,
+     "trade_days": 0,
+     "goal_days": 0
+    }
+   },
+   "total": 0,
+   "years_positive": 0,
+   "null_mean": 0,
+   "null_p95": 0,
+   "auc_oos": {
+    "CE": 0.528,
+    "PE": 0.504
+   },
+   "dev_pass_partial": false
+  },
+  "LightGBM": {
+   "loyo": {
+    "2024": {
+     "theta": 0.6,
+     "net": -7011,
+     "trade_days": 14,
+     "goal_days": 4
+    },
+    "2025": {
+     "theta": 0.6,
+     "net": 4012,
+     "trade_days": 8,
+     "goal_days": 6
+    },
+    "2026": {
+     "theta": 0.6,
+     "net": -1002,
+     "trade_days": 1,
+     "goal_days": 0
+    }
+   },
+   "total": -4001,
+   "years_positive": 1,
+   "null_mean": -5799,
+   "null_p95": 1000,
+   "auc_oos": {
+    "CE": 0.514,
+    "PE": 0.508
+   },
+   "dev_pass_partial": false
+  }
+ },
+ "final_theta_lstm": 0.5
+}

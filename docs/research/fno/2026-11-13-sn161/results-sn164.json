@@ -1,0 +1,233 @@
+{
+ "ATM @ 205/lot": {
+  "random": {
+   "wage_share": 0.2892,
+   "net_mean": -378251,
+   "net_p95": -330763,
+   "trade_days": 682,
+   "mean_lots": 1.94
+  },
+  "range break": {
+   "wage_share": 0.3404,
+   "net": -292236,
+   "trade_days": 677,
+   "by_year": {
+    "2023": -97906,
+    "2024": -72155,
+    "2025": -62128,
+    "2026": -60048
+   },
+   "mean_lots": 1.8
+  }
+ },
+ "ATM @ 100/lot": {
+  "random": {
+   "wage_share": 0.3492,
+   "net_mean": -247929,
+   "net_p95": -192952,
+   "trade_days": 682,
+   "mean_lots": 1.94
+  },
+  "range break": {
+   "wage_share": 0.3915,
+   "net": -183335,
+   "trade_days": 677,
+   "by_year": {
+    "2023": -40787,
+    "2024": -57169,
+    "2025": -38242,
+    "2026": -47137
+   },
+   "mean_lots": 1.8
+  }
+ },
+ "OTM 1 @ 205/lot": {
+  "random": {
+   "wage_share": 0.2435,
+   "net_mean": -510290,
+   "net_p95": -447210,
+   "trade_days": 691,
+   "mean_lots": 2.79
+  },
+  "range break": {
+   "wage_share": 0.3007,
+   "net": -397825,
+   "trade_days": 686,
+   "by_year": {
+    "2023": -166218,
+    "2024": -89110,
+    "2025": -87376,
+    "2026": -55122
+   },
+   "mean_lots": 2.56
+  }
+ },
+ "OTM 1 @ 100/lot": {
+  "random": {
+   "wage_share": 0.3246,
+   "net_mean": -323911,
+   "net_p95": -270047,
+   "trade_days": 691,
+   "mean_lots": 2.79
+  },
+  "range break": {
+   "wage_share": 0.3801,
+   "net": -222214,
+   "trade_days": 686,
+   "by_year": {
+    "2023": -73738,
+    "2024": -55693,
+    "2025": -60421,
+    "2026": -32362
+   },
+   "mean_lots": 2.56
+  }
+ },
+ "OTM 2 @ 205/lot": {
+  "random": {
+   "wage_share": 0.19,
+   "net_mean": -710999,
+   "net_p95": -651509,
+   "trade_days": 694,
+   "mean_lots": 4.17
+  },
+  "range break": {
+   "wage_share": 0.234,
+   "net": -603813,
+   "trade_days": 688,
+   "by_year": {
+    "2023": -272992,
+    "2024": -126618,
+    "2025": -129927,
+    "2026": -74277
+   },
+   "mean_lots": 3.81
+  }
+ },
+ "OTM 2 @ 100/lot": {
+  "random": {
+   "wage_share": 0.2847,
+   "net_mean": -430975,
+   "net_p95": -380347,
+   "trade_days": 694,
+   "mean_lots": 4.17
+  },
+  "range break": {
+   "wage_share": 0.3319,
+   "net": -338934,
+   "trade_days": 688,
+   "by_year": {
+    "2023": -138412,
+    "2024": -83016,
+    "2025": -79941,
+    "2026": -37565
+   },
+   "mean_lots": 3.81
+  }
+ },
+ "OTM 3 @ 205/lot": {
+  "random": {
+   "wage_share": 0.1406,
+   "net_mean": -1041975,
+   "net_p95": -997995,
+   "trade_days": 697,
+   "mean_lots": 6.38
+  },
+  "range break": {
+   "wage_share": 0.1858,
+   "net": -891535,
+   "trade_days": 692,
+   "by_year": {
+    "2023": -454297,
+    "2024": -164309,
+    "2025": -177111,
+    "2026": -95818
+   },
+   "mean_lots": 5.82
+  }
+ },
+ "OTM 3 @ 100/lot": {
+  "random": {
+   "wage_share": 0.2421,
+   "net_mean": -587405,
+   "net_p95": -532000,
+   "trade_days": 697,
+   "mean_lots": 6.38
+  },
+  "range break": {
+   "wage_share": 0.2894,
+   "net": -481642,
+   "trade_days": 692,
+   "by_year": {
+    "2023": -225244,
+    "2024": -98979,
+    "2025": -107600,
+    "2026": -49819
+   },
+   "mean_lots": 5.82
+  }
+ },
+ "OTM 4 @ 205/lot": {
+  "random": {
+   "wage_share": 0.1033,
+   "net_mean": -1557803,
+   "net_p95": -1501163,
+   "trade_days": 700,
+   "mean_lots": 9.82
+  },
+  "range break": {
+   "wage_share": 0.1348,
+   "net": -1388044,
+   "trade_days": 696,
+   "by_year": {
+    "2023": -765443,
+    "2024": -225808,
+    "2025": -248918,
+    "2026": -147875
+   },
+   "mean_lots": 8.95
+  }
+ },
+ "OTM 4 @ 100/lot": {
+  "random": {
+   "wage_share": 0.1911,
+   "net_mean": -857377,
+   "net_p95": -793269,
+   "trade_days": 700,
+   "mean_lots": 9.82
+  },
+  "range break": {
+   "wage_share": 0.234,
+   "net": -739986,
+   "trade_days": 696,
+   "by_year": {
+    "2023": -400977,
+    "2024": -129978,
+    "2025": -130589,
+    "2026": -78442
+   },
+   "mean_lots": 8.95
+  }
+ },
+ "debit spread ATM/+2 @ 100/leg-lot": {
+  "random": {
+   "wage_share": 0.0723,
+   "net_mean": -1034488,
+   "net_p95": -1001043,
+   "trade_days": 703,
+   "mean_lots": 5.17
+  },
+  "range break": {
+   "wage_share": 0.105,
+   "net": -1011710,
+   "trade_days": 698,
+   "by_year": {
+    "2023": -261275,
+    "2024": -278961,
+    "2025": -282401,
+    "2026": -189073
+   },
+   "mean_lots": 5.06
+  }
+ }
+}

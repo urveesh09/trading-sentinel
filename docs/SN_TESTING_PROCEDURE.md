@@ -162,3 +162,142 @@ For every SN:
 - kept or not.
 
 The tables show per year profit / refill, won / lost / no-trade days, worst day, and net at the end, for every wallet. Results are always labelled in-sample or held-out; a pass only ever means "candidate for forward or paper", never real money without the owner's word.
+
+---
+
+## 11. Additions for SN161–SN200 (Nov 13–14, 2026)
+
+**New toolkits (each folder imports the earlier ones; nothing upstream is edited):**
+
+| Module | Folder | What it gives |
+|---|---|---|
+| `pw.py` | `2026-11-13-sn161` | The TEST split (`TEST_FROM = 2026-08-20`, the latest 5%, 37 sessions); `trade()` (one long option, net target as a limit on the bid high, net stop on the bid low, ties to the stop, gap-through at the open); `spread_trade()`; `play()` (a day of attempts with the wage lock and day limit); random and range-break pickers; `wage_stats()` (wage / red / flat days, monthly sums) |
+| `pml.py` | `2026-11-13-sn161` | Walk-forward LightGBM classifiers inside development (quarterly blocks, one-session purge); the barrier policy simulator; the matched random null |
+| `sn166.py` | `2026-11-13-sn161` | The triple-barrier dataset (+₹1,500 / −₹1,500 / 15:10, four actions, every minute), cached in `_local/barrier.pkl` and aligned to SN131's feature rows; 294 sampled labels re-simulated with 0 mismatches |
+| `p3.py` | `2026-11-13-sn161` | HAR-RV forecast with leave-one-year-out fits (`rho_table`), structure exits with a target (`structure`), an option trade with an index-condition exit, LOYO and random-day nulls |
+| `p4.py` | `2026-11-13-sn161` | Gold v5 day nets per wallet (**development days by default**; pass `keep=pw.is_test` for TEST), the day player, the salary account |
+| `pe.py` | `2026-11-13-sn186` | Gold's empty days (`gold_trade_days`, cached), single-leg and iron-fly minute valuations, fixed-goal statistics |
+| `seq.py` | `2026-11-13-sn186` | 60-minute sequence features and the PyTorch LSTM (classifier and regressor) |
+
+**Research Python:** `C:\Users\Urveesh\sentinel-ml-venv\Scripts\python.exe` (numpy 1.26.4, LightGBM 4.5.0, scikit-learn 1.5.2, **PyTorch 2.5.1 CPU since Nov 13**). `winvenv` stays untouched.
+
+**Data added:**
+- **NIFTY Apr–Dec 2022, sealed by SN195:**
+  - mirror: `2026-11-13-sn186/_local/mirror-2022.sqlite` (sha `94e2b28f…`); dataset: `…/_local/dataset-nifty-2022` (manifest sha `4655d498…`);
+  - 145 lab sessions;
+  - load with `sn196.sessions_2022()`, which also adds 2022 to the lab calendar.
+  - **It was opened once by the SN196 exam, so it is now SEEN.**
+- **Real-quote archive:** the forward panel rotates its export folder daily. Point `qa.EXPORT` at the newest `exports/<stamp>` folder; cached days in SN101's `_local` stay valid.
+
+**Pitfalls found (add to section 9):**
+
+| Pitfall | Where | Fix |
+|---|---|---|
+| A helper's default kept TEST days in development totals | p4.gold (SN177–SN180) | Default = development; v1 results kept as `-v1-test-days-included` |
+| A data folder moved after the freeze | SN182 | Path-only fix, disclosed in the script and commit |
+| A fixed rupee target at many lots sits inside per-lot costs | SN165 | Fix lots (usually 1) when the goal is a fixed rupee amount |
+| A frozen source file did not hold what the study needed (aggregates, not day results) | SN183 | Check a source's shape before freezing a study on it |
+
+## 12. Additions for SN201–SN210 (Nov 14, 2026): the weekly book
+
+**New modules (folder `docs/research/fno/2026-11-14-sn201`):**
+
+| Module | What it gives |
+|---|---|
+| `wk.py` | The weekly-book engine. It reads only sealed copies (`read_source` handles the year datasets and the lean mirrors). Pieces: `dev_data()` / `exam_data()` (cached in `_local/wk-*.pkl`); `expiries()`; `split(weeks, "dev" / "test")`; `trade()` (ATM by put–call parity at 15:15, strikes as multiples of the straddle Q, wings clamped inward to priced strikes, settlement at the index's 15:00–15:29 average, stops at 15:15 marks, daily marks); `book()`, `stats()`, `loyo()`, `boot_p5()`; `NIFTY` / `SENSEX` markets (lot, step, NFO / BFO charges, the spread scale) |
+| `feat.py` | `Daily` (realised variance with the overnight gap, HAR with monthly walk-forward refits, rho); entry `features()` and the 20-session `sequence()` for the LSTM |
+
+**Data added (sealed by SN201; seen since SN209):**
+- **Lean mirrors:**
+  - `_local/mirror-nifty-exam.sqlite`: NIFTY index Sep 2021 – Mar 2022, options 14:55–15:29 of the expiries Dec 2 2021 – Mar 24 2022;
+  - `_local/mirror-sensex-exam.sqlite`: SENSEX index from May 17 2024, options 14:55–15:29 of the expiries Oct 4 2024 – Apr 30 2026.
+  - Hashes are in `results-sn201.json`.
+- **Real-quote archive:** the newest export is `…/fno-forward-panel-20261028/…/_local/exports/20261113T103001Z` (41 days, Sep 10 – Nov 12); point `qa.EXPORT` at it.
+
+**Pitfalls found (add to section 9):**
+
+| Pitfall | Where | Fix |
+|---|---|---|
+| The downloaded strikes reach only about ±1 straddle at the week's start, so wide condors cannot be priced. Skipping them biases toward calm weeks | SN203 | Clamp wings inward; only variants entered in ≥ 80% of their weeks are eligible |
+| Comparing the "F" (first session) entry tag with a number crashed the variant list | SN203 | Fixed before any number; disclosed |
+| An entry day without an index row crashed the features | SN206 | Return None; disclosed |
+| A strong, broad in-sample plateau (38 of 38 variants positive) still failed every unseen sample | SN204 → SN209 | A plateau is not proof for an open-risk seller: its shock weeks are rare, and the samples share regimes |
+| `logs/` is git-ignored | all | Crash logs stay local (`logs/*-v1-crash.log`); say so in the README |
+
+## 13. Additions for SN211–SN220 (Nov 14, 2026): minute-level exits
+
+**New modules (folder `docs/research/fno/2026-11-14-sn211`):**
+
+| Module | What it gives |
+|---|---|
+| `wk2.py` | `Minutes` (option minute closes on demand from the year datasets or the full exam mirrors) and `simulate()`, a minute-by-minute replay of one weekly position. It keeps wk.trade's base rules exactly (proven: 0.0 rupee difference on all samples). Rules: `breach`, `loss`, `profit`, `speed`, `protect`, `calendar`, `gate`. Execution needs fresh prints (within 3 minutes), one minute of reaction delay and an opening penalty before 09:20 |
+| `fam.py` | Runs a rule family on both bases and scores it (net, per year, worst week, worst month, CVaR 5%, how often it fired) with LOYO |
+
+**Data:** `_local/mirror-nifty-exam-full.sqlite` (768,122 rows) and `_local/mirror-sensex-exam-full.sqlite` (4,364,607 rows). These are option rows of the sessions before expiry for the exam expiries; the hashes are in `results-sn211.json`.
+
+**Pitfalls and lessons:**
+
+| Lesson | Where |
+|---|---|
+| The NIFTY datasets hold no option prices on expiry day, so no exit can act during it; compare a "pre" base (close the evening before) | SN211–SN219 |
+| A rule that cannot fire must reproduce the old engine exactly before any exit is scored | SN211 |
+| Exits redistribute losses; they cannot create an edge. Check the second-look samples before believing a tail cut | SN219 |
+| A gap at the open cannot be exited; a worst-week target below the largest gap is unreachable | SN218 |
+
+## 14. Additions for SN221–SN230 (Nov 15, 2026): selection on every seen sample, the futures hedge, one unseen exam
+
+- **Engine:** `docs/research/fno/2026-11-15-sn221/wk3.py` on `wk.py` / `wk2.py` (neither edited).
+  - With no hedge it reproduces `wk.trade` and `wk2.simulate(gate)` exactly: 0.0 rupee, 26 variants, four samples (SN222).
+  - `grid.py` caches every structure × k × exit × hedge per (sample, structure) in `_local/grid-*.pkl`, each slice well under 9 minutes. Filters are applied afterwards from an entry-day pass table (a filter only skips weeks).
+- **Selection (SN227, frozen in PLAN.md):**
+  - the score per sample is net ÷ weekly expiries in that sample (standing aside scores 0);
+  - eligibility E1–E5 (positive on all four, DEV years ≥ 4 of 5, DEV worst month ≥ −₹34,163, trades in ≥ 50% of DEV weeks, wing coverage);
+  - pick = the largest **minimum** score;
+  - a filtered pick must beat a 500-draw random-skip null, or its unfiltered base replaces it.
+- **The exam (SN228):** NIFTY expiries Oct 1 2020 – Nov 25 2021.
+  - Sealed by SN221 (counts and hashes only); `wk3.sample("EXAM")` refuses until `UNSEAL_EXAM`.
+  - A counts-only dry run (trades, orders, fallbacks; no rupee) checked every code path before the one scoring run.
+- **The futures hedge model:**
+  - Black–Scholes deltas with σ fixed at entry from the ATM straddle (Q = 0.7979·S·σ·√T);
+  - a session clock (rest of today ÷ 375 + full sessions + 360/375 + 0.15 per night);
+  - band 0.6 lots, checked every 15 minutes, executed at the next minute's futures close ± 0.75 point (SENSEX 3);
+  - Zerodha futures charges (₹20 or 0.03%, STT 0.02% sell, NSE 0.00173%, SEBI ₹10/crore, stamp 0.002% buy, GST 18%), ₹100 per lot per order, ₹100 extra before 09:20;
+  - no new orders after 14:30 on expiry day; the close at settlement is the futures' 15:00–15:29 mean;
+  - futures come from the year datasets (DEV/TEST) or the SN221 mirrors.
+
+**Pitfalls and lessons:**
+
+| Lesson | Where |
+|---|---|
+| Choose on every seen sample at once (max-min), not on the biggest one; a version tuned on DEV alone failed all three others | SN222, SN227 |
+| A filter's gain must beat random skipping at the same rate; ADX and efficiency-ratio filters did not | SN223, SN227 |
+| Weekend intervals lose for sellers on every sample; the weekend decay is priced in before Friday's close | SN224 |
+| Check wing coverage before trusting a winged result; the downloaded strikes rarely reach ±2 Q | SN225 |
+| A hedge, not an exit, changed the out-of-sample sign: the same straddle unhedged −₹43.5k, hedged +₹61.5k on the exam | SN226, SN228 |
+| Integer futures lots on 1 option lot hedge too coarsely; 2 option lots in half-lot steps helped in 78 of 78 versions | SN226 |
+| Expiry-day gamma: a hedge frozen at 14:30 can be caught by a late move (May 16 2024) | SN229 |
+| numpy integers break `json.dumps`; pass `default=` (SN226/SN227 were rerun unchanged with identical output) | SN226, SN227 |
+
+## 15. Additions for SN231–SN250 (Nov 15, 2026): month-level selection, the Gold v6 account, wk4
+
+- **The account ledger (`docs/research/fno/2026-11-15-sn231/led.py`):**
+  - SN Gold v5's day nets from SN161 `p4.gold("Rs 30k growing (production)", keep=lambda d: True)`, development and TEST days, Jan 2 2023 – Oct 28 2026;
+  - plus a WK leg's daily mark changes (`t["marks"]`).
+  - Month = calendar month of the day. The owner's refill view per month: banked (green days) vs refilled (red days).
+- **`wk4.py`:**
+  - `hedge_path4` re-implements `wk3.hedge_path` with options: band, every, freeze minute, flatten minute, late checks, `instrument="synth"`.
+  - With defaults it matches `wk3` at 0.0 rupee on all five WK samples (SN235).
+  - `daily4` is the 1-session hedged straddle.
+- **Selection by months:** Q1 more positive months, Q2 ≥ 90% of the profit, Q3 a worst month no worse, Q4 WK samples (≥ 4 of 5 positive, positive months no fewer), Q5 nulls for thresholds.
+- **Stress runs:** `wk.trade`'s `stress` default is bound when the function is defined; pass it explicitly, which SN246 does by wrapping `wk3.base_trade`. Clear the hedge caches between runs.
+
+**Pitfalls and lessons:**
+
+| Lesson | Where |
+|---|---|
+| A leg's costs decide quiet months: compare charges with the net before reading direction | SN232, SN233 |
+| A threshold that changes one cost knob (the hedge band) helped; filters, skips and extra legs did not | SN236–SN241 |
+| An extra unit or leg raises positive months but breaks the worst month; judge both | SN236, SN238, SN240 |
+| Rolling daily pays option costs daily; hold to settlement | SN237 |
+| The account window is DEV for Gold; check each change on the other WK samples too (band 0.8 earns less on fast samples) | SN246 |
+| numpy integers break `json.dumps`; give every print a `default=` | SN231, SN238 |

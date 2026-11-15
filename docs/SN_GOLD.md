@@ -65,3 +65,48 @@ All tables are in the engine database:
 - **Off:** `SN_GOLD_ENABLED=false` in the engine's `.env`, then recreate the engine. The tables stay; nothing else reads them.
 - **Rollback:** redeploy the previous release. No other table or setting is touched.
 - **Real money:** none. Real money would need the owner's word, a passed forward check and its own runbook.
+
+## Gold v6 (from Nov 15, 2026, Dev): SN Gold v5 + WK-H, the hedged weekly straddle
+
+**The owner, Nov 15:** "That gold v5 + wk-h is the new gold v6 … I allow you to do that in Dev right now … this will be our baseline, and we will be calling this Gold V6."
+
+**Gold v6 = the SN Gold v5 book above, unchanged, plus WK-H** (`python-engine/sn_wkh.py`), the leg for the days Gold does not trade.
+- Paper only, never an order.
+- In Dev; Production runs it only after a deploy on the owner's word.
+
+**WK-H, the rules as the owner gets them:**
+- **When:** at **15:15 on the first session after the last weekend or holiday before the weekly expiry**. With Tuesday expiries that is the Monday 15:15. It never holds a weekend.
+- **What:** sell the at-the-money NIFTY call and put, **2 lots** for each ₹5 lakh.
+- **The hedge:**
+  - every 15 minutes from the next morning's 09:15, the system measures which way the straddle is leaning;
+  - if the lean exceeds 0.6 lot, it buys or sells NIFTY futures to cancel it;
+  - on expiry day it stops adding orders at 14:30, and the futures close at about 15:25.
+- **The result:** the straddle settles at the official NIFTY close on expiry day. The week's result is booked at the next morning's first tick, after charges, and banked or refilled.
+- **The wallet:** ₹5 lakh, a margin estimate not yet checked on Zerodha.
+- **Messages:** the sale, each futures order, a 15:15 value line on the days in between, the hedge close, and the week's result.
+
+**What research says to expect, per option lot (SN221–SN230):**
+- about ₹1,000 a week on average, with 59% of weeks winning;
+- the unseen NIFTY Oct 2020 – Nov 2021 exam made +₹61,511 per lot, worst month −₹6,251;
+- with Gold over 2023 – Aug 2026: +₹8.17 lakh against Gold's +₹6.42 lakh, and a smaller worst month (−₹28k against −₹38.5k).
+- **Weak point:** a late move on expiry afternoon after 14:30 (May 16 2024, −₹24.6k per lot).
+- Full record: `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md`.
+
+**Data:**
+- `gold_v6_wkh_weeks`: each week, its strikes, fills, hedge, settlement and net;
+- `gold_v6_wkh_orders`: every futures order;
+- `gold_v6_wkh_marks`: the 15:15 value lines;
+- `gold_v6_wkh_wallet`: banked, refilled and weeks.
+
+**Off:** `SN_WKH_ENABLED=false` in the engine's `.env`, then recreate the engine. SN Gold v5 keeps running; the tables stay.
+
+## Gold v7 (Nov 15, 2026, Dev default): the same WK-H leg with a wider hedge band
+
+- **The change:** `SN_WKH_BAND = 0.8` instead of Gold v6's 0.6. The futures are re-hedged only when the lean exceeds 0.8 lot, so there are fewer, cheaper orders. Messages read "Gold v7 · WK-H".
+- **Why:** SN231–SN250 (`docs/research/fno/2026-11-15-sn231`). Over Jan 2023 – Oct 2026 with SN Gold v5:
+  - **33 of 46 months positive** against 31;
+  - **worst month −₹28,981** against −₹38,228;
+  - net +₹13.71 lakh against +₹11.96 lakh.
+- **Its weak spot:** in fast markets it earns less than band 0.6.
+- **Back to Gold v6:** `SN_WKH_BAND=0.6` and `SN_WKH_LABEL="Gold v6"`.
+- **Still to come:** the NIFTY 2020 crash test, once that download is complete.

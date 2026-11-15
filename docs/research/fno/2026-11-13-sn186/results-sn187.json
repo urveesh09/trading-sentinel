@@ -1,0 +1,219 @@
+{
+ "empty_days": 594,
+ "in_sample": {
+  "pair 09:20 goal 1000 stop 2000": {
+   "sessions": 594,
+   "trade_days": 572,
+   "goal_days": 191,
+   "red_days": 373,
+   "net": -437557,
+   "worst_day": -2420,
+   "month_median": -11048,
+   "month_worst": -22269,
+   "goal_days_per_month": 4.34,
+   "without_best_5": -448322,
+   "by_year": {
+    "2023": -134957,
+    "2024": -124912,
+    "2025": -118248,
+    "2026": -59440
+   }
+  },
+  "pair 09:20 goal 1000 stop 3000": {
+   "sessions": 594,
+   "trade_days": 572,
+   "goal_days": 221,
+   "red_days": 343,
+   "net": -438543,
+   "worst_day": -3417,
+   "month_median": -10268,
+   "month_worst": -22448,
+   "goal_days_per_month": 5.02,
+   "without_best_5": -451010,
+   "by_year": {
+    "2023": -126867,
+    "2024": -136453,
+    "2025": -115462,
+    "2026": -59761
+   }
+  },
+  "pair 09:20 goal 1500 stop 2000": {
+   "sessions": 594,
+   "trade_days": 572,
+   "goal_days": 158,
+   "red_days": 399,
+   "net": -421906,
+   "worst_day": -2437,
+   "month_median": -10956,
+   "month_worst": -27915,
+   "goal_days_per_month": 3.59,
+   "without_best_5": -434986,
+   "by_year": {
+    "2023": -136209,
+    "2024": -131747,
+    "2025": -104978,
+    "2026": -48973
+   }
+  },
+  "pair 09:20 goal 1500 stop 3000": {
+   "sessions": 594,
+   "trade_days": 572,
+   "goal_days": 185,
+   "red_days": 370,
+   "net": -417877,
+   "worst_day": -3417,
+   "month_median": -9029,
+   "month_worst": -27197,
+   "goal_days_per_month": 4.2,
+   "without_best_5": -431528,
+   "by_year": {
+    "2023": -130996,
+    "2024": -134488,
+    "2025": -100488,
+    "2026": -51905
+   }
+  },
+  "first-leg 09:20": {
+   "sessions": 594,
+   "trade_days": 572,
+   "goal_days": 2,
+   "red_days": 445,
+   "net": -383026,
+   "worst_day": -3417,
+   "month_median": -9488,
+   "month_worst": -18039,
+   "goal_days_per_month": 0.05,
+   "without_best_5": -390739,
+   "by_year": {
+    "2023": -106668,
+    "2024": -104739,
+    "2025": -122938,
+    "2026": -48681
+   }
+  },
+  "pair 10:00 goal 1000 stop 2000": {
+   "sessions": 594,
+   "trade_days": 570,
+   "goal_days": 200,
+   "red_days": 358,
+   "net": -351058,
+   "worst_day": -2446,
+   "month_median": -8770,
+   "month_worst": -17649,
+   "goal_days_per_month": 4.55,
+   "without_best_5": -361360,
+   "by_year": {
+    "2023": -105110,
+    "2024": -100761,
+    "2025": -88293,
+    "2026": -56894
+   }
+  },
+  "pair 10:00 goal 1000 stop 3000": {
+   "sessions": 594,
+   "trade_days": 570,
+   "goal_days": 211,
+   "red_days": 347,
+   "net": -375698,
+   "worst_day": -3361,
+   "month_median": -9715,
+   "month_worst": -17951,
+   "goal_days_per_month": 4.8,
+   "without_best_5": -385999,
+   "by_year": {
+    "2023": -106541,
+    "2024": -114738,
+    "2025": -89227,
+    "2026": -65192
+   }
+  },
+  "pair 10:00 goal 1500 stop 2000": {
+   "sessions": 594,
+   "trade_days": 570,
+   "goal_days": 160,
+   "red_days": 386,
+   "net": -344266,
+   "worst_day": -2446,
+   "month_median": -8296,
+   "month_worst": -20289,
+   "goal_days_per_month": 3.64,
+   "without_best_5": -358240,
+   "by_year": {
+    "2023": -114530,
+    "2024": -99758,
+    "2025": -81831,
+    "2026": -48146
+   }
+  },
+  "pair 10:00 goal 1500 stop 3000": {
+   "sessions": 594,
+   "trade_days": 570,
+   "goal_days": 170,
+   "red_days": 375,
+   "net": -367371,
+   "worst_day": -3361,
+   "month_median": -8874,
+   "month_worst": -21003,
+   "goal_days_per_month": 3.86,
+   "without_best_5": -381345,
+   "by_year": {
+    "2023": -115163,
+    "2024": -116490,
+    "2025": -79684,
+    "2026": -56035
+   }
+  },
+  "first-leg 10:00": {
+   "sessions": 594,
+   "trade_days": 570,
+   "goal_days": 1,
+   "red_days": 461,
+   "net": -388848,
+   "worst_day": -3238,
+   "month_median": -8669,
+   "month_worst": -17584,
+   "goal_days_per_month": 0.02,
+   "without_best_5": -395509,
+   "by_year": {
+    "2023": -99573,
+    "2024": -128430,
+    "2025": -101871,
+    "2026": -58973
+   }
+  }
+ },
+ "loyo": {
+  "2023": {
+   "variant": "pair 10:00 goal 1500 stop 2000",
+   "net": -114530,
+   "trades": 167
+  },
+  "2024": {
+   "variant": "pair 10:00 goal 1500 stop 2000",
+   "net": -99758,
+   "trades": 165
+  },
+  "2025": {
+   "variant": "first-leg 09:20",
+   "net": -122938,
+   "trades": 147
+  },
+  "2026": {
+   "variant": "pair 10:00 goal 1000 stop 2000",
+   "net": -56894,
+   "trades": 91
+  }
+ },
+ "loyo_total": -394120,
+ "years_positive": 0,
+ "null_mean": -362652,
+ "null_p95": -325515,
+ "final_variant": "pair 10:00 goal 1500 stop 2000",
+ "dev_pass_partial": false,
+ "robust_loyo": {
+  "stress_400": -605428,
+  "late_1": -381222,
+  "without_best_5": -406272
+ },
+ "dev_pass": false
+}

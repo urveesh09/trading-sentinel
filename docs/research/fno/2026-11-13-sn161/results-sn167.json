@@ -1,0 +1,126 @@
+{
+ "importance": {
+  "ATM CE": [
+   "gap",
+   "prev_range",
+   "adx",
+   "vix_ratio",
+   "atr_prev",
+   "prev_ret",
+   "rv_open",
+   "ask_a",
+   "rv_fc_ratio",
+   "ret_open"
+  ],
+  "ATM PE": [
+   "adx",
+   "atr_prev",
+   "prev_range",
+   "ask_a",
+   "gap",
+   "rv_open",
+   "vix_ratio",
+   "prev_ret",
+   "rv_fc_ratio",
+   "ret_open"
+  ],
+  "OTM2 CE": [
+   "lots_a",
+   "ask_a",
+   "prev_range",
+   "prev_ret",
+   "vix_ratio",
+   "adx",
+   "atr_prev",
+   "gap",
+   "rv_fc_ratio",
+   "rv_open"
+  ],
+  "OTM2 PE": [
+   "lots_a",
+   "ask_a",
+   "prev_range",
+   "atr_prev",
+   "prev_ret",
+   "adx",
+   "gap",
+   "rv_open",
+   "rv_fc_ratio",
+   "vix_ratio"
+  ]
+ },
+ "thetas": {
+  "0.4": {
+   "net": -351321,
+   "wage_share": 0.3177,
+   "trade_days": 468,
+   "red_days": 262,
+   "month_mean": -10979,
+   "by_year": {
+    "2024": -180837,
+    "2025": -114111,
+    "2026": -56372
+   },
+   "trades": 748
+  },
+  "0.45": {
+   "net": -284593,
+   "wage_share": 0.2573,
+   "trade_days": 392,
+   "red_days": 218,
+   "month_mean": -8894,
+   "by_year": {
+    "2024": -147627,
+    "2025": -91676,
+    "2026": -45290
+   },
+   "trades": 621
+  },
+  "0.5": {
+   "net": -237396,
+   "wage_share": 0.1949,
+   "trade_days": 309,
+   "red_days": 182,
+   "month_mean": -7419,
+   "by_year": {
+    "2024": -112961,
+    "2025": -76000,
+    "2026": -48435
+   },
+   "trades": 476
+  },
+  "0.55": {
+   "net": -166544,
+   "wage_share": 0.1228,
+   "trade_days": 200,
+   "red_days": 120,
+   "month_mean": -5204,
+   "by_year": {
+    "2024": -93147,
+    "2025": -35841,
+    "2026": -37555
+   },
+   "trades": 304
+  },
+  "0.6": {
+   "net": -100529,
+   "wage_share": 0.0721,
+   "trade_days": 125,
+   "red_days": 74,
+   "month_mean": -3142,
+   "by_year": {
+    "2024": -59907,
+    "2025": -13550,
+    "2026": -27072
+   },
+   "trades": 189
+  }
+ },
+ "chosen_theta": 0.6,
+ "null": {
+  "net_mean": -89298,
+  "net_p95": -58767,
+  "wage_share_mean": 0.074
+ },
+ "dev_pass_ml_analog": false
+}

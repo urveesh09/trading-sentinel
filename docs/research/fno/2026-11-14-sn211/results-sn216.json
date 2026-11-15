@@ -1,0 +1,222 @@
+{
+ "rows": {
+  "settle | none": {
+   "weeks": 223,
+   "net": 313523,
+   "mean": 1406,
+   "win_pct": 62.3,
+   "worst": -39844,
+   "best": 20420,
+   "without_best_5": 223476,
+   "without_best_10": 149712,
+   "by_year": {
+    "2022": 79743,
+    "2023": 43757,
+    "2024": 38494,
+    "2025": 74112,
+    "2026": 77417
+   },
+   "years_positive": 5,
+   "worst_month": -51245,
+   "months_positive": "32 of 53",
+   "cvar5": -22252,
+   "fired": 0,
+   "hedges": 0,
+   "screen": {
+    "keeps_80pct_profit": true,
+    "years_4_of_5": true,
+    "worst_week_30pct_smaller": false,
+    "worst_month_30pct_smaller": false
+   }
+  },
+  "settle | protect 0": {
+   "weeks": 223,
+   "net": 125698,
+   "mean": 564,
+   "win_pct": 50.7,
+   "worst": -32745,
+   "best": 20420,
+   "without_best_5": 43037,
+   "without_best_10": -12071,
+   "by_year": {
+    "2022": 20895,
+    "2023": -4816,
+    "2024": 55465,
+    "2025": 7325,
+    "2026": 46829
+   },
+   "years_positive": 4,
+   "worst_month": -60312,
+   "months_positive": "31 of 53",
+   "cvar5": -13781,
+   "fired": 0,
+   "hedges": 215,
+   "screen": {
+    "keeps_80pct_profit": false,
+    "years_4_of_5": true,
+    "worst_week_30pct_smaller": false,
+    "worst_month_30pct_smaller": false
+   }
+  },
+  "settle | protect 0.25": {
+   "weeks": 223,
+   "net": 162398,
+   "mean": 728,
+   "win_pct": 52.9,
+   "worst": -39844,
+   "best": 20420,
+   "without_best_5": 76247,
+   "without_best_10": 12232,
+   "by_year": {
+    "2022": 42363,
+    "2023": -5525,
+    "2024": 57825,
+    "2025": 45629,
+    "2026": 22107
+   },
+   "years_positive": 4,
+   "worst_month": -61422,
+   "months_positive": "33 of 53",
+   "cvar5": -18306,
+   "fired": 0,
+   "hedges": 140,
+   "screen": {
+    "keeps_80pct_profit": false,
+    "years_4_of_5": true,
+    "worst_week_30pct_smaller": false,
+    "worst_month_30pct_smaller": false
+   }
+  },
+  "pre | none": {
+   "weeks": 223,
+   "net": 172695,
+   "mean": 774,
+   "win_pct": 66.8,
+   "worst": -32745,
+   "best": 14041,
+   "without_best_5": 114282,
+   "without_best_10": 69472,
+   "by_year": {
+    "2022": 62693,
+    "2023": -8578,
+    "2024": 35622,
+    "2025": 61061,
+    "2026": 21896
+   },
+   "years_positive": 4,
+   "worst_month": -30886,
+   "months_positive": "36 of 53",
+   "cvar5": -15757,
+   "fired": 0,
+   "hedges": 0,
+   "screen": {
+    "keeps_80pct_profit": false,
+    "years_4_of_5": true,
+    "worst_week_30pct_smaller": false,
+    "worst_month_30pct_smaller": true
+   }
+  },
+  "pre | protect 0": {
+   "weeks": 223,
+   "net": 43460,
+   "mean": 195,
+   "win_pct": 52.0,
+   "worst": -32745,
+   "best": 14041,
+   "without_best_5": -7987,
+   "without_best_10": -41479,
+   "by_year": {
+    "2022": 19895,
+    "2023": -21913,
+    "2024": 51792,
+    "2025": 14287,
+    "2026": -20601
+   },
+   "years_positive": 3,
+   "worst_month": -30100,
+   "months_positive": "29 of 53",
+   "cvar5": -10402,
+   "fired": 0,
+   "hedges": 215,
+   "screen": {
+    "keeps_80pct_profit": false,
+    "years_4_of_5": false,
+    "worst_week_30pct_smaller": false,
+    "worst_month_30pct_smaller": true
+   }
+  },
+  "pre | protect 0.25": {
+   "weeks": 223,
+   "net": 42889,
+   "mean": 192,
+   "win_pct": 50.7,
+   "worst": -32745,
+   "best": 14041,
+   "without_best_5": -10062,
+   "without_best_10": -49184,
+   "by_year": {
+    "2022": 34012,
+    "2023": -21398,
+    "2024": 33992,
+    "2025": 36529,
+    "2026": -40247
+   },
+   "years_positive": 3,
+   "worst_month": -31209,
+   "months_positive": "29 of 53",
+   "cvar5": -12467,
+   "fired": 0,
+   "hedges": 136,
+   "screen": {
+    "keeps_80pct_profit": false,
+    "years_4_of_5": false,
+    "worst_week_30pct_smaller": false,
+    "worst_month_30pct_smaller": true
+   }
+  }
+ },
+ "loyo": {
+  "2022": {
+   "pick": "settle | protect 0.25",
+   "net": 42363
+  },
+  "2023": {
+   "pick": "settle | protect 0.25",
+   "net": -5525
+  },
+  "2024": {
+   "pick": "settle | protect 0.25",
+   "net": 57825
+  },
+  "2025": {
+   "pick": "settle | protect 0",
+   "net": 7325
+  },
+  "2026": {
+   "pick": "settle | protect 0.25",
+   "net": 22107
+  },
+  "sum": 124095,
+  "years_positive": 4
+ },
+ "best": "settle | protect 0.25",
+ "best_rule": {
+  "protect": 0.25
+ },
+ "rules": {
+  "protect 0": {
+   "protect": 0.0
+  },
+  "protect 0.25": {
+   "protect": 0.25
+  }
+ },
+ "hedge_fallbacks": {
+  "settle | none": 0,
+  "settle | protect 0": 0,
+  "settle | protect 0.25": 0,
+  "pre | none": 0,
+  "pre | protect 0": 0,
+  "pre | protect 0.25": 0
+ }
+}

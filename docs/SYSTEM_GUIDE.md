@@ -1,3 +1,76 @@
+## November 15 (evening) - Gold v7 = Gold v6 with WK-H's hedge band 0.8 (Dev default; deploy on the owner's word)
+
+**Authority:** the owner, Nov 15: "give me a Gold V7 if possible". Research SN231–SN250 (`docs/research/fno/2026-11-15-sn231`, frozen rule; SN245 chose it).
+
+**Change:**
+- `config.py` `SN_WKH_BAND = 0.8` (was 0.6) and a new `SN_WKH_LABEL = "Gold v7"`, used in WK-H's owner messages;
+- `sn_wkh.py`: docstring and message prefix only;
+- no table or behaviour change other than the band.
+
+**Why:**
+- Over Jan 2023 – Oct 2026 with SN Gold v5: 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228, net +₹13.71 lakh against +₹11.96 lakh.
+- Fewer futures orders (531 against 868 on DEV), so quiet months stop bleeding charges.
+- **Weaker in fast markets:** NIFTY 2021–22 and SENSEX earned less than with 0.6.
+
+**Verification:**
+- `tests/test_sn_wkh.py` + `tests/test_sn_gold.py`: 33 passed. The settings test pins Gold v7 to `results-sn245.json` and the research's H15x2 band 0.6 as Gold v6.
+- The full suite is recorded in the commit.
+
+**Rollback to Gold v6:** `SN_WKH_BAND=0.6` and `SN_WKH_LABEL="Gold v6"` in the engine `.env`, then recreate the engine.
+
+**Remaining:**
+- a deploy on the owner's word;
+- the pre-registered NIFTY 2020 crash test once that download completes;
+- a Kite basket-margin check.
+
+## November 15 - Gold v6 = SN Gold v5 + WK-H, the hedged weekly straddle (Dev only; deploy on the owner's word): `python-engine/sn_wkh.py`
+
+**Authority:** the owner, Nov 15: "That gold v5 + wk-h is the new gold v6 … I allow you to do that in Dev right now … this will be our baseline, and we will be calling this Gold V6." Dev only; Production stays `826f0727` until the owner says deploy.
+
+**Problem / plan slice:**
+- Add WK-H, the gap-day leg that passed the unseen NIFTY 2020–21 exam (SN228), beside SN Gold v5 (`sn_gold.py`, unchanged), on paper.
+- **Contract:** the frozen research rules of `docs/research/fno/2026-11-15-sn221/wk3.py` (`("STRADDLE", "M", "settle", "H15x2")`), on live Kite quotes; never an order.
+
+**What runs (`sn_wkh.py`):**
+- **Entry:** at the first F&O tick in 15:15–15:19 on the first session after the last weekend or holiday before the nearest NIFTY weekly expiry (every calendar day from today to the expiry is a session, and yesterday was not).
+  - It sells the ATM call and put at the bid: the strike with the closest call and put mids, ties to the index. 2 lots per ₹5 lakh unit (`SN_WKH_WALLET` ₹5,00,000).
+- **Hedge:**
+  - from the next session, the first tick of each 15-minute slot (09:15 … 15:15; on expiry day none from 14:30) computes the straddle's Black–Scholes delta (σ fixed at entry from the straddle; the session clock with 0.15 a night);
+  - when |2 × delta + futures lots| > 0.6, the futures are reset to −round(2 × delta) lots, bought at the ask and sold at the bid;
+  - the contract is the first NIFTY future expiring on or after the option expiry.
+- **Expiry day:**
+  - the futures are sampled once a minute from 15:00 and closed at their mean at the first tick from 15:24 (the F&O tick window ends 15:25);
+  - the options settle at the official close, read at the next session's first tick from Kite's previous close, with intrinsic value charged as a round trip;
+  - if the engine missed the expiry close with a hedge open, or missed the next session, the week is `UNRESOLVED`, never guessed.
+- **Money:**
+  - option charges from `fno_costs`;
+  - futures charges from the Zerodha schedule in `fut_charges` (STT 0.02% on the sell);
+  - the research stress (₹100 per option leg-lot and per futures lot-order, +₹100 before 09:20) is kept as `net_stressed`.
+- **Quotes:** `kite.get_quote_by_instruments` on the management lane, only when needed (entry, 15-minute checks, the 15:15 mark, expiry-day samples, settlement). It runs at most once per 15-minute slot, plus the mark, plus one read a minute on expiry afternoon.
+- **Messages to the owner:** "🥇 Gold v6 · WK-H (paper): …" for the sale, each futures order, the 15:15 value on the days in between, the hedge close, and the week's result.
+- **Tables (new):** `gold_v6_wkh_weeks`, `gold_v6_wkh_orders`, `gold_v6_wkh_marks`, `gold_v6_wkh_wallet`.
+- **Settings:** `SN_WKH_*` in `config.py`; on by default in Dev. Off with `SN_WKH_ENABLED=false`.
+- **Hook:** one guarded call in `fno_orchestrator._manage_single_leg_books` after SN Gold, skipped with `FNO_DISABLE_PAPER`.
+  - It also runs in fast-exit passes; slots, marks and the once-a-minute sample guard keep the quote reads bounded.
+
+**Verification (Nov 15):**
+- `tests/test_sn_wkh.py`: 13 passed. They cover the rules against `wk3`'s delta, clock, futures charges and settlement, and the entry day matched to `wk3.k_of("M")`. They also run a full Thursday-expiry week on a temporary database, the quote budget, the missed-expiry `UNRESOLVED` path, the disabled switch, and the absence of any order path.
+- `tests/test_sn_gold.py`: 20 passed.
+- The full suite: **6,419 passed, 4 skipped, exit 0** (11:39).
+- Atlas regenerated (312 modules).
+
+**Not verified:**
+- live Kite quote packets for the index key `NSE:NIFTY 50` with `ohlc.close` at the next open (the same call shape as `expiry_paper.py`);
+- Zerodha margin for 2 short ATM lots + 2 futures lots, which the owner can check in Kite's basket.
+
+**Rollout / rollback:**
+- Rollout is a deploy on the owner's word; the first Monday 15:15 after it is the first entry.
+- Rollback: `SN_WKH_ENABLED=false` and recreate the engine, or redeploy `826f0727`. New tables only; nothing else reads them. SN Gold v5 is untouched.
+
+**Remaining work:**
+- the first live week's checks: the sale message, `gold_v6_wkh_orders` at the 15-minute marks, the expiry-day hedge close, settlement at the next open;
+- SN231–SN250 research (Gold v6's bad months, a Gold v7).
+
 ## November 13 (night of Nov 12) - Deployed: Production `82b08371` (PR #137: SN Gold v5 paper module)
 
 **Authority:** the owner's word, Nov 12 night: "push that merge that and deploy it in production ... restart and rebuild everything right away"; and "if you think 30,000 starting amount is better than I am fine with that".
@@ -8136,3 +8209,94 @@ real phase changes remain visible and attributable.
 - **Rollback:** set `TICK_RECORDER_ENABLED=false` in Production `.env` and recreate python-engine, or revert the commit. Deleting `/data/research/ticks` removes all recorded data (the owner's call).
 - **Acceptance on the first trading day (Mon Nov 16):** `events.jsonl` shows `connected` before 09:15, chunks every minute, the owner line after 15:41, and no `tick_recorder_*` errors in the engine log. Also check the day's MB against the limits.
 - **Remaining work:** measure the real size and tick rate on Nov 16 and re-set the limits; then the first tick-level studies (spreads across the chain, sub-minute moves on hot days).
+
+## Production deployed at 826f0727 (Nov 13, 2026, after the close; PR #138)
+
+- **Owner's word:** "directly commit and put the changes … and the partner changes altogether and deploy it in production right now".
+- **Contents:** partner give-back stop (`cba0519d`), TR01 live tick recorder (`64ac1f15`), SN92–SN160 research docs.
+- **Steps:**
+  - Production fast-forwarded `82b08371..826f0727`.
+  - No backup: routine code deploy, no stored data changes (owner's Nov 12 rule).
+  - autoheal stopped; python-engine, node-gateway and agent built one at a time with `SENTINEL_RELEASE_SHA` / `SENTINEL_BUILD_UTC` (2026-11-13T11:03:25Z), then force-recreated. nginx restarted; autoheal started.
+- **Verified:**
+  - `scripts/verify_deployment.py` exit 0 (receipt `%USERPROFILE%\sentinel-operations\release-receipts\826f0727….json`).
+  - All containers healthy.
+  - Engine log shows job `_run_tick_recorder_ensure_safe` added.
+  - In the container: `TICK_RECORDER_ENABLED=True`, `PARTNER_WATCH_GIVEBACK_STOP_ENABLED=True`, websockets 12.0.
+  - Only two transient Telegram `getUpdates` ConnectError warnings.
+- **Not yet proven:** the recorder's first live session is Mon Nov 16 (acceptance checks in the TR01 section). The give-back stop speaks only on a partner day that peaks and gives back.
+
+## SN161–SN185 daily-wage research (Nov 13, 2026 night; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn161`. Plan frozen at `8d91837d`; results at `0be4c0cb`, `777b1182`, `b38b606c` and `73af1f1b`.
+- **Result:** no daily-wage strategy passes the frozen TEST (the latest 5%, 2026-08-20 … 10-28). Gold v5 stays the profit engine; the volatility forecast SN171 joins the forward watches.
+- **Salary account (SN177):** to pay a fixed daily wage from Gold v5, an account needs about ₹3.15 lakh (₹750 a session) or ₹8.45 lakh (₹1,500).
+- **Post-score fixes, disclosed:**
+  - `p4.gold` default changed to development days; SN177–SN180 rerun, v1 files kept.
+  - SN182's export path updated after the forward panel rotated its export folder.
+- **Environment:** research venv `C:\Users\Urveesh\sentinel-ml-venv` (LightGBM).
+- **Configuration / migration / runtime:** none. Production unchanged (`826f0727`).
+
+## SN186–SN200 empty-day leg research and the resume point (Nov 13–14, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-13-sn186` (plan `4462f86f`, results `1f60f9df`, `5deb4c7f`, `d08e02fd`).
+- **Result:** no extra leg for Gold's empty days qualifies.
+  - Rules, fixed ₹1,000 / ₹1,500 targets, sellers, LightGBM and LSTM (PyTorch CPU in the research venv) all fail held out.
+  - The SN95-L / SN171 volatility watches failed the unseen NIFTY Apr–Dec 2022 exam (SN196).
+- **Data:** NIFTY Apr–Dec 2022 sealed read-only from the Breeze history database into `…/sn186/_local` (SN195); now seen.
+- **Resume point:** `docs/SN_STRATEGY_HISTORY.md` section 1 (current state, data inventory) and its last section (open items, ICICI download plan). `docs/SN_TESTING_PROCEDURE.md` section 11 lists the tools.
+- **Next downloads** (owner's login, skill only): `nifty-2022-q1-fno`, then `sensex-2024-jan-sep-fno`.
+- **Next build:** a SENSEX lab for one sealed test on SENSEX Oct 2024 – Apr 2026.
+- **Configuration / migration / runtime:** none. Production stays `826f0727`.
+
+## SN201–SN210 weekly option-selling research and the resume point (Nov 14, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-14-sn201`.
+  - Plan `00564b6b`; results `6847a924`, `7bdc7e73`, `4852fc05`, `8192ccf5`.
+  - Engine `wk.py` (one weekly short-premium position per expiry, held to settlement); `feat.py` (HAR, ML features).
+- **Result:** no weekly seller qualifies.
+  - Protected (winged) sellers: 0 of 78 positive.
+  - The unprotected seller WK-S made +₹3.14 lakh per lot in development (NIFTY 2022–26, every year positive), but lost on TEST (−₹23,348) and on both unseen exams:
+    - NIFTY Dec 2021 – Mar 2022: −₹56,743;
+    - SENSEX Oct 2024 – Apr 2026: −₹42,022.
+  - HAR, LightGBM and LSTM filters fail (AUC 0.49–0.56).
+  - Real quotes match the cost model.
+- **Data:**
+  - NIFTY Sep 2021 – Mar 2022 and SENSEX May 2024 – Apr 2026 were sealed read-only (lean mirrors: the index at every minute, options at 14:55–15:29) and are now seen.
+  - ICICI downloads Nov 14: `nifty-2022-q1-fno` done; `nifty-2021-q4-fno` options 410 of 957; the `sensex-2024-jan-sep-fno` probe failed.
+- **Resume point:**
+  - `docs/SN_STRATEGY_HISTORY.md` section 1 and its last section ("Open items, Nov 14, 2026, after SN210");
+  - `docs/SN_TESTING_PROCEDURE.md` section 12.
+- **Configuration / migration / runtime:** none. Production stays `826f0727`.
+
+## SN211–SN220 smart-exit research for the weekly seller (Nov 14, 2026; Dev only, research only)
+
+- **Folder:** `docs/research/fno/2026-11-14-sn211`.
+  - Plan `2c2d1b66`; results `2693893f`, `f8a5b533`, `436295ca`.
+  - Engine `wk2.py`: a minute-level replay with exact parity to SN204's WK-S.
+- **Result:**
+  - The expiry-day gate keeps 97% of the development profit and cuts the worst month by 37%.
+  - No exit makes the weekly seller profitable on TEST, NIFTY Dec 2021 – Mar 2022 or SENSEX Oct 2024 – Apr 2026 (−₹71k to −₹1.57 lakh over 96 weeks).
+  - **No Gold v6;** Gold v5 is unchanged.
+- **Data:** full-minute read-only mirrors of the exam expiries (in `_local`, not committed).
+- **Resume point:**
+  - `docs/SN_STRATEGY_HISTORY.md` section 1 and "Open items, Nov 14, 2026, after SN220";
+  - `docs/SN_TESTING_PROCEDURE.md` section 13.
+- **Configuration / migration / runtime:** none. Production stays `826f0727`.
+
+## Gold v6 starting point: the weekly-seller dossier (Nov 14, 2026; docs only)
+
+- `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` records SN201–SN220 in full:
+  - every recipe, development and unseen-sample number, data path and rerun command;
+  - the untested ideas for the next Gold v6 attempt.
+- Its pointer is in `docs/SN_STRATEGY_HISTORY.md` section 1.
+- No runtime change; Production stays `826f0727`.
+
+## Gold v6 candidate: WK-H, the hedged weekly straddle, passes an unseen exam (SN221–SN230, Nov 15, 2026; research only)
+
+- Folder `docs/research/fno/2026-11-15-sn221`; full record in `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 0.
+- **WK-H:** the ATM NIFTY straddle (2 lots), sold at the first 15:15 after the last weekend before expiry, delta-hedged with NIFTY futures in half-lot steps every 15 minutes, held to settlement.
+- **Unseen NIFTY Oct 2020 – Nov 2021 (once):** +₹61,511 per lot, worst month −₹6,251; unhedged sellers lost on the same weeks.
+- Gold + WK-H per lot (2023 – Aug 2026): +₹8.17 lakh vs +₹6.42 lakh, worst month −₹28k vs −₹38.5k.
+- Forward-paper candidate only: about ₹5 lakh margin (unverified), about 4.7 futures orders a week. A Dev paper shadow and a deploy need the owner's word.
+- No runtime change; Production stays `826f0727`.

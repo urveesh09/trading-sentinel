@@ -184,3 +184,85 @@ Read first: `docs/research/fno/2026-11-13-sn92/README.md`, `…-sn101/README.md`
 2. real broker fills, for cost calibration.
 
 Both need the owner's word.
+
+## 10. Status after SN121–SN200 (Nov 13–14, 2026)
+
+**What the empty days are** (SN186, 594 empty vs 111 Gold days, development):
+- weak-trend days: yesterday's ADX 20.8 vs 28.3;
+- quieter openings: OR30 0.37% vs 0.43%;
+- calmer VIX: 0.98 vs 1.02 of its median;
+- smaller ranges: 0.77% vs 0.85%;
+- they end flat: open → close +0.03% vs −0.32% on Gold days;
+- they still move about 0.5% after 10:00, in both directions.
+
+**Everything tried since SN121, all held out against random nulls:**
+- partner-style scalping, overnight and last-half-hour plays, morning crush;
+- the Smart Sentinel learners (LightGBM over 234k minute decisions, 1-second and order-book learners);
+- the hot-day program;
+- the daily-wage program (wage lock, cheap contracts, capital ladders, triple-barrier ML, learned exits, an online bandit);
+- the empty-day leg program: both sides at 09:20, small fixed targets, an iron-fly seller, a volatility-regime leg, LSTM entry / volatility / direction, a stack.
+- **None is profitable held out.** The learners' honest answer is to sit out.
+
+**The one 2023–26 edge failed the unseen year:** volatility persistence (SN95-L, SN171: a busy morning keeps the day busy) lost on NIFTY Apr–Dec 2022 (SN196).
+
+**What could still change the answer** (new information, not new searches):
+1. order-book flow from the tick recorder (from Nov 16);
+2. SENSEX as a second index (a SENSEX lab on the unseen Oct 2024 – Apr 2026 data);
+3. event days (RBI, budget, global cues) as non-price information;
+4. older NIFTY history (2020–2022) for more hot days.
+
+Until then the best empty-day action remains no trade. A daily income comes from paying out Gold's lumpy profit (SN177's salary account).
+
+## 11. Status after SN201–SN210 (Nov 14, 2026)
+
+- **New perspective tried:** hold an option *sale* for the whole weekly expiry, so costs are paid once a week. Calm days are when sellers get paid.
+- **Development (NIFTY 2022–26):**
+  - protected sellers lose (0 of 78);
+  - the unprotected seller earns in every year (+₹3.14 lakh per lot) and turns Gold's 55 green days into 380.
+- **Unseen data:** it lost on TEST and on both new exams (NIFTY Dec 2021 – Mar 2022, SENSEX Oct 2024 – Apr 2026): −₹1.22 lakh in 96 weeks. Shock weeks decide, and no forecast (HAR, LightGBM, LSTM) sees them coming.
+- **Still open:**
+  1. order flow from the tick recorder (from Nov 16);
+  2. full option chains far from the money (cheap far wings were not in the downloads);
+  3. event days as non-price information;
+  4. NIFTY 2020–2021 history (probe first).
+- Until then, no trade remains the best empty-day action. A daily income comes from Gold's profits (SN177).
+
+## 12. Status after SN211–SN220 (Nov 14, 2026)
+
+- **Smart fail-safe exits for the weekly seller,** each checked minute by minute: strike-break, loss stop, profit take, crash speed, buying protection, the event calendar, and an expiry-day gate.
+- **Development:** the gate keeps 97% of the profit and cuts the worst month by 37%.
+- **The three samples where the seller lost:** no exit makes it profitable (−₹71k to −₹1.57 lakh over 96 weeks). Gaps at the open cannot be exited, and exits cannot create an edge.
+- **No Gold v6.** Empty days stay flat; a daily income comes from Gold's profits (SN177).
+- **What is left:** new information (order flow from the tick recorder) and a true crash test (NIFTY 2020) for any future seller.
+
+## 13. Status after SN221–SN230 (Nov 15, 2026)
+
+- **A candidate exists for the first time: WK-H, the hedged weekly straddle.**
+  - It sells the ATM straddle (2 lots) at the first 15:15 after the last weekend before expiry.
+  - It delta-hedges with NIFTY futures in half-lot steps every 15 minutes.
+  - It holds to settlement.
+- **Results:**
+  - positive on three of the four seen samples (TEST −₹2.4k over 7 weeks);
+  - on the **unseen NIFTY Oct 2020 – Nov 2021 exam: +₹61,511 per lot, worst month −₹6,251**, where every unhedged seller lost.
+- **On Gold's empty days** it averages ₹386 a day for the ₹5 lakh unit, paid in weeks rather than days (about 59% of weeks win).
+- **With Gold** (2023 – Aug 2026, per option lot): +₹8.17 lakh vs +₹6.42 lakh, 282 green days vs 55, worst month −₹28k vs −₹38.5k.
+- **Limits:**
+  - about ₹5 lakh margin (unverified);
+  - about 4.7 futures orders a week;
+  - one unseen sample in a bull market;
+  - the crash test (Jan–Sep 2020) is pre-registered;
+  - forward paper is the next step, on the owner's word.
+- Full record: `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 0.
+
+## 14. Status after SN231–SN250 (Nov 15, 2026)
+
+- **Gold v6 (Gold v5 + WK-H) is built in Dev** (`python-engine/sn_wkh.py`, paper). **Gold v7** is the same leg with hedge band 0.8: 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228.
+- **The empty days now carry WK-H.**
+  - Gold v7's remaining bad months come from WK-H's quiet or sudden-move weeks (9) and Gold v5's own losing months (4).
+  - Every month positive was not reached; trend filters, skips, more legs and month rules did not help.
+- **Open:**
+  - the 2020 crash test (pre-registered);
+  - a forward paper record;
+  - a cheaper synthetic options hedge, the best next idea;
+  - Gold v5's own unseen-year test.
+- Record: `docs/research/fno/2026-11-15-sn231/README.md`, `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 00.
