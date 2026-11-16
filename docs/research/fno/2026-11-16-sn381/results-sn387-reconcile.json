@@ -1,0 +1,36 @@
+{
+ "market_dates": 242,
+ "option_sessions": 190,
+ "without_options": 52,
+ "without_options_that_are_weekly_expiries": 51,
+ "without_options_not_expiry": [
+  "2022-01-12"
+ ],
+ "by_weekday": {
+  "Thu": 50,
+  "Wed": 2
+ },
+ "by_month": {
+  "2022-01": 5,
+  "2022-02": 4,
+  "2022-03": 4,
+  "2022-04": 4,
+  "2022-05": 4,
+  "2022-06": 5,
+  "2022-07": 4,
+  "2022-08": 4,
+  "2022-09": 5,
+  "2022-10": 4,
+  "2022-11": 4,
+  "2022-12": 5
+ },
+ "reason": "the house year format stores the front weekly's options, which are absent on the expiry day itself (2023 had 53 such days); no strike or bar is missing on the 190 option sessions (bind: no bad rows, no short sessions)",
+ "volatility_2022_check": {
+  "sessions": 242,
+  "with_reading": 242,
+  "vol_up_days": 115,
+  "below_0.9x_usual": 103,
+  "median_atr_pct": 1.41,
+  "median_usual": 1.44
+ }
+}
