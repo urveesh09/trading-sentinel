@@ -1,3 +1,31 @@
+## November 16 (morning) - SN251–SN275: Gold's gap days from Gold's own wallet, without margin (research only, Dev)
+
+**Owner (Nov 16):**
+- "use the same wallet that the Gold V5 is using … to trade on the Gold gap days … I don't want to use margin because there is potential of unlimited loss … the amount we can refill [is] by max the wallet's full amount";
+- also asked why WK-H is not hedged with options only ("much less risk … the deposit needed will be also much less").
+
+**Result: no gap-day strategy passed.**
+- **Options-only WK-H** (wings instead of futures, SN251) lost on 4–5 of the 5 samples in every structure: −₹2.1 to −₹2.7 lakh per lot, against +₹3.9–4.2 lakh for WK-H with futures. The wings fix the risk (iron fly 1.0: at most ~₹4,200 per lot) and cost about as much as the weekly edge.
+- **Two new unseen buyer exams** (NIFTY Oct 2020 – Mar 2022, SENSEX Oct 2024 – Apr 2026): the old hot-day watches failed both (SN95-L −₹17,654 / −₹8,541).
+- **Buying an option every session** loses ₹150–660 per lot per day on every sample (SN255).
+- **Thirteen new studies** failed their frozen rule:
+  - weekend and overnight holds; multi-session swing; calendar and events;
+  - opening gaps; the cheap weekly straddle; a LightGBM move-size model; gap-day afternoons;
+  - an overnight index ETF; pre-holiday calls (positive on all four samples, but it failed the null and was a post-hoc pick).
+- **Daily wage (SN269):** Gold v5 alone averages about ₹900 a session (2023 – Oct 2026). A wage pot pays ₹500–750 every session over years, but the owner advances ₹0.5–3.1 lakh first, depending on the start month.
+
+**Where:** `docs/research/fno/2026-11-16-sn251/README.md`. Plan `fb7e7523` (amendment `c22d0b0f`), results through `4f91377e`.
+
+**Runtime:**
+- No runtime file changed.
+- Production `c6cbceb1` (PR #140) carries SN251–SN257's research files only.
+- Gold v7 (Gold v5 + WK-H) stays on Production paper, placing no orders.
+
+**Next:**
+- Mon Nov 16 15:15: the first WK-H paper entry ("🥇 Gold v7 · WK-H (paper): sold …", a `gold_v6_wkh_weeks` row).
+- The 2020 crash test after the download.
+- Pre-holiday calls: a forward paper watch only on the owner's word.
+
 ## November 16 (morning) - Deployed: Production `c6cbceb1` (PR #140: N16-RV partner review timeout fix)
 
 **Authority:** the owner, Nov 16 ~08:00: "Both quick unblock and real fix do both and do it quick and then through dev usual path, deploy right now."

@@ -266,3 +266,21 @@ Until then the best empty-day action remains no trade. A daily income comes from
   - a cheaper synthetic options hedge, the best next idea;
   - Gold v5's own unseen-year test.
 - Record: `docs/research/fno/2026-11-15-sn231/README.md`, `docs/SN_WEEKLY_SELLER_AND_GOLD_V6.md` section 00.
+
+## 15. Status after SN251–SN275 (Nov 16, 2026)
+
+- **The owner's new constraint:** a gap-day leg must use Gold v5's own wallet, with no margin and no unlimited loss: bought options, or defined-risk spreads as information.
+- **Two new unseen buyer exams:** NIFTY Oct 2020 – Mar 2022 (286 sessions) and SENSEX Oct 2024 – Apr 2026 (306). Neither had been used for any intraday or overnight buyer rule.
+- **Nothing passed:**
+  - options-only WK-H (wings instead of futures) loses on 4–5 of 5 samples in every structure;
+  - SN95-L / SN171 fail both exams;
+  - buying every day loses ₹150–660 per lot per day;
+  - weekend and overnight holds, multi-session swing, calendar and events, opening gaps, the cheap weekly straddle, a LightGBM move-size model, gap-day afternoons and an overnight cash ETF all fail their frozen rule;
+  - pre-holiday calls were positive on all four samples but failed the null as a post-hoc pick (about 10 trades a year).
+- **NIFTY's overnight drift is real** (close to open, t up to 6), but it sits in the closing and opening prints. Options (decay) and an ETF (charges, the DP fee) cannot collect it at the tradeable 15:20 and 09:16+ prices.
+- **Do not repeat** any SN251–SN272 rule on these samples.
+- **Still open:**
+  1. order flow from the tick recorder (live from Nov 16);
+  2. the 2020 crash test for WK-H;
+  3. a wage pot paid from Gold's profit (SN269: ₹500–750 a session over years, with ₹0.5–3.1 lakh advanced first).
+- Record: `docs/research/fno/2026-11-16-sn251/README.md`.

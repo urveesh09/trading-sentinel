@@ -18,7 +18,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 
 ---
 
-## 1. Current state (updated Nov 15, 2026 evening, after SN250: Gold v6 built in Dev, Gold v7 chosen) — read this first
+## 1. Current state (updated Nov 16, 2026 morning, after SN275: Gold v7 on Production paper; no margin-free gap-day leg) — read this first
 
 **In Production (`052a6d6e`, PR #139, deployed Nov 15 night, verified): Gold v7 on paper (SN Gold v5 + WK-H band 0.8, `sn_wkh.py`), plus everything below from `826f0727` (PR #138, Nov 13 evening):**
 - **SN Gold v5 on PAPER** (`python-engine/sn_gold.py`, since Nov 13, release `82b08371`):
@@ -43,6 +43,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
   - the owner made Gold v5 + WK-H the baseline Gold v6; it is built in Dev as `python-engine/sn_wkh.py` (paper, `1690bb71`, not deployed);
   - SN231–SN250 chose **Gold v7 = the same leg with hedge band 0.8**: over Jan 2023 – Oct 2026, 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228, net +₹13.71 lakh against +₹11.96 lakh. It is the Dev default;
   - every month positive was not reached. The remaining bad months come from WK-H's quiet or sudden-move weeks and Gold v5's own losing months.
+- **SN251–SN275 (Nov 16): Gold's gap days from Gold's own wallet, without margin: nothing passed.** Options-only WK-H (wings instead of futures) loses on 4–5 of 5 samples (−₹2.1 to −₹2.7 lakh per lot); the hot-day watches fail two new unseen buyer exams (NIFTY Oct 2020 – Mar 2022, SENSEX Oct 2024 – Apr 2026); buying every day loses ₹150–660 per lot per day; 13 new studies fail. A wage pot from Gold pays ₹500–750 a session over years, with ₹0.5–3.1 lakh advanced first (SN269). See the SN251–SN275 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -792,3 +793,66 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - `d87c0031`: SN231–SN234 and the amendment.
 - `13850b41`: SN235–SN248.
 - The Gold v7 runtime and docs commit follows.
+
+## SN251–SN275 (Nov 16, 2026): Gold's gap days from Gold's own wallet, without margin (folder `docs/research/fno/2026-11-16-sn251`)
+
+**Owner:**
+- "use the same wallet that the Gold V5 is using … to trade on the Gold gap days … I don't want to use margin because there is potential of unlimited loss … the amount we can refill [is] by max the wallet's full amount … option buying every day has a potential to earn more than 10% … 25 slots till SN 275";
+- and: why not hedge WK-H with options only.
+
+**Method:**
+- **Freezes:** plan `fb7e7523` (amendment `c22d0b0f` before SN271–SN272); engine `gl.py` / `ow.py` at `0555a559`; each Block C slot frozen before its run.
+- **Tier A:** bought options only. **Tier B:** defined-risk spreads, as information.
+- **One wallet:** SN110's contract. With no leg, `ow.py` reproduces Gold v5 exactly (₹8,50,882).
+- **Samples:**
+  - DEV: NIFTY Apr 2022 – Aug 2026;
+  - TEST: Aug 20 – Oct 28 2026;
+  - **two new buyer exams**, scored once per slot: EXAM-N (NIFTY Oct 2020 – Mar 2022, 286 sessions) and EXAM-S (SENSEX Oct 2024 – Apr 2026, 306 sessions).
+- **Pass rule:**
+  - G1: DEV net > 0 and ≥ 3 of 5 years positive;
+  - G2: a same-budget random null;
+  - G3: both exams positive;
+  - G4: DEV positive at ₹400 and one minute late.
+  - The pick is the max-min variant of ≤ 12.
+
+| SN | Result | Verdict |
+|---|---|---|
+| 251 | Options-only WK-H: iron flies (wings 0.5 / 1.0 / 2.0) and condors, per lot over 5 samples −₹2.13 to −₹2.72 lakh (0–1 of 5 positive); largest loss per lot ₹1.1k–11k. WK-H with futures +₹3.86 / +₹4.19 lakh | Wings lose the profit |
+| 252 | 944 sessions, 811 gap days (609 non-expiry + 202 expiry); Gold v5 +₹8,50,883, 25 of 46 months positive. ₹1,500 a session needs ₹697 more per gap day | Census |
+| 253 | Exams sealed; ATM legs priced on ≥ 99.7% of sessions | Data |
+| 254 | SN95-L: EXAM-N −₹17,654 (19 trades), EXAM-S −₹8,541 (21); SN171 lost every EXAM-N trade | FAIL |
+| 255 | Buying every day: −₹150 to −₹660 per lot per day on every sample; random side 0 of 200 seeds positive on DEV | Cost of activity |
+| 256–263 | Weekend straddles (−₹2.3 lakh DEV), weekday overnights, swing (exams + but DEV −₹70k), events (Budget pick, RBI straddles −₹20.9k), opening gaps, the cheap weekly straddle, LightGBM (exams −₹11.7k / +₹13.5k), gap-day afternoons | All FAIL |
+| 264 | Expiry days: no unseen data; E03.2 in-sample only, 0 tickets on Production paper since Nov 5 | No verdict |
+| 265–268 | No survivor | Not run |
+| 269 | Wage pot from Gold v5 alone: ₹500–750 every session is affordable over years; the owner advances ₹0.5–3.1 lakh first (₹1.16 lakh from Jan 2024, ₹3.13 lakh from Jan 2023 at ₹750) | – |
+| 271 | Overnight index ETF (cash): the tradeable 15:20 → 09:16–09:30 drift is about zero after charges and the ₹15.34 DP fee | FAIL |
+| 272 | Pre-holiday calls (post-hoc): DEV +₹13,331, EXAM-N +₹25,327, EXAM-S +₹8,884, ~10 trades a year; fails G2 | FAIL by rule |
+| 273–275 | – | Unused |
+
+**Lessons:**
+1. A defined-risk (winged) seller has a small deposit and a fixed worst case, but the wings cost as much as the weekly edge. What made WK-H work is the futures hedge, which needs margin.
+2. With bought options only, Gold's gap days have no edge after costs, on two more unseen samples. The one real effect, NIFTY's overnight drift, sits in the closing and opening prints and cannot be collected with options or an ETF.
+3. A daily income comes from Gold's profit through a wage pot, with money advanced at the start.
+
+### Open items, Nov 16, 2026, after SN275 (the current list)
+
+1. **Mon Nov 16 15:15:**
+   - the first Gold v7 WK-H paper entry ("🥇 Gold v7 · WK-H (paper): sold …", a `gold_v6_wkh_weeks` row);
+   - Tue Nov 17 hedges and the 15:24 close; Wed Nov 18 09:15 settlement.
+2. **The 2020 crash test** (`sn248.py --data-complete`) after the download.
+3. **Owner's decisions:**
+   - a pre-holiday call forward paper watch (~10 a year);
+   - a wage pot amount;
+   - WK-H with real money only after the `SN_GOLD.md` gates and with margin.
+4. **Do not repeat** on these samples:
+   - everything in SN251–SN272;
+   - options-only WK-H structures;
+   - every-day buyers.
+
+### Commit index, SN251–SN275
+
+- Plan `fb7e7523`.
+- Results: `0555a559`, `f781a9fa`, `fbc949aa`, `e60e28ba`, `24ca38b2`, `c22d0b0f`, `4773927b`, `4f91377e`.
+- The docs commit adds this section.
+- **Production:** `c6cbceb1` (PR #140, another release) carries SN251–SN257's research files; no runtime change from SN251–SN275.
