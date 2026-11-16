@@ -86,6 +86,9 @@ def main():
     assert not out_path.exists(), "run once"
     D.DATASETS["2022"] = HERE / "_local" / "dataset-nifty-2022"
     install(("2022",))
+    # mechanical fix (before any 2022 number): common.panel skips wallets without a "2023" year; this runner never uses
+    # the panel row (only the day log and the trade log), so the panel is bypassed for the 2022 run
+    C.panel = lambda r: {w: {} for w in r}
     res = {}
     for st in (205.0, 400.0):
         row, days, log = Q.run(st)
