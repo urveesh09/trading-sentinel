@@ -300,3 +300,10 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **The partner's first minute** does not survive executable prices (SN288). Their green days were lost to trades added after the give-back alert (SN287).
 - **The real cost of one ATM lot round trip** is ₹90–100 (SN290).
 - **The remaining untested information is packet-level order flow** from the tick recorder (live from Nov 16). Two candidates (SN291 futures pressure, SN293 lagging strike) are frozen for a 20-session forward verdict (`docs/research/fno/2026-11-16-sn286/fwd.py`, about Dec 17–19).
+
+## 18. Status after SN301–SN315 (Nov 16, 2026)
+
+- **The forward test is protected:** verified archive, executable fills and stops, provable Gold day labels, matched controls and an amended verdict that cannot pass on missing evidence (`docs/research/fno/2026-11-16-sn301/fwd2.py`). Session 20 is Dec 23.
+- **Gold v5's own losses are signal losses**, capped at the day room (SN310). Stops, adds, costs at real prices and the scale-in cash check are sound at its sizes (SN311, SN312), so no execution fix can cut them. A gap-day leg must add new information, not better plumbing.
+- **A one-minute delay costs at the entry, not the exit** (SN306). Any gap-day buyer needs a price-protected entry.
+- **From Dec 7** F&O trades to 15:45 and expiring index contracts stop at 15:30 (SN314). Any rule using the last minutes must be date-aware.

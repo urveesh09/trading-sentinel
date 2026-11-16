@@ -46,6 +46,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN251–SN275 (Nov 16): Gold's gap days from Gold's own wallet, without margin: nothing passed.** Options-only WK-H (wings instead of futures) loses on 4–5 of 5 samples (−₹2.1 to −₹2.7 lakh per lot); the hot-day watches fail two new unseen buyer exams (NIFTY Oct 2020 – Mar 2022, SENSEX Oct 2024 – Apr 2026); buying every day loses ₹150–660 per lot per day; 13 new studies fail. A wage pot from Gold pays ₹500–750 a session over years, with ₹0.5–3.1 lakh advanced first (SN269). See the SN251–SN275 section at the end.
 - **SN276–SN285 (Nov 16): every earlier gap-day signal combined on 1,465 pooled sessions: nothing passed** (walk-forward learners −₹1.3–1.8 lakh, the vote −₹973 pooled). Pre-holiday calls are positive on all four samples (post-hoc, ~10 a year): a forward watch candidate. See the SN276–SN285 section at the end.
 - **SN286–SN300 (Nov 16): the auditor's brief.** Corrected holiday calls are carried by their best day (forward ledger only); the partner's first minute is not tradable at real prices; two tick-recorder candidates (futures pressure, lagging strike) are frozen for a 20-session forward verdict (`fwd.py`, about Dec 17–19). See the SN286–SN300 section at the end.
+- **SN301–SN315 (Nov 16): the forward test protected and Gold v5's own losses audited.** Amended scorer and verified archive (`sn301/fwd2.py`; verdict after session 20, Dec 23). Gold's losses are signal losses (stops, adds, costs and cash checks sound; extension neutral); no Gold change. From Dec 7 F&O closes at 15:45 (engine assumes 15:40). See the SN301–SN315 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -919,3 +920,37 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - Coaching idea (owner's call): after the give-back alert, a "stop adding trades" line.
 
 **Commits:** `d5cfb8f1`, `9153f68b`, `64cfa082`, `d5168b0f`, and the docs commit.
+
+## SN301–SN315 (Nov 16, 2026): the forward test protected, Gold v5's own losses audited (folder `docs/research/fno/2026-11-16-sn301`)
+
+**Owner:** "use these 15 slots to make me a better strategy … losses are cut and nothing unreasonable is happening." Review: `docs/SN301_SN315_RESEARCH_AUDIT.md`. Plan `94c772cd`.
+
+**Agreed with the auditor, fixed:**
+- the verdict could pass on missing evidence (unknown Gold days, an empty control);
+- `fw.hold` filled into a zero-quantity bid and booked missing exits early;
+- the collector could freeze a partial copy;
+- raw totals were compared against a control at a different frequency.
+
+**Not agreed:**
+- SN299's "debit within ₹3,000" was a wording error; the one-wallet rule (premium ≤ wallet − ₹15,000, ₹3,000 stop) decides, and the strict share is reported;
+- the original freeze is kept and reported as superseded;
+- SN312 was a cost audit first.
+
+| SN | Result |
+|---|---|
+| 301–305, 300a, 315 | Verified archive, executable contract, Gold labels, matched controls, affordability, amended verdict and replication block (`fw2.py`, `fwd2.py`; 12 tests). Session 20 = Dec 23 |
+| 306 | One-minute delay on 748 real-quote cases: entry late PE −₹50–56, CE +₹10–19, straddle −₹37–39; exit late −₹19 to +₹37. The cost is at the entry |
+| 307–309 | Price cap, order-flow change, premise-fail exit: frozen forward comparisons |
+| 310 | Gold v5 waterfall (156 trades): losers −₹6.00 lakh (first piece −₹5.01 lakh, adds −₹0.99 lakh; 78 at N11's exit, 8 stops; overshoot ₹988); winners +₹14.51 lakh (adds +₹2.77 lakh); extension +₹232 over 16 trades; fees + stress ₹1.98 lakh; the best 10 trades are 71% |
+| 311 | Scale-in cash: Gold v5 never over-commits (G1 = G0); "true cash" +₹62.6k at ₹205 but +₹5.7k at ₹400 and less in 2023–24, so it fails the frozen rule; no change |
+| 312 | Real in-the-money costs (ATM to 3 ITM, 1–6 lots): the model is ₹0.6–6.5 a lot conservative; depth ample; no challenger |
+| 313 | Partner, order by order: new trades after the alert lost in 3 of 4 sessions; "no new trades" better in 3 of 4 |
+| 314 | Dec 7 (NSE CAS 2.0): F&O to 15:45, expiring index contracts stop at 15:30; about 15 engine files assume 15:40 (`SN314_CLOCKS.md`); runtime slice on the owner's word |
+
+**Lesson:** Gold's losses are signal losses, not execution losses. Its cost model, stops, adds and cash checks are sound at its sizes, so the remaining lever is which entries it takes, and every frozen attempt there has failed (SN92–SN285).
+
+**Open items:**
+- `python fwd2.py collect` evenings until Dec 23;
+- `python fwd2.py verdict` once;
+- the Dec 7 clock slice (owner's word);
+- the partner coaching line (owner's call).

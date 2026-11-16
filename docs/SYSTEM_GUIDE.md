@@ -1,3 +1,32 @@
+## November 16 (midday) - SN301–SN315: the forward test protected, Gold v5's own losses audited, the Dec 7 clock change found (research only, Dev)
+
+**Owner (Nov 16):** use SN301–SN315 on the auditor's review (`docs/SN301_SN315_RESEARCH_AUDIT.md`): improve, agree or disagree; marginal learning in every slot; cut losses.
+
+**The forward test (fixed before the first eligible session, Nov 18):**
+- `docs/research/fno/2026-11-16-sn301/fw2.py` / `fwd2.py` replace the original collector and verdict (`sn286/fwd.py`, kept frozen and still reported as superseded):
+  - a verified archive (manifest bytes + SHA-256, closed sessions only);
+  - executable fills, exits and stops (depth for one lot, finite exit windows, unresolved = premium lost, slipped stops);
+  - Gold day labels from day-close rows (GOLD / FLAT / UNKNOWN);
+  - matched paired controls and one-wallet affordability;
+  - an amended verdict SN300a that cannot pass on missing evidence (12 synthetic tests pass);
+  - SN315: a pass opens a second block before anything is built.
+- **Window:** session 20 is **Dec 23** (expiry days and Nov 24 skipped). Run `python fwd2.py collect` in that folder any evening and at least once by Dec 23 (35-day retention), then `python fwd2.py verdict` once.
+
+**Gold v5's own losses (replay parity exact, 156 trades, ₹8,50,882):**
+- losses are trades whose entry signal failed, capped at the 20% day room (stop overshoot ₹988 in all, no exits at untraded minutes);
+- adds are worth +₹1.77 lakh, and the 3-ATR extension is neutral (+₹232 over 16 trades);
+- the scale-in cash test never commits more than the wallet, and a "true cash" variant fails its frozen rule, so Gold v5 is unchanged;
+- the real in-the-money costs at Gold's sizes match the model (−₹3.8 a lot), with ample depth.
+
+**Other:**
+- **Delay:** a one-minute delay costs at the entry on puts (−₹50–56 a lot); a late exit costs about ₹0.
+- **Partner, order by order:** new trades after the give-back alert lost in 3 of 4 sessions; "no new trades after the alert" was better in 3 of 4. The coaching wording is the owner's call.
+- **SN314:** from **Dec 7** F&O closes at **15:45** and expiring index contracts stop at **15:30**. About 15 engine files assume 15:40 (partner companion windows, F&O tick, quote collector, expiry cutoffs, tick recorder). See `SN314_CLOCKS.md`. A runtime slice is needed before Dec 7, on the owner's word.
+
+**Where:** `docs/research/fno/2026-11-16-sn301/README.md`. Plan `94c772cd`, forward code `aefc40cb`, results `5aa1d546`.
+
+**Runtime:** none changed; Production unchanged (read-only `docker exec`/`docker cp` of the tick folder and the SN Gold tables).
+
 ## November 16 (morning) - SN286–SN300: the auditor's brief tested; two packet candidates frozen for a forward verdict (research only, Dev)
 
 **Owner (Nov 16):** test the auditor's SN286–SN300 brief (`docs/SN286_SN300_RESEARCH_BRIEF.md`), agree or improve.

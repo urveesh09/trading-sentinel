@@ -38,6 +38,8 @@
 
 ## How to finish (any session)
 
+**Superseded on Nov 16 by SN301–SN315** (`docs/research/fno/2026-11-16-sn301`): use `python fwd2.py collect` / `python fwd2.py verdict` there (verified archive, executable contract, amended verdict SN300a; session 20 is Dec 23). The steps below are the original, frozen record; `fwd.py collect` must not be used.
+
 1. On any evening (and before Dec 20): run `python fwd.py collect` in this folder (research venv).
    - It copies new day folders from the Production container, read-only there, and saves per-day JSON. It prints only qualification.
 2. When 20 sessions have qualified: run `python fwd.py verdict` **once**. It writes `results-sn300.json` and reads Gold's gap days from Production, read-only.
