@@ -14,7 +14,10 @@ Per session:
   TRADE: one lot of the ATM option (index at 15:31:00) of day.front (expiry > day: next week's on an expiry day) on D's
   side (CE if D > 0), fw2's SN302 execution decided at 15:31:00, held to 15:44:00 (780 s) with fw2's Rs 3,000 stop;
   CONTROL: the other side, same clock and hold.
-Verdict (once, after 15 qualified sessions): PASS = sum net at Rs 205 and Rs 400 > 0, mean net at Rs 205 above CONTROL's,
+Amendment B1 (Nov 16, before any CAS session exists; auditor): NIFTY expiry-day sessions fall outside the owner's expiry-day
+clock (flat by 13:30), so their rows are kept as research evidence in "expiry_day_rows" and never count toward the 15
+sessions, the trades, the controls or the pass rule.
+Verdict (once, after 15 qualified non-expiry sessions): PASS = sum net at Rs 205 and Rs 400 > 0, mean net at Rs 205 above CONTROL's,
 and > 0 without the best day. Otherwise FAIL. The trade sits after Gold's last exit (15:15), so no wallet conflict.
 """
 from __future__ import annotations
@@ -105,9 +108,12 @@ def verdict():
     if OUT.exists():
         raise SystemExit("SN364 is scored once")
     days = sorted(p.name for p in ARCH.iterdir() if p.is_dir() and p.name >= START) if ARCH.exists() else []
-    rows, skipped = [], []
+    rows, skipped, expiry_rows = [], [], []
     for d in days:
         r = session(ARCH / d)
+        if not r.get("skip") and r.get("expiry_day"):
+            expiry_rows.append(r)                       # B1: research evidence only
+            continue
         (skipped if r.get("skip") else rows).append(r if not r.get("skip") else {"day": d, "skip": r["skip"]})
         if len(rows) == N_SESSIONS:
             break
@@ -122,6 +128,7 @@ def verdict():
            "per_trade205": round(float(n205.mean()), 1) if len(n205) else None, "control_per_trade205": round(float(np.mean(ctl)), 1) if ctl else None,
            "without_best_day": round(float(n205.sum() - max(by_day.values()))) if by_day else None,
            "late_move_with_D_share": round(float(np.mean([r["late_move_with_D"] for r in rows if r.get("late_move_with_D") is not None])), 3)}
+    res["expiry_day_rows"] = expiry_rows
     res["verdict"] = "PASS" if (len(tr) and n205.sum() > 0 and n400.sum() > 0 and ctl and n205.mean() > np.mean(ctl) and res["without_best_day"] > 0) else "FAIL"
     res["rows"] = rows
     OUT.write_text(json.dumps(res, indent=1, default=float), encoding="utf-8")
