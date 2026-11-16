@@ -1,0 +1,424 @@
+{
+ "all": {
+  "events": 3420,
+  "sessions": 116,
+  "b_fired": 1658,
+  "b_failed_break": 1761,
+  "runaways": 1,
+  "runaway_A_net": 853,
+  "b_delay_median": 21.0,
+  "@205": {
+   "A": {
+    "net": -1009742,
+    "per_event": -295.2,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1012546,
+    "worst_day": -20158
+   },
+   "B": {
+    "net": -479087,
+    "per_event": -140.1,
+    "trades": 1658,
+    "sessions": 115,
+    "without_best_day": -482451,
+    "worst_day": -12959
+   },
+   "C": {
+    "net": -1006462,
+    "per_event": -294.3,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1007325,
+    "worst_day": -19441
+   },
+   "G": {
+    "net": -343462,
+    "per_event": -100.4,
+    "trades": 1199,
+    "sessions": 114,
+    "without_best_day": -347171,
+    "worst_day": -9540
+   },
+   "B shifted 2 s": {
+    "net": -512528,
+    "per_event": -149.9,
+    "trades": 1782,
+    "sessions": 116,
+    "without_best_day": -515628,
+    "worst_day": -11907
+   },
+   "ten-second pattern": {
+    "net": -371755,
+    "per_event": -108.7,
+    "trades": 1341,
+    "sessions": 115,
+    "without_best_day": -375288,
+    "worst_day": -10789
+   },
+   "enter +5s": {
+    "net": -1015713,
+    "per_event": -297.0,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1017521,
+    "worst_day": -19570
+   },
+   "enter +10s": {
+    "net": -1007947,
+    "per_event": -294.7,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1009314,
+    "worst_day": -18635
+   },
+   "enter +30s": {
+    "net": -1006462,
+    "per_event": -294.3,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1007325,
+    "worst_day": -19441
+   },
+   "enter +60s": {
+    "net": -1023113,
+    "per_event": -299.2,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1023770,
+    "worst_day": -18304
+   },
+   "A when held at +30 s": {
+    "net": -631980,
+    "per_event": -246.6,
+    "trades": 2563,
+    "sessions": 116,
+    "without_best_day": -634784,
+    "worst_day": -13179
+   },
+   "A when not held": {
+    "net": -377762,
+    "per_event": -440.8,
+    "trades": 857,
+    "sessions": 111,
+    "without_best_day": -380476,
+    "worst_day": -9954
+   }
+  },
+  "@400": {
+   "A": {
+    "net": -1676245,
+    "per_event": -490.1,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1678660,
+    "worst_day": -27386
+   },
+   "B": {
+    "net": -802222,
+    "per_event": -234.6,
+    "trades": 1658,
+    "sessions": 115,
+    "without_best_day": -804221,
+    "worst_day": -18224
+   },
+   "C": {
+    "net": -1674332,
+    "per_event": -489.6,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1674823,
+    "worst_day": -27436
+   },
+   "G": {
+    "net": -577267,
+    "per_event": -168.8,
+    "trades": 1199,
+    "sessions": 114,
+    "without_best_day": -579611,
+    "worst_day": -12855
+   },
+   "B shifted 2 s": {
+    "net": -859804,
+    "per_event": -251.4,
+    "trades": 1782,
+    "sessions": 116,
+    "without_best_day": -860954,
+    "worst_day": -17367
+   },
+   "ten-second pattern": {
+    "net": -633250,
+    "per_event": -185.2,
+    "trades": 1341,
+    "sessions": 115,
+    "without_best_day": -635613,
+    "worst_day": -14884
+   },
+   "enter +5s": {
+    "net": -1682409,
+    "per_event": -491.9,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1683826,
+    "worst_day": -27027
+   },
+   "enter +10s": {
+    "net": -1675498,
+    "per_event": -489.9,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1676475,
+    "worst_day": -26630
+   },
+   "enter +30s": {
+    "net": -1674332,
+    "per_event": -489.6,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1674823,
+    "worst_day": -27436
+   },
+   "enter +60s": {
+    "net": -1690224,
+    "per_event": -494.2,
+    "trades": 3420,
+    "sessions": 116,
+    "without_best_day": -1690686,
+    "worst_day": -26299
+   },
+   "A when held at +30 s": {
+    "net": -1131765,
+    "per_event": -441.6,
+    "trades": 2563,
+    "sessions": 116,
+    "without_best_day": -1134179,
+    "worst_day": -19809
+   },
+   "A when not held": {
+    "net": -544481,
+    "per_event": -635.3,
+    "trades": 857,
+    "sessions": 111,
+    "without_best_day": -545830,
+    "worst_day": -12502
+   }
+  },
+  "SN322": {
+   "ceiling_mean": 274,
+   "ceiling_share_ge_750": 0.12,
+   "reach750_A": 0.07,
+   "reach750_B": 0.087
+  }
+ },
+ "gold_free": {
+  "events": 2847,
+  "sessions": 91,
+  "b_fired": 1351,
+  "b_failed_break": 1495,
+  "runaways": 1,
+  "runaway_A_net": 853,
+  "b_delay_median": 21.0,
+  "@205": {
+   "A": {
+    "net": -837432,
+    "per_event": -294.1,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -837487,
+    "worst_day": -20158
+   },
+   "B": {
+    "net": -388051,
+    "per_event": -136.3,
+    "trades": 1351,
+    "sessions": 90,
+    "without_best_day": -391415,
+    "worst_day": -11264
+   },
+   "C": {
+    "net": -834808,
+    "per_event": -293.2,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -835671,
+    "worst_day": -16989
+   },
+   "G": {
+    "net": -275965,
+    "per_event": -96.9,
+    "trades": 978,
+    "sessions": 89,
+    "without_best_day": -279674,
+    "worst_day": -9540
+   },
+   "B shifted 2 s": {
+    "net": -419882,
+    "per_event": -147.5,
+    "trades": 1466,
+    "sessions": 91,
+    "without_best_day": -422982,
+    "worst_day": -10785
+   },
+   "ten-second pattern": {
+    "net": -302323,
+    "per_event": -106.2,
+    "trades": 1099,
+    "sessions": 90,
+    "without_best_day": -305857,
+    "worst_day": -9537
+   },
+   "enter +5s": {
+    "net": -841637,
+    "per_event": -295.6,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -841913,
+    "worst_day": -19570
+   },
+   "enter +10s": {
+    "net": -836619,
+    "per_event": -293.9,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -837486,
+    "worst_day": -18625
+   },
+   "enter +30s": {
+    "net": -834808,
+    "per_event": -293.2,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -835671,
+    "worst_day": -16989
+   },
+   "enter +60s": {
+    "net": -848061,
+    "per_event": -297.9,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -848570,
+    "worst_day": -17638
+   },
+   "A when held at +30 s": {
+    "net": -539258,
+    "per_event": -251.8,
+    "trades": 2142,
+    "sessions": 91,
+    "without_best_day": -540554,
+    "worst_day": -12816
+   },
+   "A when not held": {
+    "net": -298174,
+    "per_event": -422.9,
+    "trades": 705,
+    "sessions": 89,
+    "without_best_day": -300888,
+    "worst_day": -9954
+   }
+  },
+  "@400": {
+   "A": {
+    "net": -1392119,
+    "per_event": -489.0,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -1391675,
+    "worst_day": -27386
+   },
+   "B": {
+    "net": -651321,
+    "per_event": -228.8,
+    "trades": 1351,
+    "sessions": 90,
+    "without_best_day": -653320,
+    "worst_day": -15554
+   },
+   "C": {
+    "net": -1390628,
+    "per_event": -488.5,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -1390067,
+    "worst_day": -24984
+   },
+   "G": {
+    "net": -466675,
+    "per_event": -163.9,
+    "trades": 978,
+    "sessions": 89,
+    "without_best_day": -469019,
+    "worst_day": -12855
+   },
+   "B shifted 2 s": {
+    "net": -705538,
+    "per_event": -247.8,
+    "trades": 1466,
+    "sessions": 91,
+    "without_best_day": -706688,
+    "worst_day": -15855
+   },
+   "ten-second pattern": {
+    "net": -516628,
+    "per_event": -181.5,
+    "trades": 1099,
+    "sessions": 90,
+    "without_best_day": -518992,
+    "worst_day": -13827
+   },
+   "enter +5s": {
+    "net": -1396299,
+    "per_event": -490.4,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -1395956,
+    "worst_day": -26785
+   },
+   "enter +10s": {
+    "net": -1392027,
+    "per_event": -488.9,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -1391724,
+    "worst_day": -25840
+   },
+   "enter +30s": {
+    "net": -1390628,
+    "per_event": -488.5,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -1390067,
+    "worst_day": -24984
+   },
+   "enter +60s": {
+    "net": -1403152,
+    "per_event": -492.9,
+    "trades": 2847,
+    "sessions": 91,
+    "without_best_day": -1403007,
+    "worst_day": -25633
+   },
+   "A when held at +30 s": {
+    "net": -956948,
+    "per_event": -446.8,
+    "trades": 2142,
+    "sessions": 91,
+    "without_best_day": -957171,
+    "worst_day": -19202
+   },
+   "A when not held": {
+    "net": -435171,
+    "per_event": -617.3,
+    "trades": 705,
+    "sessions": 89,
+    "without_best_day": -436520,
+    "worst_day": -12502
+   }
+  },
+  "SN322": {
+   "ceiling_mean": 238,
+   "ceiling_share_ge_750": 0.103,
+   "reach750_A": 0.06,
+   "reach750_B": 0.076
+  }
+ }
+}
