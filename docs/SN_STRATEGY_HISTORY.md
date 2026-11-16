@@ -45,6 +45,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
   - every month positive was not reached. The remaining bad months come from WK-H's quiet or sudden-move weeks and Gold v5's own losing months.
 - **SN251–SN275 (Nov 16): Gold's gap days from Gold's own wallet, without margin: nothing passed.** Options-only WK-H (wings instead of futures) loses on 4–5 of 5 samples (−₹2.1 to −₹2.7 lakh per lot); the hot-day watches fail two new unseen buyer exams (NIFTY Oct 2020 – Mar 2022, SENSEX Oct 2024 – Apr 2026); buying every day loses ₹150–660 per lot per day; 13 new studies fail. A wage pot from Gold pays ₹500–750 a session over years, with ₹0.5–3.1 lakh advanced first (SN269). See the SN251–SN275 section at the end.
 - **SN276–SN285 (Nov 16): every earlier gap-day signal combined on 1,465 pooled sessions: nothing passed** (walk-forward learners −₹1.3–1.8 lakh, the vote −₹973 pooled). Pre-holiday calls are positive on all four samples (post-hoc, ~10 a year): a forward watch candidate. See the SN276–SN285 section at the end.
+- **SN286–SN300 (Nov 16): the auditor's brief.** Corrected holiday calls are carried by their best day (forward ledger only); the partner's first minute is not tradable at real prices; two tick-recorder candidates (futures pressure, lagging strike) are frozen for a 20-session forward verdict (`fwd.py`, about Dec 17–19). See the SN286–SN300 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -891,3 +892,30 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - the next weekday NSE holiday is its first forward test.
 
 **Commits:** `c300be88`, `c0521449`, `0dc1d2dc`, `d53009ee`, and the docs commit that adds this section.
+
+## SN286–SN300 (Nov 16, 2026): the auditor's brief tested (folder `docs/research/fno/2026-11-16-sn286`)
+
+**Owner:** "test it out see if you can agree to it … improve it … slots till 300." Brief: `docs/SN286_SN300_RESEARCH_BRIEF.md`.
+
+**The auditor was right on SN284:**
+- one call carried the in-wallet gain;
+- Saturday special sessions were admitted;
+- two 12:30 sessions booked 15:10 exits.
+
+| SN | Result |
+|---|---|
+| 286 | Corrected holiday rule: ITM call DEV +₹22,932 (40), TEST +₹5,464, EXAM-N +₹10,050, EXAM-S +₹12,010; without the best day +₹4.2k / −₹3.0k / −₹5.1k / −₹14.4k; in Gold's wallet +₹18,016, −₹741 without the best. Forward ledger only |
+| 287 | Partner: after the give-back alert, later entries made 145% of the change; "no new entries after the alert" better in 3 of 4 |
+| 288 | Partner first minute at executable prices: −0.22% vs +0.09% control; not tradable |
+| 289 | Recorder qualification built; the Nov 16 development day is clean |
+| 290 | Real one-lot ATM round trip ₹90–100 (straddle ₹190); the model is ₹4–9 conservative; delay is noise |
+| 291 / 293 | Packet candidates (futures pressure; lagging strike) frozen; forward verdict on the first 20 qualified sessions from Nov 17 |
+| 294–296, 298 | Diagnostics, exit challenger and holiday shadow frozen on the same window |
+| 292, 297 | Deferred |
+| 299–300 | One-wallet contract written; verdict code frozen (`fwd.py`) |
+
+**Open items:**
+- `python fwd.py collect` before ~Dec 20; `python fwd.py verdict` once 20 sessions qualify (about Dec 17–19).
+- Coaching idea (owner's call): after the give-back alert, a "stop adding trades" line.
+
+**Commits:** `d5cfb8f1`, `9153f68b`, `64cfa082`, `d5168b0f`, and the docs commit.

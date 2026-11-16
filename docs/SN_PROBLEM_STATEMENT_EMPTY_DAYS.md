@@ -293,3 +293,10 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **The 10:00 option's cost** (₹200–650 a day on average) exceeds what the information predicts.
 - **The one buyer signal positive on all four samples:** calls on the session before a weekday market holiday (ITM +₹46.7k over 73 trades). It is post-hoc, fails the null, and trades about 10 times a year.
 - Record: `docs/research/fno/2026-11-16-sn276/README.md`.
+
+## 17. Status after SN286–SN300 (Nov 16, 2026)
+
+- **The corrected holiday-call rule** (weekday full sessions only, executable exits) is positive on all four samples, but each is carried by its best day. It is a forward ledger (SN298), not a strategy.
+- **The partner's first minute** does not survive executable prices (SN288). Their green days were lost to trades added after the give-back alert (SN287).
+- **The real cost of one ATM lot round trip** is ₹90–100 (SN290).
+- **The remaining untested information is packet-level order flow** from the tick recorder (live from Nov 16). Two candidates (SN291 futures pressure, SN293 lagging strike) are frozen for a 20-session forward verdict (`docs/research/fno/2026-11-16-sn286/fwd.py`, about Dec 17–19).

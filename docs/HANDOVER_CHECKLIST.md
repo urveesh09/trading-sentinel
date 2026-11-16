@@ -1,3 +1,21 @@
+## November 16 (morning) - SN286–SN300: the auditor's brief tested; two packet candidates frozen for a forward verdict (research only, Dev)
+
+**Owner (Nov 16):** test the auditor's SN286–SN300 brief (`docs/SN286_SN300_RESEARCH_BRIEF.md`), agree or improve.
+
+**Scored on seen data:**
+- **SN286, corrected holiday calls** (weekday full sessions before a weekday market holiday; executable 15:10 exit): positive on all four samples, but without the best day +4.2k / −3.0k / −5.1k / −14.4k. In Gold's wallet +₹18,016 over 33 calls, −₹741 without the best. A forward ledger only (SN298, next date Dec 24).
+- **SN287:** the partner's green days were lost to entries added after the give-back alert (145% of the post-alert change). "No new entries after the alert" was better in 3 of 4 alert sessions.
+- **SN288:** the partner's first-minute edge does not survive executable prices (−0.22% vs +0.09% for random entries; fills 0.35% above the ask). Shares only.
+- **SN290:** a real one-lot ATM round trip costs ₹90–100 (straddle ₹190); the model is ₹4–9 conservative; a one-minute delay is ±₹310–410 noise.
+
+**Frozen for the forward window** (tick recorder, the first 20 qualified NIFTY sessions from Nov 17, verdict once): SN291 (futures pressure), SN293 (lagging strike), SN294–SN296 diagnostics and exit challenger, SN298 holiday shadow.
+- Run `python fwd.py collect` in `docs/research/fno/2026-11-16-sn286` before ~Dec 20 (the recorder keeps 35 days).
+- Then `python fwd.py verdict` once.
+
+**Where:** `docs/research/fno/2026-11-16-sn286/README.md`. Plan `d5cfb8f1`, scorers `d5168b0f`.
+
+**Runtime:** none changed; Production unchanged (read-only reads of the tick folder, E03.2 and paper DBs).
+
 ## November 16 (morning) - SN276–SN285: every earlier gap-day signal combined, on all the data (research only, Dev)
 
 **Owner (Nov 16):** "10 slots more … other perspective … same wallet … learn from the good points of strategies."
