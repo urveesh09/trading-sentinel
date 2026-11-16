@@ -1,0 +1,101 @@
+{
+ "DEV @205": {
+  "sessions": 850,
+  "trades": 12988,
+  "net": -3983317,
+  "per_session": -4686.3,
+  "worst_day": -20167,
+  "quiet_sessions": 660,
+  "quiet_net": -3110284,
+  "random_median": -1786784,
+  "rule_percentile_vs_random": 0.0
+ },
+ "DEV @400": {
+  "sessions": 850,
+  "trades": 12988,
+  "net": -6528274,
+  "per_session": -7680.3,
+  "worst_day": -23092,
+  "quiet_sessions": 660,
+  "quiet_net": -5080215
+ },
+ "TEST @205": {
+  "sessions": 37,
+  "trades": 552,
+  "net": -139255,
+  "per_session": -3763.6,
+  "worst_day": -8366,
+  "quiet_sessions": 25,
+  "quiet_net": -91656,
+  "random_median": -80144,
+  "rule_percentile_vs_random": 0.0
+ },
+ "TEST @400": {
+  "sessions": 37,
+  "trades": 552,
+  "net": -246363,
+  "per_session": -6658.4,
+  "worst_day": -11291,
+  "quiet_sessions": 25,
+  "quiet_net": -163177
+ },
+ "2019Q3 @205": {
+  "sessions": 48,
+  "trades": 758,
+  "net": -210434,
+  "per_session": -4384.0,
+  "worst_day": -10170,
+  "quiet_sessions": 15,
+  "quiet_net": -54411,
+  "random_median": -96078,
+  "rule_percentile_vs_random": 0.0
+ },
+ "2019Q3 @400": {
+  "sessions": 48,
+  "trades": 758,
+  "net": -363184,
+  "per_session": -7566.3,
+  "worst_day": -13290,
+  "quiet_sessions": 15,
+  "quiet_net": -105371
+ },
+ "2019Q4 @205": {
+  "sessions": 46,
+  "trades": 725,
+  "net": -225163,
+  "per_session": -4894.9,
+  "worst_day": -8238,
+  "quiet_sessions": 41,
+  "quiet_net": -201958,
+  "random_median": -106264,
+  "rule_percentile_vs_random": 0.0
+ },
+ "2019Q4 @400": {
+  "sessions": 46,
+  "trades": 725,
+  "net": -366538,
+  "per_session": -7968.2,
+  "worst_day": -11163,
+  "quiet_sessions": 41,
+  "quiet_net": -328318
+ },
+ "2019Q3 @205 lot 75 (sensitivity)": {
+  "sessions": 48,
+  "trades": 758,
+  "net": -219099,
+  "per_session": -4564.6,
+  "worst_day": -11114,
+  "quiet_sessions": 15,
+  "quiet_net": -59325
+ },
+ "2019Q4 @205 lot 75 (sensitivity)": {
+  "sessions": 46,
+  "trades": 725,
+  "net": -231674,
+  "per_session": -5036.4,
+  "worst_day": -8923,
+  "quiet_sessions": 41,
+  "quiet_net": -207886
+ },
+ "verdict_2019": "FAIL"
+}
