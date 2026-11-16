@@ -1,3 +1,26 @@
+## November 16 (morning) - Deployed: Production `c6cbceb1` (PR #140: N16-RV partner review timeout fix)
+
+**Authority:** the owner, Nov 16 ~08:00: "Both quick unblock and real fix do both and do it quick and then through dev usual path, deploy right now."
+
+**Release:** PR #140 (`codex/production-correction-hedge-p0` at `b90d9f19` → `evolve/smart-strategies`), merged as `c6cbceb1` at 08:22 IST.
+- Runtime: `partner_coach.py`, `partner_insights.py` and `partner_trade_paths.py` (engine), plus `routes/partner-kite.js` and `routes/proxy.js` (gateway), with tests.
+- The other commits in the PR are docs and research only (SN251–SN257 under `docs/research`, the Gold v7 deploy record).
+- No backup, by the owner's rule (code only; no schema, data or `.env` change).
+
+**Deploy (runbook), Monday 08:23–08:26 IST, before the open:**
+- Fast-forward to `c6cbceb1`.
+- Built python-engine (27 s), node-gateway (40 s) and agent (59 s) one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-16T02:52:46Z`.
+- Stopped autoheal, force-recreated all three, restarted nginx, started autoheal.
+- All services healthy at 08:25:40. `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\c6cbceb1….json`.
+
+**After (live):**
+- Inside the engine, `_dt_text` and `_bar_time` are present.
+- `/partner/review?days=30`: 200 in 1.11–1.35 s (was 5.63–5.84 s). `/partner/review/days`: 1.12 s. `/partner/coach?days=30`: 1.31 s (was 5.86 s).
+- The gateway's `/api/partner-kite/review` is live (401 without a session) with the 20 s wait.
+- No engine or gateway errors since the restart. The Kite token was re-armed at the second try. The gateway's startup holiday fetch raced the engine again (harmless fallback).
+
+**Next:** the partner reopens the review from the Telegram button and gets the page. If it is ever slow again, the page now says "taking longer than usual" instead of "unreachable", and the gateway log shows `proxy_error … aborted`.
+
 ## November 16 (morning) - N16-RV: partner review page timed out (fix in Dev, deploy on the owner's word before the open)
 
 **Problem:** since at least Nov 16 07:52 IST, the partner's review page and the owner's Partner Coach page (30 days) failed on every open. The gateway waited 5 s; the engine needed 5.6–5.9 s. The cause is CPU: about 1.15 million repeated timestamp parses, quadratic in trades. No data or engine fault. Trading, the trade watch, Telegram and the schedulers were unaffected.
