@@ -1,10 +1,14 @@
-"""[SN121 2026-11-13] The give-back stop: one "stop for today" message once a day that was up >= 5% of the cash has
+"""[SN121 2026-11-13] The give-back stop: one "stop for today" alert once a day that was up >= 5% of the cash has
 fallen back 30% from its best (booked plus open trades at their bids). Messages only."""
+import json
 import math
 
+import httpx
 import pytest
 
 from config import settings
+import partner_bot
+from partner_bot import send_partner_result
 import partner_profit_protection as profit
 import partner_watch as pw
 from tests.test_partner_broker_sync import kite, partner_app  # noqa: F401
@@ -36,9 +40,10 @@ def test_rule_arms_at_five_percent_and_stops_at_thirty_percent_given_back():
 
 def test_text_is_short_concrete_and_leaves_the_choice():
     up = profit.giveback_stop_text(6000, 4200)
-    assert up.startswith("🛑 Stop for today and keep your profit.")
+    assert up.splitlines()[0] == "Stop for today and keep your profit"
     assert "Best today +₹6,000, now +₹4,200: 30% of it given back." in up and up.endswith("Your call.")
     down = profit.giveback_stop_text(6000, -1000)
+    assert down.splitlines()[0] == "🛑 Stop for today."
     assert "now -₹1,000: all of it given back." in down and "keep your profit" not in down
 
 
@@ -89,10 +94,37 @@ async def test_message_is_rebuilt_at_send_time_and_dropped_after_a_recovery(on, 
     assert await pw._b_day("unused.db", {"gbstop": 6000.0}, view, now) is None
 
 
+@pytest.fixture
+def telegram(monkeypatch):
+    calls, responses = [], []
+    client = httpx.AsyncClient
+
+    def handle(request):
+        method = request.url.path.rsplit("/", 1)[-1]
+        payload = request.content if method == "sendSticker" else json.loads(request.content)
+        calls.append((method, payload))
+        status = responses.pop(0) if responses else 200
+        if isinstance(status, Exception):
+            raise status
+        reply = {"ok": status == 200, "result": {"message_id": len(calls)}}
+        if status == 429:
+            reply["parameters"] = {"retry_after": 1}
+        return httpx.Response(status, json=reply)
+
+    monkeypatch.setattr(partner_bot.httpx, "AsyncClient", lambda: client(transport=httpx.MockTransport(handle)))
+    monkeypatch.setattr(partner_bot, "STOP_MESSAGE_GAP_SEC", 0.0)
+    monkeypatch.setattr(partner_bot, "send_partner_result", send_partner_result)
+    monkeypatch.setattr(settings, "PARTNER_BOT_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_TELEGRAM_CHAT_ID", "12345678")
+    return calls, responses
+
+
 @pytest.mark.asyncio
-async def test_in_the_watch_the_stop_replaces_the_give_back_step_of_the_same_tick(watch, kite):
-    """The N04-B scenario (cash Rs 7,537, best about +Rs 1,300 at 10:05, then two losers): with the stop on, the
-    partner gets one message, the stop, not the step and the stop together."""
+@pytest.mark.parametrize("details_status", [200, 429])
+async def test_watch_sends_the_sticker_then_headline_then_details_in_one_alert(watch, kite, telegram, details_status):
+    """The stop replaces the earlier give-back step and retries only its full alert."""
+    calls, responses = telegram
+    responses.extend([200, 200, details_status])
     from tests.test_partner_watch import _login, _market, _messages, _o
     await _login()
     market = _market(D(10, 0))
@@ -101,11 +133,55 @@ async def test_in_the_watch_the_stop_replaces_the_give_back_step_of_the_same_tic
     await pw.watch_tick(D(10, 5, 5), market=market)
     kite["orders"] += [_o("103", "BUY", D(10, 10), average_price=80.0), _o("104", "SELL", D(10, 15), average_price=72.0)]
     await pw.watch_tick(D(10, 15, 5), market=market)
+    await pw.watch_tick(D(10, 15, 20), market=market)  # the full alert can retry before it expires
     kite["orders"] += [_o("105", "BUY", D(10, 20), average_price=80.0), _o("106", "SELL", D(10, 25), average_price=75.0)]
     await pw.watch_tick(D(10, 25, 5), market=market)
     for at in (D(10, 25, 10), D(10, 25, 30)):
         await pw.watch_tick(at, market=market)
-    assert [m["kind"] for m in watch] == ["watch_day"]
-    assert watch[-1]["text"].startswith("🛑 Stop for today and keep your profit.")
+    assert [method for method, _ in calls] == (
+        ["sendSticker", "sendRichMessage", "sendRichMessage"]
+        + (["sendRichMessage"] if details_status == 429 else [])
+    )
+    assert b'name="chat_id"\r\n\r\n12345678' in calls[0][1]
+    assert b'filename="partner-stop.webp"' in calls[0][1] and b"image/webp" in calls[0][1]
+    assert partner_bot.STOP_STICKER.read_bytes() in calls[0][1]
+    heading = "<h2><b>Stop for today and keep your profit</b></h2>"
+    assert calls[1][1] == {"chat_id": "12345678", "rich_message": {"html": heading}}
+    for _, payload in calls[2:]:
+        assert payload["chat_id"] == "12345678"
+        html = payload["rich_message"]["html"]
+        assert html.startswith(heading + "<p>Best today +₹")
+        assert "of it given back.<br>On your recent days" in html and html.endswith("Your call.</p>")
     rows = [r for r in await _messages(settings.DB_PATH) if r[1] == "DAY"]
     assert len(rows) == 1 and rows[0][0].startswith("gbstop:2026-10-23:")
+    assert rows[0][2:5] == (1, 2 if details_status == 429 else 1, "acknowledged")
+
+
+@pytest.mark.asyncio
+async def test_explicit_rich_rejection_falls_back_to_bold_and_sticker_failure_keeps_text(telegram):
+    calls, responses = telegram
+    responses.extend([400, 404, 200, 400, 200])
+    headline = "Stop for today and keep your profit"
+    text = headline + "\nP&L < ₹4,000"
+    result = await send_partner_result(text, large_heading=True, stop_lead_in=True)
+
+    assert result.delivered
+    assert [method for method, _ in calls] == [
+        "sendSticker", "sendRichMessage", "sendMessage", "sendRichMessage", "sendMessage",
+    ]
+    assert calls[3][1]["rich_message"]["html"].endswith("<p>P&amp;L &lt; ₹4,000</p>")
+    for index, expected in ((2, headline), (4, text)):
+        payload = calls[index][1]
+        assert payload["text"] == expected
+        assert payload["entities"] == [{"type": "bold", "offset": 0, "length": len(headline)}]
+
+
+@pytest.mark.asyncio
+async def test_ambiguous_rich_delivery_does_not_resend_as_plain_text(telegram):
+    calls, responses = telegram
+    responses.extend([200, 200, httpx.ReadTimeout("response lost")])
+
+    result = await send_partner_result(profit.giveback_stop_text(6000, 4200), large_heading=True, stop_lead_in=True)
+
+    assert result.state == "ambiguous_timeout"
+    assert [method for method, _ in calls] == ["sendSticker", "sendRichMessage", "sendRichMessage"]

@@ -1,3 +1,10 @@
+## November 16, 2026 - Partner give-back alert presentation
+
+- The positive give-back alert uses `partner_profit_protection.giveback_stop_text`, `partner_watch._deliver` and `partner_bot.send_partner_result` to send the bundled STOP sticker, the standalone headline, then the full alert.
+- The text uses a Telegram rich heading and falls back to a bold entity on HTTP 400 or 404. Lead-ins are attempted once, paced just over one second apart. The existing outbox can retry the full alert without starting the sequence again. The rule and its deduplication continue to use one advisory event.
+- Verification on the standalone Dev release branch. `python -m pytest -q tests/test_partner*.py tests/test_oct15_audit_fixes.py tests/test_oct13_audit_fixes.py` passed 771 tests with six dependency deprecation warnings (the shell expanded the wildcard into file paths). The Telegram tests use a mock transport. Live presentation remains to be observed after the normal deployment.
+- Rollback. Revert this release through the same GitHub workflow to restore the previous presentation. No new settings or migration.
+
 ## November 16 (morning) - N16-RV: partner review page timed out (fix in Dev, deploy on the owner's word before the open)
 
 **Problem:** since at least Nov 16 07:52 IST, the partner's review page and the owner's Partner Coach page (30 days) failed on every open. The gateway waited 5 s; the engine needed 5.6–5.9 s. The cause is CPU: about 1.15 million repeated timestamp parses, quadratic in trades. No data or engine fault. Trading, the trade watch, Telegram and the schedulers were unaffected.
@@ -8180,7 +8187,7 @@ producer will no longer create them.
 
 ## Partner give-back stop (SN121 finding, Nov 13, 2026; Dev, not deployed)
 
-- **What:** one partner message, "🛑 Stop for today and keep your profit".
+- **What:** while the day is still profitable, the partner gets a STOP sticker, a larger bold "Stop for today and keep your profit" headline, then the full alert with the same headline and the P&L explanation. At zero or below, the watch sends the existing "🛑 Stop for today." message.
   - **When:** once the day has been up at least 5% of the day's cash and has then given back 30% of its best. The day's value is booked trades plus open trades at their displayed bids.
   - **Plain words:** once you're up ₹1,250 on ₹25k, don't give back more than about a third of your best.
   - **Repeats:** told again only after a new best at least 20% higher.

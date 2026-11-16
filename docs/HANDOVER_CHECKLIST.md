@@ -5452,7 +5452,7 @@ Before the next implementation: update the plan slice. With each commit: update 
 
 ## Partner give-back stop (SN121 finding, Nov 13, 2026; Dev, not deployed)
 
-- **What:** one partner message, "🛑 Stop for today and keep your profit".
+- **What:** while the day is still profitable, the partner gets a STOP sticker, a larger bold "Stop for today and keep your profit" headline, then the full alert with the same headline and the P&L explanation. At zero or below, the watch sends the existing "🛑 Stop for today." message.
   - **When:** once the day has been up at least 5% of the day's cash and has then given back 30% of its best. The day's value is booked trades plus open trades at their displayed bids.
   - **Plain words:** once you're up ₹1,250 on ₹25k, don't give back more than about a third of your best.
   - **Repeats:** told again only after a new best at least 20% higher.

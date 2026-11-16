@@ -64,6 +64,7 @@ def trend_note(direction: str, underlying: str, side: str, *, advise: bool = Tru
 # 2026-11-13-sn121). Advice only: the partner decides.
 GIVEBACK_ARM_SHARE = 0.05
 GIVEBACK_STOP_SHARE = 0.30
+GIVEBACK_PROFIT_HEADLINE = "Stop for today and keep your profit"
 
 
 def giveback_stop(best: float, now_value: float, cash: float, arm: float = GIVEBACK_ARM_SHARE,
@@ -84,7 +85,7 @@ def giveback_stop_text(best: float, now_value: float) -> str:
     """The partner's message: short, concrete, their call."""
     given = max(0.0, best - now_value) / best if best > 0 else 0.0
     if now_value > 0:
-        head, part = "🛑 Stop for today and keep your profit.", f"{given:.0%} of it given back"
+        head, part = GIVEBACK_PROFIT_HEADLINE, f"{given:.0%} of it given back"
     else:
         head, part = "🛑 Stop for today.", "all of it given back"
     return (f"{head}\nBest today {_rs(best)}, now {_rs(now_value)}: {part}.\n"
