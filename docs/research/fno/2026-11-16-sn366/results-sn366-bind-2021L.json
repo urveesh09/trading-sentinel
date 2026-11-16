@@ -1,0 +1,58 @@
+{
+ "point": "2021L",
+ "window": [
+  "2021-09-01",
+  "2021-12-31"
+ ],
+ "sessions": 83,
+ "first_last_session": [
+  "2021-09-01",
+  "2021-12-31"
+ ],
+ "sessions_with_options": 65,
+ "sessions_without_any_option": [
+  "2021-09-02",
+  "2021-09-09",
+  "2021-09-16",
+  "2021-09-23",
+  "2021-09-30",
+  "2021-10-07",
+  "2021-10-14",
+  "2021-10-21",
+  "2021-10-28",
+  "2021-11-03",
+  "2021-11-11",
+  "2021-11-18",
+  "2021-11-25",
+  "2021-12-02",
+  "2021-12-09",
+  "2021-12-16",
+  "2021-12-23",
+  "2021-12-30"
+ ],
+ "short_sessions": [],
+ "rows_by_kind": {
+  "future": 66663,
+  "index": 39083,
+  "option": 889798
+ },
+ "bad_rows": {
+  "nonpositive_ohlc": 0,
+  "incoherent_ohlc": 0,
+  "negative_volume": 0,
+  "negative_oi": 0,
+  "invalid_timestamp": 0
+ },
+ "option_expiries": 23,
+ "weekly_expiry_calendar_days": 23,
+ "daily_bars": 495,
+ "daily_first": "2020-01-01",
+ "daily_last": "2021-12-31",
+ "bars_before_first_session": 412,
+ "sessions_with_no_trend_reading": [],
+ "gate_high": 48,
+ "gate_low": 35,
+ "dataset_breeze_sqlite_sha256": "a3fd033fe2a249253d91f2be9aaeb9c255a88efaceea5a3b96dbfbc9e2c03425",
+ "daily_sha256": "b7761c8f5d587f8c172790b60a20fe6b5fb073f49a31ea528b376aeb5204a633",
+ "prices_shown": false
+}
