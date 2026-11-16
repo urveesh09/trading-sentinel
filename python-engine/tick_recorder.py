@@ -53,6 +53,7 @@ import structlog
 
 import background_tasks
 from config import settings
+from market_calendar import derivatives_close_minute  # [SN329]
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -129,7 +130,6 @@ def _in_window(now: datetime) -> bool:
 
 def _end_min(now: datetime) -> int:
     """[SN329 2026-11-16] One minute after the derivatives close: 15:41 until 2026-12-04, 15:46 from 2026-12-07."""
-    from market_calendar import derivatives_close_minute
     return max(END_MIN, derivatives_close_minute(now.date()) + 1)
 
 

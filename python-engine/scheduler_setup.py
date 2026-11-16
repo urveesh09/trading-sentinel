@@ -25,6 +25,7 @@ from time import monotonic
 
 import background_tasks
 from config import settings
+from market_calendar import derivatives_close_minute  # [SN329]
 
 
 def _log_fno_watchdog_payload(logger, payload):
@@ -153,7 +154,6 @@ def register_fno_scheduler_jobs(scheduler):
         15:39, an F&O pass runs only while a position or a structure is still
         open: an exit not yet filled is still worked, and a broker's own 15:25
         MIS square-off is read back the same day, not the next morning."""
-        from market_calendar import derivatives_close_minute
         if not (15 * 60 + 25 < nm < derivatives_close_minute(datetime.now(IST).date())):    # [SN329] 15:45 from 2026-12-07
             return False
         from fno_orchestrator import fast_exit_has_work
@@ -295,7 +295,6 @@ def register_fno_scheduler_jobs(scheduler):
         from fno_orchestrator import fast_exit_has_work
         now_ist = datetime.now(IST)
         nm = now_ist.hour * 60 + now_ist.minute
-        from market_calendar import derivatives_close_minute
         # [O26c] to the last minute before the derivatives close (15:39; [SN329] 15:44 from 2026-12-07): work-gated below
         if not (9 * 60 + 15 <= nm < derivatives_close_minute(now_ist.date())) or fno_lock.locked():
             return

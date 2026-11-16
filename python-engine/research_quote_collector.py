@@ -20,6 +20,7 @@ import pytz
 import structlog
 
 from config import settings
+from market_calendar import derivatives_close_minute    # [SN329] imported here, not inside the timed tick
 from fno_instruments import FnoInstruments
 from fno_models import Contract, OptionType
 from fno_underlyings import SPECS, get_instruments_for
@@ -714,7 +715,6 @@ async def research_quote_collection_tick(now_ist: Optional[datetime] = None) -> 
         return result
     if not settings.RESEARCH_QUOTE_COLLECTION_ENABLED:
         return await journal({"reason": "disabled"})
-    from market_calendar import derivatives_close_minute
     if (now_ist.weekday() > 4 or (now_ist.hour, now_ist.minute) < (9, 15)
             or now_ist.hour * 60 + now_ist.minute > derivatives_close_minute(now_ist.date())):    # [SN329] 15:45 from 2026-12-07
         return await journal({"reason": "outside_weekday_session"})
