@@ -217,7 +217,9 @@ def main():
     nets = run_gold(Q, 205.0, j)
     row, days, _log = Q.run(205.0)
     ref = [(d, round(n, 2)) for d, _w, n, _t, _l in days]
-    assert round(j.cum) == 850882 and row["net"] == 850882, (j.cum, row["net"])
+    # disclosed fix (before any grid number): the panel row is a sum of per-year rounded nets (850,882); the journal's
+    # unrounded total is 850,882.78, so the check is to Rs 1; the day-by-day comparison below is exact
+    assert abs(j.cum - 850882) < 1 and row["net"] == 850882, (j.cum, row["net"])
     assert nets == ref, "day nets differ from ow.run_wallet"
     res["parity"] = {"gold_net": round(j.cum), "steps": j.steps, "step_days": j.step_days, "days_identical": True}
     print("parity ok", round(j.cum), j.step_days, flush=True)
