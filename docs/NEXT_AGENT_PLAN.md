@@ -1,3 +1,31 @@
+## November 16 (morning) - N16-RV: partner review page timed out (fix in Dev, deploy on the owner's word before the open)
+
+**Problem:** since at least Nov 16 07:52 IST, the partner's review page and the owner's Partner Coach page (30 days) failed on every open. The gateway waited 5 s; the engine needed 5.6–5.9 s. The cause is CPU: about 1.15 million repeated timestamp parses, quadratic in trades. No data or engine fault. Trading, the trade watch, Telegram and the schedulers were unaffected.
+
+**Authority:** the owner, Nov 16 ~08:00: "Both quick unblock and real fix do both and do it quick and then through dev usual path, deploy right now."
+
+**Slice (files and contracts):**
+- **Engine:** `python-engine/partner_coach.py` (`_dt` → cached `_dt_text`; `trade_stops` filters option and status before parsing), `partner_insights.py` (`_order_events` filters before parsing; `_session` cached), `partner_trade_paths.py` (`_bar_time` cached). Output contract unchanged.
+- **Gateway:** `node-gateway/server/routes/partner-kite.js` (review and coach at 20 s; `AbortError` → 504 with a fixed "taking longer" text), `routes/proxy.js` (`/partner/coach` at 20 s).
+- **Tests:** `python-engine/tests/test_partner_review_speed.py` (4 tests, counting parses, not timing them), and 2 tests in `node-gateway/server/tests/integration/partner-kite.test.js`.
+
+**Acceptance:**
+- (1) The new tests fail on the pre-fix code (552 and 1,203 parses) and pass after.
+- (2) On Production data, the review output hash is identical and the time is under 2 s.
+- (3) The partner and engine suites are green.
+- (4) After the deploy, `/partner/review?days=30` inside the engine takes about 1–1.5 s, and the gateway's `/api/partner-kite/review` returns 200.
+
+**Rollout:**
+- PR `codex/production-correction-hedge-p0` → `evolve/smart-strategies`.
+- Build engine, gateway and agent; recreate; restart nginx; run `verify_deployment.py`.
+- No backup: code only, no schema or `.env` change.
+
+**Rollback:** redeploy `052a6d6e`. The worst case is the old 5 s timeout behaviour.
+
+**Remaining:**
+- `_order_events`/`_stop_orders_of` still scan all orders once per trade. That is linear now, not a hot spot. Index by option only if the review passes about 3 s again.
+- The gateway's boot-time holiday fetch still races the engine (harmless fallback, see the Nov 10 notes).
+
 ## November 15 (night) - Deployed: Production `052a6d6e` (PR #139: Gold v7 on paper = SN Gold v5 + WK-H, band 0.8)
 
 **Authority:** the owner, Nov 15 night: "go ahead, let us build the Gold V7 in production … Go ahead. Deployed in production. Let us test it on paper for some Days."

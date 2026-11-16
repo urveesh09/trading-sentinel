@@ -65,6 +65,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from functools import lru_cache
 from statistics import median
 from typing import Optional
 
@@ -131,7 +132,9 @@ def _minute(at: datetime) -> datetime:
     return at.astimezone(IST).replace(second=0, microsecond=0)
 
 
+@lru_cache(maxsize=4096)
 def _session(day: str, hour: int, minute: int) -> datetime:
+    """[N16-RV] Cached: the same few session times were localized ~28,000 times per review page."""
     return IST.localize(datetime.fromisoformat(day) + timedelta(hours=hour, minutes=minute))
 
 
@@ -335,10 +338,12 @@ def _order_events(ctx: Context, trade: dict, sl_orders: list, first: datetime, e
                                        f"{_px(change['new_value'])}"})
     window_start = first - timedelta(minutes=RUN_LOOKBACK_MIN)
     for order in ctx.orders:
+        # [N16-RV] Status and option first; the time only for this option's refusals.
+        if (order["status"] != "REJECTED" or order["exchange"] != trade["exchange"]
+                or order["tradingsymbol"] != trade.get("tradingsymbol")):
+            continue
         placed = _dt(order.get("placed_at"))
-        if (order["status"] == "REJECTED" and order["exchange"] == trade["exchange"]
-                and order["tradingsymbol"] == trade.get("tradingsymbol") and placed is not None
-                and window_start <= placed <= end):
+        if placed is not None and window_start <= placed <= end:
             plain = refusal_plain(order, ctx.orders)
             reason = f": {plain or order['status_message']}" if plain or order.get("status_message") else ""
             events.append({"at": _hhmm(placed), "who": "you", "sort_key": placed.isoformat(),
@@ -346,8 +351,10 @@ def _order_events(ctx: Context, trade: dict, sl_orders: list, first: datetime, e
     # [O24-PW] What the trade watch told the partner about this trade (its key is the first buy's order id).
     first_buy = next((b.get("order_id") for b in trade["buys"] if b.get("order_id")), None)
     for message in ctx.watch:
+        if not first_buy or message.get("position_key") != first_buy or not message.get("summary"):
+            continue
         at = _dt(message.get("created_at"))
-        if first_buy and message.get("position_key") == first_buy and at is not None and message.get("summary"):
+        if at is not None:
             events.append({"at": _hhmm(at), "who": "assistant", "sort_key": at.isoformat(),
                            "text": f"Assistant: {message['summary']}"})
     return sorted(events, key=lambda e: e["sort_key"])

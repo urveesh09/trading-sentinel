@@ -115,6 +115,38 @@ test('the review forwards a valid day and a bounded window only', async () => {
   expect(global.fetch).toHaveBeenCalledTimes(3);
 });
 
+test('[N16-RV] the review and coach reads wait 20 s, not the 5 s default (a 30-day review took 5.9 s)', async () => {
+  global.fetch.mockResolvedValue(engineReply(200, { review: {} }));
+  const spy = jest.spyOn(global, 'setTimeout');
+  try {
+    const partner = makeApp({ partner_view: { since: 'x' } }).app;
+    const owner = makeApp({ authenticated: true }).app;
+    for (const [app, path] of [[partner, '/api/partner-kite/review'], [partner, '/api/partner-kite/coach?days=30'],
+      [owner, '/api/proxy/partner/coach?days=30']]) {
+      spy.mockClear();
+      expect((await request(app).get(path)).status).toBe(200);
+      const waits = spy.mock.calls.map(([, ms]) => ms);
+      expect(waits).toContain(20000);
+      expect(waits).not.toContain(5000);
+    }
+  } finally {
+    spy.mockRestore();
+  }
+});
+
+test('[N16-RV] a slow engine reads as slow (504), an unreachable one as unreachable (502)', async () => {
+  const partner = makeApp({ partner_view: { since: 'x' } }).app;
+  global.fetch.mockRejectedValueOnce(Object.assign(new Error('This operation was aborted'), { name: 'AbortError' }));
+  const slow = await request(partner).get('/api/partner-kite/review');
+  expect(slow.status).toBe(504);
+  expect(slow.body).toEqual({ error: 'gateway_timeout',
+    message: 'The review is taking longer than usual. Try again in a minute.' });
+  global.fetch.mockRejectedValueOnce(new TypeError('fetch failed'));
+  const down = await request(partner).get('/api/partner-kite/review');
+  expect(down.status).toBe(502);
+  expect(down.body.message).toBe('Quant Engine is unreachable.');
+});
+
 test('[O23-PH] the day list needs a session and asks the engine for its 120 days', async () => {
   expect((await request(makeApp().app).get('/api/partner-kite/review/days')).status).toBe(401);
   global.fetch.mockResolvedValue(engineReply(200, { days: ['2026-10-23'], today: '2026-10-23' }));

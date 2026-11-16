@@ -1,3 +1,22 @@
+## November 16 (morning) - N16-RV: the partner's review answers in about 1 s, and a slow answer says it is slow
+
+**Incident:** Mon Nov 16, 07:52 IST. The partner logged in to Zerodha and opened the review. Both tries showed "Your review is unavailable: Quant Engine is unreachable."
+- The engine was up. Its answer for a 30-day review was correct, but it took 5.6–5.9 s, and the gateway stops waiting after 5 s (`PYTHON_ENGINE_TIMEOUT_MS`).
+- Cause: for each of about 430 analysed trades, `partner_insights._order_events` and `partner_coach.trade_stops` parsed the time of *every* order, stop and trade-watch message before checking whether it was the trade's own option. That was about 1.15 million pytz timestamp conversions per page.
+- The cost grows with the partner's trade count. It crossed 5 s with the data alone; the code had not changed since Nov 9.
+
+**Behaviour now:**
+- **Engine (same output, faster):**
+  - `partner_coach._dt` keeps its contract; strings are parsed once through a cached `_dt_text` (LRU of 65,536).
+  - `trade_stops` and `_order_events` check option, status and watch key before parsing any time.
+  - `partner_insights._session` and the stored bar times in `partner_trade_paths.load_paths` (`_bar_time`) are cached. Datetimes are immutable, so the cached values are safe to share.
+  - On Production data (fixed clock, 08:00 IST), the 30-day load went from 6.0 s to 1.4 s and the 120-day one from 5.5 s to 1.1 s. A SHA-256 of all 13 + 15 day reviews and progress was identical before and after.
+- **Gateway:**
+  - `/api/partner-kite/review`, `/api/partner-kite/coach` and the owner's `/api/proxy/partner/coach` now wait 20 s (`HISTORY_TIMEOUT_MS`), like the day list.
+  - In `partner-kite.js`, a timeout (`AbortError`) now returns 504 `gateway_timeout`: "The review is taking longer than usual. Try again in a minute."
+  - A failed connection still returns 502 "Quant Engine is unreachable."
+  - Other proxy routes are unchanged.
+
 ## November 15 (night) - Deployed: Production `052a6d6e` (PR #139: Gold v7 on paper = SN Gold v5 + WK-H, band 0.8)
 
 **Authority:** the owner, Nov 15 night: "go ahead, let us build the Gold V7 in production … Go ahead. Deployed in production. Let us test it on paper for some Days."

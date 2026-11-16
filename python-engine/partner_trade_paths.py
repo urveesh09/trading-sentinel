@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import json
 from datetime import datetime, timedelta
+from functools import lru_cache
 from typing import Awaitable, Callable, Optional
 
 import aiosqlite
@@ -188,6 +189,13 @@ async def ensure_paths(db_path: str, day: str, now: Optional[datetime] = None, *
     return out
 
 
+@lru_cache(maxsize=65536)
+def _bar_time(text: str) -> datetime:
+    """[N16-RV] A stored bar's minute as an IST time, cached: every option traded that day shares the same minutes,
+    and the review read ~83,000 of them per page (immutable, so one shared value is safe). A bad stamp still raises."""
+    return IST.localize(datetime.fromisoformat(text))
+
+
 async def load_paths(db_path: str, first_day: str, last_day: str) -> dict:
     """{(day, exchange, symbol): {"basis", "bars": [(datetime IST, o, h, l, c)]}}."""
     await init_partner_paths_db(db_path)
@@ -204,8 +212,7 @@ async def load_paths(db_path: str, first_day: str, last_day: str) -> dict:
         bars = []
         for ts, o, h, l, c in raw:
             try:
-                bars.append((IST.localize(datetime.fromisoformat(str(ts)[:19])), float(o), float(h), float(l),
-                             float(c)))
+                bars.append((_bar_time(str(ts)[:19]), float(o), float(h), float(l), float(c)))
             except (TypeError, ValueError):
                 continue
         out[(day, exchange, symbol)] = {"basis": basis, "bars": sorted(bars, key=lambda b: b[0])}
