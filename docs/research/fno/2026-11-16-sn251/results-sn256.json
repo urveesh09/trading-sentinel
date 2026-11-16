@@ -1,0 +1,366 @@
+{
+ "variants": {
+  "straddle in 360 out next 5": {
+   "trades": 226,
+   "net": -230015,
+   "per_trade": -1017.8,
+   "win_pct": 19.9,
+   "worst": -7777,
+   "best": 8734,
+   "without_best5": -256501,
+   "by_year": {
+    "2022": -47332,
+    "2023": -42280,
+    "2024": -44799,
+    "2025": -46550,
+    "2026": -49055
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 7,
+   "months": 53,
+   "worst_month": -16923,
+   "maxmin": -49055
+  },
+  "straddle in 360 out next 30": {
+   "trades": 226,
+   "net": -227573,
+   "per_trade": -1007.0,
+   "win_pct": 23.0,
+   "worst": -7777,
+   "best": 6978,
+   "without_best5": -257041,
+   "by_year": {
+    "2022": -42781,
+    "2023": -48628,
+    "2024": -37021,
+    "2025": -46984,
+    "2026": -52159
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 6,
+   "months": 53,
+   "worst_month": -16923,
+   "maxmin": -52159
+  },
+  "straddle in 360 out next 355": {
+   "trades": 226,
+   "net": -256617,
+   "per_trade": -1135.5,
+   "win_pct": 26.1,
+   "worst": -7777,
+   "best": 11348,
+   "without_best5": -308652,
+   "by_year": {
+    "2022": -60570,
+    "2023": -43879,
+    "2024": -49016,
+    "2025": -39864,
+    "2026": -63288
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 11,
+   "months": 53,
+   "worst_month": -16923,
+   "maxmin": -63288
+  },
+  "straddle in 370 out next 5": {
+   "trades": 226,
+   "net": -213892,
+   "per_trade": -946.4,
+   "win_pct": 21.7,
+   "worst": -8057,
+   "best": 5914,
+   "without_best5": -236034,
+   "by_year": {
+    "2022": -43167,
+    "2023": -33287,
+    "2024": -45503,
+    "2025": -41260,
+    "2026": -50675
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 7,
+   "months": 53,
+   "worst_month": -15476,
+   "maxmin": -50675
+  },
+  "straddle in 370 out next 30": {
+   "trades": 226,
+   "net": -206029,
+   "per_trade": -911.6,
+   "win_pct": 26.1,
+   "worst": -8057,
+   "best": 5511,
+   "without_best5": -230240,
+   "by_year": {
+    "2022": -36660,
+    "2023": -39012,
+    "2024": -35934,
+    "2025": -41931,
+    "2026": -52491
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 9,
+   "months": 53,
+   "worst_month": -15476,
+   "maxmin": -52491
+  },
+  "straddle in 370 out next 355": {
+   "trades": 226,
+   "net": -257323,
+   "per_trade": -1138.6,
+   "win_pct": 23.9,
+   "worst": -8057,
+   "best": 11029,
+   "without_best5": -304274,
+   "by_year": {
+    "2022": -54670,
+    "2023": -34640,
+    "2024": -52545,
+    "2025": -37893,
+    "2026": -77575
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 11,
+   "months": 53,
+   "worst_month": -15476,
+   "maxmin": -77575
+  },
+  "strangle 0.25 in 360 out next 5": {
+   "trades": 226,
+   "net": -252082,
+   "per_trade": -1115.4,
+   "win_pct": 18.1,
+   "worst": -7724,
+   "best": 3305,
+   "without_best5": -266837,
+   "by_year": {
+    "2022": -56900,
+    "2023": -40495,
+    "2024": -50551,
+    "2025": -45513,
+    "2026": -58623
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 5,
+   "months": 53,
+   "worst_month": -14758,
+   "maxmin": -58623
+  },
+  "strangle 0.25 in 360 out next 30": {
+   "trades": 226,
+   "net": -253172,
+   "per_trade": -1120.2,
+   "win_pct": 20.4,
+   "worst": -7724,
+   "best": 6934,
+   "without_best5": -274264,
+   "by_year": {
+    "2022": -52255,
+    "2023": -46840,
+    "2024": -43768,
+    "2025": -46992,
+    "2026": -63316
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 5,
+   "months": 53,
+   "worst_month": -14758,
+   "maxmin": -63316
+  },
+  "strangle 0.25 in 360 out next 355": {
+   "trades": 226,
+   "net": -265748,
+   "per_trade": -1175.9,
+   "win_pct": 23.9,
+   "worst": -7724,
+   "best": 11219,
+   "without_best5": -316962,
+   "by_year": {
+    "2022": -65723,
+    "2023": -43771,
+    "2024": -52851,
+    "2025": -31370,
+    "2026": -72032
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 9,
+   "months": 53,
+   "worst_month": -18055,
+   "maxmin": -72032
+  },
+  "strangle 0.25 in 370 out next 5": {
+   "trades": 226,
+   "net": -218586,
+   "per_trade": -967.2,
+   "win_pct": 20.4,
+   "worst": -8033,
+   "best": 5844,
+   "without_best5": -237460,
+   "by_year": {
+    "2022": -43374,
+    "2023": -31879,
+    "2024": -50883,
+    "2025": -40802,
+    "2026": -51648
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 5,
+   "months": 53,
+   "worst_month": -14778,
+   "maxmin": -51648
+  },
+  "strangle 0.25 in 370 out next 30": {
+   "trades": 226,
+   "net": -216756,
+   "per_trade": -959.1,
+   "win_pct": 24.3,
+   "worst": -8033,
+   "best": 5333,
+   "without_best5": -237721,
+   "by_year": {
+    "2022": -39352,
+    "2023": -37906,
+    "2024": -42073,
+    "2025": -42317,
+    "2026": -55109
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 6,
+   "months": 53,
+   "worst_month": -14778,
+   "maxmin": -55109
+  },
+  "strangle 0.25 in 370 out next 355": {
+   "trades": 226,
+   "net": -270350,
+   "per_trade": -1196.2,
+   "win_pct": 22.1,
+   "worst": -8033,
+   "best": 10721,
+   "without_best5": -316691,
+   "by_year": {
+    "2022": -60229,
+    "2023": -34931,
+    "2024": -55816,
+    "2025": -39103,
+    "2026": -80271
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 10,
+   "months": 53,
+   "worst_month": -16824,
+   "maxmin": -80271
+  }
+ },
+ "pick": "straddle in 360 out next 5",
+ "pick_dev": {
+  "trades": 226,
+  "net": -230015,
+  "per_trade": -1017.8,
+  "win_pct": 19.9,
+  "worst": -7777,
+  "best": 8734,
+  "without_best5": -256501,
+  "by_year": {
+   "2022": -47332,
+   "2023": -42280,
+   "2024": -44799,
+   "2025": -46550,
+   "2026": -49055
+  },
+  "years_positive": 0,
+  "years": 5,
+  "months_positive": 7,
+  "months": 53,
+  "worst_month": -16923,
+  "maxmin": -49055
+ },
+ "null": {
+  "kind": "day",
+  "selected_maxmin_p95": -36749,
+  "selected_maxmin_mean": -44433
+ },
+ "dev_stress_400": -320497,
+ "dev_late_1": -230782,
+ "exams": {
+  "TEST": {
+   "trades": 8,
+   "net": -9897,
+   "per_trade": -1237.1,
+   "win_pct": 12.5,
+   "worst": -2834,
+   "best": 2544,
+   "without_best5": -7055,
+   "by_year": {
+    "2026": -9897
+   },
+   "years_positive": 0,
+   "years": 1,
+   "months_positive": 0,
+   "months": 3,
+   "worst_month": -4554,
+   "stress_400": -13084
+  },
+  "EXAMN": {
+   "trades": 71,
+   "net": -49479,
+   "per_trade": -696.9,
+   "win_pct": 16.9,
+   "worst": -3184,
+   "best": 8272,
+   "without_best5": -73648,
+   "by_year": {
+    "2020": -8928,
+    "2021": -23561,
+    "2022": -16990
+   },
+   "years_positive": 0,
+   "years": 3,
+   "months_positive": 3,
+   "months": 18,
+   "worst_month": -10459,
+   "stress_400": -78078
+  },
+  "EXAMS": {
+   "trades": 73,
+   "net": -83629,
+   "per_trade": -1145.6,
+   "win_pct": 17.8,
+   "worst": -7774,
+   "best": 9080,
+   "without_best5": -106060,
+   "by_year": {
+    "2024": 1568,
+    "2025": -55050,
+    "2026": -30147
+   },
+   "years_positive": 1,
+   "years": 3,
+   "months_positive": 4,
+   "months": 19,
+   "worst_month": -19229,
+   "stress_400": -113247
+  }
+ },
+ "gates": {
+  "G1": false,
+  "G2": false,
+  "G3": false,
+  "G4": false
+ },
+ "verdict": "FAIL",
+ "notes": []
+}
