@@ -25,10 +25,10 @@ PARENT = HERE.parent / "2026-11-01-fno-failure-anatomy"
 sys.path[:0] = [str(HERE), str(PARENT)]
 
 YEAR = os.environ.get("N08_YEAR", "2026")
-assert YEAR in ("2023", "2024", "2025", "2026", "TEST2025"), YEAR
+assert YEAR in ("2023", "2024", "2025", "2026", "TEST2025", "2022", "2021L"), YEAR
 for name in ("O30F_YEAR", "O30C_YEAR"):
     os.environ.pop(name, None)
-if YEAR in ("2023", "2024", "TEST2025"):
+if YEAR in ("2023", "2024", "TEST2025", "2022", "2021L"):
     os.environ["O30F_YEAR"] = "2024"     # the 2024 route is the one built to repoint the stack at another sealed dataset
 else:
     os.environ["O30C_YEAR"] = YEAR
@@ -58,6 +58,15 @@ POINTS = {
                  "mirror": FNO_STUDIES / "2026-10-30-nifty-2025-test/_local/mirror.sqlite", "window": ("2025-01-01", "2025-12-31"),
                  "cache": LOCAL / "repoint-test/observations", "local": LOCAL / "repoint-test", "evals": LOCAL / "repoint-test/evals",
                  "daily": HERE.parent / "2026-10-31-fno-complements/_local/daily-2025.json"},
+    # SN366 (Nov 16, 2026): the frozen N11 2022 exam (EXAM_2022_N11.md) on the same repointing as 2023 and TEST2025. "2021L" is the
+    # last part of 2021, only for the exam's paper evidence (N08's one-lot trades before the first 2022 session). Data built by
+    # docs/research/fno/2026-11-16-sn366/sn366_build.py; no rule, book or threshold changes.
+    "2022": {"year": "2022", "dataset": FNO_STUDIES / "2026-11-16-sn366/_local/dataset-nifty-2022", "mirror": FNO_STUDIES / "2026-11-16-sn366/_local/mirror-2022.sqlite",
+             "window": ("2022-01-01", "2022-12-31"), "cache": FNO_STUDIES / "2026-11-16-sn366/_local/observations-2022", "local": FNO_STUDIES / "2026-11-16-sn366/_local/y2022",
+             "evals": FNO_STUDIES / "2026-11-16-sn366/_local/evals-2022", "daily": FNO_STUDIES / "2026-11-16-sn366/_local/daily-2022.json"},
+    "2021L": {"year": "2021", "dataset": FNO_STUDIES / "2026-11-16-sn366/_local/dataset-nifty-2021L", "mirror": FNO_STUDIES / "2026-11-16-sn366/_local/mirror-2021L.sqlite",
+              "window": ("2021-09-01", "2021-12-31"), "cache": FNO_STUDIES / "2026-11-16-sn366/_local/observations-2021L", "local": FNO_STUDIES / "2026-11-16-sn366/_local/y2021L",
+              "evals": FNO_STUDIES / "2026-11-16-sn366/_local/evals-2021L", "daily": FNO_STUDIES / "2026-11-16-sn366/_local/daily-2021L.json"},
 }
 
 if YEAR in POINTS:
