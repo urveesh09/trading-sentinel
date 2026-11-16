@@ -1,3 +1,28 @@
+## November 16 (late afternoon) - SN331–SN350: no short-horizon option edge at any clock; Gold V8 = Gold v5; the wage comes from Gold's capital; V8 shadow keeps its own inventory (research + Dev runtime, not deployed)
+
+**Owner (Nov 16):** the auditor's SN331–SN340 (`docs/SN331_SN340_RESEARCH_BRIEF.md`) plus ten own slots. Plan `95287d3f`; results in `docs/research/fno/2026-11-16-sn331/README.md`.
+
+**Gap-day ideas:**
+- **Failed-break reversals have no room (SN331 / SN345):** 0.5–2.1 index points in 5 minutes; −₹70–89 a trade even at zero stress; −₹131 to −₹169 gross at real archive prices.
+- **The minute reversal fails below every random book (SN344, 2019 included):** any entry right after a fast move costs about ₹95 a lot more than a random one.
+- **Closed:** rebalance days (SN335).
+- **Not triggered:** SENSEX (SN334).
+- **Already answered by SN264:** the expiry book (SN343).
+- **Frozen for the forward window** (scored once after Dec 23, `sn331/fw4.py`): the packet versions SN332 / SN333 / SN349, the one-wallet score SN340 and V8 fill realism SN346.
+
+**Gold V8:**
+- **Lot ceiling:** 12 lots on real depth (SN341).
+- **Reserve:** a fixed ₹30k spare reserve stalls Gold once the wallet grows, so keep one wallet of spare cash (SN339).
+- **The wage (SN342):** reserve = one wallet pays ₹881 a session at ₹205 stress (₹414 at ₹400), in lumps (14 of 45 months).
+- **Rejected:** NO_STAND half-size gap fill (SN347), 8.51 → 6.98 lakh.
+- **More growth steps (SN348):** 4 / 5 steps make +37% / +82% net with deeper bad months. They fail the frozen rule, so this is the owner's risk choice.
+- **V8 configuration (SN350):** Gold v5. The N11 2022 exam (SN336) needs its own round; the route is recorded.
+
+**Runtime (Dev only, NOT deployed):**
+- **SN337:** the V8 shadow keeps its own inventory (`sn_gold_v8_positions`): adds on V8's holdings and cash, exits sell what V8 holds. The auditor's 130-vs-65 case is a test.
+- **SN338:** `python-engine/sn_gold_v8_orders.py`, the order-lifecycle state machine for the future live module (no broker), with 8 adverse-case tests.
+- **SN329 follow-up:** `market_calendar` is imported at module level (an import inside the timed quote-collection tick broke its 0.05 s deadline test).
+
 ## November 16 (afternoon) - Gold V8 shadow built in Dev (runtime, flag off, not deployed)
 
 **Owner (Nov 16):** "Gold V8 … should be something that we are focusing to develop in real life."

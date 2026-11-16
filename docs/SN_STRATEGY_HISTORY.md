@@ -48,6 +48,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN286–SN300 (Nov 16): the auditor's brief.** Corrected holiday calls are carried by their best day (forward ledger only); the partner's first minute is not tradable at real prices; two tick-recorder candidates (futures pressure, lagging strike) are frozen for a 20-session forward verdict (`fwd.py`, about Dec 17–19). See the SN286–SN300 section at the end.
 - **SN301–SN315 (Nov 16): the forward test protected and Gold v5's own losses audited.** Amended scorer and verified archive (`sn301/fwd2.py`; verdict after session 20, Dec 23). Gold's losses are signal losses (stops, adds, costs and cash checks sound; extension neutral); no Gold change. From Dec 7 F&O closes at 15:45 (engine assumes 15:40). See the SN301–SN315 section at the end.
 - **SN316–SN330 (Nov 16): the partner's chart sequence fails on one-second data; Gold's losses have no early signature; WK-H passes the 2020 crash exam; Gold V8 = Gold v5 executed for real money** (`sn316/GOLD_V8.md`). Dec 7 CAS 2.0 hours fixed in Dev (`52a77adf`, not deployed). See the SN316–SN330 section at the end.
+- **SN331–SN350 (Nov 16): no short-horizon option edge at any clock** (failed-break reversals have no room; entries after fast moves are worse than random). **Gold V8 = Gold v5**; the wage comes from Gold's capital (₹881 a session at ₹205 with a one-wallet reserve). See the SN331–SN350 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -988,3 +989,29 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - the Gold V8 live module (the owner's word);
 - `fwd2.py` / `fw3.py` verdicts after Dec 23;
 - SN326's 2022 replay as its own round.
+
+## SN331–SN350 (Nov 16, 2026): the failed break, Gold's execution and the wage (folder `docs/research/fno/2026-11-16-sn331`)
+
+**Owner:** the auditor's SN331–SN340 plus ten own slots; "much more profitable than the current best Gold … the wage". Plan `95287d3f`.
+
+| SN | Result |
+|---|---|
+| 331 | Failed breaks reverse only 0.5–2.1 index points in 5 min; buying the reversal −₹70–89 a trade at zero stress, −₹275–295 at ₹205; archive real prices −₹131 to −₹169 gross. No room |
+| 345 | Reversal + 5-second confirmation: FAIL (−₹278 to −₹294 a trade) |
+| 344 | Minute reversal (DEV, TEST, 2019 Q3 / Q4): FAIL, below every random book; entries after fast moves cost about ₹95 a lot more than random |
+| 335 | Rebalance days: closed (mean rank 0.76, mixed signs) |
+| 334 / 343 | Not triggered / already answered by SN264 |
+| 341 | Gold's lot ceiling on real depth: 12 lots |
+| 339 | A fixed ₹30k reserve stalls Gold once the wallet grows (386 paused sessions); ₹60k holds at ₹205 |
+| 342 | Wage with reserve = one wallet: ₹881 a session at ₹205 (₹14.5k a month; 14 of 45 months pay), ₹414 at ₹400 |
+| 347 | NO_STAND half-size gap fill: FAIL (₹8.51 → ₹6.98 lakh) |
+| 348 | 4 / 5 growth steps: ₹11.65 / ₹15.51 lakh, worst month −₹54.8k / −₹83.6k; FAIL the frozen rule (risk choice) |
+| 350 | V8 configuration = Gold v5 |
+| 336 | Gold on 2022: route recorded (N08 POINTS → N09 / N10 / N101 / N11 replays); its own round |
+| 337 / 338 | V8 shadow own inventory; order-lifecycle state machine (Dev, tests) |
+| 332 / 333 / 340 / 346 / 349 | Frozen in `fw4.py`; scored once after Dec 23 |
+
+**Lessons:**
+- NIFTY's short-horizon option market prices fast moves instantly. At any tradable clock, buying after a move (with or against it) is worse than random, and random is about break-even before the stress.
+- Gold's return depends on its entries' timing (a late entry costs) and on capital.
+- The wage scales with the capital the owner can keep beside Gold.
