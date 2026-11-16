@@ -212,3 +212,25 @@ Each slot's script and log go in this folder (`results-<slot>.json` written once
 ## 4. Amendments (each committed before its slot's own numbers)
 
 - **A1 (SN363, Nov 16, before SN363 runs):** the fixed salary is paid in full every month end from the spare cash, whatever its level. The V1-G keep is not applied to it. A run fails if paying would leave the spare below 20% of the wallet (or below the salary), if any session start finds the spare below 20% of the wallet, or if a growth step stays deferred more than 21 sessions. "Capital preserved" (final funds ≥ opening funds) is reported for every S\*, and S\*_kept also requires it. The capital-for-the-wage search requires it too: otherwise a large enough opening balance would "pay" any salary out of the owner's own money. Text in `sn363.py`.
+- **A2 (SN353 semantics, Nov 16, before any SN353 outcome):**
+  - **NSE's page** (updated 04/09/2026):
+    - the futures pre-open takes order entry 09:00–09:10 (market orders only to 09:05), with a random close in the last 2 minutes; matching 09:10–09:12; buffer to 09:15;
+    - NSE disseminates the indicative equilibrium price and quantity, the total buy / sell order quantities, and the imbalance quantity.
+  - **The Nov 16 recording (near future):**
+    - the last price stays at the previous close until the match (09:09:01, when the last price and last-trade time jump);
+    - the packet's `open` carries the indicative equilibrium price;
+    - `volume` carries the indicative matched quantity (it can fall);
+    - buy / sell quantity are the **total queued** order quantities;
+    - the 5-level depth is a crossed auction book;
+    - the next-month future has no pre-open data except in the last 5 days before expiry.
+  - **G1:** the fields are total queued quantities, not the unmatched imbalance (NSE's separate field is not in Kite's packet). The arm keeps its frozen formula, renamed **queue pressure**. Two diagnostics are added:
+    - the rank correlation of I(09:06) with the futures mid return 09:16:00 → 09:36:00 over the forward sessions;
+    - the indicative-price gap at 09:06 against the matched price.
+    - Nov 16's |I| was about 0.015 at both clocks. The frozen 0.20 threshold is not changed (Nov 16 is plumbing only); if it never fires, that is the result.
+  - **G2 (Breeze):** the auction price is the close of the first pre-09:15 row with open interest > 0. The schedule changed during 2026: the match is in the 09:07 row in Jan–Feb and the 09:09 row by September. The fallback is the 09:15 open, counted.
+  - **Contract and previous close:**
+    - the contract is the nearest expiry ≥ the day with such a row;
+    - the previous close is that contract's last 1-minute close of the previous session.
+  - **Archive check:** Sep 10 – Oct 28 only, because Breeze ends Oct 28 and the archive has no pre-open snapshots.
+  - **ATM strike:** taken from gl's index at 09:16.
+  - **Archive exits** need a usable quote in the exit minute or the one before.
