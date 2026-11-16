@@ -1,0 +1,71 @@
+{
+ "coverage": {
+  "expiries": 39,
+  "expiries_with_3plus_sessions": 38,
+  "index_sessions": 209,
+  "min_series_at_1515": 15
+ },
+ "weeks": 39,
+ "legs": {
+  "Gold v7 leg: WK-H band 0.8": {
+   "net": 42570,
+   "months": 9,
+   "months_positive": 5,
+   "worst_month": -23171,
+   "march_2020": -23171,
+   "trades": 39
+  },
+  "Gold v6 leg: WK-H band 0.6": {
+   "net": 64999,
+   "months": 9,
+   "months_positive": 6,
+   "worst_month": -7950,
+   "march_2020": 3716,
+   "trades": 39
+  },
+  "WK-H band 0.7": {
+   "net": 43901,
+   "months": 9,
+   "months_positive": 5,
+   "worst_month": -14492,
+   "march_2020": -14492,
+   "trades": 39
+  },
+  "info: band 0.8 + synthetic hedge": {
+   "net": 33739,
+   "months": 9,
+   "months_positive": 5,
+   "worst_month": -30129,
+   "march_2020": -30129,
+   "trades": 39
+  },
+  "info: band 0.8 + flatten at 14:30": {
+   "net": 14965,
+   "months": 9,
+   "months_positive": 6,
+   "worst_month": -44523,
+   "march_2020": -44523,
+   "trades": 39
+  },
+  "ref: unhedged straddle kM": {
+   "net": 14822,
+   "months": 9,
+   "months_positive": 7,
+   "worst_month": -69274,
+   "march_2020": -69274
+  },
+  "ref: WK-S": {
+   "net": 11644,
+   "months": 9,
+   "months_positive": 6,
+   "worst_month": -34344,
+   "march_2020": -2403
+  }
+ },
+ "pass": {
+  "C1_net_positive": true,
+  "C2_worst_month_ok": true,
+  "C3_march_2020": -23171,
+  "crash_brake_recommended": false
+ }
+}
