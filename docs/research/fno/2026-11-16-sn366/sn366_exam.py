@@ -27,7 +27,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 LOCAL = HERE / "_local"
 MODE = os.environ.get("SN366_MODE")
-assert MODE in ("w2", "w2neg", "diag", "exam"), MODE
+assert MODE in ("w2", "w2neg", "diag", "exam", "score"), MODE
 sys.path.insert(0, str(HERE))
 import n08_shim  # noqa: E402
 
@@ -84,7 +84,7 @@ elif MODE == "w2neg":
 elif MODE == "diag":
     Z.LOCAL = N09_MINE
     Y.EVALS = N09_MINE / f"evals-{N.B.YEAR}"
-elif MODE == "exam":
+elif MODE in ("exam", "score"):
     install_evidence(N09_MINE, ("2021", "2022"), ("2022",))
     Y.EVALS = LOCAL / "exam-evals-2022"
 Y.EVALS.mkdir(parents=True, exist_ok=True)
@@ -149,8 +149,13 @@ def diag():
 
 
 def stats(trades):
-    s = V.stats(trades)
-    return {"net": round(s["net"]), "worst_day": round(s["worst_day"]), "fall_pct": round(s["fall"], 2), "worst_trade": round(s["worst_trade"]), "trades": s["n"]}
+    # disclosed fix (Nov 16, after the replays, before any score was computed or shown): screen_view.stats needs an exit
+    # time; a trade with status UNRESOLVED has none (only RANDOM|09 BASE / ADD, one trade each, entry 2022-04-29 10:25).
+    # Such trades are left out of the stats and counted.
+    done = [t for t in trades if "exit_time" in t]
+    s = V.stats(done)
+    return {"net": round(s["net"]), "worst_day": round(s["worst_day"]), "fall_pct": round(s["fall"], 2), "worst_trade": round(s["worst_trade"]), "trades": s["n"],
+            "unresolved": len(trades) - len(done)}
 
 
 def exam():
@@ -161,6 +166,17 @@ def exam():
              **{f"rand|{k}": v for k, v in L.random_books().items()}}
     keys = run(books)
     (LOCAL / "keys-exam-2022.json").write_text(json.dumps(keys, indent=1), encoding="utf-8")
+    score_exam(keys)
+
+
+def score():
+    """Scores the saved exam replays (keys-exam-2022.json); no replay is run again."""
+    score_exam(json.loads((LOCAL / "keys-exam-2022.json").read_text(encoding="utf-8")))
+
+
+def score_exam(keys):
+    out_path = HERE / "results-sn366-exam-2022.json"
+    assert not out_path.exists(), "the exam is scored once"
     trades = {n: load(k) for n, k in keys.items()}
     st = {n: stats(t) for n, t in trades.items()}
     n11, n08, cush, one, retry = st["panel|N11"], st["ctrl|N08"], st["CUSHION"], st["STRICT"], st["ctrl|N10"]
@@ -192,4 +208,4 @@ def exam():
 
 
 if __name__ == "__main__":
-    {"w2": w2, "w2neg": w2neg, "diag": diag, "exam": exam}[MODE]()
+    {"w2": w2, "w2neg": w2neg, "diag": diag, "exam": exam, "score": score}[MODE]()
