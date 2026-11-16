@@ -88,6 +88,11 @@ elif MODE in ("exam", "score"):
     install_evidence(N09_MINE, ("2021", "2022"), ("2022",))
     Y.EVALS = LOCAL / "exam-evals-2022"
 Y.EVALS.mkdir(parents=True, exist_ok=True)
+# SOURCE_CORRECTION_2022.md (Nov 16): N09's volatility reading reads its own fixed daily files, which have no bars for
+# Apr 2020 - Dec 2021; for 2022 / 2021L it must read this point's contiguous daily file (the bars the sheets require)
+if MODE in ("exam", "score", "diag") and N.B.YEAR in ("2022", "2021"):
+    Z.DAILY_SOURCES = (LOCAL / ("daily-2022.json" if N.B.YEAR == "2022" else "daily-2021L.json"),)
+    Z.vol_table.cache_clear()
 
 
 def key_of(b):
