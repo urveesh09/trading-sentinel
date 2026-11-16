@@ -4,7 +4,8 @@ at 09:20 / 10:00 / 11:00 / 13:00 / 14:00 and sold 15 or 60 minutes later:
   real   = buy at the real ask (walking the 5 levels for one lot), sell at the real bid (walking the levels);
   model  = the research engine's rule on the same minutes: ask/bid = mid +/- half the P75 spread table (gl / wk);
   delay  = the real round trip with entry and exit one minute later, minus the on-time one (signed and absolute);
-all with Zerodha charges. Reports per lot: real spread cost, model spread cost, the gap, the delay movement, and
+all with Zerodha charges. (Fix before any score: the day list comes from SN101's sealed per-minute caches; the
+export manifest qa.days() read was replaced on Nov 13.) Reports per lot: real spread cost, model spread cost, the gap, the delay movement, and
 the total hurdle against the Rs 205 house stress."""
 from __future__ import annotations
 
@@ -63,7 +64,8 @@ if __name__ == "__main__":
         raise SystemExit("SN290 is run once")
     mk = gl.INST["NIFTY"]
     rows = []
-    for day in qa.days():
+    days = sorted(x.stem.replace("quotes-", "") for x in qa.LOCAL.glob("quotes-*.pkl"))   # the sealed per-minute caches
+    for day in days:
         try:
             q = qa.load(day)
         except Exception:

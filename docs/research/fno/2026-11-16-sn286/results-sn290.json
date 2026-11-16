@@ -1,0 +1,108 @@
+{
+ "days": 36,
+ "rows": 748,
+ "by": {
+  "CE hold 15": {
+   "n": 127,
+   "real_cost_per_lot_mean": 90,
+   "model_cost_per_lot_mean": 94,
+   "real_minus_model": -4,
+   "delay_1min_mean": 16,
+   "delay_1min_abs_mean": 311,
+   "house_stress": 205,
+   "hurdle_real_plus_abs_delay": 401,
+   "by_clock_real_cost": {
+    "09:20": 90,
+    "10:00": 90,
+    "11:00": 91,
+    "13:00": 87,
+    "14:00": 89
+   }
+  },
+  "CE hold 60": {
+   "n": 122,
+   "real_cost_per_lot_mean": 90,
+   "model_cost_per_lot_mean": 94,
+   "real_minus_model": -4,
+   "delay_1min_mean": -9,
+   "delay_1min_abs_mean": 340,
+   "house_stress": 205,
+   "hurdle_real_plus_abs_delay": 431,
+   "by_clock_real_cost": {
+    "09:20": 90,
+    "10:00": 91,
+    "11:00": 90,
+    "13:00": 90,
+    "14:00": 91
+   }
+  },
+  "PE hold 15": {
+   "n": 128,
+   "real_cost_per_lot_mean": 100,
+   "model_cost_per_lot_mean": 105,
+   "real_minus_model": -5,
+   "delay_1min_mean": -53,
+   "delay_1min_abs_mean": 379,
+   "house_stress": 205,
+   "hurdle_real_plus_abs_delay": 479,
+   "by_clock_real_cost": {
+    "09:20": 98,
+    "10:00": 103,
+    "11:00": 100,
+    "13:00": 99,
+    "14:00": 99
+   }
+  },
+  "PE hold 60": {
+   "n": 122,
+   "real_cost_per_lot_mean": 100,
+   "model_cost_per_lot_mean": 104,
+   "real_minus_model": -4,
+   "delay_1min_mean": -12,
+   "delay_1min_abs_mean": 413,
+   "house_stress": 205,
+   "hurdle_real_plus_abs_delay": 514,
+   "by_clock_real_cost": {
+    "09:20": 99,
+    "10:00": 105,
+    "11:00": 103,
+    "13:00": 97,
+    "14:00": 97
+   }
+  },
+  "straddle hold 15": {
+   "n": 127,
+   "real_cost_per_lot_mean": 189,
+   "model_cost_per_lot_mean": 198,
+   "real_minus_model": -9,
+   "delay_1min_mean": -37,
+   "delay_1min_abs_mean": 149,
+   "house_stress": 410,
+   "hurdle_real_plus_abs_delay": 338,
+   "by_clock_real_cost": {
+    "09:20": 188,
+    "10:00": 193,
+    "11:00": 191,
+    "13:00": 186,
+    "14:00": 188
+   }
+  },
+  "straddle hold 60": {
+   "n": 122,
+   "real_cost_per_lot_mean": 191,
+   "model_cost_per_lot_mean": 199,
+   "real_minus_model": -8,
+   "delay_1min_mean": -21,
+   "delay_1min_abs_mean": 159,
+   "house_stress": 410,
+   "hurdle_real_plus_abs_delay": 350,
+   "by_clock_real_cost": {
+    "09:20": 189,
+    "10:00": 196,
+    "11:00": 193,
+    "13:00": 188,
+    "14:00": 187
+   }
+  }
+ }
+}
