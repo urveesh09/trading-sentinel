@@ -162,9 +162,9 @@ def daily(p):
 
 def lab(p):
     assert os.environ.get("N08_YEAR") == p, "set N08_YEAR to the point before export / warm / bind"
-    sys.path.insert(0, str(HERE.parents[1] / "simulation" / "2026-11-01-fno-n08"))
-    import n08_lab as N  # noqa: E402
-    return N
+    sys.path.insert(0, str(HERE))
+    import n08_shim  # noqa: E402   (n08_lab.py stays byte-identical: N09.1's and N101's freezes hash it)
+    return n08_shim.install()
 
 
 def export(p):
