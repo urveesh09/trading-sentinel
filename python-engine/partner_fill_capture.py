@@ -508,7 +508,9 @@ async def refresh_keyboards(db_path: str, advisory_id: str, now: datetime) -> No
 
 def _market_open(now: datetime) -> bool:
     minute = now.hour * 60 + now.minute
-    return now.weekday() < 5 and 9 * 60 + 15 <= minute <= 15 * 60 + 40   # [O24-MC] F&O closes at 15:40
+    from market_calendar import derivatives_close_minute
+    # [O24-MC] F&O closes at 15:40; [SN329] 15:45 from 2026-12-07
+    return now.weekday() < 5 and 9 * 60 + 15 <= minute <= derivatives_close_minute(now.date())
 
 
 async def quote_at_tap(token, now: datetime) -> Optional[dict]:

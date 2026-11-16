@@ -2154,12 +2154,13 @@ def refused_text(row: dict, rows: list, still_open: Optional[int], *, cash: Opti
 def _to_close(now: Optional[datetime]) -> str:
     """[N03-C1] The time left to the derivatives close, counted when the message is built (Nov 2: a CLOSE sent
     at 15:30 still said "20 minutes"). Without ``now``, the 20 minutes of the first warning."""
-    from partner_broker_sync import CLOSE_MIN
-    close = f"{CLOSE_MIN // 60}:{CLOSE_MIN % 60:02d}"
+    from partner_broker_sync import CLOSE_MIN, close_min
+    cm = CLOSE_MIN if now is None else close_min(now)      # [SN329] 15:45 from 2026-12-07
+    close = f"{cm // 60}:{cm % 60:02d}"
     if now is None:
         return f"20 minutes to the {close} close"
     local = now.astimezone(IST)
-    left = CLOSE_MIN * 60 - (local.hour * 3600 + local.minute * 60 + local.second)
+    left = cm * 60 - (local.hour * 3600 + local.minute * 60 + local.second)
     minutes = max(left // 60, 0)
     if minutes < 1:
         return f"Under a minute to the {close} close"
@@ -3167,7 +3168,7 @@ async def _watch_tick(now: Optional[datetime] = None, *, market: Optional[Market
     market = market or (_state.market if woken else None) or _market
     market.roll(day)
     minute = now.hour * 60 + now.minute
-    if not OPEN_MIN <= minute <= zerodha.CLOSE_MIN:
+    if not OPEN_MIN <= minute <= zerodha.close_min(now):
         _flush()
         return {"status": "SKIPPED", "reason": "outside_session"}
     if not await _is_trading_day(now):
@@ -3180,7 +3181,7 @@ async def _watch_tick(now: Optional[datetime] = None, *, market: Optional[Market
     # [N04-C] A restart in the session kept the login: say the watch is back and what it could not see.
     restored = zerodha.take_restored()
     if (restored is not None and restored.astimezone(IST).date() == now.date()
-            and OPEN_MIN <= restored.astimezone(IST).hour * 60 + restored.astimezone(IST).minute <= zerodha.CLOSE_MIN):
+            and OPEN_MIN <= restored.astimezone(IST).hour * 60 + restored.astimezone(IST).minute <= zerodha.close_min(now)):
         await _say(db_path, f"on:{day}:restored:{restored.isoformat()}", day, "WATCH_ON", RESTORED_TEXT, now)
     login = zerodha.status(now).get("login_at")
     if login != _state.login_at:
@@ -6247,8 +6248,8 @@ async def on_login(now: Optional[datetime] = None) -> None:
     day = now.date().isoformat()
     await _set_state(db_path, f"login:{day}", now.isoformat(), now)
     minute = now.hour * 60 + now.minute
-    if minute < zerodha.CLOSE_MIN and await _is_trading_day(now):
-        close = f"{zerodha.CLOSE_MIN // 60}:{zerodha.CLOSE_MIN % 60:02d}"
+    if minute < zerodha.close_min(now) and await _is_trading_day(now):
+        close = f"{zerodha.close_min(now) // 60}:{zerodha.close_min(now) % 60:02d}"
         _state.clock = (now, _time.monotonic())
         text = (WATCH_ON_COACH_TEXT if _coach_on() else WATCH_ON_TEXT).format(close=close)
         extra = await _morning_lines(db_path, day, now)
@@ -6326,8 +6327,8 @@ async def watch_status(now: Optional[datetime] = None) -> dict:
     Telegram: BLIND)."""
     now = (now or datetime.now(IST)).astimezone(IST)
     minute = now.hour * 60 + now.minute
-    on = enabled() and zerodha.connected(now) and OPEN_MIN - 15 <= minute < zerodha.CLOSE_MIN
-    close = f"{zerodha.CLOSE_MIN // 60}:{zerodha.CLOSE_MIN % 60:02d}"
+    on = enabled() and zerodha.connected(now) and OPEN_MIN - 15 <= minute < zerodha.close_min(now)
+    close = f"{zerodha.close_min(now) // 60}:{zerodha.close_min(now) % 60:02d}"
     return {"on": bool(on), "until": close,
             "quiet": False,
             "unread": {read: since.isoformat() for read, since in sorted(_state.unread.items())} if on else {},

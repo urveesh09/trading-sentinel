@@ -153,7 +153,8 @@ def register_fno_scheduler_jobs(scheduler):
         15:39, an F&O pass runs only while a position or a structure is still
         open: an exit not yet filled is still worked, and a broker's own 15:25
         MIS square-off is read back the same day, not the next morning."""
-        if not (15 * 60 + 25 < nm < 15 * 60 + 40):
+        from market_calendar import derivatives_close_minute
+        if not (15 * 60 + 25 < nm < derivatives_close_minute(datetime.now(IST).date())):    # [SN329] 15:45 from 2026-12-07
             return False
         from fno_orchestrator import fast_exit_has_work
         import fno_dr_book
@@ -294,7 +295,9 @@ def register_fno_scheduler_jobs(scheduler):
         from fno_orchestrator import fast_exit_has_work
         now_ist = datetime.now(IST)
         nm = now_ist.hour * 60 + now_ist.minute
-        if not (9 * 60 + 15 <= nm < 15 * 60 + 40) or fno_lock.locked():     # [O26c] to 15:39: work-gated below
+        from market_calendar import derivatives_close_minute
+        # [O26c] to the last minute before the derivatives close (15:39; [SN329] 15:44 from 2026-12-07): work-gated below
+        if not (9 * 60 + 15 <= nm < derivatives_close_minute(now_ist.date())) or fno_lock.locked():
             return
         if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH) or not _main.kite.access_token:
             return

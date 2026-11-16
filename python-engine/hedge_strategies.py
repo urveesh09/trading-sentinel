@@ -38,7 +38,7 @@ import pytz
 import options_math
 from fno_chain import ChainSnapshot
 from fno_models import ContractQuote, OptionType
-from market_calendar import DERIVATIVES_CLOSE_TIME
+from market_calendar import DERIVATIVES_CLOSE_TIME, expiring_index_close_time
 
 IST = pytz.timezone("Asia/Kolkata")
 _EXPIRY_CUTOFF = DERIVATIVES_CLOSE_TIME    # [O24-MC 2026-10-24] options settle at the 15:40 derivatives close
@@ -314,7 +314,8 @@ def _valid_snapshot(
 
 
 def _years_to_expiry(expiry: date, now: datetime) -> float:
-    cutoff = IST.localize(datetime.combine(expiry, _EXPIRY_CUTOFF))
+    # [SN329 2026-11-16] from 2026-12-07 an expiring index contract stops trading at 15:30 (NSE CAS 2.0)
+    cutoff = IST.localize(datetime.combine(expiry, expiring_index_close_time(expiry)))
     return max(0.0, (cutoff - now.astimezone(IST)).total_seconds()) / (365 * 86400)
 
 

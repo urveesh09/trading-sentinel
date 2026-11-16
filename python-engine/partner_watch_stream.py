@@ -95,7 +95,7 @@ def _token() -> Optional[str]:
 
 def _should_run(now: datetime) -> bool:
     minute = now.hour * 60 + now.minute
-    return enabled() and zerodha.connected(now) and START_MIN <= minute < zerodha.CLOSE_MIN
+    return enabled() and zerodha.connected(now) and START_MIN <= minute < zerodha.close_min(now)
 
 
 def _url(token: str) -> str:

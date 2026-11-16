@@ -124,7 +124,13 @@ def _token(now: Optional[datetime] = None) -> Optional[str]:
 
 def _in_window(now: datetime) -> bool:
     minute = now.hour * 60 + now.minute
-    return now.weekday() < 5 and START_MIN <= minute < END_MIN
+    return now.weekday() < 5 and START_MIN <= minute < _end_min(now)
+
+
+def _end_min(now: datetime) -> int:
+    """[SN329 2026-11-16] One minute after the derivatives close: 15:41 until 2026-12-04, 15:46 from 2026-12-07."""
+    from market_calendar import derivatives_close_minute
+    return max(END_MIN, derivatives_close_minute(now.date()) + 1)
 
 
 def _should_run(now: datetime, day: str) -> bool:

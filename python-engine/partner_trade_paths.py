@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from functools import lru_cache
 from typing import Awaitable, Callable, Optional
 
@@ -25,7 +25,7 @@ import aiosqlite
 import pytz
 import structlog
 
-from market_calendar import DERIVATIVES_CLOSE_TIME
+from market_calendar import DERIVATIVES_CLOSE_TIME, derivatives_close_minute
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -60,8 +60,13 @@ async def init_partner_paths_db(db_path: str) -> None:
 
 
 def _day_over(day: str, now: datetime) -> bool:
-    close = IST.localize(datetime.fromisoformat(day) + timedelta(minutes=CLOSE_MIN))
+    close = IST.localize(datetime.fromisoformat(day) + timedelta(minutes=_close_min(day)))
     return now.astimezone(IST) >= close
+
+
+def _close_min(day: str) -> int:
+    """[SN329] The session's derivatives close in minutes (15:40, or 15:45 from 2026-12-07)."""
+    return derivatives_close_minute(date.fromisoformat(day[:10]))
 
 
 async def traded_contracts(db_path: str, day: str) -> list:
@@ -158,7 +163,7 @@ async def ensure_paths(db_path: str, day: str, now: Optional[datetime] = None, *
         token = token_of(contract["exchange"], contract["tradingsymbol"])
         if token:
             try:
-                bars = await asyncio.wait_for(fetch(token, f"{day} 09:15:00", f"{day} {CLOSE_MIN // 60:02d}:{CLOSE_MIN % 60:02d}:00"),
+                bars = await asyncio.wait_for(fetch(token, f"{day} 09:15:00", f"{day} {_close_min(day) // 60:02d}:{_close_min(day) % 60:02d}:00"),
                                               timeout=FETCH_TIMEOUT_SEC)
             except Exception as exc:   # timeout or provider error: fall back to prints
                 logger.warning("partner_paths_candles_failed symbol=%s err=%s", contract["tradingsymbol"],
