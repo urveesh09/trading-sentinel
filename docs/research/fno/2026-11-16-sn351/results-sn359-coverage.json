@@ -1,0 +1,64 @@
+{
+ "note": "post-run coverage check (disclosed, Nov 16): the archive tracks strikes near the money only; an exit is priced only if the contract still has a usable quote at Gold's exit minute",
+ "per_trade": [
+  {
+   "day": "2026-09-24",
+   "exit_minute": 288,
+   "last_usable_minute": 375,
+   "priced_to_exit": true
+  },
+  {
+   "day": "2026-09-28",
+   "exit_minute": 135,
+   "last_usable_minute": 375,
+   "priced_to_exit": true
+  },
+  {
+   "day": "2026-09-28",
+   "exit_minute": 332,
+   "last_usable_minute": 375,
+   "priced_to_exit": true
+  },
+  {
+   "day": "2026-10-05",
+   "exit_minute": 120,
+   "last_usable_minute": 375,
+   "priced_to_exit": true
+  },
+  {
+   "day": "2026-10-07",
+   "exit_minute": 62,
+   "last_usable_minute": 385,
+   "priced_to_exit": true
+  },
+  {
+   "day": "2026-10-08",
+   "exit_minute": 355,
+   "last_usable_minute": 325,
+   "priced_to_exit": false
+  },
+  {
+   "day": "2026-10-09",
+   "exit_minute": 195,
+   "last_usable_minute": 385,
+   "priced_to_exit": true
+  },
+  {
+   "day": "2026-10-21",
+   "exit_minute": 355,
+   "last_usable_minute": 171,
+   "priced_to_exit": false
+  },
+  {
+   "day": "2026-10-23",
+   "exit_minute": 355,
+   "last_usable_minute": 385,
+   "priced_to_exit": true
+  }
+ ],
+ "priced_trades": 7,
+ "v8_net_priced": 125866,
+ "replay_net205_priced": 99262,
+ "replay_net0_priced_approx": 110332,
+ "stuck_among_priced": 1
+}
