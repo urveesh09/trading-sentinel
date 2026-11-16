@@ -21,7 +21,11 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 // nginx's 60 s proxy timeout, so the page always gets an answer.
 const SESSION_TIMEOUT_MS = 45000;
 // [O23-PH/PD] The 120-day day list and a PDF read more than one day's review.
+// [N16-RV] The review and the coach view too: they read the same window, and
+// on Nov 16 a 30-day review took 5.6-5.9 s against the 5 s default, so every
+// open of the partner's page failed. Under nginx's 60 s proxy timeout.
 const HISTORY_TIMEOUT_MS = 20000;
+const SLOW_REPLY = 'The review is taking longer than usual. Try again in a minute.';
 const PDF_TIMEOUT_MS = 30000;
 // The only file name passed on; anything else from the engine is replaced.
 const PDF_DISPOSITION = /^attachment; filename="trading-review-\d{4}-\d{2}-\d{2}\.pdf"$/;
@@ -104,6 +108,10 @@ async function forward(res, path, timeoutMs) {
     return res.status(result.status).json(result.data);
   } catch (err) {
     logger.error({ event_type: 'proxy_error', path: path.split('?')[0], err: err.message });
+    // [N16-RV] A slow answer is not an unreachable engine: say which one it was.
+    if (err.name === 'AbortError') {
+      return res.status(504).json({ error: 'gateway_timeout', message: SLOW_REPLY });
+    }
     return res.status(502).json({ error: 'bad_gateway', message: 'Quant Engine is unreachable.' });
   }
 }
@@ -111,7 +119,7 @@ async function forward(res, path, timeoutMs) {
 // The coach view only. `days` is the one parameter passed on.
 router.get('/coach', allowCoach, (req, res) => {
   const days = Math.min(Math.max(Number.parseInt(req.query.days, 10) || 1, 1), 120);
-  return forward(res, `/partner/coach?days=${days}`);
+  return forward(res, `/partner/coach?days=${days}`, HISTORY_TIMEOUT_MS);
 });
 
 // [O21-PL] The partner's day review (today's learnings) and progress.
@@ -124,7 +132,7 @@ router.get('/review', allowCoach, (req, res) => {
     params.set('day', req.query.day);
   }
   params.set('days', String(Math.min(Math.max(Number.parseInt(req.query.days, 10) || 30, 14), 120)));
-  return forward(res, `/partner/review?${params}`);
+  return forward(res, `/partner/review?${params}`, HISTORY_TIMEOUT_MS);
 });
 
 // [O23-PH] Every day with a review in the last 120 days (the page's day list).

@@ -1,0 +1,75 @@
+{
+ "parity": {
+  "days": 742,
+  "same_days": true,
+  "max_abs_diff": 0.0,
+  "panel_net_mine": 850882,
+  "panel_net_sn110": 850882
+ },
+ "census": {
+  "2023": {
+   "calendar_sessions": 245,
+   "sn_sessions": 192,
+   "expiry_or_no_option_days": 53,
+   "gold_trade_days": 25,
+   "gap_days_non_expiry": 167,
+   "gold_net": -12107,
+   "wallet_on_gap_days_median": 30000
+  },
+  "2024": {
+   "calendar_sessions": 248,
+   "sn_sessions": 196,
+   "expiry_or_no_option_days": 52,
+   "gold_trade_days": 25,
+   "gap_days_non_expiry": 171,
+   "gold_net": 187476,
+   "wallet_on_gap_days_median": 67500
+  },
+  "2025": {
+   "calendar_sessions": 248,
+   "sn_sessions": 194,
+   "expiry_or_no_option_days": 54,
+   "gold_trade_days": 48,
+   "gap_days_non_expiry": 146,
+   "gold_net": 292811,
+   "wallet_on_gap_days_median": 101250
+  },
+  "2026": {
+   "calendar_sessions": 203,
+   "sn_sessions": 160,
+   "expiry_or_no_option_days": 43,
+   "gold_trade_days": 35,
+   "gap_days_non_expiry": 125,
+   "gold_net": 382702,
+   "wallet_on_gap_days_median": 101250
+  }
+ },
+ "totals": {
+  "calendar_sessions": 944,
+  "gap_days_all": 811,
+  "gold_trade_days": 133,
+  "gold_net": 850883,
+  "gold_months_positive": 25,
+  "months": 46
+ },
+ "wage": {
+  "Rs 750": {
+   "wage_total_all_sessions": 708000,
+   "gold_net": 850883,
+   "shortfall": -142883,
+   "per_gap_day_needed": -176
+  },
+  "Rs 1,500": {
+   "wage_total_all_sessions": 1416000,
+   "gold_net": 850883,
+   "shortfall": 565117,
+   "per_gap_day_needed": 697
+  },
+  "10% of wallet": {
+   "wage_total_all_sessions": 6109125,
+   "gold_net": 850883,
+   "shortfall": 5258242,
+   "per_gap_day_needed": 6484
+  }
+ }
+}

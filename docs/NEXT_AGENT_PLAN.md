@@ -1,3 +1,61 @@
+## November 16 (morning) - N16-RV: partner review page timed out (fix in Dev, deploy on the owner's word before the open)
+
+**Problem:** since at least Nov 16 07:52 IST, the partner's review page and the owner's Partner Coach page (30 days) failed on every open. The gateway waited 5 s; the engine needed 5.6–5.9 s. The cause is CPU: about 1.15 million repeated timestamp parses, quadratic in trades. No data or engine fault. Trading, the trade watch, Telegram and the schedulers were unaffected.
+
+**Authority:** the owner, Nov 16 ~08:00: "Both quick unblock and real fix do both and do it quick and then through dev usual path, deploy right now."
+
+**Slice (files and contracts):**
+- **Engine:** `python-engine/partner_coach.py` (`_dt` → cached `_dt_text`; `trade_stops` filters option and status before parsing), `partner_insights.py` (`_order_events` filters before parsing; `_session` cached), `partner_trade_paths.py` (`_bar_time` cached). Output contract unchanged.
+- **Gateway:** `node-gateway/server/routes/partner-kite.js` (review and coach at 20 s; `AbortError` → 504 with a fixed "taking longer" text), `routes/proxy.js` (`/partner/coach` at 20 s).
+- **Tests:** `python-engine/tests/test_partner_review_speed.py` (4 tests, counting parses, not timing them), and 2 tests in `node-gateway/server/tests/integration/partner-kite.test.js`.
+
+**Acceptance:**
+- (1) The new tests fail on the pre-fix code (552 and 1,203 parses) and pass after.
+- (2) On Production data, the review output hash is identical and the time is under 2 s.
+- (3) The partner and engine suites are green.
+- (4) After the deploy, `/partner/review?days=30` inside the engine takes about 1–1.5 s, and the gateway's `/api/partner-kite/review` returns 200.
+
+**Rollout:**
+- PR `codex/production-correction-hedge-p0` → `evolve/smart-strategies`.
+- Build engine, gateway and agent; recreate; restart nginx; run `verify_deployment.py`.
+- No backup: code only, no schema or `.env` change.
+
+**Rollback:** redeploy `052a6d6e`. The worst case is the old 5 s timeout behaviour.
+
+**Remaining:**
+- `_order_events`/`_stop_orders_of` still scan all orders once per trade. That is linear now, not a hot spot. Index by option only if the review passes about 3 s again.
+- The gateway's boot-time holiday fetch still races the engine (harmless fallback, see the Nov 10 notes).
+
+## November 15 (night) - Deployed: Production `052a6d6e` (PR #139: Gold v7 on paper = SN Gold v5 + WK-H, band 0.8)
+
+**Authority:** the owner, Nov 15 night: "go ahead, let us build the Gold V7 in production … Go ahead. Deployed in production. Let us test it on paper for some Days."
+
+**Release:** PR #139 (`codex/production-correction-hedge-p0` at `8bc45361` → `evolve/smart-strategies`), merged as `052a6d6e`.
+- Runtime: `python-engine` only (`sn_wkh.py`, `config.py` `SN_WKH_*`, one guarded hook in `fno_orchestrator.py`, tests). The rest is research and docs.
+- New tables only (`gold_v6_wkh_*`, created at the first tick). No migration, no `.env` edit.
+- **Paper, no orders.**
+
+**Backup:** none, by the owner's rule (code-only release, new tables only).
+
+**Deploy (runbook), Sunday 22:16–22:21 IST:**
+- Fast-forward to `052a6d6e`.
+- Built python-engine, node-gateway and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-15T16:46:32Z`.
+- Stopped autoheal, force-recreated all three, restarted nginx, started autoheal.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\052a6d6e….json`.
+
+**After (inside the engine, `-u quantuser`):**
+- `SN_WKH_ENABLED` True, band 0.8, label "Gold v7", wallet ₹5,00,000, 2 lots per unit, every 15, freeze 14:30;
+- `SN_GOLD_ENABLED` True (₹30,000); `FNO_DISABLE_PAPER` False; `FNO_LIVE_TEST_ENABLED` False;
+- the hook is present; all services healthy.
+
+**Next:**
+- **Mon Nov 16 15:15:** the first WK-H entry for Tuesday Nov 17's expiry. Check the owner's "🥇 Gold v7 · WK-H (paper): sold …" line and the `gold_v6_wkh_weeks` row.
+- **Tue Nov 17:** hedge checks from 09:15 (`gold_v6_wkh_orders`); the expiry-day hedge close at 15:24.
+- **Wed Nov 18 09:15:** settlement.
+- Also on Mon Nov 16: the tick recorder's first live day, and SN Gold v5 paper.
+
+**Rollback:** `SN_WKH_ENABLED=false` and recreate the engine, or redeploy `826f0727`. Gold v6 is `SN_WKH_BAND=0.6`.
+
 ## November 15 (evening) - Gold v7 = Gold v6 with WK-H's hedge band 0.8 (Dev default; deploy on the owner's word)
 
 **Authority:** the owner, Nov 15: "give me a Gold V7 if possible". Research SN231–SN250 (`docs/research/fno/2026-11-15-sn231`, frozen rule; SN245 chose it).

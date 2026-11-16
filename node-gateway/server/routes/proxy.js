@@ -97,8 +97,9 @@ router.put('/partner/advisory/profile', (req, res) =>
   proxyToEngine(req, res, withQuery('/partner/advisory/profile', req.query), 'PUT'));
 // [O21-PC] Partner coach: what the partner did against each card. The two
 // POSTs record or void a partner-reported fill; neither places an order.
+// [N16-RV] 20 s like the partner's own review: the 30-day view took 5.9 s on Nov 16.
 router.get('/partner/coach', (req, res) =>
-  proxyToEngine(req, res, withQuery('/partner/coach', { days: req.query.days })));
+  proxyToEngine(req, res, withQuery('/partner/coach', { days: req.query.days }), 'GET', { timeoutMs: 20000 }));
 router.post('/partner/coach/reports', (req, res) =>
   proxyToEngine(req, res, '/partner/coach/reports', 'POST'));
 router.post('/partner/coach/reports/:reportId/void', (req, res) => {

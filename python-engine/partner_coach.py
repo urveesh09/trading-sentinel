@@ -64,6 +64,7 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from functools import lru_cache
 from typing import Optional
 
 import aiosqlite
@@ -185,8 +186,16 @@ def _dt(value) -> Optional[datetime]:
         return None
     if isinstance(value, datetime):
         return value if value.tzinfo else IST.localize(value)
+    return _dt_text(str(value))
+
+
+@lru_cache(maxsize=65536)
+def _dt_text(text: str) -> Optional[datetime]:
+    """[N16-RV] The parse behind ``_dt``, cached: a 30-day review converted the same order times about 1.15 million
+    times (Nov 16: 5.6-5.9 s, over the gateway's 5 s, so the partner's page said the engine was unreachable).
+    Datetimes are immutable, so sharing one parsed value is safe."""
     try:
-        parsed = datetime.fromisoformat(str(value))
+        parsed = datetime.fromisoformat(text)
     except ValueError:
         return None
     return parsed.astimezone(IST) if parsed.tzinfo else IST.localize(parsed)
@@ -540,10 +549,12 @@ def trade_stops(trade: dict, stops: list) -> list:
            else _day_close(trade["session_date"]))
     out = []
     for stop in stops:
+        # [N16-RV] The option and status first; the time only for this option's stops.
+        if (stop["exchange"] != trade.get("exchange") or stop["tradingsymbol"] != trade["tradingsymbol"]
+                or stop["status"] == "REJECTED"):
+            continue
         placed = _dt(stop["placed_at"])
-        if (stop["exchange"] == trade.get("exchange") and stop["tradingsymbol"] == trade["tradingsymbol"]
-                and stop["status"] != "REJECTED" and placed is not None
-                and first - STOP_CLOCK_SLACK <= placed <= end):
+        if placed is not None and first - STOP_CLOCK_SLACK <= placed <= end:
             out.append(stop | {"placed_dt": placed, "updated_dt": _dt(stop.get("updated_at"))})
     return sorted(out, key=lambda s: s["placed_dt"])
 

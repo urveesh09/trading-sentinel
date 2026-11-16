@@ -20,7 +20,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 
 ## 1. Current state (updated Nov 15, 2026 evening, after SN250: Gold v6 built in Dev, Gold v7 chosen) — read this first
 
-**In Production (`826f0727`, PR #138, deployed Nov 13 evening, verified):**
+**In Production (`052a6d6e`, PR #139, deployed Nov 15 night, verified): Gold v7 on paper (SN Gold v5 + WK-H band 0.8, `sn_wkh.py`), plus everything below from `826f0727` (PR #138, Nov 13 evening):**
 - **SN Gold v5 on PAPER** (`python-engine/sn_gold.py`, since Nov 13, release `82b08371`):
   - follows N11's live paper record and places no orders;
   - wallet starts at ₹30,000, 20% day loss limit, losing days refilled, +50% after net profit equal to the wallet (at most 3 steps).
@@ -60,7 +60,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - SN Gold v5 `FORWARD_V5.md`.
 
 **Waiting on the owner:**
-- **Gold v7 is built in Dev (`sn_wkh.py`, band 0.8; Gold v6 = band 0.6):** the owner's word for a Production deploy (paper), and a Kite basket-margin check for 2 short NIFTY ATM straddle lots + 2 futures lots;
+- **Gold v7 is on Production paper since Nov 15 night (`052a6d6e`):** real money only after the gates in `docs/SN_GOLD.md` (8 settled WK-H weeks, the 2020 crash test, a Kite margin check, a real-money WK-H module with a week stop) and the owner's word;
 - the rest of NIFTY Jul–Sep 2020 options and Jan–Jun 2020 (the owner's downloader continues), then the pre-registered crash test;
 - (done Nov 15: `nifty-2021-q4-fno` options and all of 2021.)
 

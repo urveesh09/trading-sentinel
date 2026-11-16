@@ -1,3 +1,50 @@
+## November 16 (morning) - N16-RV handover: partner review timeout fixed in Dev
+
+- **Evidence (Production, read-only):**
+  - gateway log `proxy_error path=/partner/review err="This operation was aborted"`, responseTime 5015 / 5009 ms, at 07:52:54 and 07:53:09 IST;
+  - engine healthy, 0 restarts;
+  - a direct in-engine `GET /partner/review?days=30` returned 200 in 5.63–5.84 s (142,390 bytes);
+  - cProfile: `partner_coach._dt` was called 1,148,745 times.
+- **Equivalence (Production data, fixed clock 2026-11-16 08:00 IST, Dev modules loaded in memory in the Production engine container, nothing written):**
+  - days=30: hash `0b637e0c2116873b` both ways, 6.03 s → 1.42 s;
+  - days=120: hash `90d74ce6ee188ec4` both ways, 5.57 s → 1.08 s.
+- **Tests:**
+  - `pytest tests/test_partner_review_speed.py` plus the partner coach, insights, lessons, review-pdf and watch files: 268 passed. The 4 new tests failed on the pre-fix code, checked in a throwaway worktree.
+  - Full engine suite: see the commit message.
+  - Gateway `npx jest -w 2`: 516 passed. `db.test.js` and `backlog-reconciliation.test.js` fail as before: no `better-sqlite3` binding on Windows Node 24, a known environment limit.
+- **Config and migration:** none. No `.env` change, no schema change, no stored-data change.
+- **Status:** Dev commit on `codex/production-correction-hedge-p0`. The PR, merge and deploy are recorded in the follow-up section once they are done.
+
+## November 15 (night) - Deployed: Production `052a6d6e` (PR #139: Gold v7 on paper = SN Gold v5 + WK-H, band 0.8)
+
+**Authority:** the owner, Nov 15 night: "go ahead, let us build the Gold V7 in production … Go ahead. Deployed in production. Let us test it on paper for some Days."
+
+**Release:** PR #139 (`codex/production-correction-hedge-p0` at `8bc45361` → `evolve/smart-strategies`), merged as `052a6d6e`.
+- Runtime: `python-engine` only (`sn_wkh.py`, `config.py` `SN_WKH_*`, one guarded hook in `fno_orchestrator.py`, tests). The rest is research and docs.
+- New tables only (`gold_v6_wkh_*`, created at the first tick). No migration, no `.env` edit.
+- **Paper, no orders.**
+
+**Backup:** none, by the owner's rule (code-only release, new tables only).
+
+**Deploy (runbook), Sunday 22:16–22:21 IST:**
+- Fast-forward to `052a6d6e`.
+- Built python-engine, node-gateway and agent one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-15T16:46:32Z`.
+- Stopped autoheal, force-recreated all three, restarted nginx, started autoheal.
+- `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\052a6d6e….json`.
+
+**After (inside the engine, `-u quantuser`):**
+- `SN_WKH_ENABLED` True, band 0.8, label "Gold v7", wallet ₹5,00,000, 2 lots per unit, every 15, freeze 14:30;
+- `SN_GOLD_ENABLED` True (₹30,000); `FNO_DISABLE_PAPER` False; `FNO_LIVE_TEST_ENABLED` False;
+- the hook is present; all services healthy.
+
+**Next:**
+- **Mon Nov 16 15:15:** the first WK-H entry for Tuesday Nov 17's expiry. Check the owner's "🥇 Gold v7 · WK-H (paper): sold …" line and the `gold_v6_wkh_weeks` row.
+- **Tue Nov 17:** hedge checks from 09:15 (`gold_v6_wkh_orders`); the expiry-day hedge close at 15:24.
+- **Wed Nov 18 09:15:** settlement.
+- Also on Mon Nov 16: the tick recorder's first live day, and SN Gold v5 paper.
+
+**Rollback:** `SN_WKH_ENABLED=false` and recreate the engine, or redeploy `826f0727`. Gold v6 is `SN_WKH_BAND=0.6`.
+
 ## November 15 (evening) - Gold v7 = Gold v6 with WK-H's hedge band 0.8 (Dev default; deploy on the owner's word)
 
 **Authority:** the owner, Nov 15: "give me a Gold V7 if possible". Research SN231–SN250 (`docs/research/fno/2026-11-15-sn231`, frozen rule; SN245 chose it).
