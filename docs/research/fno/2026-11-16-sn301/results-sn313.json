@@ -1,0 +1,107 @@
+{
+ "sessions_with_orders": 6,
+ "alert_sessions": [
+  {
+   "day": "2026-10-29",
+   "alert_minute": 74,
+   "orders_after_alert": {
+    "new": 21,
+    "add": 11
+   },
+   "orders_before_or_at_alert": 20,
+   "unmatched_sells": 0,
+   "shares_of_post_alert_change": {
+    "inventory": -0.296,
+    "new": 0.965,
+    "add": 0.331
+   },
+   "post_alert_change_sign": -1,
+   "signs": {
+    "inventory": 1,
+    "new": -1,
+    "add": -1
+   },
+   "no_new_better_than_actual": true,
+   "no_new_no_add_better_than_actual": true
+  },
+  {
+   "day": "2026-11-02",
+   "alert_minute": 18,
+   "orders_after_alert": {
+    "new": 23,
+    "add": 23
+   },
+   "orders_before_or_at_alert": 6,
+   "unmatched_sells": 0,
+   "shares_of_post_alert_change": {
+    "inventory": 3.12,
+    "new": -0.373,
+    "add": -1.746
+   },
+   "post_alert_change_sign": 1,
+   "signs": {
+    "inventory": 1,
+    "new": -1,
+    "add": -1
+   },
+   "no_new_better_than_actual": true,
+   "no_new_no_add_better_than_actual": true
+  },
+  {
+   "day": "2026-11-03",
+   "alert_minute": 25,
+   "orders_after_alert": {
+    "new": 12,
+    "add": 27
+   },
+   "orders_before_or_at_alert": 6,
+   "unmatched_sells": 0,
+   "shares_of_post_alert_change": {
+    "inventory": -0.007,
+    "new": 0.038,
+    "add": 0.97
+   },
+   "post_alert_change_sign": 1,
+   "signs": {
+    "inventory": -1,
+    "new": 1,
+    "add": 1
+   },
+   "no_new_better_than_actual": false,
+   "no_new_no_add_better_than_actual": false
+  },
+  {
+   "day": "2026-11-04",
+   "alert_minute": 8,
+   "orders_after_alert": {
+    "new": 20,
+    "add": 15
+   },
+   "orders_before_or_at_alert": 6,
+   "unmatched_sells": 0,
+   "shares_of_post_alert_change": {
+    "inventory": -0.074,
+    "new": 0.761,
+    "add": 0.313
+   },
+   "post_alert_change_sign": -1,
+   "signs": {
+    "inventory": 1,
+    "new": -1,
+    "add": -1
+   },
+   "no_new_better_than_actual": true,
+   "no_new_no_add_better_than_actual": true
+  }
+ ],
+ "pooled": {
+  "shares": {
+   "inventory": -0.481,
+   "new": 1.547,
+   "add": -0.067
+  },
+  "sessions_no_new_better": 3,
+  "sessions_no_new_no_add_better": 3,
+  "of": 4
+ }
+}

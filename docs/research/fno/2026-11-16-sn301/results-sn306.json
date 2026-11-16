@@ -1,0 +1,133 @@
+{
+ "cases": 748,
+ "dropped_missing_quote": 320,
+ "days": 36,
+ "by": {
+  "CE hold 15": {
+   "n": 127,
+   "entry_late": {
+    "mean": 19,
+    "abs_mean": 259,
+    "p5": -484,
+    "p95": 570
+   },
+   "exit_late": {
+    "mean": -3,
+    "abs_mean": 189,
+    "p5": -420,
+    "p95": 420
+   },
+   "both_late": {
+    "mean": 16,
+    "abs_mean": 311,
+    "p5": -687,
+    "p95": 685
+   }
+  },
+  "CE hold 60": {
+   "n": 122,
+   "entry_late": {
+    "mean": 10,
+    "abs_mean": 259,
+    "p5": -503,
+    "p95": 548
+   },
+   "exit_late": {
+    "mean": -19,
+    "abs_mean": 201,
+    "p5": -360,
+    "p95": 407
+   },
+   "both_late": {
+    "mean": -9,
+    "abs_mean": 340,
+    "p5": -700,
+    "p95": 766
+   }
+  },
+  "PE hold 15": {
+   "n": 128,
+   "entry_late": {
+    "mean": -56,
+    "abs_mean": 310,
+    "p5": -654,
+    "p95": 552
+   },
+   "exit_late": {
+    "mean": 3,
+    "abs_mean": 234,
+    "p5": -483,
+    "p95": 558
+   },
+   "both_late": {
+    "mean": -53,
+    "abs_mean": 379,
+    "p5": -979,
+    "p95": 681
+   }
+  },
+  "PE hold 60": {
+   "n": 122,
+   "entry_late": {
+    "mean": -50,
+    "abs_mean": 313,
+    "p5": -659,
+    "p95": 553
+   },
+   "exit_late": {
+    "mean": 37,
+    "abs_mean": 245,
+    "p5": -453,
+    "p95": 496
+   },
+   "both_late": {
+    "mean": -12,
+    "abs_mean": 413,
+    "p5": -940,
+    "p95": 791
+   }
+  },
+  "straddle hold 15": {
+   "n": 127,
+   "entry_late": {
+    "mean": -37,
+    "abs_mean": 114,
+    "p5": -291,
+    "p95": 182
+   },
+   "exit_late": {
+    "mean": 0,
+    "abs_mean": 87,
+    "p5": -189,
+    "p95": 190
+   },
+   "both_late": {
+    "mean": -37,
+    "abs_mean": 149,
+    "p5": -338,
+    "p95": 277
+   }
+  },
+  "straddle hold 60": {
+   "n": 122,
+   "entry_late": {
+    "mean": -39,
+    "abs_mean": 115,
+    "p5": -292,
+    "p95": 182
+   },
+   "exit_late": {
+    "mean": 18,
+    "abs_mean": 111,
+    "p5": -243,
+    "p95": 290
+   },
+   "both_late": {
+    "mean": -21,
+    "abs_mean": 159,
+    "p5": -375,
+    "p95": 289
+   }
+  }
+ }
+}

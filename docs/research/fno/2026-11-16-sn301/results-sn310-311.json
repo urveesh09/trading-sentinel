@@ -1,0 +1,662 @@
+{
+ "parity": {
+  "days": 742,
+  "same_days": true,
+  "max_abs_diff": 0.0,
+  "panel_net_lab": 850882,
+  "panel_net_mine": 850882,
+  "trades_logged": 156,
+  "trade_sum_equals_day_sum": true
+ },
+ "SN310": {
+  "all": {
+   "n": 156,
+   "net": 850883,
+   "first_piece": 673629,
+   "added_piece": 177254,
+   "extension": 230,
+   "stop_overshoot": 988,
+   "fees_and_stress": 197684,
+   "with_add": 62,
+   "marked_exits": 0,
+   "by_reason": {
+    "n11": 132,
+    "stop": 8,
+    "ext_trail": 14,
+    "ext_end": 2
+   }
+  },
+  "losers": {
+   "n": 86,
+   "net": -600399,
+   "first_piece": -501056,
+   "added_piece": -99342,
+   "extension": 0,
+   "stop_overshoot": 988,
+   "fees_and_stress": 95680,
+   "with_add": 30,
+   "marked_exits": 0,
+   "by_reason": {
+    "n11": 78,
+    "stop": 8
+   }
+  },
+  "winners": {
+   "n": 70,
+   "net": 1451282,
+   "first_piece": 1174686,
+   "added_piece": 276596,
+   "extension": 230,
+   "stop_overshoot": 0,
+   "fees_and_stress": 102004,
+   "with_add": 32,
+   "marked_exits": 0,
+   "by_reason": {
+    "n11": 54,
+    "ext_trail": 14,
+    "ext_end": 2
+   }
+  },
+  "by_expert": {
+   "TPB": {
+    "n": 97,
+    "net": 557520,
+    "losers_net": -377598,
+    "winners_net": 935118
+   },
+   "OR20": {
+    "n": 16,
+    "net": 137467,
+    "losers_net": -83501,
+    "winners_net": 220968
+   },
+   "SHIPPED": {
+    "n": 16,
+    "net": 77181,
+    "losers_net": -42825,
+    "winners_net": 120006
+   },
+   "EFF": {
+    "n": 27,
+    "net": 78715,
+    "losers_net": -96475,
+    "winners_net": 175190
+   }
+  },
+  "by_opt": {
+   "PE": {
+    "n": 121,
+    "net": 781332,
+    "losers_net": -462501,
+    "winners_net": 1243833
+   },
+   "CE": {
+    "n": 35,
+    "net": 69551,
+    "losers_net": -137897,
+    "winners_net": 207448
+   }
+  },
+  "by_reason": {
+   "n11": {
+    "n": 132,
+    "net": 314200,
+    "losers_net": -512629,
+    "winners_net": 826828
+   },
+   "stop": {
+    "n": 8,
+    "net": -87770,
+    "losers_net": -87770,
+    "winners_net": 0
+   },
+   "ext_trail": {
+    "n": 14,
+    "net": 559971,
+    "losers_net": 0,
+    "winners_net": 559971
+   },
+   "ext_end": {
+    "n": 2,
+    "net": 64482,
+    "losers_net": 0,
+    "winners_net": 64482
+   }
+  },
+  "worst10": [
+   {
+    "day": "2025-01-07",
+    "net": -20213,
+    "first": -20213,
+    "add": 0,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1473,
+    "reason": "stop",
+    "marked": false,
+    "expert": "EFF",
+    "opt": "PE",
+    "added": false,
+    "lots": 6
+   },
+   {
+    "day": "2025-08-18",
+    "net": -20203,
+    "first": -7729,
+    "add": -12474,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1730,
+    "reason": "stop",
+    "marked": false,
+    "expert": "OR20",
+    "opt": "CE",
+    "added": true,
+    "lots": 7
+   },
+   {
+    "day": "2026-06-12",
+    "net": -20199,
+    "first": -20199,
+    "add": 0,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1440,
+    "reason": "stop",
+    "marked": false,
+    "expert": "TPB",
+    "opt": "PE",
+    "added": false,
+    "lots": 6
+   },
+   {
+    "day": "2026-04-10",
+    "net": -20194,
+    "first": -14381,
+    "add": -5813,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1916,
+    "reason": "stop",
+    "marked": false,
+    "expert": "TPB",
+    "opt": "CE",
+    "added": true,
+    "lots": 8
+   },
+   {
+    "day": "2025-03-12",
+    "net": -19289,
+    "first": -9118,
+    "add": -10171,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1524,
+    "reason": "n11",
+    "marked": false,
+    "expert": "TPB",
+    "opt": "PE",
+    "added": true,
+    "lots": 6
+   },
+   {
+    "day": "2026-04-06",
+    "net": -19195,
+    "first": -19195,
+    "add": 0,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1255,
+    "reason": "n11",
+    "marked": false,
+    "expert": "OR20",
+    "opt": "PE",
+    "added": false,
+    "lots": 5
+   },
+   {
+    "day": "2026-03-16",
+    "net": -17818,
+    "first": -17818,
+    "add": 0,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1477,
+    "reason": "n11",
+    "marked": false,
+    "expert": "SHIPPED",
+    "opt": "PE",
+    "added": false,
+    "lots": 6
+   },
+   {
+    "day": "2025-05-16",
+    "net": -17465,
+    "first": -17465,
+    "add": 0,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1475,
+    "reason": "n11",
+    "marked": false,
+    "expert": "TPB",
+    "opt": "PE",
+    "added": false,
+    "lots": 6
+   },
+   {
+    "day": "2026-01-19",
+    "net": -16960,
+    "first": -7924,
+    "add": -9036,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1516,
+    "reason": "n11",
+    "marked": false,
+    "expert": "TPB",
+    "opt": "PE",
+    "added": true,
+    "lots": 6
+   },
+   {
+    "day": "2025-07-14",
+    "net": -16039,
+    "first": -8912,
+    "add": -7127,
+    "ext": 0,
+    "overshoot": 0,
+    "fees": 1300,
+    "reason": "n11",
+    "marked": false,
+    "expert": "TPB",
+    "opt": "PE",
+    "added": true,
+    "lots": 5
+   }
+  ],
+  "best10_share_of_net": 0.707,
+  "losers_without_worst10": -412824,
+  "adds_on_losers": {
+   "n": 30,
+   "added_piece_net": -99342
+  },
+  "adds_on_winners": {
+   "n": 32,
+   "added_piece_net": 276596
+  }
+ },
+ "SN311": {
+  "G0 @205": {
+   "panel_net": 850882,
+   "panel_refilled": 562129,
+   "whole": {
+    "net_days": 850883,
+    "trades": 156,
+    "months": 46,
+    "positive_months": 25,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "max_drawdown": 53788,
+    "refill_days": 71,
+    "refilled": 562130,
+    "adds": 62,
+    "top10": 601981
+   },
+   "halves": {
+    "2023-24": {
+     "net_days": 175369,
+     "trades": 55,
+     "months": 24,
+     "positive_months": 8,
+     "worst_month": -14815,
+     "worst_day": -14815,
+     "max_drawdown": 18467,
+     "refill_days": 30,
+     "refilled": 109169,
+     "adds": 19,
+     "top10": 252299
+    },
+    "2025-26": {
+     "net_days": 675513,
+     "trades": 101,
+     "months": 22,
+     "positive_months": 17,
+     "worst_month": -38531,
+     "worst_day": -21113,
+     "max_drawdown": 53788,
+     "refill_days": 41,
+     "refilled": 452960,
+     "adds": 43,
+     "top10": 592088
+    }
+   },
+   "cash": {
+    "triggers": 120,
+    "added": 62,
+    "rejected_by_mtm": 58,
+    "mtm_rejects_that_cash_allows": 5,
+    "adds_over_wallet": 0,
+    "largest_excess": 0,
+    "stop_blocked": 0
+   }
+  },
+  "G1 @205": {
+   "panel_net": 850882,
+   "panel_refilled": 562129,
+   "whole": {
+    "net_days": 850883,
+    "trades": 156,
+    "months": 46,
+    "positive_months": 25,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "max_drawdown": 53788,
+    "refill_days": 71,
+    "refilled": 562130,
+    "adds": 62,
+    "top10": 601981
+   },
+   "halves": {
+    "2023-24": {
+     "net_days": 175369,
+     "trades": 55,
+     "months": 24,
+     "positive_months": 8,
+     "worst_month": -14815,
+     "worst_day": -14815,
+     "max_drawdown": 18467,
+     "refill_days": 30,
+     "refilled": 109169,
+     "adds": 19,
+     "top10": 252299
+    },
+    "2025-26": {
+     "net_days": 675513,
+     "trades": 101,
+     "months": 22,
+     "positive_months": 17,
+     "worst_month": -38531,
+     "worst_day": -21113,
+     "max_drawdown": 53788,
+     "refill_days": 41,
+     "refilled": 452960,
+     "adds": 43,
+     "top10": 592088
+    }
+   },
+   "cash": {
+    "triggers": 120,
+    "added": 62,
+    "rejected_by_mtm": 58,
+    "mtm_rejects_that_cash_allows": 5,
+    "adds_over_wallet": 0,
+    "largest_excess": 0,
+    "stop_blocked": 0
+   }
+  },
+  "G2 @205": {
+   "panel_net": 913445,
+   "panel_refilled": 563355,
+   "whole": {
+    "net_days": 913445,
+    "trades": 155,
+    "months": 46,
+    "positive_months": 25,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "max_drawdown": 53788,
+    "refill_days": 71,
+    "refilled": 563356,
+    "adds": 68,
+    "top10": 656917
+   },
+   "halves": {
+    "2023-24": {
+     "net_days": 223554,
+     "trades": 54,
+     "months": 24,
+     "positive_months": 8,
+     "worst_month": -14815,
+     "worst_day": -14815,
+     "max_drawdown": 18344,
+     "refill_days": 30,
+     "refilled": 109046,
+     "adds": 20,
+     "top10": 299767
+    },
+    "2025-26": {
+     "net_days": 689891,
+     "trades": 101,
+     "months": 22,
+     "positive_months": 17,
+     "worst_month": -38531,
+     "worst_day": -21113,
+     "max_drawdown": 53788,
+     "refill_days": 41,
+     "refilled": 454310,
+     "adds": 48,
+     "top10": 601364
+    }
+   },
+   "cash": {
+    "triggers": 120,
+    "added": 68,
+    "rejected_by_mtm": 58,
+    "mtm_rejects_that_cash_allows": 6,
+    "adds_over_wallet": 0,
+    "largest_excess": 0,
+    "stop_blocked": 0
+   }
+  },
+  "G0 @400": {
+   "panel_net": 495598,
+   "panel_refilled": 494651,
+   "whole": {
+    "net_days": 495597,
+    "trades": 154,
+    "months": 46,
+    "positive_months": 23,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "max_drawdown": 43001,
+    "refill_days": 77,
+    "refilled": 494651,
+    "adds": 54,
+    "top10": 510306
+   },
+   "halves": {
+    "2023-24": {
+     "net_days": 65970,
+     "trades": 54,
+     "months": 24,
+     "positive_months": 7,
+     "worst_month": -10777,
+     "worst_day": -5994,
+     "max_drawdown": 21788,
+     "refill_days": 33,
+     "refilled": 96145,
+     "adds": 14,
+     "top10": 152028
+    },
+    "2025-26": {
+     "net_days": 429627,
+     "trades": 100,
+     "months": 22,
+     "positive_months": 16,
+     "worst_month": -41913,
+     "worst_day": -20202,
+     "max_drawdown": 43001,
+     "refill_days": 44,
+     "refilled": 398506,
+     "adds": 40,
+     "top10": 500275
+    }
+   },
+   "cash": {
+    "triggers": 119,
+    "added": 54,
+    "rejected_by_mtm": 65,
+    "mtm_rejects_that_cash_allows": 6,
+    "adds_over_wallet": 0,
+    "largest_excess": 0,
+    "stop_blocked": 0
+   }
+  },
+  "G1 @400": {
+   "panel_net": 495598,
+   "panel_refilled": 494651,
+   "whole": {
+    "net_days": 495597,
+    "trades": 154,
+    "months": 46,
+    "positive_months": 23,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "max_drawdown": 43001,
+    "refill_days": 77,
+    "refilled": 494651,
+    "adds": 54,
+    "top10": 510306
+   },
+   "halves": {
+    "2023-24": {
+     "net_days": 65970,
+     "trades": 54,
+     "months": 24,
+     "positive_months": 7,
+     "worst_month": -10777,
+     "worst_day": -5994,
+     "max_drawdown": 21788,
+     "refill_days": 33,
+     "refilled": 96145,
+     "adds": 14,
+     "top10": 152028
+    },
+    "2025-26": {
+     "net_days": 429627,
+     "trades": 100,
+     "months": 22,
+     "positive_months": 16,
+     "worst_month": -41913,
+     "worst_day": -20202,
+     "max_drawdown": 43001,
+     "refill_days": 44,
+     "refilled": 398506,
+     "adds": 40,
+     "top10": 500275
+    }
+   },
+   "cash": {
+    "triggers": 119,
+    "added": 54,
+    "rejected_by_mtm": 65,
+    "mtm_rejects_that_cash_allows": 6,
+    "adds_over_wallet": 0,
+    "largest_excess": 0,
+    "stop_blocked": 0
+   }
+  },
+  "G2 @400": {
+   "panel_net": 501321,
+   "panel_refilled": 499680,
+   "whole": {
+    "net_days": 501321,
+    "trades": 154,
+    "months": 46,
+    "positive_months": 23,
+    "worst_month": -41913,
+    "worst_day": -20210,
+    "max_drawdown": 43010,
+    "refill_days": 78,
+    "refilled": 499680,
+    "adds": 60,
+    "top10": 519386
+   },
+   "halves": {
+    "2023-24": {
+     "net_days": 65964,
+     "trades": 54,
+     "months": 24,
+     "positive_months": 7,
+     "worst_month": -10777,
+     "worst_day": -5994,
+     "max_drawdown": 21788,
+     "refill_days": 33,
+     "refilled": 96151,
+     "adds": 14,
+     "top10": 152028
+    },
+    "2025-26": {
+     "net_days": 435357,
+     "trades": 100,
+     "months": 22,
+     "positive_months": 16,
+     "worst_month": -41913,
+     "worst_day": -20210,
+     "max_drawdown": 43010,
+     "refill_days": 45,
+     "refilled": 403529,
+     "adds": 46,
+     "top10": 509356
+    }
+   },
+   "cash": {
+    "triggers": 119,
+    "added": 60,
+    "rejected_by_mtm": 65,
+    "mtm_rejects_that_cash_allows": 6,
+    "adds_over_wallet": 0,
+    "largest_excess": 0,
+    "stop_blocked": 0
+   }
+  }
+ },
+ "decision": {
+  "G0_commits_over_wallet": false,
+  "reference_for_real_money": "G0",
+  "G2 vs G1 @205 whole": {
+   "net": true,
+   "positive_months": true,
+   "worst_month": true,
+   "refills": true,
+   "worst_day": true
+  },
+  "G2 vs G1 @205 2023-24": {
+   "net": true,
+   "positive_months": true,
+   "worst_month": true,
+   "refills": true,
+   "worst_day": true
+  },
+  "G2 vs G1 @205 2025-26": {
+   "net": true,
+   "positive_months": true,
+   "worst_month": true,
+   "refills": true,
+   "worst_day": true
+  },
+  "G2 vs G1 @400 whole": {
+   "net": true,
+   "positive_months": true,
+   "worst_month": true,
+   "refills": true,
+   "worst_day": true
+  },
+  "G2 vs G1 @400 2023-24": {
+   "net": false,
+   "positive_months": true,
+   "worst_month": true,
+   "refills": true,
+   "worst_day": true
+  },
+  "G2 vs G1 @400 2025-26": {
+   "net": true,
+   "positive_months": true,
+   "worst_month": true,
+   "refills": true,
+   "worst_day": true
+  },
+  "G2_dev_candidate": false
+ }
+}
