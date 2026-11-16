@@ -325,3 +325,11 @@ Until then the best empty-day action remains no trade. A daily income comes from
   - the auction queue pressure and a mid-gap watch (`sn351/fw5.py`, with SN300a after Dec 23);
   - the CAS 2.0 closing window from Dec 7 (`sn351/fw6.py`; needs the recorder to 15:46, SN329 not deployed).
 - **The wage comes from Gold's capital** (SN352 / SN363): ₹785 a session on average at ₹205, in lumps. A never-failing ₹750 a session needs about ₹3.7 lakh.
+
+## 21. Status after SN366–SN380 (Nov 16, 2026)
+
+- **Opening entries:** the opening direction is real for 20–30 minutes and has no value left at 10:15 (SN371). An in-the-money leg keeps ₹55–110 more of it at 09:16: +₹67 at ₹205 on 171 auction sessions, 2026 only, frozen forward in `sn366/fw7.py` (SN376 / SN380). Opening premium richness grows with the overnight IV jump (SN377).
+- **Chain pressure:** wings, synthetic forward, signed flow and expiry pairs are followed by only 3–9 bp over 15–30 minutes (SN368 / SN372 / SN378 / SN379). That is below a bought option's hourly cost of ₹300–850.
+- **Bracket and limit:** a visible ₹750 is lost on the 58% of positions that time out at −₹851 (SN367). A resting limit order saves ₹18 but misses the winners (SN373).
+- **Gold on unseen 2022:** −₹15,281 from ₹30k (4 of 12 months positive), like its first development year 2023 (SN366). A losing first year must be expected.
+- **Blocked or closed by the data:** Hong Kong's 10:30 reopen shows no extra NIFTY move (SN370). NIFTYBEES needs a recorder subscription (SN369).

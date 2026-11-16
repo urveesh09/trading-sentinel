@@ -1,3 +1,34 @@
+## November 16 (night) - SN366–SN380: Gold's unseen 2022 exam run (Gold v5 −₹15,281 from ₹30k, same profile as 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option; forward fw7 frozen (research only, nothing deployed)
+
+**Owner (Nov 16):** the auditor's SN366–SN375 (`docs/SN366_SN375_RESEARCH_BRIEF.md`) plus five own slots. Plan `3740b461`, amendments B1–B4. Results: `docs/research/fno/2026-11-16-sn366/README.md`.
+
+**SN366 (Gold / N11 on unseen 2022):**
+- **Gates:** wiring W (TEST2025 trade for trade) and evidence W2 (with a negative control) passed; 2022 data built from this PC.
+- **First opening:** a wiring fault. N09's volatility reading used fixed daily files with a 21-month hole. It was corrected (`SOURCE_CORRECTION_2022.md`, both receipts kept) and replayed once more.
+- **Nets:** N10 retry −₹3,803, N08 −₹6,874, N11 −₹14,079; random-entry median −₹76,062.
+- **N11 sheet:** A no, B no (the stand-aside cost ₹5,449).
+- **N10 sheet:** A–C yes; D not run.
+- **Gold v5 from ₹30k:** −₹15,281 at ₹205, 4 of 12 months positive, ₹53,896 refilled. Like 2023 (−₹12,107).
+- **`n08_lab.py`** is unchanged; the 2022 points live in `sn366/n08_shim.py`.
+
+**Gap-day ideas:**
+- **The opening direction is gone at 10:15** (SN371). An ITM leg keeps ₹55–110 more of it at 09:16 (SN376: +₹67 at ₹205 on 171 auction sessions, 2026 only).
+- **Opening richness scales with the overnight IV jump** (SN377).
+- **Closed or blocked:**
+  - wings (SN368: the two-tenor test is not computable on the archive; the front tenor points the other way);
+  - synthetic-forward lead (SN378);
+  - signed flow (SN379, 15 events);
+  - expiry pressure (SN372, 9 events);
+  - Hong Kong reopen (SN370);
+  - NIFTYBEES (SN369, no data).
+- **SN367:** a visible ₹750 is lost on the 58% of positions that time out at −₹851.
+- **SN373:** a resting limit loses the winners.
+- **SN374:** never pay spare cash down to the day-stop cover.
+
+**Frozen forward:** `sn366/fw7.py` (SN380, AUCTION ITM arm), scored with fw5 after SN300a's 20th session. fw6 amendment B1: expiry-day rows are research only.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow.
+
 ## November 16 (evening) - SN351–SN365: the wage corrected (₹785 a session, not ₹881), the auction's direction is priced, opening premium is rich, no state has room; forward scorers fw5 (auction queue pressure) and fw6 (CAS 2.0 closing window) frozen (research only, nothing deployed)
 
 **Owner (Nov 16):** the auditor's SN351–SN360 (`docs/SN351_SN360_RESEARCH_BRIEF.md`) plus five own slots, "one strategy essence, slot, then give it time". Plan `cbdbc54c` with amendments A1–A6, each committed before that slot's numbers. Results: `docs/research/fno/2026-11-16-sn351/README.md`.

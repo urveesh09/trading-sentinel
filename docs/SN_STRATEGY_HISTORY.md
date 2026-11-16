@@ -50,6 +50,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN316–SN330 (Nov 16): the partner's chart sequence fails on one-second data; Gold's losses have no early signature; WK-H passes the 2020 crash exam; Gold V8 = Gold v5 executed for real money** (`sn316/GOLD_V8.md`). Dec 7 CAS 2.0 hours fixed in Dev (`52a77adf`, not deployed). See the SN316–SN330 section at the end.
 - **SN331–SN350 (Nov 16): no short-horizon option edge at any clock** (failed-break reversals have no room; entries after fast moves are worse than random). **Gold V8 = Gold v5**; the wage comes from Gold's capital (₹881 a session at ₹205 with a one-wallet reserve). See the SN331–SN350 section at the end.
 - **SN351–SN365 (Nov 16): the wage corrected to ₹785 a session (SN342 double-counted ₹71,250 of growth cash); the auction's direction is information already priced; opening premium is rich; no entry state has room at ₹205.** Forward scorers fw5 / fw6 frozen. See the SN351–SN365 section at the end.
+- **SN366–SN380 (Nov 16): Gold v5 on unseen 2022 lost ₹15,281 from ₹30k (4 of 12 months positive, like 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option.** Forward fw7 frozen. See the SN366–SN380 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1040,3 +1041,25 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - The opening auction's direction is real information, already in the price to within the costs. Opening option premium is rich.
 - No entry state for a bought option has room after ₹205. The room is in the path (hindsight), which no tested predictor reaches.
 - Gold's wage is capital-bound and lumpy. A promised salary is set by the worst early stretch, not the average.
+
+## SN366–SN380 (Nov 16, 2026): Gold's unseen 2022 exam, the opening family, chain pressure sensors (folder `docs/research/fno/2026-11-16-sn366`)
+
+**Owner:** the auditor's SN366–SN375 plus five own slots, one at a time with quality. Plan `3740b461`, amendments B1–B4.
+
+| SN | Result |
+|---|---|
+| 366 | NIFTY 2022 exam (second opening after a disclosed volatility-source correction): N10 retry −₹3,803, CUSHION −₹4,363, N08 −₹6,874, NO_STAND −₹8,630, N11 −₹14,079, random median −₹76,062. N11 sheet A no, B no; N10 sheet A–C yes, D not run. **Gold v5 from ₹30k: −₹15,281 at ₹205 (−₹23,511 at ₹400), 4 of 12 months positive** (2023: −₹12,107, 3 of 12) |
+| 371 | Opening direction at 10:15: no value left (gap −₹361 at ₹205 vs coin −₹386); auction direction reverses (−₹619 vs −₹245) |
+| 376 | ITM leg at 09:16 keeps ₹55–110 more: auction +₹67 at ₹205 (171, 2026); 2022–26 gap negative → SN380's forward candidate |
+| 377 | Opening richness ∝ overnight IV jump (straddle −₹226 / −₹282 / −₹550 by 10:15 by tercile); cheap opens still −₹148 at ₹205 |
+| 368 / 378 / 379 / 372 | Wings (two tenors not computable on the archive; the front tenor points the other way), synthetic-forward lead (+3.2 bp / 15 min), signed flow (15 events), expiry pressure (9 events): all closed |
+| 367 | ₹750 bracket: 37% reach it (fills +₹982), 58% time out at −₹851; bracket = fixed hold = coin |
+| 373 | Resting mid limit: saves ₹17.7, misses the winners; retired |
+| 374 | Withdrawals: profit-only pays nothing in 63% of months; a payout down to the day-stop cover traps the account |
+| 370 / 369 | Hong Kong reopen (+1.35 bp DiD, p 0.15) closed; NIFTYBEES blocked (no data) |
+| 380 / 375 | fw7 frozen forward (AUCTION ITM); SN375 not triggered |
+
+**Lessons:**
+- Direction at the open is real for 20–30 minutes and already priced at 10:15.
+- Chain pressure precedes 3–9 bp moves, too small for a bought option's hourly cost (₹300–850).
+- Gold's first year from ₹30k lost in both 2022 and 2023: a real-money plan must expect it.
