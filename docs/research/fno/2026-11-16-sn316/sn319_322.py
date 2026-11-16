@@ -335,7 +335,10 @@ def verdict(s):
 def run(raw):
     rows = []
     for d in sorted(raw):
-        D = Day(d, raw[d])
+        r = raw[d]
+        if not all(k in r["series"] and k in r["meta"] for k in ("CE", "PE")):    # as SN78 / SN79: both legs needed (fix before any number)
+            continue
+        D = Day(d, r)
         if D.expiry:
             continue
         rows.extend(study_day(D))
