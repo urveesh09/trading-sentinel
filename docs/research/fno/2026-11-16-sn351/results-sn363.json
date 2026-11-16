@@ -1,0 +1,608 @@
+{
+ "S* P0=30000 @205": {
+  "S_star": 500.0,
+  "per_session": 24,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 22500,
+   "final_funds": 888383,
+   "opening": 60000,
+   "min_spare": 9418,
+   "months_below_S": 22,
+   "months": 45,
+   "gold_net": 850883,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12",
+    "2024-11-12"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-10",
+   "kept": false,
+   "paid": 9000,
+   "final_funds": 34918,
+   "opening": 60000,
+   "min_spare": 4918,
+   "months_below_S": 8,
+   "months": 9,
+   "gold_net": -16082,
+   "steps": []
+  }
+ },
+ "S* P0=30000 kept @205": {
+  "S_star": 500.0,
+  "per_session": 24,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 22500,
+   "final_funds": 888383,
+   "opening": 60000,
+   "min_spare": 9418,
+   "months_below_S": 22,
+   "months": 45,
+   "gold_net": 850883,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12",
+    "2024-11-12"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-10",
+   "kept": false,
+   "paid": 9000,
+   "final_funds": 34918,
+   "opening": 60000,
+   "min_spare": 4918,
+   "months_below_S": 8,
+   "months": 9,
+   "gold_net": -16082,
+   "steps": []
+  }
+ },
+ "S* P0=60000 @205": {
+  "S_star": 3000.0,
+  "per_session": 143,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 135000,
+   "final_funds": 805883,
+   "opening": 90000,
+   "min_spare": 13917,
+   "months_below_S": 25,
+   "months": 45,
+   "gold_net": 850883,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12",
+    "2024-11-12"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-12",
+   "kept": false,
+   "paid": 38500,
+   "final_funds": 39393,
+   "opening": 90000,
+   "min_spare": 8417,
+   "months_below_S": 10,
+   "months": 11,
+   "gold_net": -12107,
+   "steps": []
+  }
+ },
+ "S* P0=60000 kept @205": {
+  "S_star": 3000.0,
+  "per_session": 143,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 135000,
+   "final_funds": 805883,
+   "opening": 90000,
+   "min_spare": 13917,
+   "months_below_S": 25,
+   "months": 45,
+   "gold_net": 850883,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12",
+    "2024-11-12"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-12",
+   "kept": false,
+   "paid": 38500,
+   "final_funds": 39393,
+   "opening": 90000,
+   "min_spare": 8417,
+   "months_below_S": 10,
+   "months": 11,
+   "gold_net": -12107,
+   "steps": []
+  }
+ },
+ "S* P0=90000 @205": {
+  "S_star": 4500.0,
+  "per_session": 214,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 202500,
+   "final_funds": 768383,
+   "opening": 120000,
+   "min_spare": 23012,
+   "months_below_S": 27,
+   "months": 45,
+   "gold_net": 850883,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12",
+    "2024-11-12"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "pause 2024-10-30",
+   "kept": false,
+   "paid": 105000,
+   "final_funds": 80012,
+   "opening": 120000,
+   "min_spare": 12512,
+   "months_below_S": 18,
+   "months": 21,
+   "gold_net": 65012,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12"
+   ]
+  }
+ },
+ "S* P0=90000 kept @205": {
+  "S_star": 4500.0,
+  "per_session": 214,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 202500,
+   "final_funds": 768383,
+   "opening": 120000,
+   "min_spare": 23012,
+   "months_below_S": 27,
+   "months": 45,
+   "gold_net": 850883,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12",
+    "2024-11-12"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "pause 2024-10-30",
+   "kept": false,
+   "paid": 105000,
+   "final_funds": 80012,
+   "opening": 120000,
+   "min_spare": 12512,
+   "months_below_S": 18,
+   "months": 21,
+   "gold_net": 65012,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12"
+   ]
+  }
+ },
+ "S* start=2024-01-01 P0=30000 @205": {
+  "S_star": 5500.0,
+  "per_session": 262,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 181500,
+   "final_funds": 769428,
+   "opening": 60000,
+   "min_spare": 21045,
+   "months_below_S": 17,
+   "months": 33,
+   "gold_net": 890928,
+   "steps": [
+    "2024-01-10",
+    "2024-01-30",
+    "2024-11-05"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2024-10",
+   "kept": false,
+   "paid": 54000,
+   "final_funds": 84045,
+   "opening": 60000,
+   "min_spare": 16545,
+   "months_below_S": 7,
+   "months": 9,
+   "gold_net": 78045,
+   "steps": [
+    "2024-01-10",
+    "2024-01-30"
+   ]
+  }
+ },
+ "S* start=2025-01-01 P0=30000 @205": {
+  "S_star": 4500.0,
+  "per_session": 214,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 94500,
+   "final_funds": 388462,
+   "opening": 60000,
+   "min_spare": 10664,
+   "months_below_S": 8,
+   "months": 21,
+   "gold_net": 422962,
+   "steps": [
+    "2025-02-11",
+    "2025-10-24",
+    "2026-03-13"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "pause 2025-08-06",
+   "kept": false,
+   "paid": 35000,
+   "final_funds": 52164,
+   "opening": 60000,
+   "min_spare": 7164,
+   "months_below_S": 4,
+   "months": 7,
+   "gold_net": 27164,
+   "steps": [
+    "2025-02-11"
+   ]
+  }
+ },
+ "capital for Rs 15,750 @205": {
+  "P0": 340000.0,
+  "owner_total": 370000.0,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 708750,
+   "final_funds": 512133,
+   "opening": 370000,
+   "min_spare": 36762,
+   "months_below_S": 33,
+   "months": 45,
+   "gold_net": 850883,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12",
+    "2024-11-12"
+   ]
+  },
+  "below": {
+   "ok": false,
+   "why": "salary 2024-10",
+   "kept": false,
+   "paid": 330750,
+   "final_funds": 94262,
+   "opening": 360000,
+   "min_spare": 26762,
+   "months_below_S": 20,
+   "months": 21,
+   "gold_net": 65012,
+   "steps": [
+    "2024-01-10",
+    "2024-02-12"
+   ]
+  }
+ },
+ "S* P0=30000 @400": {
+  "S_star": 0.0,
+  "per_session": 0,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 0,
+   "final_funds": 555597,
+   "opening": 60000,
+   "min_spare": 8438,
+   "months_below_S": 16,
+   "months": 45,
+   "gold_net": 495597,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21",
+    "2025-10-24"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-10",
+   "kept": false,
+   "paid": 4500,
+   "final_funds": 33938,
+   "opening": 60000,
+   "min_spare": 3938,
+   "months_below_S": 8,
+   "months": 9,
+   "gold_net": -21562,
+   "steps": []
+  }
+ },
+ "S* P0=30000 kept @400": {
+  "S_star": 0.0,
+  "per_session": 0,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 0,
+   "final_funds": 555597,
+   "opening": 60000,
+   "min_spare": 8438,
+   "months_below_S": 16,
+   "months": 45,
+   "gold_net": 495597,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21",
+    "2025-10-24"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-10",
+   "kept": false,
+   "paid": 4500,
+   "final_funds": 33938,
+   "opening": 60000,
+   "min_spare": 3938,
+   "months_below_S": 8,
+   "months": 9,
+   "gold_net": -21562,
+   "steps": []
+  }
+ },
+ "S* P0=60000 @400": {
+  "S_star": 2500.0,
+  "per_session": 119,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 112500,
+   "final_funds": 473097,
+   "opening": 90000,
+   "min_spare": 12115,
+   "months_below_S": 26,
+   "months": 45,
+   "gold_net": 495597,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21",
+    "2025-10-24"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-12",
+   "kept": false,
+   "paid": 33000,
+   "final_funds": 36615,
+   "opening": 90000,
+   "min_spare": 6615,
+   "months_below_S": 10,
+   "months": 11,
+   "gold_net": -20385,
+   "steps": []
+  }
+ },
+ "S* P0=60000 kept @400": {
+  "S_star": 2500.0,
+  "per_session": 119,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 112500,
+   "final_funds": 473097,
+   "opening": 90000,
+   "min_spare": 12115,
+   "months_below_S": 26,
+   "months": 45,
+   "gold_net": 495597,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21",
+    "2025-10-24"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "salary 2023-12",
+   "kept": false,
+   "paid": 33000,
+   "final_funds": 36615,
+   "opening": 90000,
+   "min_spare": 6615,
+   "months_below_S": 10,
+   "months": 11,
+   "gold_net": -20385,
+   "steps": []
+  }
+ },
+ "S* P0=90000 @400": {
+  "S_star": 3500.0,
+  "per_session": 167,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 157500,
+   "final_funds": 458097,
+   "opening": 120000,
+   "min_spare": 16672,
+   "months_below_S": 29,
+   "months": 45,
+   "gold_net": 495597,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21",
+    "2025-10-24"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "pause 2025-08-06",
+   "kept": false,
+   "paid": 124000,
+   "final_funds": 68672,
+   "opening": 120000,
+   "min_spare": 1172,
+   "months_below_S": 26,
+   "months": 31,
+   "gold_net": 72672,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21"
+   ]
+  }
+ },
+ "S* P0=90000 kept @400": {
+  "S_star": 3500.0,
+  "per_session": 167,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 157500,
+   "final_funds": 458097,
+   "opening": 120000,
+   "min_spare": 16672,
+   "months_below_S": 29,
+   "months": 45,
+   "gold_net": 495597,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21",
+    "2025-10-24"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "pause 2025-08-06",
+   "kept": false,
+   "paid": 124000,
+   "final_funds": 68672,
+   "opening": 120000,
+   "min_spare": 1172,
+   "months_below_S": 26,
+   "months": 31,
+   "gold_net": 72672,
+   "steps": [
+    "2024-11-05",
+    "2025-01-21"
+   ]
+  }
+ },
+ "S* start=2024-01-01 P0=30000 @400": {
+  "S_star": 3000.0,
+  "per_session": 143,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 99000,
+   "final_funds": 581169,
+   "opening": 60000,
+   "min_spare": 12370,
+   "months_below_S": 17,
+   "months": 33,
+   "gold_net": 620169,
+   "steps": [
+    "2024-01-30",
+    "2024-11-12",
+    "2025-01-21"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "pause 2024-10-30",
+   "kept": false,
+   "paid": 31500,
+   "final_funds": 52870,
+   "opening": 60000,
+   "min_spare": 7870,
+   "months_below_S": 7,
+   "months": 9,
+   "gold_net": 24370,
+   "steps": [
+    "2024-01-30"
+   ]
+  }
+ },
+ "S* start=2025-01-01 P0=30000 @400": {
+  "S_star": 3500.0,
+  "per_session": 167,
+  "at": {
+   "ok": true,
+   "why": null,
+   "kept": true,
+   "paid": 73500,
+   "final_funds": 277393,
+   "opening": 60000,
+   "min_spare": 10211,
+   "months_below_S": 10,
+   "months": 21,
+   "gold_net": 290893,
+   "steps": [
+    "2025-09-26",
+    "2026-03-13",
+    "2026-09-24"
+   ]
+  },
+  "above": {
+   "ok": false,
+   "why": "pause 2025-10-15",
+   "kept": false,
+   "paid": 36000,
+   "final_funds": 50711,
+   "opening": 60000,
+   "min_spare": 5711,
+   "months_below_S": 6,
+   "months": 9,
+   "gold_net": 26711,
+   "steps": [
+    "2025-09-26"
+   ]
+  }
+ },
+ "capital for Rs 15,750 @400": {
+  "P0": null,
+  "why": "not sustainable with Rs 30 lakh spare"
+ }
+}
