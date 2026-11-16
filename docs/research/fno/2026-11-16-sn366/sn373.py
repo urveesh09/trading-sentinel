@@ -30,7 +30,7 @@ LOT = 65
 
 
 def run_one(smp, s, side):
-    pos0, depth = I.leg(smp, s, side, 0.0)
+    pos0, depth = I.leg(smp, s, side, 1, 0.0)
     if pos0 is None:
         return None
     k = pos0.legs[0][0]
