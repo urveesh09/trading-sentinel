@@ -5,8 +5,12 @@ only: no price is read out or shown before the replays.
     python sn366_build.py mirror 2022|2021L     read-only copy of NIFTY index / future / option 1-minute rows (key-seek by
                                                 request group), Muhurat evenings excluded (2022-10-24, 2021-11-04)
     python sn366_build.py daily 2022|2021L      daily bars: Breeze's own daily rows where they exist (2022 onward), else
-                                                bars made from the 1-minute index (09:15 open, high, low, last close at or
-                                                before 15:29), from Jan 2020; >= 250 bars before the window; a 2022
+                                                bars made from the 1-minute index (09:15 open, high, low, the 15:29 close =
+                                                Breeze's own daily convention), from Jan 2020; a Breeze row whose high / low /
+                                                close is > 30 points off the minute data keeps its open and takes the minute
+                                                high / low / close (amendment A1, Nov 16, before any replay; a first rebuild
+                                                with the 15:31 official close was dropped because it departs from the
+                                                convention the rules were built on); >= 250 bars before the window; a 2022
                                                 overlap check compares made bars with Breeze's (written to the receipt)
     N08_YEAR=<p> python sn366_build.py export <p>   yeardata.export into the point's dataset
     N08_YEAR=<p> python sn366_build.py warm <p> --jobs 3
@@ -102,27 +106,39 @@ def daily(p):
     src = sqlite3.connect(f"file:{SOURCE.as_posix()}?mode=ro", uri=True, timeout=60)
     official = {r[0][:10]: tuple(map(float, r[1:])) for r in src.execute(
         "SELECT datetime, open, high, low, close FROM candles WHERE kind='daily' AND underlying='NIFTY' AND expiry='' AND strike=0 AND opt='' AND datetime < ?", (shift(hi, 1),))}
-    made = {}
+    made, all1531 = {}, {}
     for m0, m1 in months("2020-01-01", shift(hi, 1)):
         rows = src.execute("SELECT datetime, open, high, low, close FROM candles WHERE kind='index' AND underlying='NIFTY' AND expiry='' AND strike=0 AND opt='' "
                            "AND interval='1minute' AND datetime >= ? AND datetime < ? ORDER BY datetime", (m0, m1)).fetchall()
-        by = {}
+        by, close1531 = {}, {}
         for t, o, h, l, c in rows:
             if "09:15" <= t[11:16] <= "15:29" and t[:10] not in MUHURAT:
                 by.setdefault(t[:10], []).append((t, o, h, l, c))
+            elif t[11:16] == "15:31":
+                close1531[t[:10]] = float(c)
         for d, xs in by.items():
             if len(xs) >= 300:
+                # A1 (disclosed before any replay): the close is the 15:29 minute close, which is what Breeze's daily close is
+                # on normal days (checked on 2022-01-03/04/05, 02-24, 03-08, 06-17); the 15:31 row (the official close) is
+                # recorded as a data-quality fact only
                 made[d] = (float(xs[0][1]), max(float(x[2]) for x in xs), min(float(x[3]) for x in xs), float(xs[-1][4]))
+                all1531[d] = d in close1531
     src.close()
     first_official = min(official) if official else None
     days = sorted(set(made) | set(official))
-    out, source = [], {"official": 0, "made": 0}
+    out, source, fixed = [], {"official": 0, "made": 0}, []
     for d in days:
         if d > hi:
             continue
         if d in official and d >= "2022-01-01":
-            out.append([d, *official[d]])
-            source["official"] += 1
+            o = official[d]
+            if d in made and max(abs(made[d][i] - o[i]) for i in (1, 2, 3)) > 30.0:
+                out.append([d, o[0], *made[d][1:]])            # A1: a gross Breeze high / low / close error takes the minute values
+                source["official_open_minute_hlc"] = source.get("official_open_minute_hlc", 0) + 1
+                fixed.append(d)
+            else:
+                out.append([d, *o])
+                source["official"] += 1
         elif d in made and d < "2022-01-01":
             out.append([d, *made[d]])
             source["made"] += 1
@@ -131,10 +147,14 @@ def daily(p):
     both = sorted(d for d in made if d in official and d >= "2022-01-01")
     diffs = {k: max((abs(made[d][i] - official[d][i]) for d in both), default=None) for i, k in enumerate(("open", "high", "low", "close"))}
     mean_close = sum(abs(made[d][3] - official[d][3]) for d in both) / max(1, len(both))
+    breeze_close_off = sorted(d for d in both if all1531.get(d) and abs(made[d][3] - official[d][3]) > 1.0)
     target.write_text(json.dumps({"rows": out}), encoding="utf-8")
     rec = {"point": p, "bars": len(out), "first": out[0][0], "last": out[-1][0], "bars_before_window": before, "by_source": source,
            "first_official_daily_row": first_official,
-           "overlap_check_2022": {"days": len(both), "max_abs_diff_points": diffs, "mean_abs_close_diff_points": round(mean_close, 2)},
+           "overlap_check_2022": {"days": len(both), "max_abs_diff_points": diffs, "mean_abs_close_diff_points": round(mean_close, 2),
+                                  "days_breeze_daily_close_differs_from_1531_row_gt_1pt": len(breeze_close_off), "those_days": breeze_close_off[:40],
+                                  "made_bars_with_1531_row": sum(1 for d in made if all1531.get(d)), "made_bars": len(made),
+                                  "breeze_rows_with_gross_hlc_error_replaced": fixed},
            "sha256": sha(target)}
     (HERE / f"results-sn366-daily-{p}.json").write_text(json.dumps(rec, indent=1), encoding="utf-8")
     print("daily", json.dumps(rec), flush=True)

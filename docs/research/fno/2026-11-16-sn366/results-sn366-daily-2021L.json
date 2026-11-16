@@ -1,0 +1,28 @@
+{
+ "point": "2021L",
+ "bars": 495,
+ "first": "2020-01-01",
+ "last": "2021-12-31",
+ "bars_before_window": 412,
+ "by_source": {
+  "official": 0,
+  "made": 495
+ },
+ "first_official_daily_row": "2019-03-01",
+ "overlap_check_2022": {
+  "days": 0,
+  "max_abs_diff_points": {
+   "open": null,
+   "high": null,
+   "low": null,
+   "close": null
+  },
+  "mean_abs_close_diff_points": 0.0,
+  "days_breeze_daily_close_differs_from_1531_row_gt_1pt": 0,
+  "those_days": [],
+  "made_bars_with_1531_row": 154,
+  "made_bars": 515,
+  "breeze_rows_with_gross_hlc_error_replaced": []
+ },
+ "sha256": "b7761c8f5d587f8c172790b60a20fe6b5fb073f49a31ea528b376aeb5204a633"
+}
