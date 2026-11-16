@@ -85,3 +85,15 @@
 - ₹400 and one minute late > 0 on DEV.
 
 **Anything that passes** goes to SN284. Everything else is reported as it comes out, with no reruns.
+
+## Amendment, Nov 16 2026 (after SN276–SN282; written before SN284 runs)
+
+- **Nothing passed the frozen rules.**
+- **SN281** found one post-hoc signal positive on all four samples: pre-holiday calls, ITM one strike, 09:20 → 15:10. DEV +₹20,266, TEST +₹5,464, EXAM-N +₹10,050, EXAM-S +₹10,894, 73 trades in all.
+- **SN284 is therefore run as information only, not as a pass.** The pre-holiday ITM call goes inside Gold v5's one-wallet account (`ow.py`, ₹30k growing, Jan 2023 – Oct 2026):
+  - it buys at 09:20 when Gold is flat, with the premium ≤ wallet − ₹15,000;
+  - the room is min(10% of the wallet, the shared 20% day room);
+  - a Gold signal sells it at that minute;
+  - it exits at 15:10.
+- **Reported:** Gold alone vs Gold + the call (net, positive months, worst day, worst month, the call's own trades).
+- **SN283** is the description of the cash-equity paper books (Production, read-only, Nov 16 morning).

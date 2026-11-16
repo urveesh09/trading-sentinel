@@ -1,0 +1,15 @@
+{
+ "pick": "SN279 k=3",
+ "trades": 105,
+ "net": -973,
+ "null_mean": -62818,
+ "null_p95": -12871,
+ "stress_400": -53905,
+ "late_1": -7701,
+ "without_best10": -101469,
+ "by_index": {
+  "NIFTY": 27707,
+  "SENSEX": -28680
+ },
+ "PASS": false
+}

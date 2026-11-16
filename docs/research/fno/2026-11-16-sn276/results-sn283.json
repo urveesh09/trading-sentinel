@@ -1,0 +1,9 @@
+{
+  "slot": "SN283 - the cash-equity paper books as a gap-day leg (description; Production read-only, Nov 16 2026 ~09:00 IST)",
+  "penny_smart_v3": {"db": "/data/cache.db.penny-smart-v3.db", "capital": 2000.0, "closed_trades": 4, "net_pnl": [-57.51, 4.98, 14.86, -57.84],
+                      "total": -95.51, "open": "OLAELEC from 2026-11-13", "research": "sealed Jan-Jul 2026 Kite-minute exam passed (+2,936), memory penny-smart-v3-opening-reversal"},
+  "momentum_orb_shadow": {"db": "/data/cache.db.momentum-orb-shadow.db", "days": {"2026-11-09": 0.98, "2026-11-11": 58.31, "2026-11-12": -275.88, "2026-11-13": 105.47},
+                          "total": -111.12, "research": "Momentum M01 exam: stocks-in-play ORB + VWAP exit passed (+4,759)"},
+  "fit_with_gold": "both hold cash from 09:15-09:30 to the close, the window in which Gold may need the whole wallet; a Gold signal would force a sale of small-cap shares mid-day. Their forward records are 4-5 sessions and slightly negative.",
+  "verdict": "Not a gap-day leg for Gold's wallet now: too little forward evidence, rupee results in the tens a day, and a cash conflict with Gold."
+}
