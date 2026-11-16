@@ -1,0 +1,126 @@
+{
+ "variants": {
+  "(b) before a weekday holiday: ATM call 09:20-15:10": {
+   "trades": 45,
+   "net": 13331,
+   "per_trade": 296.2,
+   "win_pct": 37.8,
+   "worst": -3301,
+   "best": 18102,
+   "without_best5": -40076,
+   "by_year": {
+    "2022": 13443,
+    "2023": 2067,
+    "2024": -8390,
+    "2025": -3326,
+    "2026": 9537
+   },
+   "years_positive": 3,
+   "years": 5,
+   "months_positive": 12,
+   "months": 32,
+   "worst_month": -5137,
+   "maxmin": -8390
+  }
+ },
+ "pick": "(b) before a weekday holiday: ATM call 09:20-15:10",
+ "pick_dev": {
+  "trades": 45,
+  "net": 13331,
+  "per_trade": 296.2,
+  "win_pct": 37.8,
+  "worst": -3301,
+  "best": 18102,
+  "without_best5": -40076,
+  "by_year": {
+   "2022": 13443,
+   "2023": 2067,
+   "2024": -8390,
+   "2025": -3326,
+   "2026": 9537
+  },
+  "years_positive": 3,
+  "years": 5,
+  "months_positive": 12,
+  "months": 32,
+  "worst_month": -5137,
+  "maxmin": -8390
+ },
+ "null": {
+  "kind": "day",
+  "selected_maxmin_p95": -3860,
+  "selected_maxmin_mean": -15343
+ },
+ "dev_stress_400": 8098,
+ "dev_late_1": 17073,
+ "exams": {
+  "TEST": {
+   "trades": 2,
+   "net": 4643,
+   "per_trade": 2321.4,
+   "win_pct": 50.0,
+   "worst": -3071,
+   "best": 7714,
+   "without_best5": 0,
+   "by_year": {
+    "2026": 4643
+   },
+   "years_positive": 1,
+   "years": 1,
+   "months_positive": 1,
+   "months": 2,
+   "worst_month": -3071,
+   "stress_400": 4253
+  },
+  "EXAMN": {
+   "trades": 9,
+   "net": 25327,
+   "per_trade": 2814.1,
+   "win_pct": 44.4,
+   "worst": -3180,
+   "best": 13951,
+   "without_best5": -11888,
+   "by_year": {
+    "2020": 42,
+    "2021": -2287,
+    "2022": 27572
+   },
+   "years_positive": 2,
+   "years": 3,
+   "months_positive": 4,
+   "months": 7,
+   "worst_month": -3101,
+   "stress_400": 7525
+  },
+  "EXAMS": {
+   "trades": 17,
+   "net": 8884,
+   "per_trade": 522.6,
+   "win_pct": 29.4,
+   "worst": -3294,
+   "best": 25304,
+   "without_best5": -32515,
+   "by_year": {
+    "2024": -6808,
+    "2025": 12780,
+    "2026": 2912
+   },
+   "years_positive": 2,
+   "years": 3,
+   "months_positive": 2,
+   "months": 11,
+   "worst_month": -6585,
+   "stress_400": 7542
+  }
+ },
+ "gates": {
+  "G1": true,
+  "G2": false,
+  "G3": true,
+  "G4": true
+ },
+ "verdict": "FAIL",
+ "notes": [
+  "post-hoc pick from SN259's DEV table (not SN259's max-min pick)"
+ ]
+}
