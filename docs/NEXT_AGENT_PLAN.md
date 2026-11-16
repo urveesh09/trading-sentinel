@@ -1,3 +1,27 @@
+## November 16 (afternoon) - Gold V8 shadow built in Dev (runtime, flag off, not deployed)
+
+**Owner (Nov 16):** "Gold V8 … should be something that we are focusing to develop in real life."
+
+**What changed:** commit `5d335190`.
+- **New `python-engine/sn_gold_v8.py`:** beside every SN Gold paper entry, scale-in and exit, it records the exact real order Gold V8 would send, in the new table `sn_gold_v8_intents`. Gate 3 of `docs/research/fno/2026-11-16-sn316/GOLD_V8.md`. The order contract:
+  - entry: BUY limit at the ask + 2 ticks;
+  - a stop-loss order for the whole position;
+  - scale-in: cash actually paid against the wallet (SN311's G1 rule);
+  - exits: limit at the bid − 2 ticks, market on the day stop and at the 15:15 failsafe.
+- **Hooks in `sn_gold.py`:** guarded by `_v8_record`, so a failure never changes the paper step.
+- **No broker call:** a test enforces it.
+
+**Flag:** `SN_GOLD_V8_SHADOW_ENABLED` (default false).
+
+**Verification:**
+- `tests/test_sn_gold_v8.py` (8) and `test_sn_gold.py` pass;
+- full suite 6,437 passed, 4 skipped;
+- atlas regenerated.
+
+**Rollout:**
+- Deploy with SN329 (`52a77adf`) on the owner's word, then set the flag true for the shadow weeks.
+- The tick recorder's packets show whether each recorded order would have filled.
+
 ## November 16 (afternoon) - SN316–SN330: the partner's chart sequence fails, Gold's losses have no early signature, WK-H survives the 2020 crash, Dec 7 hours fixed in Dev, Gold V8 defined (research + one Dev runtime change)
 
 **Owner (Nov 16):** the auditor's SN316–SN325 (`docs/SN316_SN325_RESEARCH_BRIEF.md`) plus five own slots toward a real-money **Gold V8** (v6 / v7 need about ₹5 lakh of margin).
