@@ -1,3 +1,26 @@
+## November 16 (morning) - SN276–SN285: every earlier gap-day signal combined, on all the data (research only, Dev)
+
+**Owner (Nov 16):** "10 slots more … other perspective … same wallet … learn from the good points of strategies."
+
+**Result: nothing passed.**
+- On 1,465 pooled sessions (NIFTY Oct 2020 – Oct 2026 + SENSEX Oct 2024 – Apr 2026):
+  - the walk-forward LightGBM learners lost ₹1.3–1.8 lakh (2–4 of 10 half-years positive);
+  - a vote of seven frozen signals lost after costs (−₹973 pooled, −₹53.9k at ₹400);
+  - SN126-L was about zero on EXAM-N.
+- **Calls on the session before a weekday market holiday** (ITM, 09:20 → 15:10) were positive on all four samples: +₹46.7k over 73 trades. They are post-hoc and fail the null.
+- Inside Gold v5's wallet (in-sample, 2023 – Oct 2026) the calls added +₹14,970 (38 calls). Positive months went from 25 to 28 and the worst month from −₹38.5k to −₹20.5k.
+- A forward paper watch, only on the owner's word.
+
+**WK-H facts for the owner (Gold v7 band 0.8, per option lot, 368 weeks over 5 samples):**
+- 57.6% of weeks won (avg win +₹4,331, avg loss −₹3,202);
+- about 41% of position days green;
+- longest losing run 6 weeks; worst week −₹18.9k.
+- Not suitable for the partner: about ₹5 lakh margin, option selling, a futures hedge every 15 minutes, no forward record yet.
+
+**Where:** `docs/research/fno/2026-11-16-sn276/README.md`. Plan `c300be88`, amendment `d53009ee`.
+
+**Runtime:** none changed; Production unchanged.
+
 ## November 16 (morning) - SN251–SN275: Gold's gap days from Gold's own wallet, without margin (research only, Dev)
 
 **Owner (Nov 16):**

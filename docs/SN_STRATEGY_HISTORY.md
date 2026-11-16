@@ -44,6 +44,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
   - SN231–SN250 chose **Gold v7 = the same leg with hedge band 0.8**: over Jan 2023 – Oct 2026, 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228, net +₹13.71 lakh against +₹11.96 lakh. It is the Dev default;
   - every month positive was not reached. The remaining bad months come from WK-H's quiet or sudden-move weeks and Gold v5's own losing months.
 - **SN251–SN275 (Nov 16): Gold's gap days from Gold's own wallet, without margin: nothing passed.** Options-only WK-H (wings instead of futures) loses on 4–5 of 5 samples (−₹2.1 to −₹2.7 lakh per lot); the hot-day watches fail two new unseen buyer exams (NIFTY Oct 2020 – Mar 2022, SENSEX Oct 2024 – Apr 2026); buying every day loses ₹150–660 per lot per day; 13 new studies fail. A wage pot from Gold pays ₹500–750 a session over years, with ₹0.5–3.1 lakh advanced first (SN269). See the SN251–SN275 section at the end.
+- **SN276–SN285 (Nov 16): every earlier gap-day signal combined on 1,465 pooled sessions: nothing passed** (walk-forward learners −₹1.3–1.8 lakh, the vote −₹973 pooled). Pre-holiday calls are positive on all four samples (post-hoc, ~10 a year): a forward watch candidate. See the SN276–SN285 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -856,3 +857,37 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - Results: `0555a559`, `f781a9fa`, `fbc949aa`, `e60e28ba`, `24ca38b2`, `c22d0b0f`, `4773927b`, `4f91377e`.
 - The docs commit adds this section.
 - **Production:** `c6cbceb1` (PR #140, another release) carries SN251–SN257's research files; no runtime change from SN251–SN275.
+
+## SN276–SN285 (Nov 16, 2026): every earlier gap-day signal combined, on all the data (folder `docs/research/fno/2026-11-16-sn276`)
+
+**Owner:** "10 slots more. Try some other perspective … same wallet … learn from the good points of strategies … use whatever you want."
+
+**Method:**
+- Plan `c300be88` before any number.
+- SN251's engine, unchanged.
+- 1,465 pooled sessions (NIFTY Oct 2020 – Oct 2026, SENSEX Oct 2024 – Apr 2026), 21 features at 10:00.
+- Learners walk-forward by half-year, 2022 H1 – 2026 H2, each trained only on earlier sessions.
+
+| SN | Result | Verdict |
+|---|---|---|
+| 276 | Every plain 10:00 action loses on average on every sample (straddle −₹580 to −₹1,015, call −₹224 to −₹1,194, put −₹212 to −₹481) | Base rates |
+| 277 | Action-value LightGBM: −₹1,28,556, 4 of 10 half-years positive | FAIL |
+| 278 | Two-stage classifier: −₹1,34,370, 2 of 10 | FAIL |
+| 279 | Vote of seven frozen signals: k = 3 DEV +₹13,988, EXAM-N −₹11,040, EXAM-S −₹28,680 | FAIL |
+| 280 | Controls for the vote: pooled −₹973 (null −₹62.8k), ₹400 −₹53.9k | FAIL |
+| 281 | Pre-holiday call positive on all four samples (ITM +₹46,674 over 73 trades); debit spreads and the breakout swing lose | Description |
+| 282 | SN126-L: EXAM-N +₹132 (12 trades), ₹400 negative | FAIL |
+| 283 | Cash-equity paper books: 4–5 forward sessions, slightly negative, cash conflict with Gold | Not a fit |
+| 284 | The pre-holiday ITM call in Gold's wallet (information, in-sample): +₹14,970, positive months 25 → 28, worst month −₹38.5k → −₹20.5k | Watch candidate |
+| 285 | Synthesis | – |
+
+**Lessons:**
+1. Weak signals combined stay weak. The 10:00 option's cost (₹200–650 a day) exceeds what any gap-day information predicts.
+2. The pre-holiday calendar effect is the only buyer signal positive everywhere. It is post-hoc and rare (about 10 a year).
+3. WK-H (Gold v7) won 57.6% of weeks over 368 weeks; it is not a partner strategy (margin, selling, automation).
+
+**Open items** (added to the SN275 list):
+- a pre-holiday ITM call forward paper watch on the owner's word;
+- the next weekday NSE holiday is its first forward test.
+
+**Commits:** `c300be88`, `c0521449`, `0dc1d2dc`, `d53009ee`, and the docs commit that adds this section.

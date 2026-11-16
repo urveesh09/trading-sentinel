@@ -284,3 +284,12 @@ Until then the best empty-day action remains no trade. A daily income comes from
   2. the 2020 crash test for WK-H;
   3. a wage pot paid from Gold's profit (SN269: ₹500–750 a session over years, with ₹0.5–3.1 lakh advanced first).
 - Record: `docs/research/fno/2026-11-16-sn251/README.md`.
+
+## 16. Status after SN276–SN285 (Nov 16, 2026)
+
+- **Every earlier gap-day signal, combined on 1,465 pooled sessions** (NIFTY Oct 2020 – Oct 2026 + SENSEX Oct 2024 – Apr 2026), does not make a buyer profitable:
+  - walk-forward LightGBM learners: −₹1.3 to −₹1.8 lakh, 2–4 of 10 half-years positive;
+  - a seven-signal vote: −₹973 pooled, negative at ₹400.
+- **The 10:00 option's cost** (₹200–650 a day on average) exceeds what the information predicts.
+- **The one buyer signal positive on all four samples:** calls on the session before a weekday market holiday (ITM +₹46.7k over 73 trades). It is post-hoc, fails the null, and trades about 10 times a year.
+- Record: `docs/research/fno/2026-11-16-sn276/README.md`.
