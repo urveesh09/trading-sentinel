@@ -85,9 +85,26 @@ def mirror_2019():
     copy(M2019, pieces)
 
 
+def seconds_keys():
+    """(day, expiry, strike, CE/PE) of every finished one-second option job Jan 16 - Apr 2 2026, from the downloader's own
+    receipts (no price). [Fix before any price: the first version filtered candles by interval and datetime, which the
+    table's key cannot seek, so each day scanned the whole 8.6 GB database; it was stopped after ~15 minutes.]"""
+    src = sqlite3.connect(f"file:{SOURCE.as_posix()}?mode=ro", uri=True, timeout=60)
+    out = set()
+    for (k,) in src.execute("SELECT key FROM seconds_receipts WHERE status='ok'"):
+        p = k.split("|")
+        if len(p) >= 7 and p[0] == "seconds" and p[1] == "NIFTY" and p[4] in ("CE", "PE") and "2026-01-16" <= p[5][:10] <= "2026-04-02":
+            out.add((p[5][:10], p[2], float(p[3]), p[4]))
+    src.close()
+    return sorted(out)
+
+
 def mirror_seconds():
-    pieces = [("SELECT * FROM candles WHERE underlying='NIFTY' AND interval='1second' AND datetime>=? AND datetime<?", (a, b))
-              for a, b in days("2026-01-16", "2026-04-03")]
+    keys = seconds_keys()
+    pieces = [("SELECT * FROM candles WHERE kind='index' AND underlying='NIFTY' AND expiry='' AND strike=0 AND opt='' AND interval='1second' "
+               "AND datetime>=? AND datetime<?", (d + " 09:15:00", d + " 15:31:00")) for d in sorted({k[0] for k in keys})]
+    pieces += [("SELECT * FROM candles WHERE kind='option' AND underlying='NIFTY' AND expiry=? AND strike=? AND opt=? AND interval='1second' "
+                "AND datetime>=? AND datetime<?", (e, k, o, d + " 09:15:00", d + " 15:31:00")) for d, e, k, o in keys]
     copy(S2026, pieces)
 
 
