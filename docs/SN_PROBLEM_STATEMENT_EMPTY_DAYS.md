@@ -333,3 +333,11 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **Bracket and limit:** a visible ₹750 is lost on the 58% of positions that time out at −₹851 (SN367). A resting limit order saves ₹18 but misses the winners (SN373).
 - **Gold on unseen 2022:** −₹15,281 from ₹30k (4 of 12 months positive), like its first development year 2023 (SN366). A losing first year must be expected.
 - **Blocked or closed by the data:** Hong Kong's 10:30 reopen shows no extra NIFTY move (SN370). NIFTYBEES needs a recorder subscription (SN369).
+
+## 22. Status after SN381–SN395 (Nov 16, 2026)
+
+- **The opening trade, made honest** (the walked cost within ₹15,000, a capped limit, a signal received before 09:16, paired controls), is break-even: +₹46 a session at ₹205, −₹7 without the best day, −₹137 at ₹400, and −₹447 after NSE's Sep 7 auction change (SN382). Choosing an in-the-money option over ATM is the robust part (+₹122 a trade, mostly a larger delta; SN383).
+- **One promising combination:** the auction direction, ITM, on cheap overnight opens (+₹396 / +₹199 per session over 73 sessions, permutation p 0.031, the best of ~10 splits). Frozen forward in `sn381/fw9.py` (SN394).
+- **Closed:** the 09:36 exit, cash-auction agreement (coverage), auction size, indicative drift (too few).
+- **Signed option flow** is now measurable from tick packets (92% of volume signable), forward in `sn381/fw8.py`.
+- **The wage:** from ₹60k, profit-only pays about ₹525 a session on a bad start, with dry spells up to 21 months. A fixed ₹750 a session needs ₹2–5 lakh of the owner's own money in the first years (SN389 / SN395). Gap-day trading would have to earn at least the shortfall after costs on every empty day; nothing so far comes close.

@@ -1,3 +1,27 @@
+## November 16 (late night) - SN381–SN395: the opening trade made honest (fragile; the ITM-vs-ATM edge is the robust part), Gold's 2022 exam closed (N10 sheet D yes; N10 retry is the sheets' lead), the wage needs capital; forward scorers fw7a / fw8 / fw9 frozen (research only, nothing deployed)
+
+**Owner (Nov 16):** the auditor's SN381–SN390 (`docs/SN381_SN390_RESEARCH_BRIEF.md`) plus five own slots. Plan `c6e99cee`. Results: `docs/research/fno/2026-11-16-sn381/README.md`.
+
+**The auditor's three flaws** (one-strike fallback over the cash room, a fallback signal that could arrive after 09:16, controls compared on a different subset) are confirmed and fixed in `sn381/fw7a.py`, with 9 synthetic tests. fw5 / fw7 are kept as frozen.
+
+**Opening trade:**
+- **Under honest rules** it is +₹46 a session at ₹205 (−₹7 without the best day, −₹137 at ₹400), and −₹447 after NSE's Sep 7 auction change (SN382).
+- **The robust part is the expression:** ITM beats ATM by +₹122 a trade on the same days, mostly from a larger delta (SN382 / SN383).
+- **The only promising split is cheap overnight opens** (+₹396 / +₹199 per session, 73 sessions, permutation p 0.031, the best of ~10 splits), frozen forward as `sn381/fw9.py` (SN394).
+- **Closed:** the 09:36 exit, cash agreement (coverage), auction size, indicative drift (too few).
+
+**Gold:**
+- **SN387, N10 sheet D yes:** one account 2022–26, N10 with WATCH ₹4,41,853 against CUSHION ₹4,15,120. N10's sheet passes A–D and N11's fails A and B.
+- **SN392, Gold v5 on 2022:** −₹15,281 with N11 signals against +₹4,681 with N10 / NO_STAND. Over 2022–26 the deployed signals still lead, on in-sample years. No change.
+
+**Wage (SN389 / SN395):**
+- From ₹30k + ₹30k, profit-only pays about ₹525 a session on a 2022-type start, with up to a 21-month dry spell.
+- A fixed ₹750 a session needs ₹2–5 lakh of outside money in the first years.
+
+**Forward queue (after SN300a):** fw5 / fw7 / fw7a (20 sessions), fw9 (15 cheap fills or 60 sessions), fw8 (signed flow, 20 sessions), fw6 (from Dec 7, needs the recorder to 15:46).
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow.
+
 ## November 16 (night) - SN366–SN380: Gold's unseen 2022 exam run (Gold v5 −₹15,281 from ₹30k, same profile as 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option; forward fw7 frozen (research only, nothing deployed)
 
 **Owner (Nov 16):** the auditor's SN366–SN375 (`docs/SN366_SN375_RESEARCH_BRIEF.md`) plus five own slots. Plan `3740b461`, amendments B1–B4. Results: `docs/research/fno/2026-11-16-sn366/README.md`.

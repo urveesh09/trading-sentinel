@@ -51,6 +51,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN331–SN350 (Nov 16): no short-horizon option edge at any clock** (failed-break reversals have no room; entries after fast moves are worse than random). **Gold V8 = Gold v5**; the wage comes from Gold's capital (₹881 a session at ₹205 with a one-wallet reserve). See the SN331–SN350 section at the end.
 - **SN351–SN365 (Nov 16): the wage corrected to ₹785 a session (SN342 double-counted ₹71,250 of growth cash); the auction's direction is information already priced; opening premium is rich; no entry state has room at ₹205.** Forward scorers fw5 / fw6 frozen. See the SN351–SN365 section at the end.
 - **SN366–SN380 (Nov 16): Gold v5 on unseen 2022 lost ₹15,281 from ₹30k (4 of 12 months positive, like 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option.** Forward fw7 frozen. See the SN366–SN380 section at the end.
+- **SN381–SN395 (Nov 16): under honest rules the opening ITM trade is break-even (+₹46 a session, −₹447 after Sep 7); the robust part is ITM over ATM; Gold's 2022 exam closed (N10 sheet D yes, N10 retry the sheets' lead); the wage is a capital question.** Forward fw7a / fw8 / fw9 frozen. See the SN381–SN395 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1063,3 +1064,25 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - Direction at the open is real for 20–30 minutes and already priced at 10:15.
 - Chain pressure precedes 3–9 bp moves, too small for a bought option's hourly cost (₹300–850).
 - Gold's first year from ₹30k lost in both 2022 and 2023: a real-money plan must expect it.
+
+## SN381–SN395 (Nov 16, 2026): the opening trade made honest, Gold's 2022 exam closed, the wage's capital (folder `docs/research/fno/2026-11-16-sn381`)
+
+**Owner:** the auditor's SN381–SN390 plus five own slots. Plan `c6e99cee`.
+
+| SN | Result |
+|---|---|
+| 381 | fw7a companion audit (cash room, price cap, receipt-time signal, paired judge), 9 synthetic tests |
+| 382 | Opening ITM under honest rules: +₹46 a session at ₹205 (−₹7 without the best day), −₹137 at ₹400; −₹447 after Sep 7. ITM beats ATM +₹122 a trade (se 39) everywhere |
+| 383 / 384 | ITM = mostly a larger delta; the 09:36 exit does not help |
+| 385 / 391 / 393 | Cash agreement (coverage), indicative drift (9 sessions), auction size (the opposite): closed |
+| 394 | Cheap opens +₹396 / +₹199 per session (73), p 0.031, best of ~10 splits → fw9 forward |
+| 387 | 2022: 51 of 52 option-less days are expiries; N10 sheet D yes (₹4,41,853 vs CUSHION ₹4,15,120); N10 retry is the sheets' lead |
+| 392 / 388 | Gold v5 2022: N11 signals −₹15,281 vs N10 +₹4,681; the stand-aside skipped 6 big winners (cost ₹5,449); 2022–26 deployed still leads in sample |
+| 389 / 395 | Profit-only from ₹60k: ~₹525 a session on a bad start, 21-month dry spell; ₹750 a session needs ₹2–5 lakh outside |
+| 386 | fw8 packet-level signed flow, forward (92% signable) |
+| 390 | Not triggered |
+
+**Lessons:**
+- Honest execution rules turn the opening edge into break-even; the robust part is choosing ITM over ATM.
+- A filter that sits out bad stretches misses the trend book's big winners.
+- The daily wage is a capital question.
