@@ -2640,7 +2640,12 @@ async def _deliver(db_path: str, entry: _Entry, now: datetime) -> str:
             _refresh_later(db_path, entry, outdated, late)
             return DONE
     from partner_bot import send_partner_result
-    result = await send_partner_result(text, kind=f"watch_{entry.kind.lower()}", reply_markup=keyboard)
+    kind = f"watch_{entry.kind.lower()}"
+    if (entry.kind == "DAY" and summary == "give-back stop"
+            and text.partition("\n")[0] == profit_protection.GIVEBACK_PROFIT_HEADLINE):
+        result = await send_partner_result(text, kind=kind, large_heading=True, stop_lead_in=entry.attempts == 0)
+    else:
+        result = await send_partner_result(text, kind=kind, reply_markup=keyboard)
     delivered = bool(result.delivered)
     state = getattr(result, "state", None) or ("acknowledged" if delivered else "failed")
     error = getattr(result, "error", None)

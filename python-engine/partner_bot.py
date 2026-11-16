@@ -17,9 +17,9 @@ bot that node-gateway owns. Design rules (plan WS4):
     chat -- is a misroute we make structurally impossible.
   - NO fallback transport. A dropped partner message is an INFO problem;
     a misrouted one is a trust problem. Tier-1 local log is the record.
-  - Plain text, no parse_mode: option tradingsymbols are full of
-    characters Markdown parsers choke on, and a formatting 400 must
-    never eat a tip.
+  - Normal sends use plain text without a parse mode. The give-back stop
+    uses an escaped rich heading and falls back to a bold text entity on
+    an explicit formatting rejection.
   - Disabled by default (PARTNER_BOT_ENABLED=false or missing creds):
     send_partner() returns False without a single network byte.
 """
@@ -28,6 +28,8 @@ from __future__ import annotations
 import asyncio
 import re
 from dataclasses import dataclass
+from html import escape
+from pathlib import Path
 from typing import Optional
 
 import httpx
@@ -38,6 +40,9 @@ from config import settings
 logger = structlog.get_logger()
 
 TELEGRAM_MAX_LEN = 4096
+STOP_STICKER = Path(__file__).with_name("assets") / "partner-stop.webp"
+STOP_LEAD_IN_TIMEOUT_SEC = 2.0
+STOP_MESSAGE_GAP_SEC = 1.05
 
 
 @dataclass(frozen=True)
@@ -79,8 +84,8 @@ def _masked_chat() -> str:
 
 
 async def _post_once(client: httpx.AsyncClient, text: str,
-                     reply_markup: Optional[dict] = None) -> tuple:
-    """One sendMessage attempt. Returns (result, retry_after_sec_or_None)."""
+                     reply_markup: Optional[dict] = None, *, large_heading: bool = False) -> tuple:
+    """Send text, optionally with a rich heading. Returns (result, retry_after_sec_or_None)."""
     body = {
         "chat_id": settings.PARTNER_TELEGRAM_CHAT_ID,
         "text": text,
@@ -88,11 +93,25 @@ async def _post_once(client: httpx.AsyncClient, text: str,
     }
     if reply_markup:
         body["reply_markup"] = reply_markup
-    resp = await client.post(
-        f"https://api.telegram.org/bot{settings.PARTNER_TELEGRAM_BOT_TOKEN}/sendMessage",
-        json=body,
-        timeout=10.0,
-    )
+    api = f"https://api.telegram.org/bot{settings.PARTNER_TELEGRAM_BOT_TOKEN}"
+    if large_heading:
+        headline, _, details = text.partition("\n")
+        html = f"<h2><b>{escape(headline)}</b></h2>"
+        if details:
+            html += "<p>" + escape(details).replace("\n", "<br>") + "</p>"
+        rich_body = {"chat_id": body["chat_id"], "rich_message": {"html": html}}
+        if reply_markup:
+            rich_body["reply_markup"] = reply_markup
+        resp = await client.post(f"{api}/sendRichMessage", json=rich_body, timeout=10.0)
+        if resp.status_code not in (400, 404):
+            return _send_outcome(resp)
+        # Explicit rejection means the rich message did not reach the chat.
+        body["entities"] = [{"type": "bold", "offset": 0, "length": len(headline.encode("utf-16-le")) // 2}]
+    resp = await client.post(f"{api}/sendMessage", json=body, timeout=10.0)
+    return _send_outcome(resp)
+
+
+def _send_outcome(resp: httpx.Response) -> tuple:
     if resp.status_code == 429:
         retry_after = None
         try:
@@ -119,14 +138,44 @@ async def _post_once(client: httpx.AsyncClient, text: str,
     ), None
 
 
+async def _send_stop_lead_in(client: httpx.AsyncClient, headline: str) -> None:
+    """Try the two introductory sends once, leaving the full alert to the outbox."""
+    try:
+        response = await asyncio.wait_for(
+            client.post(
+                f"https://api.telegram.org/bot{settings.PARTNER_TELEGRAM_BOT_TOKEN}/sendSticker",
+                data={"chat_id": str(settings.PARTNER_TELEGRAM_CHAT_ID), "emoji": "🛑"},
+                files={"sticker": (STOP_STICKER.name, STOP_STICKER.read_bytes(), "image/webp")},
+            ),
+            timeout=STOP_LEAD_IN_TIMEOUT_SEC,
+        )
+        result, _ = _send_outcome(response)
+        if not result.delivered:
+            logger.warning("partner_stop_sticker_failed state=%s error=%s", result.state, result.error)
+    except Exception as exc:
+        logger.warning("partner_stop_sticker_failed error=%s", type(exc).__name__)
+    await asyncio.sleep(STOP_MESSAGE_GAP_SEC)
+
+    try:
+        result, _ = await asyncio.wait_for(
+            _post_once(client, headline, large_heading=True), timeout=STOP_LEAD_IN_TIMEOUT_SEC,
+        )
+        if not result.delivered:
+            logger.warning("partner_stop_headline_failed state=%s error=%s", result.state, result.error)
+    except Exception as exc:
+        logger.warning("partner_stop_headline_failed error=%s", type(exc).__name__)
+    await asyncio.sleep(STOP_MESSAGE_GAP_SEC)
+
+
 async def send_partner_result(text: str, *, kind: str = "partner_msg",
-                              reply_markup: Optional[dict] = None) -> PartnerSendResult:
+                              reply_markup: Optional[dict] = None, large_heading: bool = False,
+                              stop_lead_in: bool = False) -> PartnerSendResult:
     """Deliver one partner message with a bounded, auditable outcome.
 
     Tier 1: mandatory local log BEFORE any network attempt. Tier 2: one
-    direct POST. Hedge delivery claims own the bounded retry policy, so a
-    configured claim attempt is also exactly one network send. This preserves
-    timeout ambiguity instead of overwriting it with later HTTP failures."""
+    direct POST for normal messages, with no retry inside this transport.
+    The give-back alert may add its first-attempt sticker and headline.
+    A rich heading falls back to bold only after a definite rejection."""
     if not partner_enabled():
         return PartnerSendResult(False, state="disabled", error="partner_transport_disabled")
     if len(text) > TELEGRAM_MAX_LEN:
@@ -139,9 +188,15 @@ async def send_partner_result(text: str, *, kind: str = "partner_msg",
     logger.info("partner_msg kind=%s body=%s", kind, text)
 
     async with httpx.AsyncClient() as client:
+        if stop_lead_in:
+            await _send_stop_lead_in(client, text.partition("\n")[0])
         try:
-            result, retry_after = await (_post_once(client, text, reply_markup) if reply_markup
-                                         else _post_once(client, text))
+            if large_heading:
+                result, retry_after = await _post_once(client, text, reply_markup, large_heading=True)
+            elif reply_markup:
+                result, retry_after = await _post_once(client, text, reply_markup)
+            else:
+                result, retry_after = await _post_once(client, text)
             if retry_after:
                 return PartnerSendResult(
                     False, state="rate_limited", error=f"telegram_429_retry_after_{retry_after}",
