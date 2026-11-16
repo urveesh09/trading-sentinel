@@ -1,0 +1,19 @@
+{
+  "slot": "SN264 - expiry days, Gold's certain gap days (description only; PLAN.md)",
+  "facts": {
+    "expiry_days_in_account_window": "about 200 of 944 sessions (Jan 2023 - Oct 2026; SN252: 202 calendar sessions without an SN session, nearly all weekly expiries)",
+    "gold_on_expiry_days": "Gold v5 never trades them (its universe is non-expiry sessions with options)",
+    "data": "no sample on this PC holds same-day-expiry option minutes except NIFTY 2024 and 2025 (E02's tapes, seen) and the 10-second 2026 export (one opening-ATM strike a day); so no expiry-day rule can be exam-tested here",
+    "research_E03_family": {
+      "E03_2": "E03.1 with puts at twice the reserve, 8% limit, exit 15:14: +21,518 in-sample on 2024 + 2025 (Rs 25,000 reserve; E03.1 +12,427), every figure in-sample (docs/research/simulation/2026-11-03-expiry-round8, -expiry-e032)",
+      "time_window": "E02's entry has its edge only between 13:00 and 15:00; frozen morning (09:30-13:00) and late (15:00-15:15) slices FAILED",
+      "owner_SN_rule": "the owner's SN rule (Nov 12) allows expiry days only until 13:00-14:00, so most of E03.2's window is outside it"
+    },
+    "production_forward": {
+      "read": "Nov 16 2026 ~08:30 IST, read-only, /data/cache.db.expiry-e032.db in the python-engine container",
+      "state": "cash 25,000.0 = peak 25,000.0 since activation 2026-11-05 12:59 IST; e02_positions has 0 rows; last day 2026-11-12: 0 trades, budget 5,000, spent 0; decision counts that day: warmup 11, low_efficiency 108, no_pullback 1, outside_window 40",
+      "meaning": "the expiry main ticket has not traded on paper yet: no forward evidence"
+    }
+  },
+  "verdict": "No verdict: expiry days cannot be scored on unseen data here. The only expiry-day buyer with a positive record is in-sample, mostly outside the owner's SN expiry window, and has no forward ticket yet. Expiry days stay flat for the SN wallet."
+}

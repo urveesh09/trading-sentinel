@@ -1,0 +1,234 @@
+{
+ "variants": {
+  "10-day breakout hold 1": {
+   "trades": 144,
+   "net": -70500,
+   "per_trade": -489.6,
+   "win_pct": 34.7,
+   "worst": -14450,
+   "best": 20622,
+   "without_best5": -149889,
+   "by_year": {
+    "2022": 1373,
+    "2023": 25383,
+    "2024": -74671,
+    "2025": -17458,
+    "2026": -5127
+   },
+   "years_positive": 2,
+   "years": 5,
+   "months_positive": 17,
+   "months": 50,
+   "worst_month": -18575,
+   "maxmin": -74671
+  },
+  "10-day breakout hold 2": {
+   "trades": 116,
+   "net": -75080,
+   "per_trade": -647.2,
+   "win_pct": 32.8,
+   "worst": -14450,
+   "best": 18384,
+   "without_best5": -146188,
+   "by_year": {
+    "2022": 10899,
+    "2023": 29605,
+    "2024": -84502,
+    "2025": -10239,
+    "2026": -20843
+   },
+   "years_positive": 2,
+   "years": 5,
+   "months_positive": 15,
+   "months": 50,
+   "worst_month": -20424,
+   "maxmin": -84502
+  },
+  "10-day breakout hold pre": {
+   "trades": 110,
+   "net": -72670,
+   "per_trade": -660.6,
+   "win_pct": 30.0,
+   "worst": -14450,
+   "best": 18384,
+   "without_best5": -147650,
+   "by_year": {
+    "2022": 27641,
+    "2023": 31277,
+    "2024": -89882,
+    "2025": -20863,
+    "2026": -20843
+   },
+   "years_positive": 2,
+   "years": 5,
+   "months_positive": 15,
+   "months": 50,
+   "worst_month": -20424,
+   "maxmin": -89882
+  },
+  "3-session move > ATR hold 1": {
+   "trades": 296,
+   "net": -259084,
+   "per_trade": -875.3,
+   "win_pct": 30.1,
+   "worst": -14450,
+   "best": 24843,
+   "without_best5": -340469,
+   "by_year": {
+    "2022": -51670,
+    "2023": -13133,
+    "2024": -118005,
+    "2025": -89253,
+    "2026": 12977
+   },
+   "years_positive": 1,
+   "years": 5,
+   "months_positive": 13,
+   "months": 52,
+   "worst_month": -27942,
+   "maxmin": -118005
+  },
+  "3-session move > ATR hold 2": {
+   "trades": 244,
+   "net": -158408,
+   "per_trade": -649.2,
+   "win_pct": 28.7,
+   "worst": -9449,
+   "best": 30139,
+   "without_best5": -286038,
+   "by_year": {
+    "2022": -32509,
+    "2023": 17363,
+    "2024": -105348,
+    "2025": -76126,
+    "2026": 38212
+   },
+   "years_positive": 2,
+   "years": 5,
+   "months_positive": 18,
+   "months": 52,
+   "worst_month": -22251,
+   "maxmin": -105348
+  },
+  "3-session move > ATR hold pre": {
+   "trades": 226,
+   "net": -151865,
+   "per_trade": -672.0,
+   "win_pct": 26.1,
+   "worst": -9449,
+   "best": 29953,
+   "without_best5": -262915,
+   "by_year": {
+    "2022": -11511,
+    "2023": 16636,
+    "2024": -95785,
+    "2025": -80247,
+    "2026": 19042
+   },
+   "years_positive": 2,
+   "years": 5,
+   "months_positive": 19,
+   "months": 52,
+   "worst_month": -22251,
+   "maxmin": -95785
+  }
+ },
+ "pick": "10-day breakout hold 1",
+ "pick_dev": {
+  "trades": 144,
+  "net": -70500,
+  "per_trade": -489.6,
+  "win_pct": 34.7,
+  "worst": -14450,
+  "best": 20622,
+  "without_best5": -149889,
+  "by_year": {
+   "2022": 1373,
+   "2023": 25383,
+   "2024": -74671,
+   "2025": -17458,
+   "2026": -5127
+  },
+  "years_positive": 2,
+  "years": 5,
+  "months_positive": 17,
+  "months": 50,
+  "worst_month": -18575,
+  "maxmin": -74671
+ },
+ "null": {
+  "kind": "side",
+  "selected_maxmin_p95": -17368,
+  "selected_maxmin_mean": -38848
+ },
+ "dev_stress_400": -94442,
+ "dev_late_1": -72768,
+ "exams": {
+  "TEST": {
+   "trades": 1,
+   "net": -4081,
+   "per_trade": -4080.5,
+   "win_pct": 0.0,
+   "worst": -4081,
+   "best": -4081,
+   "without_best5": 0,
+   "by_year": {
+    "2026": -4081
+   },
+   "years_positive": 0,
+   "years": 1,
+   "months_positive": 0,
+   "months": 1,
+   "worst_month": -4081,
+   "stress_400": -4276
+  },
+  "EXAMN": {
+   "trades": 54,
+   "net": 16972,
+   "per_trade": 314.3,
+   "win_pct": 38.9,
+   "worst": -4624,
+   "best": 20767,
+   "without_best5": -39212,
+   "by_year": {
+    "2020": 20899,
+    "2021": -30660,
+    "2022": 26734
+   },
+   "years_positive": 2,
+   "years": 3,
+   "months_positive": 6,
+   "months": 16,
+   "worst_month": -10742,
+   "stress_400": 8233
+  },
+  "EXAMS": {
+   "trades": 45,
+   "net": 1920,
+   "per_trade": 42.7,
+   "win_pct": 35.6,
+   "worst": -12694,
+   "best": 17041,
+   "without_best5": -64502,
+   "by_year": {
+    "2024": -6596,
+    "2025": 30959,
+    "2026": -22442
+   },
+   "years_positive": 1,
+   "years": 3,
+   "months_positive": 5,
+   "months": 17,
+   "worst_month": -12459,
+   "stress_400": -4412
+  }
+ },
+ "gates": {
+  "G1": false,
+  "G2": false,
+  "G3": true,
+  "G4": false
+ },
+ "verdict": "FAIL",
+ "notes": []
+}
