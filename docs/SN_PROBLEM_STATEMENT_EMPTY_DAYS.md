@@ -307,3 +307,10 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **Gold v5's own losses are signal losses**, capped at the day room (SN310). Stops, adds, costs at real prices and the scale-in cash check are sound at its sizes (SN311, SN312), so no execution fix can cut them. A gap-day leg must add new information, not better plumbing.
 - **A one-minute delay costs at the entry, not the exit** (SN306). Any gap-day buyer needs a price-protected entry.
 - **From Dec 7** F&O trades to 15:45 and expiring index contracts stop at 15:30 (SN314). Any rule using the last minutes must be date-aware.
+
+## 19. Status after SN316–SN330 (Nov 16, 2026)
+
+- **Seconds clocks add no edge.** The partner's 1-minute level, 30-second hold and 5-second pullback were tested on one-second data (development Apr–Nov 2026; the unused Jan–Apr 2026 window scored once). Every arm lost about the option round trip on every trade, and the five-second pullback was slightly worse than entering on the break. Only 12–20% of breaks ever offered ₹750 net even in hindsight.
+- **Short breaks revert.** A one-minute break-and-hold lost on unseen 2019 as on 2022–26, below every random book.
+- **WK-H survived the 2020 crash** (+₹42,570 per lot; March −₹23,171), but it needs margin.
+- **For a no-margin gap-day leg the remaining open question** is the packet-level forward test (SN300a / `fw3.py`, after Dec 23).

@@ -47,6 +47,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN276–SN285 (Nov 16): every earlier gap-day signal combined on 1,465 pooled sessions: nothing passed** (walk-forward learners −₹1.3–1.8 lakh, the vote −₹973 pooled). Pre-holiday calls are positive on all four samples (post-hoc, ~10 a year): a forward watch candidate. See the SN276–SN285 section at the end.
 - **SN286–SN300 (Nov 16): the auditor's brief.** Corrected holiday calls are carried by their best day (forward ledger only); the partner's first minute is not tradable at real prices; two tick-recorder candidates (futures pressure, lagging strike) are frozen for a 20-session forward verdict (`fwd.py`, about Dec 17–19). See the SN286–SN300 section at the end.
 - **SN301–SN315 (Nov 16): the forward test protected and Gold v5's own losses audited.** Amended scorer and verified archive (`sn301/fwd2.py`; verdict after session 20, Dec 23). Gold's losses are signal losses (stops, adds, costs and cash checks sound; extension neutral); no Gold change. From Dec 7 F&O closes at 15:45 (engine assumes 15:40). See the SN301–SN315 section at the end.
+- **SN316–SN330 (Nov 16): the partner's chart sequence fails on one-second data; Gold's losses have no early signature; WK-H passes the 2020 crash exam; Gold V8 = Gold v5 executed for real money** (`sn316/GOLD_V8.md`). Dec 7 CAS 2.0 hours fixed in Dev (`52a77adf`, not deployed). See the SN316–SN330 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -954,3 +955,36 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - `python fwd2.py verdict` once;
 - the Dec 7 clock slice (owner's word);
 - the partner coaching line (owner's call).
+
+## SN316–SN330 (Nov 16, 2026): the partner's chart sequence, Gold's entry failures, 2019–2020 history, Gold V8 (folder `docs/research/fno/2026-11-16-sn316`)
+
+**Owner:** the auditor's SN316–SN325 plus five own slots, toward a real-money Gold V8. Plan `657b74b9`. **Correction given to the owner:** SN301–SN315 found no Gold improvement ("true cash" adds failed the frozen ₹400 test).
+
+| SN | Result |
+|---|---|
+| 316 | Seal: 2019 H2 122 sessions (options on the days before each expiry; Jul 30 and Nov 6 without the ATM pair); 2020 Q1–Q3 all 39 expiries with legs and hedge marks (Mar 13 halt: no 09:30 bar); Jan 16 – Apr 2 2026 52 one-second days |
+| 317 | Frozen crash exam: Gold v7's WK-H leg PASS (+₹42,570 per lot, Mar 2020 −₹23,171); band 0.6 +₹64,999; unhedged March −₹69,274 |
+| 318 | One-minute break-and-hold, unseen 2019: FAIL (Q3 −₹2.10 lakh, Q4 −₹2.25 lakh), below every random book on every sample |
+| 319–322 | The partner's 1m / 30s / 5s sequence: dev −₹277 to −₹299 a trade on every clock; test (Jan–Apr 2026, once) break −₹337, five-second pullback −₹357, gate −₹353; ceiling ≥ ₹750 on only 12–20% of breaks. FAIL |
+| 78 | SN78's picks on their reserved window: −₹6,015 / −₹44,576. Retired |
+| 323 | Gold's losers do not fail early: 0 of 86 broke N11's level in the first minute; 62 never did |
+| 324 | Cancel failing TPB entries: avoided ₹15.7k, missed ₹36.1k. Not adopted; a one-minute-late TPB entry costs ₹29k |
+| 325 | `fw3.py` (the chart sequence on packets + the wallet) frozen; scored with SN300a after Dec 23 |
+| 326 | Gold v5 on 2022: blocked by the N08 → N11 stack; step plan written |
+| 327 | Real-money risk: month refills ≤ 63% of the wallet (81% at ₹400); 20-session ≤ 96% (123%); worst month −38% |
+| 328 | `GOLD_V8.md`: Gold v5's rules plus a real-money execution contract and gates |
+| 329 | Dec 7 NSE CAS 2.0 hours in Dev (`52a77adf`), full suite passes; not deployed |
+| 330 | Nightly verified collection task registered |
+
+**Lessons:**
+- The seconds clocks add no edge for a bought ATM option: the round trip costs more than the moves the breaks offer.
+- One- to three-minute breaks in NIFTY tend to revert (worse than random).
+- Gold's losses are not failed setups.
+- The futures hedge is what carries WK-H through a crash.
+- **Gold V8 = Gold v5, executed for real money.**
+
+**Open items:**
+- deploy SN329 before Dec 7 (the owner's word);
+- the Gold V8 live module (the owner's word);
+- `fwd2.py` / `fw3.py` verdicts after Dec 23;
+- SN326's 2022 replay as its own round.

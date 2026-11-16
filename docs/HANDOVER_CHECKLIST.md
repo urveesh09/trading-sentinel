@@ -1,3 +1,38 @@
+## November 16 (afternoon) - SN316–SN330: the partner's chart sequence fails, Gold's losses have no early signature, WK-H survives the 2020 crash, Dec 7 hours fixed in Dev, Gold V8 defined (research + one Dev runtime change)
+
+**Owner (Nov 16):** the auditor's SN316–SN325 (`docs/SN316_SN325_RESEARCH_BRIEF.md`) plus five own slots toward a real-money **Gold V8** (v6 / v7 need about ₹5 lakh of margin).
+
+**Results (`docs/research/fno/2026-11-16-sn316/README.md`; plan `657b74b9`):**
+- **SN316 seal:**
+  - NIFTY Jul–Dec 2019: 122 sessions;
+  - Jan–Sep 2020: all 39 weekly expiries, with legs and hedge marks;
+  - Jan 16 – Apr 2 2026: 52 one-second days.
+- **SN317, the frozen WK-H crash exam (Jan–Sep 2020): PASS.**
+  - Gold v7's leg +₹42,570 per lot; Mar 2020 −₹23,171 (bar −₹34,163). Unhedged straddle March −₹69,274.
+  - WK-H stays margin-funded paper.
+- **SN318, a one-minute break-and-hold on unseen 2019: FAIL.** −₹2.1 / −₹2.3 lakh a quarter, below every random book: short breaks snap back.
+- **SN319–SN322, the partner's 1-minute / 30-second / 5-second chart sequence on one-second data: FAIL** (test Jan–Apr 2026).
+  - The five-second pullback entry lost −₹357 a trade against −₹337 for entering on the break.
+  - Only 12–20% of breaks ever offered ₹750 even in hindsight.
+  - SN78's old picks lost again on their reserved window and are retired.
+- **SN323–SN324, Gold's entry failures:**
+  - 0 of 86 losers broke N11's setup level in the first minute; a bad first minute is as common among winners.
+  - Cancelling failing TPB entries avoids ₹15.7k but misses ₹36.1k. Not adopted.
+  - Entering TPB a minute late costs ₹29k, so the live module must be fast.
+- **SN327, Gold's real-money risk:** no month's refills ever exceeded the wallet (most 63%; 20-session most 96%). Hold about one extra wallet for refills.
+- **SN326, Gold v5 on unseen 2022:** blocked (the N08 → N11 replay stack); a step plan is in the README.
+- **SN328, Gold V8** (`GOLD_V8.md`): Gold v5's rules (nothing else passed), plus a real-money execution contract and paper-to-real gates. The live module is the next slice, on the owner's word.
+- **SN325:** the packet version of the chart sequence (`fw3.py`) is frozen and scored with SN300a after Dec 23.
+
+**Runtime (Dev only, commit `52a77adf`, NOT deployed): SN329, NSE CAS 2.0 hours from Dec 7.**
+- Derivatives close at 15:45; expiring index contracts stop at 15:30; the cash auction is 15:30–15:45.
+- Implemented as date-aware `market_calendar` helpers plus the classifier, expiry cutoffs, partner windows, F&O tick gates, quote collector and tick recorder.
+- Full suite 6,428 passed.
+- Not changed: the expiry paper book's clocks, and the watchdog windows.
+- Needs the owner's word to deploy before Dec 7.
+
+**SN330:** the Windows task `SentinelTickCollect` (weekdays 16:05) runs `sn301/fwd2.py collect` (read-only on Production). Remove it with `schtasks /Delete /TN SentinelTickCollect /F`.
+
 ## November 16 (midday) - SN301–SN315: the forward test protected, Gold v5's own losses audited, the Dec 7 clock change found (research only, Dev)
 
 **Owner (Nov 16):** use SN301–SN315 on the auditor's review (`docs/SN301_SN315_RESEARCH_AUDIT.md`): improve, agree or disagree; marginal learning in every slot; cut losses.
