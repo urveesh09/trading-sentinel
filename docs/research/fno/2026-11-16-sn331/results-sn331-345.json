@@ -1,0 +1,248 @@
+{
+ "dev Apr-Nov 2026": {
+  "all": {
+   "failures": 2523,
+   "sessions": 114,
+   "f_delay_median_s": 30.0,
+   "index_reversal_60s": {
+    "mean_pts": 0.48,
+    "median_pts": 0.4,
+    "share_over_9pts": 0.074
+   },
+   "index_reversal_120s": {
+    "mean_pts": 0.59,
+    "median_pts": 0.4,
+    "share_over_9pts": 0.131
+   },
+   "index_reversal_300s": {
+    "mean_pts": 0.77,
+    "median_pts": 0.55,
+    "share_over_9pts": 0.225
+   },
+   "R300_0": {
+    "n": 2523,
+    "net": -225446,
+    "per_trade": -89.4
+   },
+   "R300_205": {
+    "n": 2523,
+    "net": -743131,
+    "per_trade": -294.5
+   },
+   "R300_400": {
+    "n": 2523,
+    "net": -1234857,
+    "per_trade": -489.4
+   },
+   "R120_205": {
+    "n": 2523,
+    "net": -742949,
+    "per_trade": -294.5
+   },
+   "C_205": {
+    "n": 2104,
+    "net": -619368,
+    "per_trade": -294.4
+   },
+   "C_400": {
+    "n": 2104,
+    "net": -1029463,
+    "per_trade": -489.3
+   },
+   "split_per_lot": {
+    "option_mid_move": 2.4,
+    "spread_paid": 24.2,
+    "charges": 67.5
+   }
+  },
+  "gold_free": {
+   "failures": 2105,
+   "sessions": 90,
+   "f_delay_median_s": 30.0,
+   "index_reversal_60s": {
+    "mean_pts": 0.44,
+    "median_pts": 0.3,
+    "share_over_9pts": 0.058
+   },
+   "index_reversal_120s": {
+    "mean_pts": 0.64,
+    "median_pts": 0.35,
+    "share_over_9pts": 0.119
+   },
+   "index_reversal_300s": {
+    "mean_pts": 0.84,
+    "median_pts": 0.45,
+    "share_over_9pts": 0.21
+   },
+   "R300_0": {
+    "n": 2105,
+    "net": -178035,
+    "per_trade": -84.6
+   },
+   "R300_205": {
+    "n": 2105,
+    "net": -609560,
+    "per_trade": -289.6
+   },
+   "R300_400": {
+    "n": 2105,
+    "net": -1020035,
+    "per_trade": -484.6
+   },
+   "R120_205": {
+    "n": 2105,
+    "net": -606521,
+    "per_trade": -288.1
+   },
+   "C_205": {
+    "n": 1748,
+    "net": -505730,
+    "per_trade": -289.3
+   },
+   "C_400": {
+    "n": 1748,
+    "net": -846590,
+    "per_trade": -484.3
+   },
+   "split_per_lot": {
+    "option_mid_move": 5.2,
+    "spread_paid": 23.1,
+    "charges": 66.6
+   }
+  }
+ },
+ "Jan-Apr 2026": {
+  "all": {
+   "failures": 784,
+   "sessions": 38,
+   "f_delay_median_s": 35.0,
+   "index_reversal_60s": {
+    "mean_pts": 1.01,
+    "median_pts": 0.3,
+    "share_over_9pts": 0.154
+   },
+   "index_reversal_120s": {
+    "mean_pts": 1.34,
+    "median_pts": 0.6,
+    "share_over_9pts": 0.219
+   },
+   "index_reversal_300s": {
+    "mean_pts": 2.13,
+    "median_pts": 1.75,
+    "share_over_9pts": 0.318
+   },
+   "R300_0": {
+    "n": 784,
+    "net": -54574,
+    "per_trade": -69.6
+   },
+   "R300_205": {
+    "n": 784,
+    "net": -215294,
+    "per_trade": -274.6
+   },
+   "R300_400": {
+    "n": 784,
+    "net": -368633,
+    "per_trade": -470.2
+   },
+   "R120_205": {
+    "n": 784,
+    "net": -233096,
+    "per_trade": -297.3
+   },
+   "C_205": {
+    "n": 663,
+    "net": -184539,
+    "per_trade": -278.3
+   },
+   "C_400": {
+    "n": 663,
+    "net": -314377,
+    "per_trade": -474.2
+   },
+   "split_per_lot": {
+    "option_mid_move": 35.1,
+    "spread_paid": 30.8,
+    "charges": 73.9
+   }
+  },
+  "gold_free": {
+   "failures": 670,
+   "sessions": 32,
+   "f_delay_median_s": 35.0,
+   "index_reversal_60s": {
+    "mean_pts": 0.92,
+    "median_pts": 0.25,
+    "share_over_9pts": 0.143
+   },
+   "index_reversal_120s": {
+    "mean_pts": 1.25,
+    "median_pts": 0.5,
+    "share_over_9pts": 0.215
+   },
+   "index_reversal_300s": {
+    "mean_pts": 1.89,
+    "median_pts": 1.75,
+    "share_over_9pts": 0.307
+   },
+   "R300_0": {
+    "n": 670,
+    "net": -50289,
+    "per_trade": -75.1
+   },
+   "R300_205": {
+    "n": 670,
+    "net": -187639,
+    "per_trade": -280.1
+   },
+   "R300_400": {
+    "n": 670,
+    "net": -318289,
+    "per_trade": -475.1
+   },
+   "R120_205": {
+    "n": 670,
+    "net": -197776,
+    "per_trade": -295.2
+   },
+   "C_205": {
+    "n": 568,
+    "net": -161533,
+    "per_trade": -284.4
+   },
+   "C_400": {
+    "n": 568,
+    "net": -272293,
+    "per_trade": -479.4
+   },
+   "split_per_lot": {
+    "option_mid_move": 26.0,
+    "spread_paid": 29.0,
+    "charges": 72.1
+   }
+  }
+ },
+ "archive_real_quotes": {
+  "events": 621,
+  "sessions": 32,
+  "gross5": {
+   "n": 582,
+   "per_trade": -131.3
+  },
+  "net5_205": {
+   "n": 582,
+   "per_trade": -336.3
+  },
+  "gross15": {
+   "n": 611,
+   "per_trade": -169.1
+  },
+  "net15_205": {
+   "n": 611,
+   "per_trade": -374.1
+  }
+ },
+ "SN331_advance": false,
+ "SN345_verdict": "FAIL"
+}

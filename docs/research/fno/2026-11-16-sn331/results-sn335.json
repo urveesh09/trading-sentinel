@@ -1,0 +1,50 @@
+{
+ "events": [
+  {
+   "day": "2022-09-30",
+   "ret_pct": -0.44,
+   "abs_rank": 0.909
+  },
+  {
+   "day": "2023-03-31",
+   "ret_pct": 0.092,
+   "abs_rank": 0.372
+  },
+  {
+   "day": "2023-09-29",
+   "ret_pct": -0.416,
+   "abs_rank": 0.891
+  },
+  {
+   "day": "2024-03-28",
+   "note": "an expiry session or no data: not in the sample"
+  },
+  {
+   "day": "2024-09-30",
+   "ret_pct": -0.244,
+   "abs_rank": 0.7
+  },
+  {
+   "day": "2025-03-28",
+   "ret_pct": 0.278,
+   "abs_rank": 0.743
+  },
+  {
+   "day": "2025-09-30",
+   "note": "an expiry session or no data: not in the sample"
+  },
+  {
+   "day": "2026-03-30",
+   "note": "an expiry session or no data: not in the sample"
+  },
+  {
+   "day": "2026-09-30",
+   "ret_pct": -0.449,
+   "abs_rank": 0.915
+  }
+ ],
+ "sessions_compared": 881,
+ "mean_abs_rank": 0.755,
+ "same_sign_share": 0.333,
+ "verdict": "CLOSED (no pressure before 15:10)"
+}
