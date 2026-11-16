@@ -1,0 +1,104 @@
+{
+ "SN354": {
+  "verdict": "BLOCKED",
+  "found": "no timestamped GIFT NIFTY data on this PC or in Production's cache",
+  "needed": "per-minute NSE IX GIFT NIFTY futures (contract month, exchange timestamps) from 15:30 the previous day to 09:15, from a licensed, reproducible source"
+ },
+ "SN355": {
+  "verdict": "UNTESTABLE HERE (feasibility only)",
+  "mpc_2026": [
+   "2026-04-08",
+   "2026-06-05",
+   "2026-08-05",
+   "2026-10-07"
+  ],
+  "scheduled": [
+   "2026-12-04",
+   "2027-02-05"
+  ],
+  "events_per_year": "about 6 scheduled decisions (RBI's 2026-27 schedule lists 6)",
+  "missing": [
+   "pre-event expectations (survey or OIS-implied)",
+   "intraday OIS / G-sec reaction",
+   "release timestamps beyond the 10:00 statement"
+  ],
+  "calendar_only_description": {
+   "event_positions": 8,
+   "event_net0": -303.2,
+   "event_net205": -402.4,
+   "control_positions": 312,
+   "control_net0": -182.7,
+   "control_net205": -377.2,
+   "event_days_in_sample": [
+    "2026-04-08",
+    "2026-06-05",
+    "2026-08-05",
+    "2026-10-07"
+   ]
+  }
+ },
+ "SN356": {
+  "verdict": "BLOCKED (data) and mostly UNAFFORDABLE at ATM",
+  "lot": 30,
+  "banknifty_last_close_on_pc": {
+   "date": "2026-10-28",
+   "close": 54267.4
+  },
+  "atm_call_per_lot": {
+   "vol 15% 7d": {
+    "premium_per_unit": 449.7,
+    "per_lot": 13491,
+    "fits_15000": true
+   },
+   "vol 15% 14d": {
+    "premium_per_unit": 636.0,
+    "per_lot": 19079,
+    "fits_15000": false
+   },
+   "vol 15% 21d": {
+    "premium_per_unit": 778.9,
+    "per_lot": 23367,
+    "fits_15000": false
+   },
+   "vol 15% 28d": {
+    "premium_per_unit": 899.4,
+    "per_lot": 26981,
+    "fits_15000": false
+   },
+   "vol 18% 7d": {
+    "premium_per_unit": 539.7,
+    "per_lot": 16190,
+    "fits_15000": false
+   },
+   "vol 18% 14d": {
+    "premium_per_unit": 763.2,
+    "per_lot": 22895,
+    "fits_15000": false
+   },
+   "vol 18% 21d": {
+    "premium_per_unit": 934.7,
+    "per_lot": 28040,
+    "fits_15000": false
+   },
+   "vol 18% 28d": {
+    "premium_per_unit": 1079.2,
+    "per_lot": 32377,
+    "fits_15000": false
+   }
+  },
+  "missing": [
+   "BANKNIFTY option quotes or minutes",
+   "bank-constituent 1-minute bars",
+   "timestamped bank disclosures"
+  ],
+  "download_needs_owner": true
+ },
+ "SN357": {
+  "verdict": "NOT TRIGGERED",
+  "why": "no candidate reached a trade rule: SN353 (b) closed, SN353 (c) is forward-only, SN354-SN356 blocked"
+ },
+ "SN360": {
+  "verdict": "NOT TRIGGERED",
+  "why": "no survivor; SN352's journal (sn352.Journal) is the harness left for a later candidate"
+ }
+}
