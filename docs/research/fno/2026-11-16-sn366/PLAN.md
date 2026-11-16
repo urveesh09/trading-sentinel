@@ -189,3 +189,5 @@ If no arm qualifies, the information measure with the strongest futures follow-t
 
 ## 4. Amendments
 - **B1 (fw6, Nov 16, before any CAS session exists):** expiry-day rows are reported separately as research evidence and are excluded from the trade count, the pass rule and the controls, because they fall outside the owner's expiry-day clock. Code in `sn351/fw6.py`.
+- **B2 (SN368, Nov 16, before any SN368 number):** the archive tracks about 11 strikes near the money. At 10:30 on Oct 1, OTM puts reach −0.27 delta and calls 0.18, so 25-delta wings are never bracketed (plumbing check, no outcome read). The archive development uses a **30-delta** risk reversal (`chainlib.RR_DELTA`). A recorder forward version (41 strikes) would use 25-delta.
+- **B3 (SN368, Nov 16, before any SN368 number):** even at 30 delta the archive never brackets the next expiry's wings. The frozen two-tenor SN368 is therefore not computable on the archive and closes there for that reason. A front-only diagnostic (the same rule, one tenor) runs as development evidence. The two-tenor version needs the recorder.

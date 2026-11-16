@@ -12,6 +12,10 @@ option on that side bought at minute i+1's walked ask, held 15 / 30 minutes, Rs 
 Controls: ATM-only events (OLS dA_front ~ 1 + r10 on earlier sessions, |residual| >= 1.5 std, quiet future, predicted
 fall when the ATM IV rose) and QUIET = every 30th quiet minute with a seeded coin-flip direction.
 Close if: fewer than 30 events, or the 30-minute follow-through < 1 bp, or the option is negative at zero stress.
+Amendment B3 (Nov 16, before any SN368 number): the archive never brackets the NEXT expiry's 30-delta wings (plumbing
+check), so the frozen two-tenor event is not computable here and SN368 closes on the archive for that reason. A clearly
+labelled FRONT-ONLY diagnostic runs instead (the same rule with the front tenor alone); it is development evidence for
+whether a recorder version (41 strikes, both tenors, 25 delta) is worth freezing, never a pass.
 """
 from __future__ import annotations
 
@@ -30,6 +34,7 @@ import chainlib as CL  # noqa: E402
 qa = CL.qa
 OUT = HERE / "results-sn368.json"
 QUIET = 0.0005
+TENORS = ("front",)       # B3
 
 
 def days_list():
@@ -54,7 +59,7 @@ def raw(feat, i):
     if f0 is None or f1 is None:
         return None
     out = {"r10": f1 / f0 - 1.0}
-    for t in ("front", "next"):
+    for t in TENORS:
         a0, a1 = get(feat, i - 10, t, "rr"), get(feat, i, t, "rr")
         b0, b1 = get(feat, i - 10, t, "atm_iv"), get(feat, i, t, "atm_iv")
         if None in (a0, a1, b0, b1):
@@ -110,7 +115,9 @@ def main():
     samples = {}                                     # day -> list of (i, raw)
     for d in days:
         samples[d] = [(i, x) for i in range(CL.I0, CL.I1 + 1) if (x := raw(feats[d], i)) is not None]
-    coverage = {"days": len(days), "minutes_with_both_wings": sum(len(v) for v in samples.values()),
+    nxt = sum(1 for d in days for i in range(CL.I0, CL.I1 + 1) if get(feats[d], i, "next", "rr") is not None)
+    coverage = {"days": len(days), "minutes_with_front_wings": sum(len(v) for v in samples.values()), "minutes_with_next_wings": nxt,
+                "two_tenor_test": "not computable on the archive (B3)" if nxt < 0.2 * len(days) * (CL.I1 - CL.I0 + 1) else "computable",
                 "minutes_possible": len(days) * (CL.I1 - CL.I0 + 1)}
     ev_rr, ev_atm, ev_q = [], [], []
     for k, d in enumerate(days):
@@ -118,7 +125,7 @@ def main():
         if k < 5 or len(prior) < 200:
             continue
         cal = {}
-        for t in ("front", "next"):
+        for t in TENORS:
             X = [[1.0, x[f"dA_{t}"], x["r10"]] for x in prior]
             y = [x[f"dRR_{t}"] for x in prior]
             cal[t] = ols(X, y)
@@ -127,8 +134,8 @@ def main():
         for i, x in samples[d]:
             if abs(x["r10"]) >= QUIET:
                 continue
-            e = {t: x[f"dRR_{t}"] - float(np.dot([1.0, x[f"dA_{t}"], x["r10"]], cal[t][0])) for t in ("front", "next")}
-            if (np.sign(e["front"]) == np.sign(e["next"]) != 0 and all(abs(e[t]) >= 1.5 * cal[t][1] for t in e) and i - last_rr >= 30):
+            e = {t: x[f"dRR_{t}"] - float(np.dot([1.0, x[f"dA_{t}"], x["r10"]], cal[t][0])) for t in TENORS}
+            if (len({np.sign(v) for v in e.values()}) == 1 and e["front"] != 0 and all(abs(e[t]) >= 1.5 * cal[t][1] for t in e) and i - last_rr >= 30):
                 last_rr = i
                 sgn = -1 if e["front"] > 0 else 1
                 ev_rr.append({"day": d, "i": i, "dir": sgn, "f15": follow(feats[d], i, sgn, 15), "f30": follow(feats[d], i, sgn, 30), "opt": trade(d, feats[d], i, sgn)})
@@ -141,7 +148,7 @@ def main():
         for i in quiet:
             sgn = random.Random(f"sn368-{d}-{i}").choice((-1, 1))
             ev_q.append({"day": d, "i": i, "dir": sgn, "f15": follow(feats[d], i, sgn, 15), "f30": follow(feats[d], i, sgn, 30), "opt": trade(d, feats[d], i, sgn)})
-    res = {"coverage": coverage, "RR": summarize(ev_rr), "ATM_ONLY": summarize(ev_atm), "QUIET_COIN": summarize(ev_q),
+    res = {"label": "FRONT-ONLY DIAGNOSTIC (B3); the frozen two-tenor SN368 is not computable on the archive", "coverage": coverage, "RR": summarize(ev_rr), "ATM_ONLY": summarize(ev_atm), "QUIET_COIN": summarize(ev_q),
            "abs_move_30m_bp_quiet": round(float(np.mean([abs(e["f30"]) for e in ev_q if e["f30"] is not None])), 2) if ev_q else None}
     r = res["RR"]
     res["close"] = bool(r["events"] < 30 or (r["follow_30m_bp"]["mean"] or 0) < 1.0 or (r["option_30m@0"]["per_trade"] or -1) < 0)

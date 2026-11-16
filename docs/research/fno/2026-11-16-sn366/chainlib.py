@@ -5,7 +5,7 @@ bisection IV. One feature row per (day, minute 09:30 .. 14:30):
   for each tenor (front, next expiry >= day, the expiry day itself excluded as front):
     K0, syn  the ATM pair (strike nearest the future with both legs usable) and its synthetic forward K0 + C - P (mids)
     atm_iv   straddle IV at K0
-    rr       IV at -25 delta (OTM puts) minus IV at +25 delta (OTM calls), interpolated in delta; nan unless both are
+    rr       IV at -RR_DELTA (OTM puts) minus IV at +RR_DELTA (OTM calls; 0.30, amendment B2), interpolated in delta; nan unless both are
              bracketed by usable strikes
   flow     (front, strikes K0 - 100 .. K0 + 100) the minute's volume increment per contract signed by its last price
              against the previous snapshot's mid (Lee-Ready: above = buyer, below = seller, at = 0), in lots:
@@ -32,6 +32,7 @@ qa.EXPORT = Path(r"C:\Users\Urveesh\sentinel-operations\fno-forward-panel-202610
 LOCAL = HERE / "_local"
 I0, I1 = 15, 315
 LOT = 65
+RR_DELTA = 0.30          # B2 (Nov 16, before any SN368 number): the archive's ~11 tracked strikes never bracket 25 delta
 SQ2 = math.sqrt(2.0)
 
 
@@ -114,9 +115,9 @@ def tenor_row(q, day, e, i, fut):
         good = ~np.isnan(sig)
         cd, cs = dl[good & Ca], sig[good & Ca]
         pd_, ps = dl[good & ~Ca], sig[good & ~Ca]
-        if len(cd) >= 2 and cd.min() <= 0.25 <= cd.max() and len(pd_) >= 2 and pd_.min() <= -0.25 <= pd_.max():
+        if len(cd) >= 2 and cd.min() <= RR_DELTA <= cd.max() and len(pd_) >= 2 and pd_.min() <= -RR_DELTA <= pd_.max():
             oc, op = np.argsort(cd), np.argsort(pd_)
-            rr = float(np.interp(-0.25, pd_[op], ps[op]) - np.interp(0.25, cd[oc], cs[oc]))
+            rr = float(np.interp(-RR_DELTA, pd_[op], ps[op]) - np.interp(RR_DELTA, cd[oc], cs[oc]))
     return {"K0": K0, "syn": syn, "atm_iv": float(s_atm), "rr": rr}
 
 
