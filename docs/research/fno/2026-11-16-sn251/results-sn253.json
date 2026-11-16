@@ -1,0 +1,124 @@
+{
+ "sources": {
+  "EXAMN": {
+   "option": {
+    "mirror-nifty-exam-full.sqlite": "9bd6ed0fcea92570a4b94e448370c44ab54fa151afc0cbec746d11f1af6133b6"
+   },
+   "index": {
+    "mirror-nifty-exam.sqlite": "cbd227bf60bb3e238d23d0cc3d81120526baf8177b500b66aafb73926147e6b6"
+   },
+   "future": {
+    "fut-nifty-2122.sqlite": "8e5df633c3d1f0a8bb1de0107b7d0e4073374ffa3e0b09b0086a47caabe4ed6b"
+   }
+  },
+  "EXAMS": {
+   "option": {
+    "mirror-sensex-exam-full.sqlite": "1e7e2af32f1dd49bca09ef0379a600a83179de3aee083d011149924ae2ada2b7"
+   },
+   "index": {
+    "mirror-sensex-exam.sqlite": "a272ad18a16bcbe2af103e08fc4ba2b6359392d518896d5e37f3cab5e6abc2ee"
+   },
+   "future": {
+    "fut-sensex.sqlite": "64f8a451509f660d57a1857d9988efafc48549272525db8be9653e24e4dbe57a"
+   }
+  },
+  "DEV": {
+   "docs\\research\\fno\\2026-11-13-sn186\\_local\\dataset-nifty-2022\\breeze.sqlite": "8cae6c571684adca99b0e0eafef06769c911e3df0e6a7deb3ed78cd3374adaca",
+   "docs\\research\\simulation\\2026-11-01-fno-n08\\_local\\dataset-nifty-2023\\breeze.sqlite": "34638ce43cce547f8e151391374bb960ac5e29866a62381b62b6428bd3775fb2",
+   "docs\\research\\fno\\2026-10-30-day-router\\_local\\dataset-nifty-2024\\breeze.sqlite": "bed246b055c96b2b58034b9538a01ebe742dfd1b7bf016be23c696fc31086daf",
+   "docs\\research\\fno\\2026-10-30-nifty-2025-test\\_local\\dataset-nifty-2025\\breeze.sqlite": "405398f825ea619482bfd50660abb588d33476d49b4b43e0b8c406767dbd0cab",
+   "docs\\research\\fno\\2026-10-29-year-genome\\_local\\dataset-nifty\\breeze.sqlite": "8fb3a2b6c4f98056a0c8737a241689a72a6207c2c830648714c3c5d738bab627"
+  }
+ },
+ "samples": {
+  "DEV": {
+   "sessions": 850,
+   "first": "2022-04-01",
+   "last": "2026-08-19",
+   "atm_both_legs_share": {
+    "09:20": 0.999,
+    "10:00": 0.999,
+    "14:00": 0.998,
+    "15:15": 0.998,
+    "15:20": 0.998
+   },
+   "strikes_median": 17,
+   "atm_straddle_round_trip_spread_rs_median": 39,
+   "years": {
+    "2022": 145,
+    "2023": 192,
+    "2024": 196,
+    "2025": 194,
+    "2026": 123
+   },
+   "calendar_days": 1129,
+   "daily_bars": 1129
+  },
+  "TEST": {
+   "sessions": 37,
+   "first": "2026-08-20",
+   "last": "2026-10-28",
+   "atm_both_legs_share": {
+    "09:20": 1.0,
+    "10:00": 1.0,
+    "14:00": 1.0,
+    "15:15": 1.0,
+    "15:20": 1.0
+   },
+   "strikes_median": 19,
+   "atm_straddle_round_trip_spread_rs_median": 42,
+   "years": {
+    "2026": 37
+   },
+   "calendar_days": 1129,
+   "daily_bars": 1129
+  },
+  "EXAMN": {
+   "sessions": 286,
+   "first": "2020-10-05",
+   "last": "2022-03-23",
+   "atm_both_legs_share": {
+    "09:20": 0.997,
+    "10:00": 0.997,
+    "14:00": 0.997,
+    "15:15": 0.997,
+    "15:20": 0.997
+   },
+   "strikes_median": 16,
+   "atm_straddle_round_trip_spread_rs_median": 39,
+   "years": {
+    "2020": 48,
+    "2021": 195,
+    "2022": 43
+   },
+   "calendar_days": 454,
+   "daily_bars": 454
+  },
+  "EXAMS": {
+   "sessions": 306,
+   "first": "2024-10-01",
+   "last": "2026-04-29",
+   "atm_both_legs_share": {
+    "09:20": 0.997,
+    "10:00": 1.0,
+    "14:00": 0.997,
+    "15:15": 0.997,
+    "15:20": 0.997
+   },
+   "strikes_median": 20,
+   "atm_straddle_round_trip_spread_rs_median": 40,
+   "years": {
+    "2024": 48,
+    "2025": 196,
+    "2026": 62
+   },
+   "calendar_days": 411,
+   "daily_bars": 411
+  }
+ },
+ "adx_parity": {
+  "days": 915,
+  "max_abs_diff": 1.8,
+  "dir_mismatch": 3
+ }
+}

@@ -1,0 +1,224 @@
+{
+ "IF 0.5": {
+  "DEV": {
+   "weeks": 212,
+   "max_loss_median": 1087,
+   "max_loss_p90": 1869,
+   "credit_median_rs": 5359,
+   "fits_20pct_of_30k_share": 0.995
+  },
+  "TEST": {
+   "weeks": 7,
+   "max_loss_median": 578,
+   "max_loss_p90": 1498,
+   "credit_median_rs": 2857,
+   "fits_20pct_of_30k_share": 1.0
+  },
+  "N2122": {
+   "weeks": 15,
+   "max_loss_median": 1921,
+   "max_loss_p90": 2630,
+   "credit_median_rs": 7865,
+   "fits_20pct_of_30k_share": 1.0
+  },
+  "SENSEX": {
+   "weeks": 78,
+   "max_loss_median": 1410,
+   "max_loss_p90": 2776,
+   "credit_median_rs": 4956,
+   "fits_20pct_of_30k_share": 0.974
+  },
+  "EXAM": {
+   "weeks": 56,
+   "max_loss_median": 1172,
+   "max_loss_p90": 1788,
+   "credit_median_rs": 5335,
+   "fits_20pct_of_30k_share": 1.0
+  }
+ },
+ "IF 1.0": {
+  "DEV": {
+   "weeks": 212,
+   "max_loss_median": 4190,
+   "max_loss_p90": 7131,
+   "credit_median_rs": 8736,
+   "fits_20pct_of_30k_share": 0.83
+  },
+  "TEST": {
+   "weeks": 7,
+   "max_loss_median": 3328,
+   "max_loss_p90": 4106,
+   "credit_median_rs": 6422,
+   "fits_20pct_of_30k_share": 1.0
+  },
+  "N2122": {
+   "weeks": 15,
+   "max_loss_median": 5645,
+   "max_loss_p90": 9472,
+   "credit_median_rs": 12698,
+   "fits_20pct_of_30k_share": 0.533
+  },
+  "SENSEX": {
+   "weeks": 78,
+   "max_loss_median": 4691,
+   "max_loss_p90": 10396,
+   "credit_median_rs": 8092,
+   "fits_20pct_of_30k_share": 0.705
+  },
+  "EXAM": {
+   "weeks": 56,
+   "max_loss_median": 4303,
+   "max_loss_p90": 5356,
+   "credit_median_rs": 8627,
+   "fits_20pct_of_30k_share": 0.964
+  }
+ },
+ "IF 2.0": {
+  "DEV": {
+   "weeks": 212,
+   "max_loss_median": 11079,
+   "max_loss_p90": 16389,
+   "credit_median_rs": 10652,
+   "fits_20pct_of_30k_share": 0.024
+  },
+  "TEST": {
+   "weeks": 7,
+   "max_loss_median": 10858,
+   "max_loss_p90": 12750,
+   "credit_median_rs": 8642,
+   "fits_20pct_of_30k_share": 0.0
+  },
+  "N2122": {
+   "weeks": 15,
+   "max_loss_median": 14154,
+   "max_loss_p90": 18631,
+   "credit_median_rs": 14202,
+   "fits_20pct_of_30k_share": 0.067
+  },
+  "SENSEX": {
+   "weeks": 78,
+   "max_loss_median": 9520,
+   "max_loss_p90": 18317,
+   "credit_median_rs": 8892,
+   "fits_20pct_of_30k_share": 0.128
+  },
+  "EXAM": {
+   "weeks": 56,
+   "max_loss_median": 10728,
+   "max_loss_p90": 15738,
+   "credit_median_rs": 10146,
+   "fits_20pct_of_30k_share": 0.0
+  }
+ },
+ "IC 0.5/0.5": {
+  "DEV": {
+   "weeks": 208,
+   "max_loss_median": 2954,
+   "max_loss_p90": 5347,
+   "credit_median_rs": 3305,
+   "fits_20pct_of_30k_share": 0.957
+  },
+  "TEST": {
+   "weeks": 7,
+   "max_loss_median": 1316,
+   "max_loss_p90": 3837,
+   "credit_median_rs": 2109,
+   "fits_20pct_of_30k_share": 1.0
+  },
+  "N2122": {
+   "weeks": 15,
+   "max_loss_median": 5070,
+   "max_loss_p90": 8810,
+   "credit_median_rs": 4303,
+   "fits_20pct_of_30k_share": 0.733
+  },
+  "SENSEX": {
+   "weeks": 64,
+   "max_loss_median": 3418,
+   "max_loss_p90": 5984,
+   "credit_median_rs": 2606,
+   "fits_20pct_of_30k_share": 0.891
+  },
+  "EXAM": {
+   "weeks": 56,
+   "max_loss_median": 3284,
+   "max_loss_p90": 5187,
+   "credit_median_rs": 3252,
+   "fits_20pct_of_30k_share": 1.0
+  }
+ },
+ "IC 0.5/1.0": {
+  "DEV": {
+   "weeks": 208,
+   "max_loss_median": 7346,
+   "max_loss_p90": 10845,
+   "credit_median_rs": 4758,
+   "fits_20pct_of_30k_share": 0.356
+  },
+  "TEST": {
+   "weeks": 7,
+   "max_loss_median": 5532,
+   "max_loss_p90": 7284,
+   "credit_median_rs": 4218,
+   "fits_20pct_of_30k_share": 0.571
+  },
+  "N2122": {
+   "weeks": 15,
+   "max_loss_median": 10254,
+   "max_loss_p90": 11571,
+   "credit_median_rs": 5593,
+   "fits_20pct_of_30k_share": 0.067
+  },
+  "SENSEX": {
+   "weeks": 64,
+   "max_loss_median": 6583,
+   "max_loss_p90": 10198,
+   "credit_median_rs": 3450,
+   "fits_20pct_of_30k_share": 0.391
+  },
+  "EXAM": {
+   "weeks": 56,
+   "max_loss_median": 7875,
+   "max_loss_p90": 10200,
+   "credit_median_rs": 4589,
+   "fits_20pct_of_30k_share": 0.196
+  }
+ },
+ "IC 0.5/1.5": {
+  "DEV": {
+   "weeks": 208,
+   "max_loss_median": 9006,
+   "max_loss_p90": 14728,
+   "credit_median_rs": 5135,
+   "fits_20pct_of_30k_share": 0.053
+  },
+  "TEST": {
+   "weeks": 7,
+   "max_loss_median": 8642,
+   "max_loss_p90": 12930,
+   "credit_median_rs": 4781,
+   "fits_20pct_of_30k_share": 0.0
+  },
+  "N2122": {
+   "weeks": 15,
+   "max_loss_median": 11723,
+   "max_loss_p90": 16758,
+   "credit_median_rs": 5899,
+   "fits_20pct_of_30k_share": 0.067
+  },
+  "SENSEX": {
+   "weeks": 64,
+   "max_loss_median": 7912,
+   "max_loss_p90": 12513,
+   "credit_median_rs": 3654,
+   "fits_20pct_of_30k_share": 0.219
+  },
+  "EXAM": {
+   "weeks": 56,
+   "max_loss_median": 9678,
+   "max_loss_p90": 14270,
+   "credit_median_rs": 4901,
+   "fits_20pct_of_30k_share": 0.036
+  }
+ }
+}
