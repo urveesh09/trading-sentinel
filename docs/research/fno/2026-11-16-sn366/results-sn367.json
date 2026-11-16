@@ -1,0 +1,130 @@
+{
+ "205": {
+  "DEV": {
+   "positions": 8488,
+   "TARGET": {
+    "share": 0.366,
+    "mean_net_primary": 981.8,
+    "mean_net_same_minute": 963.3
+   },
+   "STOP": {
+    "share": 0.057,
+    "mean_net_primary": -3196.6,
+    "mean_net_same_minute": -3222.9
+   },
+   "TIMEOUT": {
+    "share": 0.576,
+    "mean_net_primary": -850.9,
+    "mean_net_same_minute": -850.9
+   },
+   "UNRESOLVED": {
+    "share": 0.001,
+    "mean_net_primary": null,
+    "mean_net_same_minute": null
+   },
+   "bracket_per_position_primary": -313.0,
+   "bracket_per_position_same_minute": -321.2,
+   "fixed_60m_per_position": -308.1,
+   "coin_side_bracket_per_position": -314.9,
+   "target_fill_slip_mean": 18.5,
+   "after_target_best_15m_mean": 1676.7,
+   "stop_fill_slip_mean": 26.3,
+   "breakeven_target_share_needed": 0.52
+  },
+  "ARCHIVE": {
+   "positions": 308,
+   "TARGET": {
+    "share": 0.438,
+    "mean_net_primary": 999.2,
+    "mean_net_same_minute": 992.1
+   },
+   "STOP": {
+    "share": 0.097,
+    "mean_net_primary": -3382.8,
+    "mean_net_same_minute": -3236.2
+   },
+   "TIMEOUT": {
+    "share": 0.442,
+    "mean_net_primary": -973.7,
+    "mean_net_same_minute": -973.7
+   },
+   "UNRESOLVED": {
+    "share": 0.023,
+    "mean_net_primary": null,
+    "mean_net_same_minute": 1492.0
+   },
+   "bracket_per_position_primary": -329.0,
+   "bracket_per_position_same_minute": -299.7,
+   "fixed_60m_per_position": -265.4,
+   "coin_side_bracket_per_position": -474.6,
+   "target_fill_slip_mean": 7.0,
+   "after_target_best_15m_mean": 1873.8,
+   "stop_fill_slip_mean": -146.5,
+   "breakeven_target_share_needed": 0.585
+  }
+ },
+ "400": {
+  "DEV": {
+   "positions": 8488,
+   "TARGET": {
+    "share": 0.308,
+    "mean_net_primary": 1010.1,
+    "mean_net_same_minute": 983.2
+   },
+   "STOP": {
+    "share": 0.072,
+    "mean_net_primary": -3179.1,
+    "mean_net_same_minute": -3210.8
+   },
+   "TIMEOUT": {
+    "share": 0.619,
+    "mean_net_primary": -949.3,
+    "mean_net_same_minute": -949.3
+   },
+   "UNRESOLVED": {
+    "share": 0.001,
+    "mean_net_primary": null,
+    "mean_net_same_minute": null
+   },
+   "bracket_per_position_primary": -506.9,
+   "bracket_per_position_same_minute": -517.5,
+   "fixed_60m_per_position": -503.1,
+   "coin_side_bracket_per_position": -510.4,
+   "target_fill_slip_mean": 26.9,
+   "after_target_best_15m_mean": 1732.1,
+   "stop_fill_slip_mean": 31.6,
+   "breakeven_target_share_needed": 0.539
+  },
+  "ARCHIVE": {
+   "positions": 308,
+   "TARGET": {
+    "share": 0.364,
+    "mean_net_primary": 1025.8,
+    "mean_net_same_minute": 1023.9
+   },
+   "STOP": {
+    "share": 0.117,
+    "mean_net_primary": -3236.2,
+    "mean_net_same_minute": -3184.0
+   },
+   "TIMEOUT": {
+    "share": 0.484,
+    "mean_net_primary": -1064.0,
+    "mean_net_same_minute": -1064.0
+   },
+   "UNRESOLVED": {
+    "share": 0.036,
+    "mean_net_primary": null,
+    "mean_net_same_minute": -22.0
+   },
+   "bracket_per_position_primary": -539.2,
+   "bracket_per_position_same_minute": -521.8,
+   "fixed_60m_per_position": -460.4,
+   "coin_side_bracket_per_position": -763.6,
+   "target_fill_slip_mean": 1.9,
+   "after_target_best_15m_mean": 2005.8,
+   "stop_fill_slip_mean": -52.3,
+   "breakeven_target_share_needed": 0.592
+  }
+ }
+}
