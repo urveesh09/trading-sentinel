@@ -208,3 +208,7 @@
 7. SN357 (if triggered), SN354 / SN355 / SN356 checks, SN364 freeze, SN360 (if triggered).
 
 Each slot's script and log go in this folder (`results-<slot>.json` written once; a rerun refuses). The README collects the results and the lesson of each slot.
+
+## 4. Amendments (each committed before its slot's own numbers)
+
+- **A1 (SN363, Nov 16, before SN363 runs):** the fixed salary is paid in full every month end from the spare cash, whatever its level. The V1-G keep is not applied to it. A run fails if paying would leave the spare below 20% of the wallet (or below the salary), if any session start finds the spare below 20% of the wallet, or if a growth step stays deferred more than 21 sessions. "Capital preserved" (final funds ≥ opening funds) is reported for every S\*, and S\*_kept also requires it. The capital-for-the-wage search requires it too: otherwise a large enough opening balance would "pay" any salary out of the owner's own money. Text in `sn363.py`.
