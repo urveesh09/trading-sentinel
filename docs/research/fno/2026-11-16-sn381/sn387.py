@@ -125,16 +125,19 @@ def score():
         for y in CHAIN:
             key = json.loads((LOCAL / f"keys-carry-{y}.json").read_text(encoding="utf-8"))[name]
             ev = json.loads((LOCAL / "carry-evals" / f"{key}.json").read_text(encoding="utf-8"))
+            # mechanical fix (before any number): the year's start equity lives in N09.1's state file, not the eval
+            stt = json.loads((LOCAL / "states" / f"{key}.json").read_text(encoding="utf-8"))
             if eq is None:
-                eq = float(ev["start_equity"])
+                eq = float(stt["start_equity"])
                 best = eq
-            assert abs(float(ev["start_equity"]) - eq) < 1.0, (name, y, ev["start_equity"], eq)
+            assert abs(float(stt["start_equity"]) - eq) < 1.0, (name, y, stt["start_equity"], eq)
             y0 = eq
             for t in sorted(ev["trades"], key=lambda t: t["exit_time"]):
                 eq += float(t["net_pnl"])
                 best = max(best, eq)
                 worst_ratio = min(worst_ratio, eq / best)
             per_year[y] = round(eq - y0)
+            assert abs(float(stt["end_equity"]) - eq) < 1.0, (name, y, stt["end_equity"], eq)
         res[name] = {"end_equity": round(eq), "best_closed_equity": round(best), "lowest_vs_best": round(worst_ratio, 4), "per_year": per_year}
     w, c = res["R2_THIRD_CW"], res["CUSHION"]
     res["D_watch_keeps_its_promise"] = bool(w["lowest_vs_best"] >= 0.75 and w["end_equity"] >= c["end_equity"])
