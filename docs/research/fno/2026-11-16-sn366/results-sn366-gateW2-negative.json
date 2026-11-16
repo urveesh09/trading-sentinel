@@ -1,0 +1,9 @@
+{
+ "differs_from_stored_N11": true,
+ "equals_stored_NO_STAND": true,
+ "trades": 76,
+ "net": 57454.27,
+ "stored_N11_net": 53094.68,
+ "stored_NO_STAND_net": 57454.27,
+ "pass": true
+}
