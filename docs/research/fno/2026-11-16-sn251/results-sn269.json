@@ -1,0 +1,695 @@
+{
+ "starts": {
+  "2023-01-01": {
+   "sessions": 944,
+   "gold_net": 850883,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 16420,
+    "bank_end": 796053,
+    "last_pocket_day": "2023-02-27",
+    "owner_net": 779633
+   },
+   "wage 250": {
+    "wages_paid": 236000,
+    "pocket_total": 85988,
+    "bank_end": 629621,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 779633
+   },
+   "wage 500": {
+    "wages_paid": 472000,
+    "pocket_total": 199488,
+    "bank_end": 507121,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 779633
+   },
+   "wage 750": {
+    "wages_paid": 708000,
+    "pocket_total": 312988,
+    "bank_end": 384621,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 779633
+   },
+   "wage 1000": {
+    "wages_paid": 944000,
+    "pocket_total": 426488,
+    "bank_end": 262121,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 779633
+   },
+   "wage 1500": {
+    "wages_paid": 1416000,
+    "pocket_total": 819629,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 779633
+   }
+  },
+  "2023-04-01": {
+   "sessions": 882,
+   "gold_net": 856980,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 10910,
+    "bank_end": 796641,
+    "last_pocket_day": "2023-10-31",
+    "owner_net": 785730
+   },
+   "wage 250": {
+    "wages_paid": 220500,
+    "pocket_total": 64390,
+    "bank_end": 629621,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 785730
+   },
+   "wage 500": {
+    "wages_paid": 441000,
+    "pocket_total": 162390,
+    "bank_end": 507121,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 785730
+   },
+   "wage 750": {
+    "wages_paid": 661500,
+    "pocket_total": 260390,
+    "bank_end": 384621,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 785730
+   },
+   "wage 1000": {
+    "wages_paid": 882000,
+    "pocket_total": 358390,
+    "bank_end": 262121,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 785730
+   },
+   "wage 1500": {
+    "wages_paid": 1323000,
+    "pocket_total": 720531,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 785730
+   }
+  },
+  "2023-07-01": {
+   "sessions": 822,
+   "gold_net": 888211,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 6693,
+    "bank_end": 823654,
+    "last_pocket_day": "2023-10-31",
+    "owner_net": 816961
+   },
+   "wage 250": {
+    "wages_paid": 205500,
+    "pocket_total": 45173,
+    "bank_end": 656634,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 500": {
+    "wages_paid": 411000,
+    "pocket_total": 128173,
+    "bank_end": 534134,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 750": {
+    "wages_paid": 616500,
+    "pocket_total": 211173,
+    "bank_end": 411634,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 1000": {
+    "wages_paid": 822000,
+    "pocket_total": 294173,
+    "bank_end": 289134,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 1500": {
+    "wages_paid": 1233000,
+    "pocket_total": 599301,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 816961
+   }
+  },
+  "2023-10-01": {
+   "sessions": 759,
+   "gold_net": 888211,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 6693,
+    "bank_end": 823654,
+    "last_pocket_day": "2023-10-31",
+    "owner_net": 816961
+   },
+   "wage 250": {
+    "wages_paid": 189750,
+    "pocket_total": 29423,
+    "bank_end": 656634,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 500": {
+    "wages_paid": 379500,
+    "pocket_total": 96673,
+    "bank_end": 534134,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 750": {
+    "wages_paid": 569250,
+    "pocket_total": 163923,
+    "bank_end": 411634,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 1000": {
+    "wages_paid": 759000,
+    "pocket_total": 231173,
+    "bank_end": 289134,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 816961
+   },
+   "wage 1500": {
+    "wages_paid": 1138500,
+    "pocket_total": 504801,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 816961
+   }
+  },
+  "2024-01-01": {
+   "sessions": 699,
+   "gold_net": 890928,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 0,
+    "bank_end": 819678,
+    "last_pocket_day": null,
+    "owner_net": 819678
+   },
+   "wage 250": {
+    "wages_paid": 174750,
+    "pocket_total": 11705,
+    "bank_end": 656634,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 819678
+   },
+   "wage 500": {
+    "wages_paid": 349500,
+    "pocket_total": 63955,
+    "bank_end": 534134,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 819678
+   },
+   "wage 750": {
+    "wages_paid": 524250,
+    "pocket_total": 116205,
+    "bank_end": 411634,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 819678
+   },
+   "wage 1000": {
+    "wages_paid": 699000,
+    "pocket_total": 168455,
+    "bank_end": 289134,
+    "last_pocket_day": "2024-10-31",
+    "owner_net": 819678
+   },
+   "wage 1500": {
+    "wages_paid": 1048500,
+    "pocket_total": 412083,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 819678
+   }
+  },
+  "2024-04-01": {
+   "sessions": 637,
+   "gold_net": 608576,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 4552,
+    "bank_end": 541878,
+    "last_pocket_day": "2024-10-29",
+    "owner_net": 537326
+   },
+   "wage 250": {
+    "wages_paid": 159250,
+    "pocket_total": 41562,
+    "bank_end": 419637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 537326
+   },
+   "wage 500": {
+    "wages_paid": 318500,
+    "pocket_total": 133812,
+    "bank_end": 352637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 537326
+   },
+   "wage 750": {
+    "wages_paid": 477750,
+    "pocket_total": 226062,
+    "bank_end": 285637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 537326
+   },
+   "wage 1000": {
+    "wages_paid": 637000,
+    "pocket_total": 318312,
+    "bank_end": 218637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 537326
+   },
+   "wage 1500": {
+    "wages_paid": 955500,
+    "pocket_total": 601436,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 537326
+   }
+  },
+  "2024-07-01": {
+   "sessions": 576,
+   "gold_net": 609930,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 3198,
+    "bank_end": 541878,
+    "last_pocket_day": "2024-10-29",
+    "owner_net": 538680
+   },
+   "wage 250": {
+    "wages_paid": 144000,
+    "pocket_total": 24958,
+    "bank_end": 419637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 538680
+   },
+   "wage 500": {
+    "wages_paid": 288000,
+    "pocket_total": 101958,
+    "bank_end": 352637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 538680
+   },
+   "wage 750": {
+    "wages_paid": 432000,
+    "pocket_total": 178958,
+    "bank_end": 285637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 538680
+   },
+   "wage 1000": {
+    "wages_paid": 576000,
+    "pocket_total": 255958,
+    "bank_end": 218637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 538680
+   },
+   "wage 1500": {
+    "wages_paid": 864000,
+    "pocket_total": 508582,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 538680
+   }
+  },
+  "2024-10-01": {
+   "sessions": 512,
+   "gold_net": 604913,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 6149,
+    "bank_end": 539812,
+    "last_pocket_day": "2024-10-29",
+    "owner_net": 533663
+   },
+   "wage 250": {
+    "wages_paid": 128000,
+    "pocket_total": 13974,
+    "bank_end": 419637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 533663
+   },
+   "wage 500": {
+    "wages_paid": 256000,
+    "pocket_total": 74974,
+    "bank_end": 352637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 533663
+   },
+   "wage 750": {
+    "wages_paid": 384000,
+    "pocket_total": 135974,
+    "bank_end": 285637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 533663
+   },
+   "wage 1000": {
+    "wages_paid": 512000,
+    "pocket_total": 196974,
+    "bank_end": 218637,
+    "last_pocket_day": "2025-09-24",
+    "owner_net": 533663
+   },
+   "wage 1500": {
+    "wages_paid": 768000,
+    "pocket_total": 417599,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 533663
+   }
+  },
+  "2025-01-01": {
+   "sessions": 451,
+   "gold_net": 422962,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 4784,
+    "bank_end": 356496,
+    "last_pocket_day": "2025-01-03",
+    "owner_net": 351712
+   },
+   "wage 250": {
+    "wages_paid": 112750,
+    "pocket_total": 28019,
+    "bank_end": 266981,
+    "last_pocket_day": "2026-01-22",
+    "owner_net": 351712
+   },
+   "wage 500": {
+    "wages_paid": 225500,
+    "pocket_total": 93769,
+    "bank_end": 219981,
+    "last_pocket_day": "2026-01-22",
+    "owner_net": 351712
+   },
+   "wage 750": {
+    "wages_paid": 338250,
+    "pocket_total": 187050,
+    "bank_end": 200512,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 351712
+   },
+   "wage 1000": {
+    "wages_paid": 451000,
+    "pocket_total": 294050,
+    "bank_end": 194762,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 351712
+   },
+   "wage 1500": {
+    "wages_paid": 676500,
+    "pocket_total": 508050,
+    "bank_end": 183262,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 351712
+   }
+  },
+  "2025-04-01": {
+   "sessions": 389,
+   "gold_net": 311141,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 4956,
+    "bank_end": 244847,
+    "last_pocket_day": "2025-08-05",
+    "owner_net": 239891
+   },
+   "wage 250": {
+    "wages_paid": 97250,
+    "pocket_total": 39269,
+    "bank_end": 181911,
+    "last_pocket_day": "2026-01-22",
+    "owner_net": 239891
+   },
+   "wage 500": {
+    "wages_paid": 194500,
+    "pocket_total": 108011,
+    "bank_end": 153402,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 239891
+   },
+   "wage 750": {
+    "wages_paid": 291750,
+    "pocket_total": 199511,
+    "bank_end": 147652,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 239891
+   },
+   "wage 1000": {
+    "wages_paid": 389000,
+    "pocket_total": 291011,
+    "bank_end": 141902,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 239891
+   },
+   "wage 1500": {
+    "wages_paid": 583500,
+    "pocket_total": 474011,
+    "bank_end": 130402,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 239891
+   }
+  },
+  "2025-07-01": {
+   "sessions": 328,
+   "gold_net": 310231,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 5866,
+    "bank_end": 244847,
+    "last_pocket_day": "2025-08-05",
+    "owner_net": 238981
+   },
+   "wage 250": {
+    "wages_paid": 82000,
+    "pocket_total": 24930,
+    "bank_end": 181911,
+    "last_pocket_day": "2026-01-22",
+    "owner_net": 238981
+   },
+   "wage 500": {
+    "wages_paid": 164000,
+    "pocket_total": 78421,
+    "bank_end": 153402,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 238981
+   },
+   "wage 750": {
+    "wages_paid": 246000,
+    "pocket_total": 154671,
+    "bank_end": 147652,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 238981
+   },
+   "wage 1000": {
+    "wages_paid": 328000,
+    "pocket_total": 230921,
+    "bank_end": 141902,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 238981
+   },
+   "wage 1500": {
+    "wages_paid": 492000,
+    "pocket_total": 383421,
+    "bank_end": 130402,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 238981
+   }
+  },
+  "2025-10-01": {
+   "sessions": 264,
+   "gold_net": 258104,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 1804,
+    "bank_end": 188658,
+    "last_pocket_day": "2025-10-13",
+    "owner_net": 186854
+   },
+   "wage 250": {
+    "wages_paid": 66000,
+    "pocket_total": 21055,
+    "bank_end": 141909,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 186854
+   },
+   "wage 500": {
+    "wages_paid": 132000,
+    "pocket_total": 81305,
+    "bank_end": 136159,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 186854
+   },
+   "wage 750": {
+    "wages_paid": 198000,
+    "pocket_total": 141555,
+    "bank_end": 130409,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 186854
+   },
+   "wage 1000": {
+    "wages_paid": 264000,
+    "pocket_total": 201805,
+    "bank_end": 124659,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 186854
+   },
+   "wage 1500": {
+    "wages_paid": 396000,
+    "pocket_total": 322305,
+    "bank_end": 113159,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 186854
+   }
+  },
+  "2026-01-01": {
+   "sessions": 203,
+   "gold_net": 187946,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 2673,
+    "bank_end": 119369,
+    "last_pocket_day": "2026-01-19",
+    "owner_net": 116696
+   },
+   "wage 250": {
+    "wages_paid": 50750,
+    "pocket_total": 6884,
+    "bank_end": 72830,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 116696
+   },
+   "wage 500": {
+    "wages_paid": 101500,
+    "pocket_total": 51884,
+    "bank_end": 67080,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 116696
+   },
+   "wage 750": {
+    "wages_paid": 152250,
+    "pocket_total": 96884,
+    "bank_end": 61330,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 116696
+   },
+   "wage 1000": {
+    "wages_paid": 203000,
+    "pocket_total": 141884,
+    "bank_end": 55580,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 116696
+   },
+   "wage 1500": {
+    "wages_paid": 304500,
+    "pocket_total": 231884,
+    "bank_end": 44080,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 116696
+   }
+  },
+  "2026-04-01": {
+   "sessions": 143,
+   "gold_net": 74942,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 8701,
+    "bank_end": 68643,
+    "last_pocket_day": "2026-04-06",
+    "owner_net": 59942
+   },
+   "wage 250": {
+    "wages_paid": 35750,
+    "pocket_total": 32344,
+    "bank_end": 56536,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 59942
+   },
+   "wage 500": {
+    "wages_paid": 71500,
+    "pocket_total": 62344,
+    "bank_end": 50786,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 59942
+   },
+   "wage 750": {
+    "wages_paid": 107250,
+    "pocket_total": 92344,
+    "bank_end": 45036,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 59942
+   },
+   "wage 1000": {
+    "wages_paid": 143000,
+    "pocket_total": 122344,
+    "bank_end": 39286,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 59942
+   },
+   "wage 1500": {
+    "wages_paid": 214500,
+    "pocket_total": 186166,
+    "bank_end": 31608,
+    "last_pocket_day": "2026-10-19",
+    "owner_net": 59942
+   }
+  },
+  "2026-07-01": {
+   "sessions": 83,
+   "gold_net": 75745,
+   "wage 0": {
+    "wages_paid": 0,
+    "pocket_total": 1541,
+    "bank_end": 39786,
+    "last_pocket_day": "2026-09-07",
+    "owner_net": 38245
+   },
+   "wage 250": {
+    "wages_paid": 20750,
+    "pocket_total": 16541,
+    "bank_end": 34036,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 38245
+   },
+   "wage 500": {
+    "wages_paid": 41500,
+    "pocket_total": 31541,
+    "bank_end": 28286,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 38245
+   },
+   "wage 750": {
+    "wages_paid": 62250,
+    "pocket_total": 46541,
+    "bank_end": 22536,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 38245
+   },
+   "wage 1000": {
+    "wages_paid": 83000,
+    "pocket_total": 61541,
+    "bank_end": 16786,
+    "last_pocket_day": "2026-09-23",
+    "owner_net": 38245
+   },
+   "wage 1500": {
+    "wages_paid": 124500,
+    "pocket_total": 95363,
+    "bank_end": 9108,
+    "last_pocket_day": "2026-10-19",
+    "owner_net": 38245
+   }
+  }
+ },
+ "sessions": 944
+}
