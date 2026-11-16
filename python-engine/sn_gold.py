@@ -363,6 +363,9 @@ async def on_paper_signal(db_path: str, sig: Any, snap: Any, now: datetime, kite
         pid = cur.lastrowid if cur.rowcount == 1 else None
     if pid:
         logger.info("sn_gold_entry", id=pid, symbol=q.contract.tradingsymbol, lots=lots, ask=ask, stop=stop, wallet=wallet)
+        await _v8_record(db_path, "ENTRY", lambda v8: v8.entry_order(ask, lots, lot_size, wallet, max(stop, TICK)), position_id=pid, now=now,
+                         symbol=q.contract.tradingsymbol, token=int(q.contract.token), ref_bid=float(q.bid or 0.0), ref_ask=ask,
+                         wallet=wallet, paper_price=ask)
         _tell(f"🥇 SN Gold (paper): bought {lots} lot{'s' if lots > 1 else ''} of {q.contract.tradingsymbol} at Rs {ask:.2f} "
                     f"with N11's {paper['strategy']} signal. Wallet Rs {wallet:,.0f}; today's loss limit Rs {loss:,.0f}. Paper only.")
     return pid
@@ -456,9 +459,13 @@ async def _manage(kite, db_path: str, rows: list, now: datetime, future: Optiona
                         room = float(settings.SN_GOLD_DAY_LOSS_SHARE) * wallet + realized
                         new_stop = scale_in_stop(pieces + [[ask_now, n_new]], lot_size, room)
                         if new_stop < bid:
+                            before = [list(p) for p in pieces]
                             pieces.append([ask_now, n_new])
                             stop = max(stop, new_stop)
                             logger.info("sn_gold_scale_in", id=r["id"], lots=n_new, ask=ask_now, stop=stop)
+                            await _v8_record(db_path, "ADD", lambda v8, b=before, a=ask_now, n=n_new, s=stop, w=wallet: v8.add_order(b, a, n, lot_size, w, s),
+                                             position_id=int(r["id"]), now=now, symbol=r["tradingsymbol"], token=int(r["token"]),
+                                             ref_bid=bid, ref_ask=ask_now, wallet=wallet, paper_price=ask_now)
             if future:
                 best = max(best, future) if d > 0 else min(best, future)
             if extended:
@@ -486,9 +493,24 @@ async def _manage(kite, db_path: str, rows: list, now: datetime, future: Optiona
         if reason:
             lots = sum(n for _e, n in pieces)
             logger.info("sn_gold_exit", id=r["id"], reason=reason, bid=bid, net=round(net, 2))
+            await _v8_record(db_path, "EXIT", lambda v8, b=bid, q=lots * lot_size, why=reason: v8.exit_order(b, q, why),
+                             position_id=int(r["id"]), now=now, symbol=r["tradingsymbol"], token=int(r["token"]),
+                             ref_bid=bid, ref_ask=ask_now or None, wallet=float(r["wallet"]), paper_price=bid)
             _tell(f"🥇 SN Gold (paper): sold {lots} lot{'s' if lots > 1 else ''} of {r['tradingsymbol']} at Rs {bid:.2f} "
                         f"({reason.replace('_', ' ')}): Rs {net:+,.0f} after charges. Paper only.")
     return closed
+
+
+async def _v8_record(db_path: str, kind: str, build: Callable, **kw) -> None:
+    """[Gold V8 shadow] Record the real order V8 would send for this paper action (sn_gold_v8.py; off by default). Never
+    places an order, and a failure here never changes the paper step."""
+    try:
+        import sn_gold_v8
+        if not sn_gold_v8.enabled():
+            return
+        await sn_gold_v8.record(db_path, kind=kind, order=build(sn_gold_v8), **kw)
+    except Exception as exc:
+        logger.warning("sn_gold_v8_shadow_failed", kind=kind, err=type(exc).__name__)
 
 
 async def close_day(db_path: str, now: datetime) -> bool:

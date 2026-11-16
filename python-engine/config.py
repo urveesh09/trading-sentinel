@@ -1291,6 +1291,10 @@ class Settings(BaseSettings):
     # winners kept past N11's exit. Research docs/research/fno/sn-gold/SN_GOLD_V5.json. It never places an order.
     # Off: SN_GOLD_ENABLED=false (its tables stay; nothing else reads them).
     SN_GOLD_ENABLED: bool = True
+    # [Gold V8 shadow 2026-11-16] Record, beside each SN Gold paper action, the exact real order the real-money Gold V8
+    # would send (sn_gold_v8.py, table sn_gold_v8_intents; docs/research/fno/2026-11-16-sn316/GOLD_V8.md, gate 3).
+    # It never places an order. Off by default; the owner switches it on with the deploy.
+    SN_GOLD_V8_SHADOW_ENABLED: bool = False
     # Owner, Nov 13: "if you think 30,000 starting amount is better than I am fine with that". SN70/SN71: from Rs 30k the
     # account survived every one of 15 start quarters without a refill; from Rs 15k it ran dry 3 times.
     SN_GOLD_START_WALLET: float = 30000.0      # the starting wallet; profits banked, losing days refilled

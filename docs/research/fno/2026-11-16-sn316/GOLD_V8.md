@@ -52,6 +52,11 @@
 1. **SN329 deployed before Dec 7** (session facts by date).
 2. **The live V8 module built in Dev** behind a flag, default off. Tests cover every row of section 2 against a fake broker. It is reviewed, then deployed with the flag **off**.
 3. **A shadow week:** the module runs against live quotes, places no orders, and logs the orders it would have sent. Its fills must match Gold v5's paper record within the spread on every trade.
+   - **Built in Dev (Nov 16):** `python-engine/sn_gold_v8.py`, flag `SN_GOLD_V8_SHADOW_ENABLED` (default off).
+   - At every SN Gold paper entry, scale-in and exit, it records V8's exact order in `sn_gold_v8_intents`: side, quantity, limit, stop trigger and limit, cash against the wallet, and the paper price.
+   - It has no broker call (a test enforces it), and a failure never changes the paper step.
+   - The tick recorder's packets then show whether each order would have filled, and where.
+   - Switching it on is part of a deploy, on the owner's word.
 4. **First real money:** one lot, ₹30,000 wallet, no growth steps for the first 10 real trades. The owner's word is needed for that switch.
 5. **Growth:** after 10 real trades whose fills match paper within ₹100 a lot on average, the normal growth rules apply.
 

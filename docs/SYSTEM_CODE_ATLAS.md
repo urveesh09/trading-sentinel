@@ -2846,13 +2846,25 @@ Related tests: `python-engine/tests/test_smart_classic_enrichment.py`
 
 [SN Gold v5 2026-11-13] The owner's small-wallet F&O book, run on PAPER beside the main book. Never places an order. Owner, Nov 13: "whatever configuration ... of the best Gold that we have, set it up to run tomorrow as an independent module". Research: docs/research/fno/sn-gold/SN_GOLD_V5.json (frozen harness gold_v5.py, verify_gold_v5.py, tag sn-gold-v5). What it does, in the research's words, on live quotes: * entries: N11's live paper record (fno_n11_paper, NIFTY). Each new record is offered here at the moment N11 records it, with the same chain snapshot. SN Gold also takes the signals of N11's sister book R0.85, which stands aside a little less: a signal waits only when yesterday's vola
 
-Top-level declarations: `init_db` (line 114), `ceil_tick` (line 123), `lots_for` (line 127), `itm_depth` (line 132), `pick_contract` (line 137), `day_stop` (line 160), `scale_in_stop` (line 165), `position_net` (line 172), `grow` (line 177), `atr_from_bars` (line 188), `minute_atr` (line 202), `wallet_state` (line 238), `_realized_today` (line 251), `_record_price` (line 256), `_bars` (line 269), `_flush_bars` (line 279), `_skip` (line 292), `on_paper_signal` (line 301), `tick` (line 373), `_manage` (line 408), `close_day` (line 494), `_tell` (line 529)
+Top-level declarations: `init_db` (line 114), `ceil_tick` (line 123), `lots_for` (line 127), `itm_depth` (line 132), `pick_contract` (line 137), `day_stop` (line 160), `scale_in_stop` (line 165), `position_net` (line 172), `grow` (line 177), `atr_from_bars` (line 188), `minute_atr` (line 202), `wallet_state` (line 238), `_realized_today` (line 251), `_record_price` (line 256), `_bars` (line 269), `_flush_bars` (line 279), `_skip` (line 292), `on_paper_signal` (line 301), `tick` (line 376), `_manage` (line 411), `_v8_record` (line 504), `close_day` (line 516), `_tell` (line 551)
 
 Engine dependencies: `config`, `fno_costs`, `fno_instruments`, `operator_alert`
 
-Related tests: `python-engine/tests/test_sn_gold.py`
+Related tests: `python-engine/tests/test_sn_gold.py`, `python-engine/tests/test_sn_gold_v8.py`
 
 Declared tables: `sn_gold_bars`, `sn_gold_days`, `sn_gold_positions`, `sn_gold_skips`, `sn_gold_wallet`
+
+## `python-engine/sn_gold_v8.py`
+
+[SN Gold V8 shadow 2026-11-16] The real-money Gold V8's orders, recorded beside SN Gold v5's paper book. NEVER places an order: there is no broker call in this module. Owner, Nov 16: "Gold V8 ... should be something that we are focusing to develop in real life". Research: docs/research/fno/2026-11-16-sn316/GOLD_V8.md (V8 = Gold v5's rules, executed for real money). This is gate 3 of that document: for every paper action, the exact order V8 would send, so that the tick recorder's packets can later show whether it would have filled, at what price, and how far from the paper fill. The order contract (GOLD_V8.md section 2): entry BUY LIMIT at the ask + 2 ticks, valid 3 s; the cash actually paid
+
+Top-level declarations: `enabled` (line 59), `ceil_tick` (line 63), `floor_tick` (line 67), `buy_fees` (line 71), `entry_order` (line 75), `add_order` (line 88), `exit_order` (line 102), `record` (line 109)
+
+Engine dependencies: `config`, `fno_costs`
+
+Related tests: `python-engine/tests/test_sn_gold_v8.py`
+
+Declared tables: `sn_gold_v8_intents`
 
 ## `python-engine/sn_wkh.py`
 
