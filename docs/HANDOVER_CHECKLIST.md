@@ -1,3 +1,28 @@
+## November 16 (evening) - SN351–SN365: the wage corrected (₹785 a session, not ₹881), the auction's direction is priced, opening premium is rich, no state has room; forward scorers fw5 (auction queue pressure) and fw6 (CAS 2.0 closing window) frozen (research only, nothing deployed)
+
+**Owner (Nov 16):** the auditor's SN351–SN360 (`docs/SN351_SN360_RESEARCH_BRIEF.md`) plus five own slots, "one strategy essence, slot, then give it time". Plan `cbdbc54c` with amendments A1–A6, each committed before that slot's numbers. Results: `docs/research/fno/2026-11-16-sn351/README.md`.
+
+**The wage (SN352 / SN363):**
+- **The auditor's ledger finding is right:** SN342 counted ₹71,250 of growth cash twice.
+- **The cash-funded journal** (daily identity on every session; Gold's day nets unchanged) pays **₹785 a session at ₹205** (₹318 at ₹400), with 2023 paying nothing.
+- **Never-failing salaries:** ₹500 a month with the owner's ₹60k; ₹4,500 with ₹1.2 lakh. ₹750 a session every month needs ₹3.7 lakh at ₹205 and is impossible at ₹400.
+
+**Signals:**
+- **SN353 auction:**
+  - the packet fields are now known (`open` = indicative price, `volume` = indicative matched quantity, buy / sell = total queued quantities; NSE order entry 09:00–09:10);
+  - the gap's direction is information (+₹183 gross a trade, ₹326 above a coin flip) but −₹30 at ₹205;
+  - the queue-pressure arm is frozen forward in `sn351/fw5.py`.
+- **SN361:** an option bought at 09:16 loses ₹80–130 a leg to volatility normalization by 10:15 beyond midday's rate, in every year.
+- **SN351:** no entry state has room at ₹205 (the hindsight ceiling is about ₹1,050 a lot; the realized payoff is −₹295 at 20 minutes).
+- **SN362:** Gold via SENSEX options fails.
+- **SN365:** the auction tells nothing about Gold's trades.
+- **SN359:** V8's order lifecycle on real 5-level depth keeps Gold's modelled return (₹205 stress conservative at Gold's sizes).
+- **Blocked or not triggered:** SN354 / SN356 blocked (no GIFT or bank data; BANKNIFTY lot 30 mostly unaffordable); SN355 untestable here; SN357 / SN360 not triggered.
+- **Frozen forward:** SN364 in `sn351/fw6.py`, which needs the recorder to 15:46 (SN329, not deployed).
+- **Not run:** SN358 (Gold 2022) is the next round's first slot.
+
+**Runtime:** no change. Dev-only items still awaiting "deploy": SN329, V8 shadow.
+
 ## November 16 (late afternoon) - SN331–SN350: no short-horizon option edge at any clock; Gold V8 = Gold v5; the wage comes from Gold's capital; V8 shadow keeps its own inventory (research + Dev runtime, not deployed)
 
 **Owner (Nov 16):** the auditor's SN331–SN340 (`docs/SN331_SN340_RESEARCH_BRIEF.md`) plus ten own slots. Plan `95287d3f`; results in `docs/research/fno/2026-11-16-sn331/README.md`.

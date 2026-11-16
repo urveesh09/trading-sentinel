@@ -49,6 +49,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN301–SN315 (Nov 16): the forward test protected and Gold v5's own losses audited.** Amended scorer and verified archive (`sn301/fwd2.py`; verdict after session 20, Dec 23). Gold's losses are signal losses (stops, adds, costs and cash checks sound; extension neutral); no Gold change. From Dec 7 F&O closes at 15:45 (engine assumes 15:40). See the SN301–SN315 section at the end.
 - **SN316–SN330 (Nov 16): the partner's chart sequence fails on one-second data; Gold's losses have no early signature; WK-H passes the 2020 crash exam; Gold V8 = Gold v5 executed for real money** (`sn316/GOLD_V8.md`). Dec 7 CAS 2.0 hours fixed in Dev (`52a77adf`, not deployed). See the SN316–SN330 section at the end.
 - **SN331–SN350 (Nov 16): no short-horizon option edge at any clock** (failed-break reversals have no room; entries after fast moves are worse than random). **Gold V8 = Gold v5**; the wage comes from Gold's capital (₹881 a session at ₹205 with a one-wallet reserve). See the SN331–SN350 section at the end.
+- **SN351–SN365 (Nov 16): the wage corrected to ₹785 a session (SN342 double-counted ₹71,250 of growth cash); the auction's direction is information already priced; opening premium is rich; no entry state has room at ₹205.** Forward scorers fw5 / fw6 frozen. See the SN351–SN365 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1015,3 +1016,27 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - NIFTY's short-horizon option market prices fast moves instantly. At any tradable clock, buying after a move (with or against it) is worse than random, and random is about break-even before the stress.
 - Gold's return depends on its entries' timing (a late entry costs) and on capital.
 - The wage scales with the capital the owner can keep beside Gold.
+
+## SN351–SN365 (Nov 16, 2026): information before the option reprices, the corrected wage, Gold's execution (folder `docs/research/fno/2026-11-16-sn351`)
+
+**Owner:** the auditor's SN351–SN360 plus five own slots, one slot at a time. Plan `cbdbc54c`, amendments A1–A6.
+
+| SN | Result |
+|---|---|
+| 352 | SN342's wage counted ₹71,250 of growth cash twice. Corrected journal: ₹5,82,754 over 45 months = ₹785 a session at ₹205 (₹318 at ₹400); 14 / 45 months pay; 2023 pays nothing; growth never short of cash |
+| 363 | Never-failing fixed salary: ₹500 a month (owner ₹60k), ₹3,000 (₹90k), ₹4,500 (₹1.2 lakh) at ₹205; ₹0 / 2,500 / 3,500 at ₹400. ₹15,750 a month needs ₹3.7 lakh at ₹205, impossible at ₹400 |
+| 353 | Auction fields decoded (A2). Price-only gap: +₹183 gross, −₹30 at ₹205 (172 sessions), −₹257 on real quotes: CLOSED. Queue-pressure arm and a post-hoc 0.2–0.5% gap watch frozen forward (`fw5.py`, SN300a's window) |
+| 361 | Opening premium rich: ATM straddle at 09:16 −₹226 by 09:45, −₹338 by 10:15 (−₹156 / −₹255 against 11:00; 885 sessions; every year) |
+| 365 | Auction agreement with Gold's trades: p = 0.55, no information |
+| 351 | No state has room at ₹205 (8,488 positions; hindsight ceiling ₹1,048 a lot; −₹295 at 20 minutes; buying with a just-finished move worst) |
+| 362 | Gold via SENSEX options: FAIL (one-trade mean; −₹292 at ₹400). Real per-lot spreads are equal (₹16 / ₹17) |
+| 359 | V8 lifecycle on real depth: 9 / 10 decisions entered with every lot; on priced exits V8 ₹1,25,866 vs replay ₹99,262 at ₹205 |
+| 354 / 355 / 356 | Blocked / untestable here / blocked and mostly unaffordable (BANKNIFTY lot 30) |
+| 357 / 360 | Not triggered |
+| 364 | CAS 2.0 closing window frozen forward (`fw6.py`, needs the recorder to 15:46) |
+| 358 | Not run: the next round's first slot (N08 → N11 route on 2022) |
+
+**Lessons:**
+- The opening auction's direction is real information, already in the price to within the costs. Opening option premium is rich.
+- No entry state for a bought option has room after ₹205. The room is in the path (hindsight), which no tested predictor reaches.
+- Gold's wage is capital-bound and lumpy. A promised salary is set by the worst early stretch, not the average.

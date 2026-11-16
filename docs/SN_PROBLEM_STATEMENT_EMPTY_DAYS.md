@@ -314,3 +314,14 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **Short breaks revert.** A one-minute break-and-hold lost on unseen 2019 as on 2022–26, below every random book.
 - **WK-H survived the 2020 crash** (+₹42,570 per lot; March −₹23,171), but it needs margin.
 - **For a no-margin gap-day leg the remaining open question** is the packet-level forward test (SN300a / `fw3.py`, after Dec 23).
+
+## 20. Status after SN331–SN365 (Nov 16, 2026)
+
+- **After-move entries are worse than random at every clock** (SN331 / SN344). Failed breaks reverse only 0.5–2.1 index points.
+- **The opening auction's direction is information, but it is already in the price** (SN353 (b): +₹183 gross a trade, −₹30 at ₹205). Opening premium is rich by about ₹80–130 a leg by 10:15 (SN361).
+- **No entry state for a bought option has room at ₹205** (SN351). The hindsight best exit averages about ₹1,050 a lot, but fixed-horizon payoffs are −₹90 to −₹370 gross.
+- **Ideas needing data this PC lacks:** GIFT NIFTY residuals, RBI surprises, BANKNIFTY / bank constituents (SN354–SN356). BANKNIFTY's ATM lot (30) fits the ₹15k room only in its last week. A download is the owner's call.
+- **Still open, forward only:**
+  - the auction queue pressure and a mid-gap watch (`sn351/fw5.py`, with SN300a after Dec 23);
+  - the CAS 2.0 closing window from Dec 7 (`sn351/fw6.py`; needs the recorder to 15:46, SN329 not deployed).
+- **The wage comes from Gold's capital** (SN352 / SN363): ₹785 a session on average at ₹205, in lumps. A never-failing ₹750 a session needs about ₹3.7 lakh.
