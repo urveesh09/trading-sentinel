@@ -1,3 +1,54 @@
+## November 17 (late night) - EN07–EN10 and the release. The 2023 coverage re-score is identical; the volatility-regime gate, compression breakout and one-lot bank all fail with their lessons; E03.2 is unchanged. EN01 + EN02 + EN06 released to Production (DEPLOYED: Production 55b5e942, PR #142, verify_deployment exit 0)
+
+**Owner (Nov 17):** five extra EN slots, each to improve the system or teach something. The auditor's brief is `docs/EXPIRY_RESEARCH_EN06_EN15.md`. Plan `docs/research/simulation/2026-11-17-expiry-en/PLAN2.md`, frozen `2b586f36`. Results in `README.md` there and in `docs/EXPIRY_RESEARCH_EN.md`.
+
+- **EN07** (`exam2023b.py`, freeze `9624b542`): the 2023 exam re-scored once with the coverage rule as written. The check now requires strikes at the decision minute, keeps per-arm/side counts and draws the random control from the matched available pool.
+  - Every arm is identical to the paisa. The same 2 Jan 25 decisions are unavailable, and all seven verdicts are unchanged.
+  - E03.1 is below 37 of 40 matched random books.
+  - So the 2023 failure (E03.2 −3,645) is real.
+- **EN08:** the calm-morning gate (no entry below the pooled lower tercile of the 09:15–13:00 range, 0.519%) **fails**.
+  - It helps 2023 (−1,776) and 2024 (+15,872) but cuts 2025 to +2,399. 2025's calm-day tickets won 5 of 5 (+3,538), while 2023's lost 9 (−1,869).
+  - The 13:00 straddle tiers split just as inconsistently.
+  - No stable regime explains E03.2's edge.
+- **EN09:** the compression-to-breakout setup **fails**.
+  - Alone it made −2,920 / −4,200 / −4,197 (2023/24/25), below its matched random-side null every year (−2,293 / −3,281 / −3,900).
+  - Added to E03.2 it took 32 tickets with 5 winners.
+  - Expiry-afternoon breakouts are false breaks.
+- **EN10:** the one-lot bank at one initial-risk unit **fails**. It changed 6 tickets in 3 years, with mixed results.
+
+**State:**
+- NIFTY 2023 expiry chains are now seen; no unseen full-chain expiry data is left.
+- Next:
+  - downloads of NIFTY 2026 and SENSEX expiry afternoons (skill only);
+  - forward paper tickets (E03.2 has 0 of 20).
+
+**Release:**
+- PR #142, `codex/release-20261117-en`: `evolve/smart-strategies` + hedge-p0. Doc-only conflicts with #141 were resolved keeping both sides, and the atlas was regenerated.
+- Merged-tree suites:
+  - before EN06: 6,468 passed, 4 skipped, exit 0;
+  - with EN06: 6,476 passed, 4 skipped, exit 0.
+
+**Deploy (Nov 17, ~22:30 IST, owner: "Yes, PR + deploy here"):**
+- Docker Desktop had stopped; it was started, and Production came back on `0b645d77`.
+- PR #142 merged as `55b5e942` (second parent `041f7db1` = reviewed head).
+- Rollback images are tagged `production_trading-sentinel-{python-engine,node-gateway,agent}:rollback-0b645d7`.
+- The build was stamped `55b5e942` / 2026-11-17T16:55:28Z (`release-receipts/build-env-55b5e942….txt`), then built one service at a time, recreated, and nginx restarted.
+- `verify_deployment.py` exit 0, receipt `release-receipts/55b5e942….json`.
+- The live engine shows:
+  - main E032, E032 on, paper NIFTY,SENSEX;
+  - TICK_START 12:47, 1,038 slots;
+  - last_flat on Dec 8 15:28, fill_model at 15:20 on Dec 8 CONTINUOUS;
+  - the EN06 functions present;
+  - the E03.2 book flat with 0 positions.
+- No startup errors. No backup was taken (owner's standing rule: no stored-data change, additive table only).
+
+**Anatomy (owner's rule, Nov 17):** `ANATOMY.md` / `anatomy.py` record where every EN arm and E03.2 won and lost, asserted against the scored totals.
+- E03.2's stop exits cost −6,885 over 2023–25; its 8-minute clock exit and its 14:00–14:30 entries are positive every year.
+- EN03's losses tripped the brake and removed +5,905 of later winners.
+- EN09 crowded out the 2024 hero (−11,302).
+
+**Rollback caution:** once E03.2 holds a SETTLED_ASSUMED or UNRESOLVED ticket, pre-EN01 code fails its cash journal. Roll back only to EN01+ code, or repair that row first.
+
 ## November 17 (late night) - EN06: the paper execution contract (auditor's brief `docs/EXPIRY_RESEARCH_EN06_EN15.md`), and the NIFTY 2023 E03-family exam scored once on the owner's word. Every arm loses: E03.2 −3,645 ordinary on 17 tickets, and puts are no better than calls. E03.2 stays paper only with no size step (Dev; release PR #142)
 
 **NIFTY 2023 exam:**
