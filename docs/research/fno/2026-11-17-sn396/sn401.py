@@ -13,6 +13,10 @@ previous close, |gap| >= 0.10%); on auction-era days also the NIFTY auction dire
 (100-point steps), lot 20 (gl's SENSEX lot), walked model ask + BFO entry charges <= Rs 15,000, 60 minutes, Rs 3,000
 stop, Rs 205 / 400 per lot. Pass (per signal): per-session net > 0 at Rs 205 and Rs 400 on NIFTY-skip days (EXPIRY +
 INADMISSIBLE), > 0 without the best day. BANKNIFTY: only daily bars on this PC (recorded).
+Disclosed fix (Nov 17, after the first run): the first run took NIFTY expiry days from gl DEV sessions with day == expiry,
+but gl DEV holds no expiry-day sessions, so EXPIRY was empty and those 82 days fell into NO_DATA (receipt kept as
+results-sn401-EXPIRY-CLASS-EMPTY.json; INADMISSIBLE / COMMON were unaffected). The expiry set is now the sessions'
+front-weekly expiry dates.
 """
 from __future__ import annotations
 
@@ -70,7 +74,8 @@ def main():
     smpN, _daysN, au = op.setup()
     raw = gl._cache("devall", gl.build_dev)
     allN = gl.Sample("ALLN", raw)
-    nifty_expiry = {d for d in allN.days if allN.s[d]["day"] == allN.s[d]["expiry"]}
+    nifty_expiry = {allN.s[d]["expiry"] for d in allN.days}      # gl DEV holds no expiry-day sessions: the expiries are its front
+                                                                  # contracts (fix after the first run, disclosed)
     gl.SEALED["EXAMS"] = True                      # already seen for option buyers (SN251 - SN272)
     smpS = gl.sample("EXAMS")
     rows = []
