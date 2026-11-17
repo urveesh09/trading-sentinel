@@ -1,0 +1,514 @@
+{
+ "shift -1 2023-2026 DEPLOYED @205": {
+  "net": 1098614,
+  "by_year": {
+   "2023": 474,
+   "2024": 316015,
+   "2025": 344637,
+   "2026": 437489
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -16524,
+  "worst_day": -20224,
+  "refilled": 429232,
+  "trades": 157,
+  "final_wallet": 101250
+ },
+ "shift -1 2023-2026 DEPLOYED @400": {
+  "net": 697312,
+  "by_year": {
+   "2023": -8307,
+   "2024": 130404,
+   "2025": 185703,
+   "2026": 389512
+  },
+  "months_positive": 24,
+  "months": 46,
+  "worst_month": -20334,
+  "worst_day": -20472,
+  "refilled": 477351,
+  "trades": 157,
+  "final_wallet": 101250
+ },
+ "shift -1 2023-2026 N10+R0.85 @205": {
+  "net": 969675,
+  "by_year": {
+   "2023": -25791,
+   "2024": 203439,
+   "2025": 344637,
+   "2026": 447391
+  },
+  "months_positive": 26,
+  "months": 46,
+  "worst_month": -16312,
+  "worst_day": -20224,
+  "refilled": 457115,
+  "trades": 193,
+  "final_wallet": 101250
+ },
+ "shift -1 2023-2026 N10+R0.85 @400": {
+  "net": 552667,
+  "by_year": {
+   "2023": -46662,
+   "2024": 88130,
+   "2025": 112565,
+   "2026": 398634
+  },
+  "months_positive": 24,
+  "months": 46,
+  "worst_month": -23137,
+  "worst_day": -20228,
+  "refilled": 433050,
+  "trades": 193,
+  "final_wallet": 101250
+ },
+ "shift -1 2022 DEPLOYED @205": {
+  "net": -523,
+  "by_year": {
+   "2022": -523
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9234,
+  "worst_day": -5995,
+  "refilled": 44511,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift -1 2022 DEPLOYED @400": {
+  "net": -8325,
+  "by_year": {
+   "2022": -8325
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9626,
+  "worst_day": -5997,
+  "refilled": 49365,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift -1 2022 N10+R0.85 @205": {
+  "net": 42403,
+  "by_year": {
+   "2022": 42403
+  },
+  "months_positive": 5,
+  "months": 12,
+  "worst_month": -9234,
+  "worst_day": -5995,
+  "refilled": 57215,
+  "trades": 46,
+  "final_wallet": 45000
+ },
+ "shift -1 2022 N10+R0.85 @400": {
+  "net": 25847,
+  "by_year": {
+   "2022": 25847
+  },
+  "months_positive": 5,
+  "months": 12,
+  "worst_month": -9626,
+  "worst_day": -5997,
+  "refilled": 64214,
+  "trades": 46,
+  "final_wallet": 30000
+ },
+ "shift +0 2023-2026 DEPLOYED @205": {
+  "net": 850883,
+  "by_year": {
+   "2023": -12107,
+   "2024": 187476,
+   "2025": 292811,
+   "2026": 382702
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -38531,
+  "worst_day": -21113,
+  "refilled": 562130,
+  "trades": 156,
+  "final_wallet": 101250
+ },
+ "shift +0 2023-2026 DEPLOYED @400": {
+  "net": 495597,
+  "by_year": {
+   "2023": -20385,
+   "2024": 86356,
+   "2025": 92429,
+   "2026": 337198
+  },
+  "months_positive": 23,
+  "months": 46,
+  "worst_month": -41913,
+  "worst_day": -20202,
+  "refilled": 494651,
+  "trades": 154,
+  "final_wallet": 101250
+ },
+ "shift +0 2023-2026 N10+R0.85 @205": {
+  "net": 711386,
+  "by_year": {
+   "2023": -54329,
+   "2024": 122074,
+   "2025": 249220,
+   "2026": 394421
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -38531,
+  "worst_day": -21113,
+  "refilled": 580599,
+  "trades": 192,
+  "final_wallet": 101250
+ },
+ "shift +0 2023-2026 N10+R0.85 @400": {
+  "net": 305294,
+  "by_year": {
+   "2023": -75275,
+   "2024": 76443,
+   "2025": 44330,
+   "2026": 259796
+  },
+  "months_positive": 23,
+  "months": 46,
+  "worst_month": -30833,
+  "worst_day": -20201,
+  "refilled": 395155,
+  "trades": 192,
+  "final_wallet": 101250
+ },
+ "shift +0 2022 DEPLOYED @205": {
+  "net": -15281,
+  "by_year": {
+   "2022": -15281
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9276,
+  "worst_day": -5992,
+  "refilled": 53896,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift +0 2022 DEPLOYED @400": {
+  "net": -23511,
+  "by_year": {
+   "2022": -23511
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -9667,
+  "worst_day": -5994,
+  "refilled": 59839,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift +0 2022 N10+R0.85 @205": {
+  "net": 4681,
+  "by_year": {
+   "2022": 4681
+  },
+  "months_positive": 5,
+  "months": 12,
+  "worst_month": -9276,
+  "worst_day": -5992,
+  "refilled": 69274,
+  "trades": 46,
+  "final_wallet": 30000
+ },
+ "shift +0 2022 N10+R0.85 @400": {
+  "net": -6863,
+  "by_year": {
+   "2022": -6863
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9667,
+  "worst_day": -5994,
+  "refilled": 77361,
+  "trades": 46,
+  "final_wallet": 30000
+ },
+ "shift +1 2023-2026 DEPLOYED @205": {
+  "net": 785632,
+  "by_year": {
+   "2023": -11859,
+   "2024": 191187,
+   "2025": 255551,
+   "2026": 350754
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -30796,
+  "worst_day": -20237,
+  "refilled": 546256,
+  "trades": 154,
+  "final_wallet": 101250
+ },
+ "shift +1 2023-2026 DEPLOYED @400": {
+  "net": 459548,
+  "by_year": {
+   "2023": -20618,
+   "2024": 68013,
+   "2025": 106456,
+   "2026": 305697
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -35093,
+  "worst_day": -20241,
+  "refilled": 465891,
+  "trades": 154,
+  "final_wallet": 101250
+ },
+ "shift +1 2023-2026 N10+R0.85 @205": {
+  "net": 652014,
+  "by_year": {
+   "2023": -55665,
+   "2024": 127104,
+   "2025": 218755,
+   "2026": 361820
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -30796,
+  "worst_day": -20237,
+  "refilled": 531095,
+  "trades": 190,
+  "final_wallet": 101250
+ },
+ "shift +1 2023-2026 N10+R0.85 @400": {
+  "net": 292340,
+  "by_year": {
+   "2023": -74410,
+   "2024": 70869,
+   "2025": 53376,
+   "2026": 242506
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -29785,
+  "worst_day": -20203,
+  "refilled": 390900,
+  "trades": 190,
+  "final_wallet": 101250
+ },
+ "shift +1 2022 DEPLOYED @205": {
+  "net": -16414,
+  "by_year": {
+   "2022": -16414
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9411,
+  "worst_day": -5993,
+  "refilled": 53952,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift +1 2022 DEPLOYED @400": {
+  "net": -23631,
+  "by_year": {
+   "2022": -23631
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -9802,
+  "worst_day": -5994,
+  "refilled": 58686,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift +1 2022 N10+R0.85 @205": {
+  "net": 9068,
+  "by_year": {
+   "2022": 9068
+  },
+  "months_positive": 5,
+  "months": 12,
+  "worst_month": -9411,
+  "worst_day": -5993,
+  "refilled": 68914,
+  "trades": 46,
+  "final_wallet": 30000
+ },
+ "shift +1 2022 N10+R0.85 @400": {
+  "net": -1854,
+  "by_year": {
+   "2022": -1854
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9802,
+  "worst_day": -5994,
+  "refilled": 75988,
+  "trades": 46,
+  "final_wallet": 30000
+ },
+ "shift +2 2023-2026 DEPLOYED @205": {
+  "net": 855097,
+  "by_year": {
+   "2023": -12204,
+   "2024": 142803,
+   "2025": 242104,
+   "2026": 482394
+  },
+  "months_positive": 26,
+  "months": 46,
+  "worst_month": -13230,
+  "worst_day": -20228,
+  "refilled": 454041,
+  "trades": 153,
+  "final_wallet": 101250
+ },
+ "shift +2 2023-2026 DEPLOYED @400": {
+  "net": 507047,
+  "by_year": {
+   "2023": -22168,
+   "2024": 75715,
+   "2025": 111621,
+   "2026": 341879
+  },
+  "months_positive": 24,
+  "months": 46,
+  "worst_month": -36689,
+  "worst_day": -20230,
+  "refilled": 442099,
+  "trades": 153,
+  "final_wallet": 101250
+ },
+ "shift +2 2023-2026 N10+R0.85 @205": {
+  "net": 683174,
+  "by_year": {
+   "2023": -53934,
+   "2024": 93455,
+   "2025": 147920,
+   "2026": 495733
+  },
+  "months_positive": 26,
+  "months": 46,
+  "worst_month": -23521,
+  "worst_day": -20204,
+  "refilled": 424957,
+  "trades": 190,
+  "final_wallet": 101250
+ },
+ "shift +2 2023-2026 N10+R0.85 @400": {
+  "net": 353400,
+  "by_year": {
+   "2023": -74027,
+   "2024": 77052,
+   "2025": 63731,
+   "2026": 286643
+  },
+  "months_positive": 24,
+  "months": 46,
+  "worst_month": -36689,
+  "worst_day": -20230,
+  "refilled": 423193,
+  "trades": 189,
+  "final_wallet": 101250
+ },
+ "shift +2 2022 DEPLOYED @205": {
+  "net": -19192,
+  "by_year": {
+   "2022": -19192
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9930,
+  "worst_day": -5992,
+  "refilled": 52263,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift +2 2022 DEPLOYED @400": {
+  "net": -26409,
+  "by_year": {
+   "2022": -26409
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -10321,
+  "worst_day": -5994,
+  "refilled": 57232,
+  "trades": 30,
+  "final_wallet": 30000
+ },
+ "shift +2 2022 N10+R0.85 @205": {
+  "net": 7878,
+  "by_year": {
+   "2022": 7878
+  },
+  "months_positive": 5,
+  "months": 12,
+  "worst_month": -9930,
+  "worst_day": -5992,
+  "refilled": 65964,
+  "trades": 46,
+  "final_wallet": 30000
+ },
+ "shift +2 2022 N10+R0.85 @400": {
+  "net": -8617,
+  "by_year": {
+   "2022": -8617
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -10321,
+  "worst_day": -5994,
+  "refilled": 78677,
+  "trades": 46,
+  "final_wallet": 30000
+ },
+ "delta vs shift 0 2023-2026 DEPLOYED @205": {
+  "-1": 247731,
+  "+0": 0,
+  "+1": -65251,
+  "+2": 4214
+ },
+ "delta vs shift 0 2023-2026 DEPLOYED @400": {
+  "-1": 201715,
+  "+0": 0,
+  "+1": -36049,
+  "+2": 11450
+ },
+ "delta vs shift 0 2023-2026 N10+R0.85 @205": {
+  "-1": 258289,
+  "+0": 0,
+  "+1": -59372,
+  "+2": -28212
+ },
+ "delta vs shift 0 2023-2026 N10+R0.85 @400": {
+  "-1": 247373,
+  "+0": 0,
+  "+1": -12954,
+  "+2": 48106
+ },
+ "delta vs shift 0 2022 DEPLOYED @205": {
+  "-1": 14758,
+  "+0": 0,
+  "+1": -1133,
+  "+2": -3911
+ },
+ "delta vs shift 0 2022 DEPLOYED @400": {
+  "-1": 15186,
+  "+0": 0,
+  "+1": -120,
+  "+2": -2898
+ },
+ "delta vs shift 0 2022 N10+R0.85 @205": {
+  "-1": 37722,
+  "+0": 0,
+  "+1": 4387,
+  "+2": 3197
+ },
+ "delta vs shift 0 2022 N10+R0.85 @400": {
+  "-1": 32710,
+  "+0": 0,
+  "+1": 5009,
+  "+2": -1754
+ }
+}
