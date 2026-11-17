@@ -1,0 +1,185 @@
+{
+ "reports": {
+  "files": 1897,
+  "valid": 1896,
+  "invalid_by_reason": {
+   "title_date": 1
+  }
+ },
+ "futures_sessions": 1881,
+ "availability_of_report_t_minus_1": {
+  "LATE": 25,
+  "ASSUMED": 42,
+  "ON_TIME": 1806,
+  "MISSING": 7,
+  "null": 1
+ },
+ "dates": {
+  "with_y_and_baseline": 1837,
+  "primary_matched": 1758,
+  "extra_lag_matched": 1782,
+  "missing_pair_or_late": 79,
+  "first": "2019-06-21",
+  "last": "2026-10-28"
+ },
+ "PRIMARY": {
+  "oos_dates": 1508,
+  "blocks": 13,
+  "cw_mean": -1.336,
+  "cw_p": 0.6245,
+  "cw_ci90": [
+   -9.156,
+   5.974
+  ],
+  "mspe_base": 668.55,
+  "mspe_aug": 679.8,
+  "hit_base": 0.4927,
+  "hit_aug": 0.5,
+  "blocks_cw_positive": 7,
+  "block_cw_means": [
+   -16.67,
+   -30.55,
+   4.81,
+   17.05,
+   7.63,
+   0.29,
+   -9.45,
+   2.5,
+   10.23,
+   -6.29,
+   -0.61,
+   6.75,
+   -28.41
+  ],
+  "cw_mean_outside_roll": -3.013,
+  "cw_mean_roll_only": 8.807,
+  "cw_without_month_end_and_mix_breaks": {
+   "dates": 1143,
+   "cw_mean": 0.76,
+   "cw_p": 0.425
+  },
+  "partial_corr_z_y": -0.0122,
+  "raw_corr_z_y": -0.011,
+  "perm_p": 0.8224,
+  "perm_mean_p95": 4.002
+ },
+ "improvement_holds": false,
+ "EXTRA_LAG": {
+  "oos_dates": 1532,
+  "blocks": 13,
+  "cw_mean": -0.801,
+  "cw_p": 0.7175,
+  "cw_ci90": [
+   -3.241,
+   1.54
+  ],
+  "mspe_base": 673.3,
+  "mspe_aug": 675.02,
+  "hit_base": 0.4915,
+  "hit_aug": 0.4954,
+  "blocks_cw_positive": 7,
+  "block_cw_means": [
+   -11.28,
+   -6.17,
+   -1.13,
+   2.27,
+   5.67,
+   2.72,
+   -3.72,
+   6.39,
+   0.4,
+   -11.59,
+   2.17,
+   4.94,
+   -1.89
+  ],
+  "cw_mean_outside_roll": -1.22,
+  "cw_mean_roll_only": 1.701,
+  "cw_without_month_end_and_mix_breaks": {
+   "dates": 1156,
+   "cw_mean": 0.656,
+   "cw_p": 0.3065
+  },
+  "partial_corr_z_y": 0.0507,
+  "raw_corr_z_y": 0.0501
+ },
+ "ALPHA_1": {
+  "oos_dates": 1508,
+  "blocks": 13,
+  "cw_mean": -1.341,
+  "cw_p": 0.6205,
+  "cw_ci90": [
+   -9.404,
+   6.197
+  ],
+  "mspe_base": 668.76,
+  "mspe_aug": 680.75,
+  "hit_base": 0.492,
+  "hit_aug": 0.4993,
+  "blocks_cw_positive": 7,
+  "block_cw_means": [
+   -17.2,
+   -31.03,
+   5.22,
+   17.39,
+   7.72,
+   0.26,
+   -9.61,
+   2.73,
+   10.36,
+   -6.38,
+   -0.64,
+   6.84,
+   -28.6
+  ],
+  "cw_mean_outside_roll": -3.116,
+  "cw_mean_roll_only": 9.393,
+  "cw_without_month_end_and_mix_breaks": {
+   "dates": 1143,
+   "cw_mean": 0.666,
+   "cw_p": 0.444
+  },
+  "partial_corr_z_y": -0.0122,
+  "raw_corr_z_y": -0.011
+ },
+ "ALPHA_100": {
+  "oos_dates": 1508,
+  "blocks": 13,
+  "cw_mean": -1.347,
+  "cw_p": 0.6595,
+  "cw_ci90": [
+   -7.483,
+   4.405
+  ],
+  "mspe_base": 667.25,
+  "mspe_aug": 674.4,
+  "hit_base": 0.488,
+  "hit_aug": 0.4874,
+  "blocks_cw_positive": 7,
+  "block_cw_means": [
+   -14.89,
+   -25.48,
+   2.33,
+   14.24,
+   6.82,
+   0.45,
+   -8.19,
+   0.79,
+   9.1,
+   -5.45,
+   -0.3,
+   6.04,
+   -26.6
+  ],
+  "cw_mean_outside_roll": -2.415,
+  "cw_mean_roll_only": 5.109,
+  "cw_without_month_end_and_mix_breaks": {
+   "dates": 1143,
+   "cw_mean": 0.937,
+   "cw_p": 0.376
+  },
+  "partial_corr_z_y": -0.0122,
+  "raw_corr_z_y": -0.011
+ },
+ "verdict": "CLOSED (no forecast value beyond the opening move)"
+}
