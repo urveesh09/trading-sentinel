@@ -145,10 +145,10 @@ def capture_gold_one(S, sg, v, wallet, full_lots, ctx, vol_day, realized, loss):
         i = sg["i"]
         sign = 1 if sg["opt"] == "CE" else -1
         for k in range(-4, 5):
-            strike = sg["strike"] + k * g.M.STEP
+            strike = sg["strike"] + k * goldx.M.STEP
             r = S.option(strike, sg["opt"])
             if r is not None and r[6][i]:
-                quotes[(float(strike), sg["opt"])] = SimpleNamespace(bid=float(r[4][i]), ask=g.M.ask_of(float(r[0][3][i])))
+                quotes[(float(strike), sg["opt"])] = SimpleNamespace(bid=float(r[4][i]), ask=goldx.M.ask_of(float(r[0][3][i])))
         CAPT.append({"day": S.day, "i": i, "sg_strike": sg["strike"], "opt": sg["opt"], "wallet": wallet, "full": full_lots, "vol_day": bool(vol_day),
                      "realized": realized, "loss": loss, "lab": {"net": res[0], "j": res[1], "lots": res[2], "ask": res[3], "px": res[4], "strike": res[5]},
                      "quotes": quotes, "sign": sign})
@@ -169,7 +169,7 @@ def parity_e(log, capt, stress):
         lots_rt = sn_gold.lots_for(c["wallet"], c["vol_day"]) if c["full"] > 1 else 1
         lots_lab = max(1, c["full"]) if c["full"] <= 1 else (c["full"] if c["vol_day"] else max(1, c["full"] // 2))
         out["lots_rule_same" if lots_rt == lots_lab or c["full"] <= 1 else "lots_rule_diff"] += 1
-        pick = sn_gold.pick_contract(c["quotes"], float(c["sg_strike"]), c["opt"], lots_lab, c["wallet"], g.M.LOT)
+        pick = sn_gold.pick_contract(c["quotes"], float(c["sg_strike"]), c["opt"], lots_lab, c["wallet"], goldx.M.LOT)
         if pick is None:
             out["pick_none"] += 1
             ex["pick_none"].append([c["day"], c["i"]])
@@ -179,7 +179,7 @@ def parity_e(log, capt, stress):
             if not same:
                 ex["pick_diff"].append([c["day"], c["i"], pick[0], pick[2], c["lab"]["strike"], c["lab"]["lots"]])
         ask, lots = t["ask0"], t["lots0"]
-        qty = lots * g.M.LOT
+        qty = lots * goldx.M.LOT
         rt_stop = sn_gold.day_stop(ask, qty, t["room"])
         d_tick = round((t["stop0"] - rt_stop) / 0.05)
         out[f"stop0_minus_runtime_ticks={d_tick}" if abs(d_tick) <= 8 else "stop0_minus_runtime_ticks>8"] += 1
@@ -188,7 +188,7 @@ def parity_e(log, capt, stress):
         for a in t["adds"]:
             if a.get("added"):
                 pieces = [[ask, lots], [a["ask"], a["added"]]]
-                s_rt = sn_gold.scale_in_stop(pieces, g.M.LOT, t["room"])
+                s_rt = sn_gold.scale_in_stop(pieces, goldx.M.LOT, t["room"])
                 s_lab = a.get("stop_after")
                 if s_lab is not None:
                     dd = round((max(t["stop0"], s_lab) - max(rt_stop, s_rt)) / 0.05)
@@ -197,12 +197,12 @@ def parity_e(log, capt, stress):
             px = t["px"]
             pcs = [[e, n] for e, n, _pn in t["pieces"]]
             assert stress == sn_gold.STRESS_PER_LOT
-            net_rt, stressed_rt = sn_gold.position_net(pcs, px, g.M.LOT)
+            net_rt, stressed_rt = sn_gold.position_net(pcs, px, goldx.M.LOT)
             diff = round(t["net"] - stressed_rt, 2)
             out["net_same_paise" if abs(diff) < 0.01 else "net_diff"] += 1
             if abs(diff) >= 0.01:
                 ex["net_diff"].append([t["day"], t["i"], round(t["net"], 2), round(stressed_rt, 2)])
-            out["charges_check_calc_fno_costs"] += int(abs(g.M.charges(ask, px, qty) - calc_fno_costs(ask, px, qty)) < 1e-9)
+            out["charges_check_calc_fno_costs"] += int(abs(goldx.M.charges(ask, px, qty) - calc_fno_costs(ask, px, qty)) < 1e-9)
     return dict(out), {k: v[:12] for k, v in ex.items()}
 
 
