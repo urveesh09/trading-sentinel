@@ -191,3 +191,36 @@ weekly, 12:45–15:30, about 20 strikes around the 13:00 ATM.
    closing-auction era.
 2. **SENSEX expiries, Oct 2024 – Nov 2026 (~100).** E03.2 has never been tested on SENSEX history.
 3. **NIFTY 2020–2022 expiries (~155).** Older regimes; the index and futures are already there.
+
+## EN06–EN10: the owner's five extra slots (Nov 17, late night)
+
+The auditor's brief is `../../../EXPIRY_RESEARCH_EN06_EN15.md`. Plan: [PLAN2.md](PLAN2.md), with EN08–EN10
+frozen at `2b586f36` before scoring. Each slot must improve the system or teach something.
+
+| Slot | What | Result | What it teaches |
+|---|---|---|---|
+| **EN06** | Paper execution contract (engine) | **Done**, `836d0183`; `tests/test_expiry_en06.py` 8, of which 6 fail on the EN01 engine | Depth a paper sale took is saved with the fill. A repeated callback on the same packet, or a newer packet with the same bids, cannot sell it again. Filled, assumed and open are split in the day line. Notices are stored with the fill and drained by key. E02-family reconcile runs before the day summary. CAS 2.0 labels apply, and no settlement is guessed after Dec 7. A 13:00 route fixture covers a late login and a missing minute. |
+| **EN07** | 2023 coverage rule repaired, re-scored once (`exam2023b.py`, freeze `9624b542` → results) | **Identical**: every arm to the paisa, the same 2 Jan 25 decisions blocked, all 7 verdicts unchanged; E03.1 below 37 of 40 matched random books | The 2023 failure is not a coverage artefact. The loose check never bound on this data. |
+| EN08 | Volatility regime: no entries on calm-morning days (bottom pooled tercile, range < 0.519%) | **Fail**: 2023 −3,645 → −1,776 and 2024 +15,581 → +15,872, but 2025 +5,937 → +2,399 | E03.2's calm-morning tickets lost in 2023 (9 tickets, −1,869) and 2024 (4, −292) but won 5 of 5 in 2025 (+3,538). 2024's money sits on active, high-implied-vol days; 2025's on calm, low-implied ones. **No stable regime explains the edge**, so E03.2's results are year-specific. |
+| EN09 | Compression, then index + futures breakout, one a day (a different setup) | **Fail**: alone −2,920 / −4,200 / −4,197 (2023/24/25). That is **below the matched random-side null every year** (−2,293 / −3,281 / −3,900). Added to E03.2: 32 tickets, 5 winners. | Breakouts out of afternoon compression are false breaks on expiry. The direction they pick is worse than a coin. This agrees with E01's breakouts and SN's after-move finding. Extra frequency from breakouts is negative. |
+| EN10 | A one-lot ticket banks at one initial-risk unit after fees | **Fail**: 6 tickets changed in 3 years (2023 +600; 2024 −363 with one 2x winner cut; 2025 −84) | Too rare to matter and mixed. The 8-minute clock and 2x rule stay. |
+
+Fills for EN08–EN10 each year (ordinary / adverse):
+
+| Arm | 2023 | 2024 | 2025 |
+|---|---:|---:|---:|
+| E03.2 | −3,645 / −4,036 | +15,581 / +14,629 | +5,937 / +5,371 |
+| EN08 calm gate | −1,776 / −2,074 | +15,872 / +15,171 | +2,399 / +1,937 |
+| EN09 add | −4,013 / −4,184 | −966 / −2,476 | −4,192 / −4,293 |
+| EN09 alone | −2,920 / −3,362 | −4,200 / −4,311 | −4,197 / −4,404 |
+| EN10 one-lot bank | −3,045 / −3,694 | +15,217 / +14,269 | +5,852 / +5,401 |
+
+**The round's conclusion:**
+- E03.2 is unchanged, and nothing tested beats it robustly.
+- Its 2024 profit is concentrated in one put day (+11,771 of +15,581).
+- 2025 is modestly positive, and 2023 loses in every version.
+- The engine is now honest and complete for forward paper evidence: EN01, EN02 and EN06.
+- The only real tests left are new data and forward tickets. Asks, in this order:
+  1. NIFTY 2026 expiry afternoons;
+  2. SENSEX expiry afternoons;
+  3. forward paper tickets.

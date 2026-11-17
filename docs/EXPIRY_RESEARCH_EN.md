@@ -85,6 +85,22 @@ first three January ones were never downloaded.
 - Its forward paper tickets (0 of 20 so far) are now the main evidence.
 - The fixes (EN01, EN02) still matter: they make that paper record honest and complete.
 
+## The five extra slots (EN06–EN10)
+
+| Slot | What | Result |
+|---|---|---|
+| **EN06** | Paper sales can no longer reuse the same quote twice, even across restarts. The evening report shows real fills and assumed values apart. Messages can't be lost in a crash. December 7 rules are applied. | **Done in Dev**, shipping in tonight's release |
+| **EN07** | Re-checked the 2023 test with the stricter "strikes present at that minute" rule the auditor asked for | Same result to the paisa. The 2023 loss is real. |
+| EN08 | Skip calm mornings (the quietest third of days) | Failed. It halves the 2023 loss but ruins 2025, whose calm days were E03.2's best. No "type of day" explains when it earns. |
+| EN09 | A different entry: breakout after a quiet spell | Failed. It lost every year, worse than picking the side at random. |
+| EN10 | A one-lot ticket banks its gain earlier | Failed. Only 6 tickets in 3 years changed, mixed. |
+
+**Bottom line:**
+- E03.2 is unchanged and nothing tested beats it.
+- 2024 earned, mostly from one day. 2025 earned a little. 2023 lost.
+- The system now records paper results honestly, so each new expiry adds real evidence.
+- What can genuinely move this forward is new data (below) and forward paper tickets.
+
 ## Data that would help next
 
 All of it through the download skill.
