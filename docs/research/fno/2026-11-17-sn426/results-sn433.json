@@ -1,0 +1,32 @@
+{
+ "gold_ledger_trades_in_production": "none yet (auditor's morning check Nov 17: sessions Nov 13 and 16 closed with zero trades)",
+ "sessions_checked": 932,
+ "late_first_minute": [
+  {
+   "day": "2025-01-31",
+   "kind": "index",
+   "first_real_minute": 158,
+   "gold_entries": [
+    60
+   ],
+   "entry_in_or_near_stretch": true
+  },
+  {
+   "day": "2025-08-06",
+   "kind": "future",
+   "first_real_minute": 3,
+   "gold_entries": [
+    205
+   ],
+   "entry_in_or_near_stretch": false
+  },
+  {
+   "day": "2026-01-30",
+   "kind": "index",
+   "first_real_minute": 158,
+   "gold_entries": [],
+   "entry_in_or_near_stretch": false
+  }
+ ],
+ "affected_gold_decisions": 1
+}
