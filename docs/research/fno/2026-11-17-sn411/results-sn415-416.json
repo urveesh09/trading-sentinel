@@ -1,0 +1,117 @@
+{
+ "breeze_underlyings": [
+  [
+   "BANKNIFTY",
+   "daily",
+   "1day",
+   1195
+  ],
+  [
+   "NIFTY",
+   "daily",
+   "1day",
+   1461
+  ],
+  [
+   "NIFTY",
+   "future",
+   "1minute",
+   1221694
+  ],
+  [
+   "NIFTY",
+   "index",
+   "1minute",
+   716208
+  ],
+  [
+   "NIFTY",
+   "index",
+   "1second",
+   4563059
+  ],
+  [
+   "NIFTY",
+   "option",
+   "10second",
+   18290
+  ],
+  [
+   "NIFTY",
+   "option",
+   "1minute",
+   17531565
+  ],
+  [
+   "NIFTY",
+   "option",
+   "1second",
+   14844391
+  ],
+  [
+   "SENSEX",
+   "future",
+   "1minute",
+   301035
+  ],
+  [
+   "SENSEX",
+   "index",
+   "1minute",
+   203706
+  ],
+  [
+   "SENSEX",
+   "option",
+   "1minute",
+   5744650
+  ],
+  [
+   "SENSEX",
+   "option",
+   "1second",
+   4713798
+  ]
+ ],
+ "archive_day_checked": "2026-11-13",
+ "archive_underlyings_types": {
+  "SENSEX|FUT": 386,
+  "SENSEX|CE": 8492,
+  "SENSEX|PE": 8492,
+  "NIFTY|FUT": 386,
+  "NIFTY|CE": 8492,
+  "NIFTY|PE": 8492
+ },
+ "recorder_nov16_underlyings_types": {
+  "NIFTY 50|INDEX": 1,
+  "SENSEX|INDEX": 1,
+  "INDIA VIX|INDEX": 1,
+  "NIFTY|FUT": 2,
+  "SENSEX|FUT": 2,
+  "NIFTY|CE": 123,
+  "NIFTY|PE": 123,
+  "SENSEX|CE": 123,
+  "SENSEX|PE": 123
+ },
+ "kite_15min_symbols": 498,
+ "kite_has_usdinr": false,
+ "local_filing_files": [],
+ "SN415": {
+  "feasible_here": false,
+  "missing": [
+   "exchange dissemination timestamps of results filings for a roster (NSE corporate announcements)",
+   "intraday stock prices around those timestamps at <= 1-minute resolution (the Kite bars are 15-minute, Jan - Jul 2026)",
+   "stock-option bid / ask with depth for the roster (none on this PC)"
+  ],
+  "sample_needed": ">= 40 results announcements across >= 15 F&O stocks with timestamps, 1-minute stock data and option quotes; stock options settle physically: intraday unwind before the broker's delivery-margin window",
+  "verdict": "CLOSED on data until the owner approves a filings source and option quotes"
+ },
+ "SN416": {
+  "feasible_here": false,
+  "missing": [
+   "USDINR futures prices with exchange timestamps (Breeze, the archive and the recorder hold none)"
+  ],
+  "sample_needed": ">= 40 sessions of USDINR front-future ticks or 1-minute bars with exchange times beside NIFTY on the same clock",
+  "verdict": "CLOSED at feasibility (no FX data)"
+ }
+}
