@@ -936,7 +936,7 @@ class Settings(BaseSettings):
     EDGE_OVERNIGHT_PAPER_BANKROLL:   float = 25000.0
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book
     # (docs/2026-10-05-expiry-day-paper-book.md): plays A/B/C on the weekly
-    # NIFTY (Tue) and SENSEX (Thu) expiry, 12:59-15:40 IST. The budget is the
+    # NIFTY (Tue) and SENSEX (Thu) expiry, 12:47-15:40 IST (12:59 before EN02). The budget is the
     # most each play may lose per expiry day (owner chose Rs 2,500). Separate
     # store; the live F&O book keeps FNO_EXPIRY_DAY_ENTRIES=False.
     EXPIRY_PAPER_ENABLED:            bool  = True

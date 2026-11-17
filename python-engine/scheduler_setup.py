@@ -1205,7 +1205,7 @@ def register_penny_scheduler_jobs(scheduler):
 
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
-    # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today
+    # 12:47-15:40 window (12:59 before EN02); it acts only when NIFTY or SENSEX expires today
     # per the instrument dump. Never places an order. Notices go to the
     # book's outbox and are marked sent only after a 2xx response; an hourly
     # reconcile (09:45-17:45) settles legs left open by an outage.
@@ -1275,6 +1275,18 @@ def register_penny_scheduler_jobs(scheduler):
                 logger.info("expiry_paper_reconciled positions=%d", settled)
         except Exception as exc:
             logger.error("expiry_paper_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
+        # [EN01] E02-family legs left open after their session are valued (never sold) the same evening, so
+        # no stuck leg blocks the next expiry; the main ticket's settlement notice goes to the owner.
+        try:
+            import expiry_e02
+            for variant in expiry_e02.VARIANTS:
+                notes = await asyncio.to_thread(expiry_e02.reconcile, settings.DB_PATH, variant)
+                if notes:
+                    logger.info("expiry_%s_reconciled positions=%d", variant.name, len(notes))
+                    if variant.play == settings.EXPIRY_MAIN_STRATEGY:
+                        xp.queue_notices(settings.DB_PATH, notes, datetime.now(xp.IST))
+        except Exception as exc:
+            logger.error("expiry_e02_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
         await _flush_expiry_paper_notices()
 
     scheduler.add_job(

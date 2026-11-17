@@ -8,7 +8,7 @@ rule; A, B and C below keep trading as shadows without Telegram trades.
 Broker-free. It never imports an executor or places an order. Design, rules and
 the reasoning behind them: docs/2026-10-05-expiry-day-paper-book.md.
 
-The tick (``run_expiry_tick``) runs every 10 s from 12:59 to 15:40 IST. It acts
+The tick (``run_expiry_tick``) runs every 10 s from 12:47 (12:59 before EN02) to 15:40 IST. It acts
 only for an underlying whose nearest option expiry is today according to the
 instrument dump, so holiday shifts are handled by the exchange calendar: NIFTY
 (NFO) on Tuesdays and SENSEX (BFO) on Thursdays. One quote batch per
@@ -99,6 +99,10 @@ marked sent when a 2xx acknowledgement arrives (``flush_notices``); flushes
 of one store are serialised, so delivery is at-least-once without concurrent
 duplicates. State lives in ``<DB_PATH>.expiry-paper.db``; nothing touches the
 operational ledger.
+
+EN01 (2026-11-17): no paper fill at or after the expiring contracts' close (``can_fill``; 15:40, 15:30
+from NSE CAS 2.0 on 2026-12-07) and every flat time capped two minutes before it (``last_flat``: FINAL_FLAT
+15:38 becomes 15:28 from 2026-12-07). EN02: ticks from 12:47 (was 12:59), 1,038 slots.
 """
 from __future__ import annotations
 
@@ -144,16 +148,20 @@ EXECUTION_VERSION = "expiry-exec-v2"    # clock/data/fill contract; v1 judged fr
 INDEX_QUOTE_KEYS = {"NIFTY": "NSE:NIFTY 50", "SENSEX": "BSE:SENSEX"}
 SPOT_KEY, FUT_KEY = -1, -2          # negative keys never collide with instrument tokens
 
-TICK_START, SESSION_END = time(12, 59), time(15, 40)
+# [EN02 2026-11-17] Recording starts at 12:47 (was 12:59) so E03.2's twelve one-minute bars are complete by
+# 13:00, as in the research lab, whose window opens at 13:00 with the morning's bars: live E03.2 could not
+# decide before about 13:11, and two of its 39 lab tickets (+Rs 1,715) were decided in 13:00-13:10. A, B and C
+# act only inside their own 13:00+ windows, so the extra 12:47-12:59 ticks change nothing for them.
+TICK_START, SESSION_END = time(12, 47), time(15, 40)
 BOX_START, BOX_END = time(13, 0), time(13, 30)
 A_ENTRY_END, A_FLAT = time(15, 5), time(15, 13)
 AUCTION_START, AUCTION_CLOSE_KNOWN = time(15, 15), time(15, 36)
 B_ENTRY_START, B_ENTRY_END = time(15, 13, 30), time(15, 15)
 FINAL_FLAT = time(15, 38)
 TICK_SEC = 10
-# Ten-second starts from 12:59:00 through 15:39:50: the scheduler's 15:40:00
+# Ten-second starts from 12:47:00 (12:59:00 before EN02) through 15:39:50: the scheduler's 15:40:00
 # callback starts a fraction of a second after SESSION_END and never runs
-# (Oct 8 audit T5: 925 ticks + 41 skips = 966, not 967).
+# (Oct 8 audit T5: 925 ticks + 41 skips = 966, not 967; 1,038 since EN02).
 EXPECTED_SLOTS = ((SESSION_END.hour - TICK_START.hour) * 3600
                   + (SESSION_END.minute - TICK_START.minute) * 60) // TICK_SEC
 CHAIN_WINDOW = 8
@@ -711,6 +719,27 @@ def fill_model(clock: time) -> str:
     return "AUCTION_WINDOW" if clock >= AUCTION_START else "CONTINUOUS"
 
 
+# [EN01 2026-11-17] The expiring contracts' last traded minute is date-aware: 15:40 until 2026-12-04, 15:30
+# from 2026-12-07 (NSE CAS 2.0, market_calendar.expiring_index_close_time). No paper fill is booked at or after
+# it (a quote snapshot of a contract that no longer trades is not a price), and every flat time is capped two
+# minutes before it, so FINAL_FLAT's 15:38 becomes 15:28 from 2026-12-07. Before then nothing changes.
+def expiring_close(day: date) -> time:
+    from market_calendar import expiring_index_close_time
+    return expiring_index_close_time(day)
+
+
+def can_fill(now: datetime) -> bool:
+    """Whether an expiring contract still trades at ``now`` (no fill at or after its close)."""
+    return now.time() < expiring_close(now.date())
+
+
+def last_flat(day: date, flat_at: time) -> time:
+    """``flat_at`` capped two minutes before the expiring contracts' close on ``day``."""
+    close = expiring_close(day)
+    cap = time(close.hour, close.minute - 2) if close.minute >= 2 else time(close.hour - 1, close.minute + 58)
+    return min(flat_at, cap)
+
+
 # ---------------------------------------------------------------------------
 # pure rules
 # ---------------------------------------------------------------------------
@@ -952,7 +981,7 @@ def manage_position(pos: dict, policy: ExitPolicy, bid: float, now: datetime,
     pos["stop"] = round(stop, 2)
 
     lots = pos["lots_open"]
-    if now.time() >= policy.flat_at:
+    if now.time() >= last_flat(now.date(), policy.flat_at):
         return lots, "FLAT_TIME"
     if pos["stop"] > 0 and bid <= pos["stop"]:
         return lots, "TRAIL" if pos["stop"] >= entry else "STOP"
@@ -1068,7 +1097,7 @@ def _try_exit(pos: dict, quote: Optional[Quote], lots: int, reason: str, now: da
     whatever the bid. Unfilled bank lots stay in ``bank_pending`` and are
     retried while the bid holds the bank level (see ``manage_position``).
     """
-    if quote is not None and quote.fresh(now):
+    if quote is not None and quote.fresh(now) and can_fill(now):
         filled, price = walk(quote.bids, lots, pos["lot_size"])
         if filled:
             event = _sell(pos, filled, price, reason, now)

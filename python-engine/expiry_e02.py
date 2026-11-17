@@ -26,6 +26,13 @@ Since expiry-v5 (owner order, 2026-11-03) E03.2 is the expiry book's MAIN paper 
 100-point strikes, the same rupee band per lot), its buys and sells become owner notices through
 the expiry outbox (queued by the scheduler; this module still sends nothing), and the expiry day
 summary and owner rule read its book. NIFTY figures only; SENSEX is a forward paper test.
+
+EN01 (2026-11-17 audit, docs/EXPIRY_RESEARCH_EN.md): one exit attempt per quote snapshot (a latched exit
+and the flat sale never share one displayed bid), a notice for every sale, and a leg still open after its
+session is settled (``settle``: SETTLED_ASSUMED at our sampled post-auction intrinsic before NSE CAS 2.0,
+otherwise UNRESOLVED at its worst case, both in ``assumed_pnl``, never a fill) by the next tick or the
+hourly ``reconcile`` instead of blocking every later expiry. EN02: the recorder starts at 12:47, so the
+twelve-bar signal can decide from 13:00 as in the lab.
 """
 from __future__ import annotations
 
@@ -201,7 +208,7 @@ def logged_quote(raw):
 
 def sell_base(pos,quote,lots,now):
     """E03's one-shot partial sale at 2x: what the fresh bids fill now, nothing latched; the rest runs."""
-    if quote is None or not quote.fresh(now):return None
+    if quote is None or not quote.fresh(now) or not EP.can_fill(now):return None
     filled,price=EP.walk(quote.bids,lots,pos['lot_size'])
     if not filled:return None
     event=EP._sell(pos,filled,price,'TARGET_BASE',now)
@@ -263,6 +270,37 @@ def plan(reading,legs,book,now,budget,cash,variant=E02,underlying='NIFTY', *, di
     _,symbol,limit,lots=min(candidates)
     return dict(symbol=symbol,limit=limit,lots=lots,at=now.isoformat(),expires=(now+timedelta(minutes=1)).isoformat(),
                 direction=reading.direction,underlying_stop=reading.spot-reading.direction*2*reading.atr)
+
+
+SETTLED=('CLOSED','SETTLED_ASSUMED','UNRESOLVED')     # terminal statuses; the last two carry assumed_pnl
+
+
+def booked(p):
+    """A terminal ticket's whole result: its fills (net_pnl) plus any assumed settlement value."""
+    return round(p['net_pnl']+(p.get('assumed_pnl') or 0.),2)
+
+
+def settle(position,spot,now):
+    """[EN01] Value a leg still open after its expiry session instead of blocking the book.
+
+    With our sampled post-auction index (expiry_paper._settlement_spot) on a day before NSE CAS 2.0
+    (2026-12-07) the open lots are valued at intrinsic less exercise STT (SETTLED_ASSUMED); otherwise at
+    their remaining worst case, the premium plus one order charge per lot (UNRESOLVED). Never a fill: the
+    value sits in ``assumed_pnl`` and the fills stay as they were. Returns the settlement event."""
+    from market_calendar import cas2_in_force
+    qty=position['lots_open']*position['lot_size'];day=datetime.fromisoformat(position['entry_ts']).date()
+    if spot is not None and not cas2_in_force(day):
+        intrinsic=max(0.,spot-position['strike']) if position['opt_type']=='CE' else max(0.,position['strike']-spot)
+        position['status']='SETTLED_ASSUMED';value=(intrinsic*(1-EP.EXERCISE_STT_PCT)-position['entry_price'])*qty
+    else:
+        intrinsic=None;position['status']='UNRESOLVED'
+        value=-(position['entry_price']*qty+position['lots_open']*EP.order_fee(EP._position_schedule(position)))
+    position['assumed_pnl']=round(value,2);position['exit_pending']=None
+    event=dict(ts=now.isoformat(),action=position['status'],lots=position['lots_open'],settlement_spot=spot,
+               settlement_source='SAMPLED_INDEX_QUOTE' if intrinsic is not None else None,assumed_pnl=position['assumed_pnl'])
+    if intrinsic is not None:event['intrinsic']=round(intrinsic,2)
+    position.setdefault('_events',[]).append(event)
+    return event
 
 
 def _new_state(now,variant=E02):
@@ -339,6 +377,13 @@ def entry_text(variant,p,risk):
             "Paper only; a stop is a trigger, not a guaranteed price.")
 
 
+def settle_text(variant,p,event):
+    how=(f"valued at intrinsic Rs {event['intrinsic']:.2f} from our sampled index {event['settlement_spot']:,.2f}" if event['action']=='SETTLED_ASSUMED'
+         else "no settlement price recorded, so valued at its worst case (premium lost)")
+    return (f"Expiry paper {p.get('underlying','NIFTY')} {label(variant)}: {_lots_text(event['lots'])} {p['symbol']} could not be sold before the close; "
+            f"{how}: assumed Rs {event['assumed_pnl']:+,.2f}, ticket Rs {booked(p):+,.2f} after fees. An assumed value, not a fill. Paper only.")
+
+
 def exit_text(variant,p,event):
     text=(f"Expiry paper {p['underlying']} {label(variant)} (main): sold {_lots_text(event['lots'])} {p['symbol']} at Rs {event['price']:.2f} "
           f"({event['action']})")
@@ -359,8 +404,8 @@ def day_results(db_path,variant=None):
     """{(day, underlying): net after fees} of the closed tickets, for the expiry book's owner rule."""
     out={}
     for p in positions(db_path,variant):
-        if p.get('status')=='CLOSED':
-            key=(p['day'],p.get('underlying','NIFTY'));out[key]=round(out.get(key,0.)+p['net_pnl'],2)
+        if p.get('status') in SETTLED:
+            key=(p['day'],p.get('underlying','NIFTY'));out[key]=round(out.get(key,0.)+booked(p),2)
     return out
 
 
@@ -390,11 +435,44 @@ def summary_lines(db_path,day,underlying,variant=None):
     for p in today:
         sold=', '.join(f"{e['action']} {e['lots']} at {e['price']:.2f}" for e in p.get('_events',[])[1:] if e.get('price') is not None)
         lines.append(f"  {name}: {_lots_text(p['lots'])} {p['symbol']} bought {p['entry_price']:.2f}, {p['status']}"
-                     +(f", net Rs {p['net_pnl']:+,.2f} after fees Rs {p['costs']:,.2f}" if p['status']=='CLOSED' else '')+(f" ({sold})" if sold else ''))
-    closed=[p for p in mine if p.get('status')=='CLOSED']
+                     +(f", net Rs {p['net_pnl']:+,.2f} after fees Rs {p['costs']:,.2f}" if p['status']=='CLOSED' else '')
+                     +(f", fills Rs {p['net_pnl']:+,.2f} + assumed Rs {p['assumed_pnl']:+,.2f} (not a fill)" if p['status'] in SETTLED[1:] else '')+(f" ({sold})" if sold else ''))
+    closed=[p for p in mine if p.get('status') in SETTLED]
     net=round(sum(p['net_pnl'] for p in today if p.get('status')=='CLOSED'),2)
-    lines.append(f"  main day: {name} filled net Rs {net:+,.2f}; {underlying} to date {len(closed)} tickets, Rs {sum(p['net_pnl'] for p in closed):+,.2f}")
+    assumed=round(sum(booked(p) for p in today if p.get('status') in SETTLED[1:]),2)
+    lines.append(f"  main day: {name} filled net Rs {net:+,.2f}"+(f" + settled (assumed) Rs {assumed:+,.2f}" if assumed else '')
+                 +f"; {underlying} to date {len(closed)} tickets, Rs {sum(booked(p) for p in closed):+,.2f}")
     return lines
+
+
+def reconcile(db_path,variant,now=None):
+    """[EN01] Settle this variant's leg if it is still open after its expiry session (the hourly expiry
+    reconcile calls this, so a stuck leg is valued the same evening, not at the next expiry's first tick).
+    Returns the owner notices; nothing when the book is flat or the session is still trading."""
+    now=now or datetime.now(EP.IST)
+    destination=Path(path_for(db_path,variant));source=Path(str(db_path)+'.expiry-paper.db')
+    if not destination.exists():return []
+    with closing(sqlite3.connect(destination,timeout=1)) as dst:
+        with dst:
+            dst.execute('BEGIN IMMEDIATE')
+            saved=dst.execute('SELECT payload FROM e02_state WHERE id=1').fetchone()
+            state=json.loads(saved[0]) if saved else None
+            position=state and state.get('position')
+            if not position:return []
+            if state['version']!=variant.version:raise ValueError('Unknown E02 state version')
+            today=now.date().isoformat()
+            if not (position['day']<today or (position['day']==today and now.time()>=EP.SESSION_END)):return []
+            spot=None
+            if source.exists():
+                with closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True,timeout=1)) as src:
+                    src.row_factory=sqlite3.Row
+                    spot=EP._settlement_spot(src,position['day'],position.get('underlying','NIFTY'))
+            event=settle(position,spot,now)
+            _save_position(dst,position)
+            state['cash']=round(state['cash']+booked(position),2);state['peak']=max(state['peak'],state['cash'])
+            state['position']=None;state['pending']=None;state['last_close']=now.isoformat()
+            _store(dst,state)
+            return [(f"{position['day']}:{position.get('underlying','NIFTY')}:{variant.play}:{position['id']}:{event['action']}",settle_text(variant,position,event))]
 
 
 def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
@@ -422,18 +500,24 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                 saved=dst.execute('SELECT payload FROM e02_state WHERE id=1').fetchone()
                 state=json.loads(saved[0]) if saved else _new_state(now,variant)
                 if state['version']!=variant.version:raise ValueError('Unknown E02 state version')
+                stale=state['position'] if state['position'] and state['position']['day']!=now.date().isoformat() else None
+                if stale:
+                    # [EN01] Valued at settlement, recorded and told; it no longer blocks this expiry.
+                    event=settle(stale,EP._settlement_spot(src,stale['day'],stale.get('underlying','NIFTY')),now)
+                    _save_position(dst,stale)
+                    notes.append((f"{stale['day']}:{stale.get('underlying','NIFTY')}:{variant.play}:{stale['id']}:{event['action']}",settle_text(variant,stale,event)))
+                    state['cash']=round(state['cash']+booked(stale),2);state['peak']=max(state['peak'],state['cash']);state['position']=None
                 if not state.get('day') or state['day']['date']!=now.date().isoformat():
-                    if state['position']:return {'status':'UNRESOLVED_PRIOR_DAY'}
                     dd=state['peak']-state['cash'];scale=0 if dd>=4000 else .25 if dd>=3000 else .5 if dd>=1500 else 1
                     state.update(day=dict(date=now.date().isoformat(),budget=min(DAY_CEILING*day_scale(variant)*scale,state['cash']),spent=0.,trades=0),bars=[],building=None,pending=None,last_decided=None)
                     state.pop("decision_counts", None)
                 diagnostics = state.setdefault("decision_counts", {}) if variant == E032 else None
                 # Reconcile realized cash from immutable closed records before risk admission.
-                closed=[json.loads(r[0]) for r in dst.execute("SELECT payload FROM e02_positions WHERE status='CLOSED' ORDER BY id")]
+                closed=[json.loads(r[0]) for r in dst.execute("SELECT payload FROM e02_positions WHERE status IN (?,?,?) ORDER BY id",SETTLED)]
                 expected=peak=START_CASH
                 for p in closed:
                     if not all(math.isfinite(p[k]) for k in ('net_pnl','gross','costs')) or abs(p['gross']-p['costs']-p['net_pnl'])>.02:raise ValueError('E02 malformed close')
-                    expected=round(expected+p['net_pnl'],2);peak=max(peak,expected)
+                    expected=round(expected+booked(p),2);peak=max(peak,expected)
                 if not all(math.isfinite(state[k]) for k in ('cash','peak')) or abs(state['cash']-expected)>.01 or abs(state['peak']-peak)>.01 or state['cash']<0:raise ValueError('E02 cash journal mismatch')
                 rows=src.execute("SELECT * FROM expiry_paper_ticks WHERE day=? AND underlying=? AND ts>? ORDER BY ts",(now.date().isoformat(),underlying,state['watermark'] or '')).fetchall()
                 completed=None
@@ -442,7 +526,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                     if bar:completed=bar
                 if completed and not timedelta(0)<=(now-datetime.fromisoformat(completed['end']))<timedelta(minutes=1):completed=None
                 state['watermark']=latest['ts']
-                legs=json.loads(latest['quotes']).get('legs',{});position=state['position'];event=None
+                legs=json.loads(latest['quotes']).get('legs',{});position=state['position'];event=None;events=[]
                 if position:
                     q=logged_quote(legs.get(position['symbol']))
                     if position['exit_pending']:
@@ -454,9 +538,14 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                             sell=action(position,close_q.bid,completed['s'][3],decision_time)
                             if sell and sell[1]=='TARGET_BASE':event=sell_base(position,q,sell[0],now)
                             elif sell:event=EP._try_exit(position,q,*sell,now)
-                    if now.time()>=flat_time(position) and position['status']=='OPEN':event=EP._try_exit(position,q,position['lots_open'],'FLAT_TIME',now)
+                    if event:events.append(event)
+                    # [EN01] One exit per quote snapshot: a sale (or a latched exit, which already offers every open
+                    # lot) has used this tick's bids, so the flat sale waits for the next snapshot.
+                    if now.time()>=EP.last_flat(now.date(),flat_time(position)) and position['status']=='OPEN' and not events and not position['exit_pending']:
+                        event=EP._try_exit(position,q,position['lots_open'],'FLAT_TIME',now)
+                        if event:events.append(event)
                     _save_position(dst,position)
-                    if event:notes.append((f"{position['day']}:{position['underlying']}:{variant.play}:{position['id']}:{event['ts']}:{event['action']}",exit_text(variant,position,event)))
+                    for ev in events:notes.append((f"{position['day']}:{position['underlying']}:{variant.play}:{position['id']}:{ev['ts']}:{ev['action']}",exit_text(variant,position,ev)))
                     if position['status']=='CLOSED':
                         state['cash']=round(state['cash']+position['net_pnl'],2);state['peak']=max(state['peak'],state['cash']);state['last_close']=now.isoformat();state['position']=None
                 if enabled and not state['position']:
