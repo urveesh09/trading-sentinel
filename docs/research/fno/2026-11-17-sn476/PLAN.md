@@ -175,4 +175,9 @@ the commits. Nothing deployed; nothing pushed without the owner.
 
 ## 5. Amendments
 
-(none yet)
+- **A1 (SN476, after its run, before SN476b):** the Production tables were first read (exploratory, read-only) before this plan was
+  written, which is how the plan knew Gold had no eligible decision yet; the scored receipt is the committed `sn476_pull.py` run
+  (`prod-gold-20261117T113959Z.json`, sha256 60e487f9…). The first `sn476.py` run crashed in part E on a wrong module reference
+  (`gold.M` for `goldx.M`) before printing or writing anything; fixed and rerun. SN476 D on GOLD_30K moved −4,941 at ₹205 but +1,77,306
+  at ₹400 through the growth wallet's path; supplementary `sn476b.py` repeats C and D on the fixed ONE_15K ledger to show the
+  trade-level effect without compounding (added after seeing D, disclosed here; it does not change SN476's verdicts).
