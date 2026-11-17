@@ -1,0 +1,1569 @@
+{
+ "trades": 10,
+ "sn445_kept": "6 OK / 4 INSUFFICIENT on the initial lots (results-sn445.json)",
+ "held_differs_from_lots0": 4,
+ "exit_state_at_arrival_held": {
+  "FULL": 6,
+  "FEED_STOPPED": 2,
+  "INSTRUMENT_ABSENT": 2
+ },
+ "exit_state_at_arrival_lots0": {
+  "FULL": 6,
+  "FEED_STOPPED": 2,
+  "INSTRUMENT_ABSENT": 2
+ },
+ "entry_state_at_arrival": {
+  "FULL": 9,
+  "FEED_STOPPED": 1
+ },
+ "full_within_5_held": 7,
+ "full_by_end_held": 7,
+ "exits_at_1510": [
+  "2026-10-08",
+  "2026-10-21",
+  "2026-10-23"
+ ],
+ "partial_exit_open_at_5min_units": {
+  "2026-09-24 i156": 0,
+  "2026-09-28 i40": 0,
+  "2026-09-28 i261": 0,
+  "2026-10-05 i60": 0,
+  "2026-10-07 i51": 0,
+  "2026-10-08 i81": 390,
+  "2026-10-09 i165": 0,
+  "2026-10-14 i280": 390,
+  "2026-10-21 i85": 390,
+  "2026-10-23 i280": 0
+ },
+ "mean_observed_cost_per_held_lot_resolved": 89.0,
+ "rows": [
+  {
+   "day": "2026-09-24",
+   "contract": [
+    "NIFTY",
+    "2026-09-29",
+    23300,
+    "PE"
+   ],
+   "i": 156,
+   "j": 288,
+   "exit_clock": "14:03",
+   "lots0": 6,
+   "held_lots": 9,
+   "reason": "ext_trail",
+   "model_exit_px": 257.7,
+   "replay_net": 57234.2,
+   "exit_minutes": [
+    {
+     "m": 289,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4095,
+     "window": [
+      22850,
+      23350,
+      11
+     ]
+    },
+    {
+     "m": 290,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 2340,
+     "window": [
+      22850,
+      23350,
+      11
+     ]
+    },
+    {
+     "m": 291,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4355,
+     "window": [
+      22850,
+      23350,
+      11
+     ]
+    },
+    {
+     "m": 292,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3640,
+     "window": [
+      22850,
+      23350,
+      11
+     ]
+    },
+    {
+     "m": 293,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4485,
+     "window": [
+      22850,
+      23350,
+      11
+     ]
+    },
+    {
+     "m": 294,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3185,
+     "window": [
+      22850,
+      23350,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 157,
+     "state": "FULL",
+     "info": 3900,
+     "window": [
+      23000,
+      23500,
+      11
+     ]
+    },
+    {
+     "m": 158,
+     "state": "FULL",
+     "info": 3770,
+     "window": [
+      22950,
+      23450,
+      11
+     ]
+    },
+    {
+     "m": 159,
+     "state": "FULL",
+     "info": 4810,
+     "window": [
+      22950,
+      23450,
+      11
+     ]
+    },
+    {
+     "m": 160,
+     "state": "FULL",
+     "info": 3055,
+     "window": [
+      22950,
+      23450,
+      11
+     ]
+    },
+    {
+     "m": 161,
+     "state": "FULL",
+     "info": 4485,
+     "window": [
+      22950,
+      23450,
+      11
+     ]
+    },
+    {
+     "m": 162,
+     "state": "FULL",
+     "info": 4550,
+     "window": [
+      22950,
+      23450,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": 289,
+   "first_full_to_end": 289,
+   "last_recorded_minute": 375,
+   "partial_exit": {
+    "sold_units": 585,
+    "open_at_5min": 0,
+    "open_at_end": 0,
+    "avg_px": 257.48
+   },
+   "observed_cost_per_held_lot_vs_model": 14.1,
+   "no_recovery_cost_per_held_lot": 14.1
+  },
+  {
+   "day": "2026-09-28",
+   "contract": [
+    "NIFTY",
+    "2026-09-29",
+    23000,
+    "PE"
+   ],
+   "i": 40,
+   "j": 135,
+   "exit_clock": "11:30",
+   "lots0": 6,
+   "held_lots": 9,
+   "reason": "n11",
+   "model_exit_px": 163.85,
+   "replay_net": 6992.7,
+   "exit_minutes": [
+    {
+     "m": 136,
+     "state_held": "FEED_STOPPED",
+     "state_lots0": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 137,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3510,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 138,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4550,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 139,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3445,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 140,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4030,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 141,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1300,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 41,
+     "state": "FULL",
+     "info": 4940,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 42,
+     "state": "FULL",
+     "info": 7215,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 43,
+     "state": "FULL",
+     "info": 8385,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 44,
+     "state": "FULL",
+     "info": 7605,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 45,
+     "state": "FULL",
+     "info": 8255,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 46,
+     "state": "FULL",
+     "info": 10920,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": 137,
+   "first_full_to_end": 137,
+   "last_recorded_minute": 375,
+   "partial_exit": {
+    "sold_units": 585,
+    "open_at_5min": 0,
+    "open_at_end": 0,
+    "avg_px": 161.0
+   },
+   "observed_cost_per_held_lot_vs_model": 185.3,
+   "no_recovery_cost_per_held_lot": 185.3
+  },
+  {
+   "day": "2026-09-28",
+   "contract": [
+    "NIFTY",
+    "2026-09-29",
+    22950,
+    "PE"
+   ],
+   "i": 261,
+   "j": 332,
+   "exit_clock": "14:47",
+   "lots0": 6,
+   "held_lots": 11,
+   "reason": "ext_trail",
+   "model_exit_px": 172.35,
+   "replay_net": 27905.9,
+   "exit_minutes": [
+    {
+     "m": 333,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 7605,
+     "window": [
+      22550,
+      23050,
+      11
+     ]
+    },
+    {
+     "m": 334,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3640,
+     "window": [
+      22600,
+      23100,
+      11
+     ]
+    },
+    {
+     "m": 335,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4290,
+     "window": [
+      22600,
+      23100,
+      11
+     ]
+    },
+    {
+     "m": 336,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3120,
+     "window": [
+      22600,
+      23100,
+      11
+     ]
+    },
+    {
+     "m": 337,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 2925,
+     "window": [
+      22600,
+      23100,
+      11
+     ]
+    },
+    {
+     "m": 338,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 910,
+     "window": [
+      22600,
+      23100,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 262,
+     "state": "FULL",
+     "info": 4225,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 263,
+     "state": "FULL",
+     "info": 6305,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 264,
+     "state": "FULL",
+     "info": 5395,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 265,
+     "state": "FULL",
+     "info": 7540,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 266,
+     "state": "FULL",
+     "info": 6955,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    },
+    {
+     "m": 267,
+     "state": "FULL",
+     "info": 7280,
+     "window": [
+      22650,
+      23150,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": 333,
+   "first_full_to_end": 333,
+   "last_recorded_minute": 375,
+   "partial_exit": {
+    "sold_units": 715,
+    "open_at_5min": 0,
+    "open_at_end": 0,
+    "avg_px": 170.02
+   },
+   "observed_cost_per_held_lot_vs_model": 151.3,
+   "no_recovery_cost_per_held_lot": 151.3
+  },
+  {
+   "day": "2026-10-05",
+   "contract": [
+    "NIFTY",
+    "2026-10-06",
+    22750,
+    "PE"
+   ],
+   "i": 60,
+   "j": 120,
+   "exit_clock": "11:15",
+   "lots0": 6,
+   "held_lots": 6,
+   "reason": "n11",
+   "model_exit_px": 255.9,
+   "replay_net": 14171.2,
+   "exit_minutes": [
+    {
+     "m": 121,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1625,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 122,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1820,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 123,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1820,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 124,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1495,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 125,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1885,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 126,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 2275,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 61,
+     "state": "FULL",
+     "info": 2795,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 62,
+     "state": "FULL",
+     "info": 2470,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 63,
+     "state": "FULL",
+     "info": 2535,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 64,
+     "state": "FULL",
+     "info": 1690,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 65,
+     "state": "FULL",
+     "info": 2470,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 66,
+     "state": "FULL",
+     "info": 3770,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": 121,
+   "first_full_to_end": 121,
+   "last_recorded_minute": 375,
+   "partial_exit": {
+    "sold_units": 390,
+    "open_at_5min": 0,
+    "open_at_end": 0,
+    "avg_px": 268.32
+   },
+   "observed_cost_per_held_lot_vs_model": -807.6,
+   "no_recovery_cost_per_held_lot": -807.6
+  },
+  {
+   "day": "2026-10-07",
+   "contract": [
+    "NIFTY",
+    "2026-10-13",
+    22750,
+    "PE"
+   ],
+   "i": 51,
+   "j": 62,
+   "exit_clock": "10:17",
+   "lots0": 6,
+   "held_lots": 6,
+   "reason": "n11",
+   "model_exit_px": 207.0,
+   "replay_net": -11983.8,
+   "exit_minutes": [
+    {
+     "m": 63,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1105,
+     "window": [
+      22450,
+      22950,
+      11
+     ]
+    },
+    {
+     "m": 64,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3250,
+     "window": [
+      22450,
+      22950,
+      11
+     ]
+    },
+    {
+     "m": 65,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 5395,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 66,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4810,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 67,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3250,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 68,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 2015,
+     "window": [
+      22450,
+      22950,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 52,
+     "state": "FULL",
+     "info": 2990,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 53,
+     "state": "FULL",
+     "info": 2080,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 54,
+     "state": "FULL",
+     "info": 2795,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 55,
+     "state": "FULL",
+     "info": 2275,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 56,
+     "state": "FULL",
+     "info": 1950,
+     "window": [
+      22400,
+      22900,
+      11
+     ]
+    },
+    {
+     "m": 57,
+     "state": "FULL",
+     "info": 2925,
+     "window": [
+      22450,
+      22950,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": 63,
+   "first_full_to_end": 63,
+   "last_recorded_minute": 385,
+   "partial_exit": {
+    "sold_units": 390,
+    "open_at_5min": 0,
+    "open_at_end": 0,
+    "avg_px": 201.99
+   },
+   "observed_cost_per_held_lot_vs_model": 325.5,
+   "no_recovery_cost_per_held_lot": 325.5
+  },
+  {
+   "day": "2026-10-08",
+   "contract": [
+    "NIFTY",
+    "2026-10-13",
+    22600,
+    "PE"
+   ],
+   "i": 81,
+   "j": 355,
+   "exit_clock": "15:10",
+   "lots0": 6,
+   "held_lots": 6,
+   "reason": "n11",
+   "model_exit_px": 371.6,
+   "replay_net": 57861.5,
+   "exit_minutes": [
+    {
+     "m": 356,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22050,
+      22550,
+      11
+     ]
+    },
+    {
+     "m": 357,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22050,
+      22550,
+      11
+     ]
+    },
+    {
+     "m": 358,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22050,
+      22550,
+      11
+     ]
+    },
+    {
+     "m": 359,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22050,
+      22550,
+      11
+     ]
+    },
+    {
+     "m": 360,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22050,
+      22550,
+      11
+     ]
+    },
+    {
+     "m": 361,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22050,
+      22550,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 82,
+     "state": "FULL",
+     "info": 3250,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 83,
+     "state": "FULL",
+     "info": 4030,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 84,
+     "state": "FULL",
+     "info": 2015,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 85,
+     "state": "FULL",
+     "info": 1820,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 86,
+     "state": "FULL",
+     "info": 4550,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 87,
+     "state": "FULL",
+     "info": 3055,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": null,
+   "first_full_to_end": null,
+   "last_recorded_minute": 385,
+   "partial_exit": {
+    "sold_units": 0,
+    "open_at_5min": 390,
+    "open_at_end": 390,
+    "avg_px": null
+   },
+   "observed_cost_per_held_lot_vs_model": null,
+   "no_recovery_cost_per_held_lot": 24154.0
+  },
+  {
+   "day": "2026-10-09",
+   "contract": [
+    "NIFTY",
+    "2026-10-13",
+    22650,
+    "PE"
+   ],
+   "i": 165,
+   "j": 195,
+   "exit_clock": "12:30",
+   "lots0": 6,
+   "held_lots": 6,
+   "reason": "n11",
+   "model_exit_px": 221.7,
+   "replay_net": -4701.1,
+   "exit_minutes": [
+    {
+     "m": 196,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 4355,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 197,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1170,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 198,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1820,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 199,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3185,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 200,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 2535,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 201,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3055,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 166,
+     "state": "FULL",
+     "info": 2145,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 167,
+     "state": "FULL",
+     "info": 1755,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 168,
+     "state": "FULL",
+     "info": 4030,
+     "window": [
+      22250,
+      22750,
+      11
+     ]
+    },
+    {
+     "m": 169,
+     "state": "FULL",
+     "info": 3055,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 170,
+     "state": "FULL",
+     "info": 2275,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 171,
+     "state": "FULL",
+     "info": 2665,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": 196,
+   "first_full_to_end": 196,
+   "last_recorded_minute": 385,
+   "partial_exit": {
+    "sold_units": 390,
+    "open_at_5min": 0,
+    "open_at_end": 0,
+    "avg_px": 214.55
+   },
+   "observed_cost_per_held_lot_vs_model": 464.8,
+   "no_recovery_cost_per_held_lot": 464.8
+  },
+  {
+   "day": "2026-10-14",
+   "contract": [
+    "NIFTY",
+    "2026-10-19",
+    22600,
+    "CE"
+   ],
+   "i": 280,
+   "j": 310,
+   "exit_clock": "14:25",
+   "lots0": 6,
+   "held_lots": 6,
+   "reason": "n11",
+   "model_exit_px": 152.25,
+   "replay_net": -11094.3,
+   "exit_minutes": [
+    {
+     "m": 311,
+     "state_held": "FEED_STOPPED",
+     "state_lots0": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 312,
+     "state_held": "FEED_STOPPED",
+     "state_lots0": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 313,
+     "state_held": "FEED_STOPPED",
+     "state_lots0": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 314,
+     "state_held": "FEED_STOPPED",
+     "state_lots0": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 315,
+     "state_held": "FEED_STOPPED",
+     "state_lots0": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 316,
+     "state_held": "FEED_STOPPED",
+     "state_lots0": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 281,
+     "state": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 282,
+     "state": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 283,
+     "state": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 284,
+     "state": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 285,
+     "state": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    },
+    {
+     "m": 286,
+     "state": "FEED_STOPPED",
+     "info": null,
+     "window": null
+    }
+   ],
+   "first_full_within_5": null,
+   "first_full_to_end": null,
+   "last_recorded_minute": 93,
+   "partial_exit": {
+    "sold_units": 0,
+    "open_at_5min": 390,
+    "open_at_end": 390,
+    "avg_px": null
+   },
+   "observed_cost_per_held_lot_vs_model": null,
+   "no_recovery_cost_per_held_lot": 9896.2
+  },
+  {
+   "day": "2026-10-21",
+   "contract": [
+    "NIFTY",
+    "2026-10-27",
+    23100,
+    "PE"
+   ],
+   "i": 85,
+   "j": 355,
+   "exit_clock": "15:10",
+   "lots0": 6,
+   "held_lots": 6,
+   "reason": "n11",
+   "model_exit_px": 414.05,
+   "replay_net": 71732.0,
+   "exit_minutes": [
+    {
+     "m": 356,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 357,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 358,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 359,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 360,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    },
+    {
+     "m": 361,
+     "state_held": "INSTRUMENT_ABSENT",
+     "state_lots0": "INSTRUMENT_ABSENT",
+     "info": null,
+     "window": [
+      22500,
+      23000,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 86,
+     "state": "FULL",
+     "info": 2990,
+     "window": [
+      22750,
+      23250,
+      11
+     ]
+    },
+    {
+     "m": 87,
+     "state": "FULL",
+     "info": 2600,
+     "window": [
+      22750,
+      23250,
+      11
+     ]
+    },
+    {
+     "m": 88,
+     "state": "FULL",
+     "info": 2860,
+     "window": [
+      22750,
+      23250,
+      11
+     ]
+    },
+    {
+     "m": 89,
+     "state": "FULL",
+     "info": 3250,
+     "window": [
+      22750,
+      23250,
+      11
+     ]
+    },
+    {
+     "m": 90,
+     "state": "FULL",
+     "info": 2340,
+     "window": [
+      22750,
+      23250,
+      11
+     ]
+    },
+    {
+     "m": 91,
+     "state": "FULL",
+     "info": 2340,
+     "window": [
+      22750,
+      23250,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": null,
+   "first_full_to_end": null,
+   "last_recorded_minute": 385,
+   "partial_exit": {
+    "sold_units": 0,
+    "open_at_5min": 390,
+    "open_at_end": 390,
+    "avg_px": null
+   },
+   "observed_cost_per_held_lot_vs_model": null,
+   "no_recovery_cost_per_held_lot": 26913.2
+  },
+  {
+   "day": "2026-10-23",
+   "contract": [
+    "NIFTY",
+    "2026-10-27",
+    22700,
+    "PE"
+   ],
+   "i": 280,
+   "j": 355,
+   "exit_clock": "15:10",
+   "lots0": 6,
+   "held_lots": 7,
+   "reason": "n11",
+   "model_exit_px": 222.3,
+   "replay_net": 9643.4,
+   "exit_minutes": [
+    {
+     "m": 356,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1430,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 357,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 3185,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 358,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 2340,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 359,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 2210,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 360,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 1560,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    },
+    {
+     "m": 361,
+     "state_held": "FULL",
+     "state_lots0": "FULL",
+     "info": 5005,
+     "window": [
+      22300,
+      22800,
+      11
+     ]
+    }
+   ],
+   "entry_minutes": [
+    {
+     "m": 281,
+     "state": "FULL",
+     "info": 3250,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 282,
+     "state": "FULL",
+     "info": 1625,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 283,
+     "state": "FULL",
+     "info": 2340,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 284,
+     "state": "FULL",
+     "info": 6045,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 285,
+     "state": "FULL",
+     "info": 4290,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    },
+    {
+     "m": 286,
+     "state": "FULL",
+     "info": 4615,
+     "window": [
+      22350,
+      22850,
+      11
+     ]
+    }
+   ],
+   "first_full_within_5": 356,
+   "first_full_to_end": 356,
+   "last_recorded_minute": 385,
+   "partial_exit": {
+    "sold_units": 455,
+    "open_at_5min": 0,
+    "open_at_end": 0,
+    "avg_px": 217.84
+   },
+   "observed_cost_per_held_lot_vs_model": 289.7,
+   "no_recovery_cost_per_held_lot": 289.7
+  }
+ ]
+}
