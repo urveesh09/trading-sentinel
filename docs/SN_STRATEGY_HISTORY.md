@@ -52,6 +52,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN351–SN365 (Nov 16): the wage corrected to ₹785 a session (SN342 double-counted ₹71,250 of growth cash); the auction's direction is information already priced; opening premium is rich; no entry state has room at ₹205.** Forward scorers fw5 / fw6 frozen. See the SN351–SN365 section at the end.
 - **SN366–SN380 (Nov 16): Gold v5 on unseen 2022 lost ₹15,281 from ₹30k (4 of 12 months positive, like 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option.** Forward fw7 frozen. See the SN366–SN380 section at the end.
 - **SN381–SN395 (Nov 16): under honest rules the opening ITM trade is break-even (+₹46 a session, −₹447 after Sep 7); the robust part is ITM over ATM; Gold's 2022 exam closed (N10 sheet D yes, N10 retry the sheets' lead); the wage is a capital question.** Forward fw7a / fw8 / fw9 frozen. See the SN381–SN395 section at the end.
+- **SN396–SN410 (Nov 17): on the real 09:16:00 clock the opening trade loses (−₹81 a session; the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected (p 0.80) and pre-auction checks; the 2022 N10–N11 gap is the stand-aside alone; Gold survives a minute of latency.** Forward fw7b / fw9a / fw8a frozen. See the SN396–SN410 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1086,3 +1087,27 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - Honest execution rules turn the opening edge into break-even; the robust part is choosing ITM over ATM.
 - A filter that sits out bad stretches misses the trend book's big winners.
 - The daily wage is a capital question.
+
+## SN396–SN410 (Nov 17, 2026): the opening trade on the real clock, "cheap" tested four ways, N10 vs N11 inside Gold, Gold's clocks (folder `docs/research/fno/2026-11-17-sn396`)
+
+**Owner:** the auditor's SN396–SN405 plus five own slots. Plan `00693405`.
+
+| SN | Result |
+|---|---|
+| 396 | HONEST 09:16:00 clock: −₹81 / −₹235 a session (ORIGINAL +₹46 was a one-minute lead); LATE −₹253; CHEAP +₹335 / +₹182; archive costs ≈ model in the median; fw7b / fw9a frozen (16 tests) |
+| 397 | Cheap = mostly direction (+12.7 vs +2.4 points), calendar-tangled, no slope in the jump; reality check p 0.80 / studentized 0.90 |
+| 399 | Hurdle about 13 index points against a forecast of 1.3: never trades |
+| 406 | 720 cells: no unfiltered cell positive at ₹400; CHEAP patch at ₹205; best cell p 0.83 |
+| 407 | fw9's rule on 2022 – Dec 2025 gap days: +₹19 / −₹147; does not support fw9 |
+| 410 | Before Sep 7, +14.5 points follow-through after 09:16; from Sep 7, spent before 09:16 (−13) |
+| 398 / 401 / 402 | Roll days 3 of 7 affordable; SENSEX on NIFTY expiry days −₹547; RBI 3 events all stopped: closed |
+| 403 | 2022 N10–N11 gap = the stand-aside only; blocked trades −₹822 over five years; DEPLOYED leads 2022–26 |
+| 404 / 408 | Option richness at entry predicts no Gold outcome |
+| 409 | Gold +1 min latency −7.7%; −1 min (lookahead) +₹2.48L; intact |
+| 400 | Kite bundles about 198 trades per packet: strict signing 0%; fw8a frozen on last-print flow |
+| 405 | Gold ₹791 / ₹409 a session, trades 17% of sessions; the opener never conflicts with Gold |
+
+**Lessons:**
+- A bar labelled by its start and traded at its close is a minute ahead of a live decision.
+- "Cheap" sorts opening mornings but has not shown an edge after the search.
+- Gold's stand-aside is a path effect; its losses are signal losses, not price losses.

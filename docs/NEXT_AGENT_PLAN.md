@@ -1,3 +1,39 @@
+## November 17 (morning) - SN396–SN410: on the real 09:16:00 clock the opening trade loses (the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected and pre-auction checks; N10 vs N11 inside Gold = the stand-aside alone; Gold is not a clock artefact; forward companions fw7b / fw9a / fw8a frozen (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN396–SN405 (`docs/SN396_SN405_RESEARCH_BRIEF.md`) plus five own slots. Plan `00693405`. Results: `docs/research/fno/2026-11-17-sn396/README.md`.
+
+**Opening trade:**
+- **The real clock (SN396).** gl labels a bar by its start and trades its close, so SN382's "09:16" was a 09:17:00 decision. On the HONEST clock (09:15 close = 09:16:00) the trade makes −₹81 / −₹235 a session (₹205 / ₹400). With 59 s of latency and a capped order it makes −₹253, because the cap fills mostly when the price falls.
+- **CHEAP survives the clock:** +₹335 / +₹182 a cheap session.
+- **But "cheap" is not proven:**
+  - it is mostly a direction effect, tangled with the calendar, and the continuous jump has no slope (SN397);
+  - the White reality check over the 24-rule family gives p 0.80 (studentized 0.90);
+  - the 720-cell map has no positive cell without the filter, and a stricter cut does worse (SN406);
+  - on 2022–2025 gap days it gives +₹19 / −₹147 (SN407).
+- **No affordable option breaks even on the opening move:** the hurdle is about 13 points against a forecast of 1.3 (SN399).
+- **Since Sep 7** the move is spent before 09:16:00 (SN410).
+
+**Gold:**
+- **SN403:** in 2022 the N10–N11 gap is entirely the stand-aside (N10's retry never fired). Over five years the stand-aside's blocked trades net −₹822; its in-sample lead is a compounding path effect. DEPLOYED still leads 2022–26.
+- **SN404 / SN408:** option richness at entry predicts nothing.
+- **SN409:** one minute of latency costs 7.7% (₹8.51L → ₹7.86L); Gold is intact.
+- **SN405:** ₹791 a session at ₹205, ₹409 at ₹400; Gold trades on 17% of sessions.
+
+**Coverage, all closed:**
+- roll days (the next-week lot affordable on 3 of 7);
+- SENSEX on NIFTY's skip days (−₹547 a session on NIFTY expiry days);
+- RBI days (3 events, all stopped);
+- Kite flow can't be trade-signed (about 198 trades per packet).
+
+**Forward queue:**
+- fw7a / fw7b / fw7 / fw5 together after SN300a;
+- fw9 + fw9a at 15 cheap fills or 60 sessions;
+- fw8 + fw8a at 20 sessions;
+- fw6 from Dec 7.
+NSE's 2027 holiday list must go into `fw9a.HOLIDAYS` before any 2027 session is scored.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow.
+
 ## November 16 (late night) - SN381–SN395: the opening trade made honest (fragile; the ITM-vs-ATM edge is the robust part), Gold's 2022 exam closed (N10 sheet D yes; N10 retry is the sheets' lead), the wage needs capital; forward scorers fw7a / fw8 / fw9 frozen (research only, nothing deployed)
 
 **Owner (Nov 16):** the auditor's SN381–SN390 (`docs/SN381_SN390_RESEARCH_BRIEF.md`) plus five own slots. Plan `c6e99cee`. Results: `docs/research/fno/2026-11-16-sn381/README.md`.

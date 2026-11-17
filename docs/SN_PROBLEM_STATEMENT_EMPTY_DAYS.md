@@ -341,3 +341,15 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **Closed:** the 09:36 exit, cash-auction agreement (coverage), auction size, indicative drift (too few).
 - **Signed option flow** is now measurable from tick packets (92% of volume signable), forward in `sn381/fw8.py`.
 - **The wage:** from ₹60k, profit-only pays about ₹525 a session on a bad start, with dry spells up to 21 months. A fixed ₹750 a session needs ₹2–5 lakh of the owner's own money in the first years (SN389 / SN395). Gap-day trading would have to earn at least the shortfall after costs on every empty day; nothing so far comes close.
+
+## 23. Status after SN396–SN410 (Nov 17, 2026)
+
+- **The opening trade, on the real clock** (a 09:16:00 decision at the 09:15 bar's close), loses −₹81 a session at ₹205 and −₹235 at ₹400 (SN396). The earlier +₹46 came from a one-minute label lead in the minute data.
+- **No affordable option breaks even on the opening move.** It needs about 13 index points within the hour; the gap direction's expected follow-through is about 1.3 (SN399). Since NSE's Sep 7 change, the follow-through is spent before 09:16:00 (SN410).
+- **"Cheap" overnight opens are better mornings than the rest,** but the edge isn't proven:
+  - the White reality check over the 24-rule family gives p 0.80;
+  - the continuous measure has no slope, and the label is tangled with the calendar;
+  - it fails on 2022–2025 gap days (SN397 / SN406 / SN407).
+  It stays a forward test only (fw9 / fw9a).
+- **Coverage routes are closed:** roll days (the lot is rarely affordable), SENSEX on NIFTY's skip days (−₹547 a session on NIFTY expiry days), RBI release days (3 events, all stopped) (SN398 / SN401 / SN402).
+- **Gold covers 17% of sessions** and pays ₹791 a market session at ₹205 (₹409 at ₹400) from ₹30k (SN405). Empty days would need +₹412 each at ₹400 to reach ₹750 a session. Nothing found in 410 slots comes close.
