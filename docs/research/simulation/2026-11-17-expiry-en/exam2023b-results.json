@@ -1,0 +1,2222 @@
+{
+  "arms": {
+    "E02": {
+      "ordinary": {
+        "net": -2416.08,
+        "without_best": -2533.16,
+        "worst": -438.75,
+        "drawdown": 2416.08,
+        "trades": 17,
+        "profit_factor": 0.0699,
+        "wins": 3,
+        "loss_days": 12,
+        "quarters": [
+          -1304.06,
+          -67.32,
+          -551.46,
+          -493.24
+        ],
+        "fees": 826.83
+      },
+      "adverse": {
+        "net": -2763.65,
+        "without_best": -2841.76,
+        "worst": -485.24,
+        "drawdown": 2763.65,
+        "trades": 17,
+        "profit_factor": 0.0351,
+        "wins": 2,
+        "loss_days": 13,
+        "quarters": [
+          -1469.72,
+          -142.03,
+          -626.17,
+          -525.73
+        ],
+        "fees": 826.65
+      },
+      "skeptical": {
+        "loss_year_chance": 0.9548,
+        "year_p5": -2975.32,
+        "year_median": -1448.35,
+        "drawdown_p95": 3128.41,
+        "median_log_growth": -0.05968
+      },
+      "catastrophe": {
+        "net": -3184.24,
+        "without_best": -3184.24,
+        "worst": -679.02,
+        "drawdown": 3184.24,
+        "trades": 10,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 10,
+        "quarters": [
+          -1952.06,
+          -424.76,
+          -736.67,
+          -70.75
+        ],
+        "fees": 483.49
+      }
+    },
+    "E03": {
+      "ordinary": {
+        "net": -3222.34,
+        "without_best": -3339.42,
+        "worst": -604.47,
+        "drawdown": 3222.34,
+        "trades": 17,
+        "profit_factor": 0.0533,
+        "wins": 3,
+        "loss_days": 12,
+        "quarters": [
+          -1461.0,
+          -438.84,
+          -829.26,
+          -493.24
+        ],
+        "fees": 830.34
+      },
+      "adverse": {
+        "net": -3166.86,
+        "without_best": -3244.97,
+        "worst": -633.71,
+        "drawdown": 3166.86,
+        "trades": 16,
+        "profit_factor": 0.0308,
+        "wins": 2,
+        "loss_days": 12,
+        "quarters": [
+          -1639.63,
+          -533.03,
+          -926.71,
+          -67.49
+        ],
+        "fees": 781.36
+      },
+      "skeptical": {
+        "loss_year_chance": 0.9411,
+        "year_p5": -3640.75,
+        "year_median": -1680.75,
+        "drawdown_p95": 3836.94,
+        "median_log_growth": -0.0696
+      },
+      "catastrophe": {
+        "net": -3420.32,
+        "without_best": -3420.32,
+        "worst": -679.02,
+        "drawdown": 3420.32,
+        "trades": 9,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 9,
+        "quarters": [
+          -2170.73,
+          -835.3,
+          -343.54,
+          -70.75
+        ],
+        "fees": 436.82
+      }
+    },
+    "E031": {
+      "ordinary": {
+        "net": -3131.51,
+        "without_best": -3248.59,
+        "worst": -604.47,
+        "drawdown": 3131.51,
+        "trades": 17,
+        "profit_factor": 0.0548,
+        "wins": 3,
+        "loss_days": 12,
+        "quarters": [
+          -1461.0,
+          -438.84,
+          -738.43,
+          -493.24
+        ],
+        "fees": 830.51
+      },
+      "adverse": {
+        "net": -3076.03,
+        "without_best": -3154.14,
+        "worst": -633.71,
+        "drawdown": 3076.03,
+        "trades": 16,
+        "profit_factor": 0.0317,
+        "wins": 2,
+        "loss_days": 12,
+        "quarters": [
+          -1639.63,
+          -533.03,
+          -835.88,
+          -67.49
+        ],
+        "fees": 781.53
+      },
+      "skeptical": {
+        "loss_year_chance": 0.9412,
+        "year_p5": -3513.67,
+        "year_median": -1628.09,
+        "drawdown_p95": 3711.29,
+        "median_log_growth": -0.06734
+      },
+      "catastrophe": {
+        "net": -3418.23,
+        "without_best": -3418.23,
+        "worst": -663.0,
+        "drawdown": 3418.23,
+        "trades": 9,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 9,
+        "quarters": [
+          -2060.44,
+          -835.3,
+          -451.74,
+          -70.75
+        ],
+        "fees": 437.98
+      }
+    },
+    "E031_L8": {
+      "ordinary": {
+        "net": -3131.51,
+        "without_best": -3248.59,
+        "worst": -604.47,
+        "drawdown": 3131.51,
+        "trades": 17,
+        "profit_factor": 0.0548,
+        "wins": 3,
+        "loss_days": 12,
+        "quarters": [
+          -1461.0,
+          -438.84,
+          -738.43,
+          -493.24
+        ],
+        "fees": 830.51
+      },
+      "adverse": {
+        "net": -3508.05,
+        "without_best": -3586.16,
+        "worst": -633.71,
+        "drawdown": 3508.05,
+        "trades": 16,
+        "profit_factor": 0.0279,
+        "wins": 2,
+        "loss_days": 12,
+        "quarters": [
+          -1613.41,
+          -533.03,
+          -835.88,
+          -525.73
+        ],
+        "fees": 781.3
+      },
+      "skeptical": {
+        "loss_year_chance": 0.9669,
+        "year_p5": -3711.28,
+        "year_median": -1922.62,
+        "drawdown_p95": 3905.2,
+        "median_log_growth": -0.08002
+      },
+      "catastrophe": {
+        "net": -3326.83,
+        "without_best": -3326.83,
+        "worst": -663.0,
+        "drawdown": 3326.83,
+        "trades": 9,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 9,
+        "quarters": [
+          -1575.91,
+          -835.3,
+          -844.87,
+          -70.75
+        ],
+        "fees": 437.58
+      }
+    },
+    "E032": {
+      "ordinary": {
+        "net": -3645.12,
+        "without_best": -4625.79,
+        "worst": -1161.74,
+        "drawdown": 3645.12,
+        "trades": 17,
+        "profit_factor": 0.2432,
+        "wins": 3,
+        "loss_days": 12,
+        "quarters": [
+          -1852.99,
+          -132.52,
+          -760.23,
+          -899.38
+        ],
+        "fees": 850.12
+      },
+      "adverse": {
+        "net": -4035.53,
+        "without_best": -4113.64,
+        "worst": -1220.22,
+        "drawdown": 4035.53,
+        "trades": 14,
+        "profit_factor": 0.0243,
+        "wins": 2,
+        "loss_days": 10,
+        "quarters": [
+          -2080.11,
+          -1119.54,
+          -835.88,
+          0
+        ],
+        "fees": 691.28
+      },
+      "skeptical": {
+        "loss_year_chance": 0.9267,
+        "year_p5": -5041.5,
+        "year_median": -2204.28,
+        "drawdown_p95": 5329.2,
+        "median_log_growth": -0.0923
+      },
+      "catastrophe": {
+        "net": -4172.68,
+        "without_best": -4172.68,
+        "worst": -1278.8,
+        "drawdown": 4172.68,
+        "trades": 7,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 7,
+        "quarters": [
+          -2269.84,
+          -1451.1,
+          -451.74,
+          0
+        ],
+        "fees": 347.43
+      }
+    },
+    "EN04_put2.5x": {
+      "ordinary": {
+        "net": -4060.69,
+        "without_best": -4177.77,
+        "worst": -1347.5,
+        "drawdown": 4060.69,
+        "trades": 14,
+        "profit_factor": 0.0428,
+        "wins": 3,
+        "loss_days": 9,
+        "quarters": [
+          -2273.81,
+          -1181.87,
+          -605.01,
+          0
+        ],
+        "fees": 693.69
+      },
+      "adverse": {
+        "net": -3584.39,
+        "without_best": -5036.86,
+        "worst": -1415.73,
+        "drawdown": 3584.39,
+        "trades": 15,
+        "profit_factor": 0.3012,
+        "wins": 4,
+        "loss_days": 10,
+        "quarters": [
+          -1145.78,
+          59.31,
+          -1109.53,
+          -1388.39
+        ],
+        "fees": 756.89
+      },
+      "skeptical": {
+        "loss_year_chance": 0.9331,
+        "year_p5": -6160.67,
+        "year_median": -2733.58,
+        "drawdown_p95": 6515.12,
+        "median_log_growth": -0.1158
+      },
+      "catastrophe": {
+        "net": -4171.55,
+        "without_best": -4171.55,
+        "worst": -1484.06,
+        "drawdown": 4171.55,
+        "trades": 8,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 8,
+        "quarters": [
+          -1179.58,
+          -1656.36,
+          -844.87,
+          -490.74
+        ],
+        "fees": 395.05
+      }
+    },
+    "EN04_put3x": {
+      "ordinary": {
+        "net": -4214.8,
+        "without_best": -4619.74,
+        "worst": -1719.02,
+        "drawdown": 4214.8,
+        "trades": 14,
+        "profit_factor": 0.1141,
+        "wins": 4,
+        "loss_days": 8,
+        "quarters": [
+          -2259.39,
+          -1265.53,
+          -689.88,
+          0
+        ],
+        "fees": 701.55
+      },
+      "adverse": {
+        "net": -4319.38,
+        "without_best": -4341.95,
+        "worst": -1806.73,
+        "drawdown": 4319.38,
+        "trades": 8,
+        "profit_factor": 0.0052,
+        "wins": 1,
+        "loss_days": 6,
+        "quarters": [
+          -2535.22,
+          -1784.16,
+          0,
+          0
+        ],
+        "fees": 403.13
+      },
+      "skeptical": {
+        "loss_year_chance": 0.8411,
+        "year_p5": -6473.05,
+        "year_median": -2250.28,
+        "drawdown_p95": 6941.32,
+        "median_log_growth": -0.09432
+      },
+      "catastrophe": {
+        "net": -4772.17,
+        "without_best": -4772.17,
+        "worst": -1894.59,
+        "drawdown": 4772.17,
+        "trades": 5,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 5,
+        "quarters": [
+          -2877.58,
+          -1894.59,
+          0,
+          0
+        ],
+        "fees": 254.67
+      }
+    },
+    "EN04_put3.5x": {
+      "ordinary": {
+        "net": -4522.01,
+        "without_best": -4570.56,
+        "worst": -1904.77,
+        "drawdown": 4522.01,
+        "trades": 9,
+        "profit_factor": 0.016,
+        "wins": 2,
+        "loss_days": 6,
+        "quarters": [
+          -2665.79,
+          -1856.22,
+          0,
+          0
+        ],
+        "fees": 456.26
+      },
+      "adverse": {
+        "net": -4970.02,
+        "without_best": -4992.59,
+        "worst": -2002.24,
+        "drawdown": 4970.02,
+        "trades": 8,
+        "profit_factor": 0.0045,
+        "wins": 1,
+        "loss_days": 6,
+        "quarters": [
+          -2990.35,
+          -1979.67,
+          0,
+          0
+        ],
+        "fees": 407.02
+      },
+      "skeptical": {
+        "loss_year_chance": 0.8426,
+        "year_p5": -7583.45,
+        "year_median": -2544.5,
+        "drawdown_p95": 8205.31,
+        "median_log_growth": -0.10734
+      },
+      "catastrophe": {
+        "net": -4075.89,
+        "without_best": -4075.89,
+        "worst": -2099.86,
+        "drawdown": 4075.89,
+        "trades": 6,
+        "profit_factor": 0.0,
+        "wins": 0,
+        "loss_days": 6,
+        "quarters": [
+          -1351.99,
+          -2272.16,
+          -451.74,
+          0
+        ],
+        "fees": 302.64
+      }
+    }
+  },
+  "tickets": {
+    "E02": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 8.0,
+        "net": -204.13,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": -32.78,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 1,
+        "entry": 15.4,
+        "net": -468.02,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 1,
+        "entry": 5.6,
+        "net": -232.95,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 1,
+        "entry": 5.4,
+        "net": 240.66,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": 15.87,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 1,
+        "entry": 7.4,
+        "net": -281.89,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 1,
+        "entry": 12.75,
+        "net": -195.13,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-09-07",
+        "side": "C",
+        "lots": 1,
+        "entry": 6.1,
+        "net": -90.31,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-12-07",
+        "side": "P",
+        "lots": 1,
+        "entry": 14.9,
+        "net": -438.75,
+        "exits": [
+          "STRUCTURE"
+        ]
+      },
+      {
+        "day": "2023-12-14",
+        "side": "C",
+        "lots": 1,
+        "entry": 5.25,
+        "net": -54.49,
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "E03": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": -32.78,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 1,
+        "entry": 15.4,
+        "net": -468.02,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 3,
+        "entry": 5.6,
+        "net": -604.47,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 1,
+        "entry": 5.4,
+        "net": 240.66,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": 15.87,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 2,
+        "entry": 7.4,
+        "net": -516.58,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 1,
+        "entry": 12.75,
+        "net": -195.13,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-09-07",
+        "side": "C",
+        "lots": 2,
+        "entry": 6.1,
+        "net": -133.42,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-12-07",
+        "side": "P",
+        "lots": 1,
+        "entry": 14.9,
+        "net": -438.75,
+        "exits": [
+          "STRUCTURE"
+        ]
+      },
+      {
+        "day": "2023-12-14",
+        "side": "C",
+        "lots": 1,
+        "entry": 5.25,
+        "net": -54.49,
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "E031": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": -32.78,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 1,
+        "entry": 15.4,
+        "net": -468.02,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 3,
+        "entry": 5.6,
+        "net": -604.47,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 1,
+        "entry": 5.4,
+        "net": 240.66,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": 15.87,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 2,
+        "entry": 7.4,
+        "net": -425.75,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 1,
+        "entry": 12.75,
+        "net": -195.13,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-09-07",
+        "side": "C",
+        "lots": 2,
+        "entry": 6.1,
+        "net": -133.42,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-12-07",
+        "side": "P",
+        "lots": 1,
+        "entry": 14.9,
+        "net": -438.75,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-12-14",
+        "side": "C",
+        "lots": 1,
+        "entry": 5.25,
+        "net": -54.49,
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "E031_L8": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": -32.78,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 1,
+        "entry": 15.4,
+        "net": -468.02,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 3,
+        "entry": 5.6,
+        "net": -604.47,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 1,
+        "entry": 5.4,
+        "net": 240.66,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": 15.87,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 2,
+        "entry": 7.4,
+        "net": -425.75,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 1,
+        "entry": 12.75,
+        "net": -195.13,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-09-07",
+        "side": "C",
+        "lots": 2,
+        "entry": 6.1,
+        "net": -133.42,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-12-07",
+        "side": "P",
+        "lots": 1,
+        "entry": 14.9,
+        "net": -438.75,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-12-14",
+        "side": "C",
+        "lots": 1,
+        "entry": 5.25,
+        "net": -54.49,
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "E032": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 3,
+        "entry": 11.7,
+        "net": -3.96,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 2,
+        "entry": 15.4,
+        "net": -888.83,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 6,
+        "entry": 5.6,
+        "net": -1161.74,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 4,
+        "entry": 5.4,
+        "net": 1104.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 3,
+        "entry": 11.7,
+        "net": 142.01,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 2,
+        "entry": 7.4,
+        "net": -425.75,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 2,
+        "entry": 12.75,
+        "net": -343.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-09-07",
+        "side": "C",
+        "lots": 2,
+        "entry": 6.1,
+        "net": -133.42,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-12-07",
+        "side": "P",
+        "lots": 2,
+        "entry": 14.9,
+        "net": -830.29,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-12-14",
+        "side": "C",
+        "lots": 3,
+        "entry": 5.25,
+        "net": -69.09,
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "EN04_put2.5x": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 3,
+        "entry": 11.7,
+        "net": -3.96,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 3,
+        "entry": 15.4,
+        "net": -1309.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 7,
+        "entry": 5.6,
+        "net": -1347.5,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 1,
+        "entry": 5.4,
+        "net": 240.66,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 1,
+        "entry": 11.7,
+        "net": 15.87,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 2,
+        "entry": 7.4,
+        "net": -425.75,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 1,
+        "entry": 12.75,
+        "net": -195.13,
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "EN04_put3x": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 4,
+        "entry": 11.7,
+        "net": 10.46,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 3,
+        "entry": 15.4,
+        "net": -1309.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 9,
+        "entry": 5.6,
+        "net": -1719.02,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 2,
+        "entry": 5.4,
+        "net": 528.52,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 2,
+        "entry": 11.7,
+        "net": 78.94,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 2,
+        "entry": 7.4,
+        "net": -425.75,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 2,
+        "entry": 12.75,
+        "net": -343.07,
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "EN04_put3.5x": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 5,
+        "entry": 11.7,
+        "net": 24.88,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 4,
+        "entry": 15.4,
+        "net": -1730.47,
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 10,
+        "entry": 5.6,
+        "net": -1904.77,
+        "exits": [
+          "STOP"
+        ]
+      }
+    ]
+  },
+  "random_E031": {
+    "seeds": 40,
+    "median": -1826.94,
+    "mean": -1563.15,
+    "share_at_or_above": 0.925
+  },
+  "unavailable": {
+    "E02|2023-01-25|C": 1,
+    "E02|2023-01-25|P": 1,
+    "E03|2023-01-25|C": 1,
+    "E03|2023-01-25|P": 1,
+    "E031|2023-01-25|C": 1,
+    "E031|2023-01-25|P": 1,
+    "E031_L8|2023-01-25|C": 1,
+    "E031_L8|2023-01-25|P": 1,
+    "E032|2023-01-25|C": 1,
+    "E032|2023-01-25|P": 1,
+    "EN04_put2.5x|2023-01-25|C": 1,
+    "EN04_put2.5x|2023-01-25|P": 1,
+    "EN04_put3.5x|2023-01-25|C": 1,
+    "EN04_put3.5x|2023-01-25|P": 1,
+    "EN04_put3x|2023-01-25|C": 1,
+    "EN04_put3x|2023-01-25|P": 1
+  },
+  "run_id": "6d506b13ace33dc9",
+  "freeze": {
+    "files": {
+      "exam2023b.py": "ffa9a97ef2e9008d414a20e27a16b26bc4f0801e107f9a0f10e3027df80b21cb",
+      "exam2023.py": "2da8639a7d135ff209c6946f46f3395fbd9b3fe94eee29cebb49af81b2fb41e3",
+      "en_lab.py": "cbe87626949ea41fb18b8b903e80b686c10fe82e717f47b381065a6842919417",
+      "en_base.py": "74a0802cec9a6f9978446bbc765c853bb2af5f15471352572358794c955ed09d",
+      "OWNER_WORD.md": "3bed6ddef1edcd532ce585f0fe403c11279b7fcbaaf84b5e390eab4426129461",
+      "EXAM_EN_ADDENDUM.md": "c382bb3b50cf8b82c29cbdce9bea07650c2971827d4544712ab56244e509e177",
+      "r8b_lab.py": "1ec605ee00162f5b5dccca5252e6d9715aebbd081369213c377a67a00585ab1c",
+      "e031_lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+      "e03_lab.py": "7cce48426f27e2771179aea72b279edbcc3a63bf2ce9d704d5a10625288f8b38",
+      "e02_lab.py": "6d4d29907fe950b954564ba22224a848dfff8fc23fabac199cf9ccc21ae14ba3",
+      "data.py": "b9d9895ae45309f4b82d0fe34d0796c421cc4ac90be0e739f98928343ac4d295",
+      "riskdial.py": "4c0a97e9e2a34cf08f3da6db6d704e5c42f4acf0ed90a444c411316a98ac09f3",
+      "expiry_paper.py": "6c6b681082f3782b50fce0185b18173dea68a95ba4a8e3a22581d8ec088db9d9",
+      "cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd",
+      "data-binding.json": "52ac33f5ee24839173a58b3a137a3f0d56112c48e9fdc0518f716ef5cc1eca4b"
+    },
+    "head": "836d018311b5fbe46bb46e6d3e023ae148f23874"
+  },
+  "coverage": [
+    {
+      "day": "2023-01-05",
+      "contracts": 0,
+      "status": "NO_OPTIONS"
+    },
+    {
+      "day": "2023-01-12",
+      "contracts": 0,
+      "status": "NO_OPTIONS"
+    },
+    {
+      "day": "2023-01-19",
+      "contracts": 0,
+      "status": "NO_OPTIONS"
+    },
+    {
+      "day": "2023-01-25",
+      "contracts": 8,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-02-02",
+      "contracts": 33,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-02-09",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-02-16",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-02-23",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-03-02",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-03-09",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-03-16",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-03-23",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-03-29",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-04-06",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-04-13",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-04-20",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-04-27",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-05-04",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-05-11",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-05-18",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-05-25",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-06-01",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-06-08",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-06-15",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-06-22",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-06-28",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-07-06",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-07-13",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-07-20",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-07-27",
+      "contracts": 33,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 374
+    },
+    {
+      "day": "2023-08-03",
+      "contracts": 33,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-08-10",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-08-17",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-08-24",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-08-31",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-09-07",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-09-14",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-09-21",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-09-28",
+      "contracts": 35,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-10-05",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-10-12",
+      "contracts": 25,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-10-19",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-10-26",
+      "contracts": 31,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-11-02",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-11-09",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-11-16",
+      "contracts": 33,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-11-23",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-11-30",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-12-07",
+      "contracts": 25,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-12-14",
+      "contracts": 29,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-12-21",
+      "contracts": 35,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    },
+    {
+      "day": "2023-12-28",
+      "contracts": 27,
+      "invalid_rows": 0,
+      "index_points": 375,
+      "future_points": 375
+    }
+  ],
+  "tests": {
+    "1_E031_stands": {
+      "ordinary": false,
+      "adverse": false,
+      "without_best": false,
+      "worst": true,
+      "above_random_median": false,
+      "passed": false
+    },
+    "2_E031_vs_E03": {
+      "ordinary": true,
+      "adverse": true,
+      "passed": true
+    },
+    "3_L8_vs_E031": {
+      "severe_better": true,
+      "ordinary": true,
+      "adverse": false,
+      "passed": false
+    },
+    "5_E032_vs_E031": {
+      "ordinary": false,
+      "adverse": false,
+      "without_best": false,
+      "worst": true,
+      "passed": false
+    },
+    "6_asymmetry": {
+      "puts_per_ticket": -211.8,
+      "calls_per_ticket": -164.89,
+      "holds": false,
+      "passed": false
+    },
+    "7_E032_stands": {
+      "ordinary": false,
+      "adverse": false,
+      "without_best": false,
+      "worst": true,
+      "passed": false
+    },
+    "8_PUT3": {
+      "ordinary": false,
+      "adverse": false,
+      "without_best": true,
+      "loss_year": false,
+      "drawdown": false,
+      "severe": true,
+      "neighbours_positive": false,
+      "passed": false
+    }
+  },
+  "vs_first_scoring": {
+    "E02": {
+      "first": -2416.08,
+      "corrected": -2416.08
+    },
+    "E03": {
+      "first": -3222.34,
+      "corrected": -3222.34
+    },
+    "E031": {
+      "first": -3131.51,
+      "corrected": -3131.51
+    },
+    "E031_L8": {
+      "first": -3131.51,
+      "corrected": -3131.51
+    },
+    "E032": {
+      "first": -3645.12,
+      "corrected": -3645.12
+    },
+    "EN04_put2.5x": {
+      "first": -4060.69,
+      "corrected": -4060.69
+    },
+    "EN04_put3x": {
+      "first": -4214.8,
+      "corrected": -4214.8
+    },
+    "EN04_put3.5x": {
+      "first": -4522.01,
+      "corrected": -4522.01
+    }
+  },
+  "tests_first": {
+    "1_E031_stands": false,
+    "2_E031_vs_E03": true,
+    "3_L8_vs_E031": false,
+    "5_E032_vs_E031": false,
+    "6_asymmetry": false,
+    "7_E032_stands": false,
+    "8_PUT3": false
+  },
+  "completed": "2026-11-17T22:13:53"
+}
