@@ -273,3 +273,5 @@ Fills for EN08–EN10 each year (ordinary / adverse):
   - NIFTY 2026 chains;
   - forward paper tickets;
   - EN25's resting-bid fill rate on recorded quotes.
+
+**Data held open (Nov 18):** the slots waiting for the owner's data (EN15-R, EN16-R, EN11-R, the NIFTY 2026 exam and the SENSEX test) are listed in [DATA_REQUESTS.md](DATA_REQUESTS.md).

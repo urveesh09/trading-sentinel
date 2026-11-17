@@ -129,14 +129,19 @@ None beat E03.2, so it stays exactly as it is. Every slot's anatomy, where it wo
 - E03.2 loses on wrong entries. None of these fifteen fixes that.
 - Only fresh data can move this forward: SENSEX, NIFTY 2026, and forward paper tickets.
 
-## Data that would help next
+## Data that would help next (you are arranging it; these slots stay open until it arrives)
 
-All of it through the download skill.
-1. **NIFTY 2026 expiry afternoons.** This year's market, including the closing-auction months.
-2. **SENSEX expiry afternoons, Oct 2024 – Nov 2026.** E03.2 has never been tested on SENSEX history.
-3. **NIFTY 2020–2022 expiry afternoons.**
+The full specification is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md).
 
-Our database has the index and futures for these days. It has no options on the expiry afternoon
-itself, and that is what E03.2 buys.
+1. **NIFTY 2026 expiry afternoons.** The only NIFTY year nothing has seen. It is a real test of E03.2 and of the parts worth keeping (EN21, EN25, EN14, EN12).
+2. **SENSEX expiry afternoons, Oct 2024 – Nov 2026.** E03.2 trades SENSEX live but has never been tested on its history.
+3. **Next week's options on each NIFTY expiry day, 2023–2026** (near the money). This re-runs EN16 properly.
+4. **1-minute bars for the 50 NIFTY stocks on expiry days** (from Kite, not ICICI). This re-runs EN15 properly.
+5. **1-second data for the cheap strikes E03.2 actually buys, 2026.** This re-runs EN11's speed check.
+6. **NIFTY 2020–2022 expiry afternoons.**
+
+Items 1–3, 5 and 6 come through the ICICI download skill.
+
+Real bid/ask depth can't be bought. It comes only from our own recorders, which I keep.
 
 Technical record: [research/simulation/2026-11-17-expiry-en/README.md](research/simulation/2026-11-17-expiry-en/README.md).

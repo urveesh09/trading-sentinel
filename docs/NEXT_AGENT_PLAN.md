@@ -1,3 +1,15 @@
+## November 18 - expiry data reminder: slots held open until the owner's data arrives (Dev docs only; nothing deployed)
+
+The owner will arrange the missing data. The list, with priority, is `docs/research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md`:
+1. NIFTY 2026 expiry afternoons (the E03.2 exam, plus EN21 / EN25 / EN14 / EN12);
+2. SENSEX expiry afternoons, Oct 2024 – Nov 2026 (E03.2 has never been tested on SENSEX);
+3. next-weekly near-ATM options on NIFTY expiry days 2023–26 (EN16-R);
+4. NIFTY 50 constituents, 1-minute, from Kite (EN15-R);
+5. 1-second data for E03.2's real strikes (EN11-R);
+6. NIFTY 2020–22.
+
+Breeze items go only through the breeze-history-download skill. When data lands, rerun the slot's frozen definition with a new freeze and score it once. No code change.
+
 ## November 18 (after midnight) - EN11–EN25 scored once: none passes, E03.2 unchanged (research only, Dev; nothing deployed; Production stays 55b5e942)
 
 **Owner (Nov 17):** run the auditor's ten slots (`docs/EXPIRY_RESEARCH_EN11_EN20.md`) plus five of my own. Plan `docs/research/simulation/2026-11-17-expiry-en/PLAN3.md`, frozen `d2f53af7` before any score. Scored once by `en_score3.py` into `results3.json`, `anatomy3.json` and `results3-started.json`. The write-up with each slot's wins, losses, good and bad parts is `ANATOMY3.md`; the plain report is `docs/EXPIRY_RESEARCH_EN.md`.
