@@ -503,6 +503,9 @@ async def record_paper_signal(db_path: str, kite, sig, snap, regime: str, now: d
              float(snap.forward), float(sig.stop_underlying), float(sig.target_underlying), round((1.0 - float(settings.FNO_STOP_PREMIUM_PCT)) * ask, 2),
              float(sig.atr), float(plan.delta), float(snap.forward), int(wider.lots) if wider.accepted else 1, 2 if today["vol_up"] else 1, int(today["stand"]), PAPER_SOURCE))
         await db.commit()
+    # [SN477] the minute research archive keeps quoting the paper lot's exact contract to the close (never blocks this step)
+    import research_pins
+    await research_pins.pin([quote.contract], f"n11_paper:{sig.bar_ts}", now)
     return True
 
 

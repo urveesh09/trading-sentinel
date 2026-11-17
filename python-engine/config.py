@@ -1453,6 +1453,9 @@ class Settings(BaseSettings):
     # existing persistent /data volume, so it survives a container restart.
     RESEARCH_ARCHIVE_ENABLED: bool = True
     RESEARCH_ARCHIVE_PATH: str = "/data/research"
+    # [SN477] the paper books (SN Gold, N11's paper record) pin the exact contract they hold in the research collector's
+    # selected-leg store until 15:20 IST, so the minute archive keeps quoting it however far the market moves. Research only.
+    RESEARCH_PIN_PAPER_LEGS: bool = True
     RESEARCH_ARCHIVE_UNDERLYINGS: str = "NIFTY,SENSEX"
     # A failed archive must be conspicuous before the short-retention cache is
     # purged.  It does not silently delete unpreserved research input.

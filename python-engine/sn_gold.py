@@ -363,6 +363,9 @@ async def on_paper_signal(db_path: str, sig: Any, snap: Any, now: datetime, kite
         pid = cur.lastrowid if cur.rowcount == 1 else None
     if pid:
         logger.info("sn_gold_entry", id=pid, symbol=q.contract.tradingsymbol, lots=lots, ask=ask, stop=stop, wallet=wallet)
+        # [SN477] the minute research archive keeps quoting this exact contract to the close (never blocks the paper step)
+        import research_pins
+        await research_pins.pin([q.contract], f"sn_gold:{pid}", now)
         await _v8_call("on_entry", db_path, position_id=pid, now=now, symbol=q.contract.tradingsymbol, token=int(q.contract.token), ask=ask,
                        bid=float(q.bid or 0.0), lots=lots, lot_size=lot_size, wallet=wallet, stop=max(stop, TICK))
         _tell(f"🥇 SN Gold (paper): bought {lots} lot{'s' if lots > 1 else ''} of {q.contract.tradingsymbol} at Rs {ask:.2f} "
