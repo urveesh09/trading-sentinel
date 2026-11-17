@@ -1,0 +1,5243 @@
+{
+ "E03.2 (control)": {
+  "2023": {
+   "net": -3645.12,
+   "tickets": 17,
+   "winners": 4,
+   "by_side": {
+    "C": {
+     "tickets": 10,
+     "winners": 2,
+     "net": -1663.49
+    },
+    "P": {
+     "tickets": 7,
+     "winners": 2,
+     "net": -1981.63
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 5,
+     "winners": 0,
+     "net": -3709.26
+    },
+    "TIME": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 26.14
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 38.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 7,
+     "winners": 1,
+     "net": -1912.8
+    },
+    "13:30-14:00": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -884.43
+    },
+    "14:00-14:30": {
+     "tickets": 3,
+     "winners": 2,
+     "net": 739.6
+    },
+    "14:30-15:00": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -1587.49
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 17,
+     "winners": 4,
+     "net": -3645.12
+    }
+   },
+   "best": [
+    {
+     "day": "2023-06-22",
+     "side": "P",
+     "minute": 865,
+     "lots": 4,
+     "entry": 5.4,
+     "net": 1104.25,
+     "origin": "E032",
+     "peak": 1.97,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-07-27",
+     "side": "P",
+     "minute": 813,
+     "lots": 3,
+     "entry": 11.7,
+     "net": 142.01,
+     "origin": "E032",
+     "peak": 1.44,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-04-27",
+     "side": "C",
+     "minute": 803,
+     "lots": 1,
+     "entry": 10.15,
+     "net": 48.55,
+     "origin": "E032",
+     "peak": 1.15,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-06-15",
+     "side": "P",
+     "minute": 881,
+     "lots": 6,
+     "entry": 5.6,
+     "net": -1161.74,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "P",
+     "minute": 831,
+     "lots": 2,
+     "entry": 15.4,
+     "net": -888.83,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-12-07",
+     "side": "P",
+     "minute": 789,
+     "lots": 2,
+     "entry": 14.9,
+     "net": -830.29,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2024": {
+   "net": 15580.74,
+   "tickets": 19,
+   "winners": 8,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 5,
+     "net": 14495.24
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 6,
+     "winners": 0,
+     "net": -2206.58
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -322.26
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 11770.72
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 3575.65
+    },
+    "TIME": {
+     "tickets": 5,
+     "winners": 2,
+     "net": 877.05
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 1,
+     "net": 528.19
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": 243.39
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 1740.59
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 13068.57
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 19,
+     "winners": 8,
+     "net": 15580.74
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 4,
+     "entry": 7.6,
+     "net": 11770.72,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 14.45,
+     "net": 1312.95,
+     "origin": "E032",
+     "peak": 2.43,
+     "path": "TARGET"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-01-11",
+     "side": "P",
+     "minute": 857,
+     "lots": 1,
+     "entry": 19.0,
+     "net": -646.98,
+     "origin": "E032",
+     "peak": 1.36,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-08-14",
+     "side": "P",
+     "minute": 807,
+     "lots": 4,
+     "entry": 8.65,
+     "net": -506.66,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-29",
+     "side": "C",
+     "minute": 889,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -471.0,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2025": {
+   "net": 5936.81,
+   "tickets": 20,
+   "winners": 13,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 6,
+     "net": 964.88
+    },
+    "P": {
+     "tickets": 9,
+     "winners": 7,
+     "net": 4971.93
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -969.09
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 690.69
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 1046.91
+    },
+    "TIME": {
+     "tickets": 15,
+     "winners": 11,
+     "net": 5373.02
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 6,
+     "winners": 4,
+     "net": 1356.69
+    },
+    "13:30-14:00": {
+     "tickets": 6,
+     "winners": 5,
+     "net": 2649.32
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 4,
+     "net": 2847.19
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -916.39
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 20,
+     "winners": 13,
+     "net": 5936.81
+    }
+   },
+   "best": [
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 2,
+     "entry": 13.4,
+     "net": 1252.67,
+     "origin": "E032",
+     "peak": 1.99,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-09-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 2,
+     "entry": 15.05,
+     "net": 1046.91,
+     "origin": "E032",
+     "peak": 2.5,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2025-06-12",
+     "side": "P",
+     "minute": 818,
+     "lots": 2,
+     "entry": 17.25,
+     "net": 966.02,
+     "origin": "E032",
+     "peak": 1.42,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-11-11",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 17.7,
+     "net": -491.08,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-06",
+     "side": "C",
+     "minute": 882,
+     "lots": 2,
+     "entry": 8.55,
+     "net": -478.01,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-02-06",
+     "side": "C",
+     "minute": 808,
+     "lots": 1,
+     "entry": 13.25,
+     "net": -324.96,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  }
+ },
+ "EN03 put gate 0.65": {
+  "2024": {
+   "net": 14393.15,
+   "tickets": 23,
+   "winners": 9,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 12,
+     "winners": 6,
+     "net": 13307.65
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 7,
+     "winners": 0,
+     "net": -3043.82
+    },
+    "STRUCTURE": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1424.72
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 11770.72
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 4,
+     "winners": 4,
+     "net": 4327.76
+    },
+    "TIME": {
+     "tickets": 5,
+     "winners": 2,
+     "net": 877.05
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 7,
+     "winners": 1,
+     "net": -763.16
+    },
+    "13:30-14:00": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -404.96
+    },
+    "14:00-14:30": {
+     "tickets": 6,
+     "winners": 4,
+     "net": 2492.7
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 13068.57
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 23,
+     "winners": 9,
+     "net": 14393.15
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 4,
+     "entry": 7.6,
+     "net": 11770.72,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 14.45,
+     "net": 1312.95,
+     "origin": "E032",
+     "peak": 2.43,
+     "path": "TARGET"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-05-16",
+     "side": "P",
+     "minute": 805,
+     "lots": 2,
+     "entry": 16.4,
+     "net": -837.24,
+     "origin": "E032",
+     "peak": 1.07,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-01-04",
+     "side": "P",
+     "minute": 816,
+     "lots": 2,
+     "entry": 13.95,
+     "net": -648.35,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STRUCTURE"
+    },
+    {
+     "day": "2024-01-11",
+     "side": "P",
+     "minute": 857,
+     "lots": 1,
+     "entry": 19.0,
+     "net": -646.98,
+     "origin": "E032",
+     "peak": 1.36,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 4,
+    "added_net": -1187.59,
+    "added_winners": 1,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2025": {
+   "net": -4026.25,
+   "tickets": 13,
+   "winners": 3,
+   "by_side": {
+    "C": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -428.99
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 2,
+     "net": -3597.26
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 5,
+     "winners": 0,
+     "net": -3920.59
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -538.52
+    },
+    "TIME": {
+     "tickets": 6,
+     "winners": 3,
+     "net": 637.58
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 3,
+     "winners": 1,
+     "net": -362.18
+    },
+    "13:30-14:00": {
+     "tickets": 3,
+     "winners": 2,
+     "net": 261.16
+    },
+    "14:00-14:30": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -2823.51
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1101.72
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 13,
+     "winners": 3,
+     "net": -4026.25
+    }
+   },
+   "best": [
+    {
+     "day": "2025-04-17",
+     "side": "C",
+     "minute": 833,
+     "lots": 1,
+     "entry": 16.35,
+     "net": 761.22,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-02-13",
+     "side": "P",
+     "minute": 819,
+     "lots": 2,
+     "entry": 17.6,
+     "net": 401.5,
+     "origin": "E032",
+     "peak": 1.43,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-07-03",
+     "side": "P",
+     "minute": 787,
+     "lots": 1,
+     "entry": 13.8,
+     "net": 145.3,
+     "origin": "E032",
+     "peak": 1.24,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-03-20",
+     "side": "P",
+     "minute": 858,
+     "lots": 4,
+     "entry": 8.85,
+     "net": -1116.61,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-13",
+     "side": "P",
+     "minute": 864,
+     "lots": 3,
+     "entry": 9.85,
+     "net": -1005.42,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-05-08",
+     "side": "P",
+     "minute": 825,
+     "lots": 2,
+     "entry": 14.6,
+     "net": -901.56,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 5,
+    "added_net": -3981.1,
+    "added_winners": 0,
+    "removed": 12,
+    "removed_net": 5905.22,
+    "changed": 2,
+    "changed_delta": -76.74,
+    "biggest": [
+     {
+      "day": "2025-07-03",
+      "side": "P",
+      "was": 337.8,
+      "now": 145.3
+     },
+     {
+      "day": "2025-05-22",
+      "side": "P",
+      "was": -278.72,
+      "now": -162.96
+     }
+    ]
+   }
+  }
+ },
+ "EN03 put gate 0.60": {
+  "2024": {
+   "net": 10973.35,
+   "tickets": 35,
+   "winners": 12,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 24,
+     "winners": 9,
+     "net": 9887.85
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 10,
+     "winners": 0,
+     "net": -5469.12
+    },
+    "STRUCTURE": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1424.72
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 11770.72
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 4,
+     "winners": 4,
+     "net": 4327.76
+    },
+    "TIME": {
+     "tickets": 13,
+     "winners": 5,
+     "net": 532.22
+    },
+    "TRAIL": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -1120.67
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 11,
+     "winners": 2,
+     "net": -1132.57
+    },
+    "13:30-14:00": {
+     "tickets": 9,
+     "winners": 2,
+     "net": -1291.93
+    },
+    "14:00-14:30": {
+     "tickets": 9,
+     "winners": 5,
+     "net": 1306.2
+    },
+    "14:30-15:00": {
+     "tickets": 6,
+     "winners": 3,
+     "net": 12091.65
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 35,
+     "winners": 12,
+     "net": 10973.35
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 4,
+     "entry": 7.6,
+     "net": 11770.72,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 14.45,
+     "net": 1312.95,
+     "origin": "E032",
+     "peak": 2.43,
+     "path": "TARGET"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-02-29",
+     "side": "P",
+     "minute": 876,
+     "lots": 3,
+     "entry": 11.35,
+     "net": -976.92,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-05-16",
+     "side": "P",
+     "minute": 805,
+     "lots": 2,
+     "entry": 16.4,
+     "net": -837.24,
+     "origin": "E032",
+     "peak": 1.07,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-10-24",
+     "side": "P",
+     "minute": 816,
+     "lots": 6,
+     "entry": 5.25,
+     "net": -791.63,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 16,
+    "added_net": -4182.54,
+    "added_winners": 4,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 1,
+    "changed_delta": -424.85,
+    "biggest": [
+     {
+      "day": "2024-10-31",
+      "side": "P",
+      "was": 590.07,
+      "now": 165.22
+     }
+    ]
+   }
+  },
+  "2025": {
+   "net": -4136.55,
+   "tickets": 17,
+   "winners": 5,
+   "by_side": {
+    "C": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -428.99
+    },
+    "P": {
+     "tickets": 12,
+     "winners": 4,
+     "net": -3707.56
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 6,
+     "winners": 0,
+     "net": -4245.79
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -292.86
+    },
+    "TIME": {
+     "tickets": 9,
+     "winners": 5,
+     "net": 606.82
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 2,
+     "net": -535.51
+    },
+    "13:30-14:00": {
+     "tickets": 3,
+     "winners": 2,
+     "net": 688.34
+    },
+    "14:00-14:30": {
+     "tickets": 6,
+     "winners": 1,
+     "net": -3187.66
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1101.72
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 17,
+     "winners": 5,
+     "net": -4136.55
+    }
+   },
+   "best": [
+    {
+     "day": "2025-04-17",
+     "side": "C",
+     "minute": 833,
+     "lots": 1,
+     "entry": 16.35,
+     "net": 761.22,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-02-13",
+     "side": "P",
+     "minute": 819,
+     "lots": 2,
+     "entry": 17.6,
+     "net": 401.5,
+     "origin": "E032",
+     "peak": 1.43,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-03-27",
+     "side": "P",
+     "minute": 792,
+     "lots": 2,
+     "entry": 7.35,
+     "net": 164.62,
+     "origin": "E032",
+     "peak": 1.29,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-03-20",
+     "side": "P",
+     "minute": 858,
+     "lots": 4,
+     "entry": 8.85,
+     "net": -1116.61,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-13",
+     "side": "P",
+     "minute": 864,
+     "lots": 3,
+     "entry": 9.85,
+     "net": -1005.42,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-01-09",
+     "side": "P",
+     "minute": 841,
+     "lots": 3,
+     "entry": 9.8,
+     "net": -752.38,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 9,
+    "added_net": -4091.4,
+    "added_winners": 2,
+    "removed": 12,
+    "removed_net": 5905.22,
+    "changed": 2,
+    "changed_delta": -76.74,
+    "biggest": [
+     {
+      "day": "2025-07-03",
+      "side": "P",
+      "was": 337.8,
+      "now": 145.3
+     },
+     {
+      "day": "2025-05-22",
+      "side": "P",
+      "was": -278.72,
+      "now": -162.96
+     }
+    ]
+   }
+  }
+ },
+ "EN03 put gate 0.55": {
+  "2024": {
+   "net": -4149.32,
+   "tickets": 12,
+   "winners": 2,
+   "by_side": {
+    "P": {
+     "tickets": 12,
+     "winners": 2,
+     "net": -4149.32
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -2042.94
+    },
+    "STRUCTURE": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -1102.46
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 752.11
+    },
+    "TIME": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -1618.87
+    },
+    "TRAIL": {
+     "tickets": 2,
+     "winners": 1,
+     "net": -137.16
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -454.11
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -1788.19
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 2,
+     "net": -511.06
+    },
+    "14:30-15:00": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -1395.96
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 12,
+     "winners": 2,
+     "net": -4149.32
+    }
+   },
+   "best": [
+    {
+     "day": "2024-02-08",
+     "side": "P",
+     "minute": 850,
+     "lots": 2,
+     "entry": 13.8,
+     "net": 752.11,
+     "origin": "E032",
+     "peak": 2.0,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-15",
+     "side": "P",
+     "minute": 862,
+     "lots": 5,
+     "entry": 6.0,
+     "net": 61.71,
+     "origin": "E032",
+     "peak": 1.91,
+     "path": "TRAIL"
+    },
+    {
+     "day": "2024-03-14",
+     "side": "P",
+     "minute": 822,
+     "lots": 1,
+     "entry": 15.9,
+     "net": -198.87,
+     "origin": "E032",
+     "peak": 1.88,
+     "path": "TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-02-29",
+     "side": "P",
+     "minute": 876,
+     "lots": 3,
+     "entry": 11.35,
+     "net": -976.92,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-01-25",
+     "side": "P",
+     "minute": 810,
+     "lots": 4,
+     "entry": 8.7,
+     "net": -688.34,
+     "origin": "E032",
+     "peak": 1.09,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-01-04",
+     "side": "P",
+     "minute": 816,
+     "lots": 2,
+     "entry": 13.95,
+     "net": -648.35,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STRUCTURE"
+    }
+   ],
+   "vs_control": {
+    "added": 11,
+    "added_net": -3502.34,
+    "added_winners": 2,
+    "removed": 18,
+    "removed_net": 16227.72,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2025": {
+   "net": -1296.81,
+   "tickets": 37,
+   "winners": 16,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 6,
+     "net": 668.89
+    },
+    "P": {
+     "tickets": 26,
+     "winners": 10,
+     "net": -1965.7
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 9,
+     "winners": 0,
+     "net": -5721.8
+    },
+    "STRUCTURE": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1526.91
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 690.69
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2073.16
+    },
+    "TIME": {
+     "tickets": 20,
+     "winners": 12,
+     "net": 3295.56
+    },
+    "TRAIL": {
+     "tickets": 2,
+     "winners": 1,
+     "net": -107.51
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 14,
+     "winners": 7,
+     "net": 168.98
+    },
+    "13:30-14:00": {
+     "tickets": 9,
+     "winners": 4,
+     "net": -553.84
+    },
+    "14:00-14:30": {
+     "tickets": 12,
+     "winners": 5,
+     "net": -444.62
+    },
+    "14:30-15:00": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -467.33
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 37,
+     "winners": 16,
+     "net": -1296.81
+    }
+   },
+   "best": [
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 2,
+     "entry": 13.4,
+     "net": 1252.67,
+     "origin": "E032",
+     "peak": 1.99,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-09-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 2,
+     "entry": 15.05,
+     "net": 1046.91,
+     "origin": "E032",
+     "peak": 2.5,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2025-05-08",
+     "side": "P",
+     "minute": 796,
+     "lots": 3,
+     "entry": 5.6,
+     "net": 1026.25,
+     "origin": "E032",
+     "peak": 4.95,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-09-23",
+     "side": "P",
+     "minute": 862,
+     "lots": 4,
+     "entry": 8.45,
+     "net": -999.59,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-12-30",
+     "side": "P",
+     "minute": 791,
+     "lots": 3,
+     "entry": 11.2,
+     "net": -879.53,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-10-28",
+     "side": "P",
+     "minute": 827,
+     "lots": 3,
+     "entry": 11.0,
+     "net": -821.06,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 19,
+    "added_net": -6263.18,
+    "added_winners": 4,
+    "removed": 2,
+    "removed_net": 167.84,
+    "changed": 3,
+    "changed_delta": -802.6,
+    "biggest": [
+     {
+      "day": "2025-08-07",
+      "side": "C",
+      "was": 599.59,
+      "now": 88.2
+     },
+     {
+      "day": "2025-06-12",
+      "side": "P",
+      "was": 966.02,
+      "now": 459.41
+     },
+     {
+      "day": "2025-03-06",
+      "side": "C",
+      "was": -478.01,
+      "now": -262.61
+     }
+    ]
+   }
+  }
+ },
+ "EN04 puts 2.5x": {
+  "2023": {
+   "net": -4060.69,
+   "tickets": 14,
+   "winners": 4,
+   "by_side": {
+    "C": {
+     "tickets": 8,
+     "winners": 2,
+     "net": -1460.98
+    },
+    "P": {
+     "tickets": 6,
+     "winners": 2,
+     "net": -2599.71
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -3485.55
+    },
+    "TIME": {
+     "tickets": 9,
+     "winners": 3,
+     "net": -613.14
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 38.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -865.48
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": -1297.97
+    },
+    "14:00-14:30": {
+     "tickets": 3,
+     "winners": 2,
+     "net": -123.99
+    },
+    "14:30-15:00": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -1773.25
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 14,
+     "winners": 4,
+     "net": -4060.69
+    }
+   },
+   "best": [
+    {
+     "day": "2023-06-22",
+     "side": "P",
+     "minute": 865,
+     "lots": 1,
+     "entry": 5.4,
+     "net": 240.66,
+     "origin": "E032",
+     "peak": 1.97,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-04-27",
+     "side": "C",
+     "minute": 803,
+     "lots": 1,
+     "entry": 10.15,
+     "net": 48.55,
+     "origin": "E032",
+     "peak": 1.15,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "C",
+     "minute": 851,
+     "lots": 1,
+     "entry": 15.5,
+     "net": 38.0,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-06-15",
+     "side": "P",
+     "minute": 881,
+     "lots": 7,
+     "entry": 5.6,
+     "net": -1347.5,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "P",
+     "minute": 831,
+     "lots": 3,
+     "entry": 15.4,
+     "net": -1309.65,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-08-17",
+     "side": "C",
+     "minute": 881,
+     "lots": 2,
+     "entry": 7.4,
+     "net": -425.75,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 3,
+    "removed_net": -1032.8,
+    "changed": 5,
+    "changed_delta": -1448.37,
+    "biggest": [
+     {
+      "day": "2023-06-22",
+      "side": "P",
+      "was": 1104.25,
+      "now": 240.66
+     },
+     {
+      "day": "2023-03-16",
+      "side": "P",
+      "was": -888.83,
+      "now": -1309.65
+     },
+     {
+      "day": "2023-06-15",
+      "side": "P",
+      "was": -1161.74,
+      "now": -1347.5
+     }
+    ]
+   }
+  },
+  "2024": {
+   "net": 15992.64,
+   "tickets": 19,
+   "winners": 8,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 5,
+     "net": 14907.14
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 6,
+     "winners": 0,
+     "net": -2806.36
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -322.26
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 12499.4
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 3575.65
+    },
+    "TIME": {
+     "tickets": 5,
+     "winners": 2,
+     "net": 1160.05
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 1,
+     "net": 398.73
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": 243.39
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 1553.27
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 13797.25
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 19,
+     "winners": 8,
+     "net": 15992.64
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 5,
+     "entry": 7.6,
+     "net": 12499.4,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 14.45,
+     "net": 1312.95,
+     "origin": "E032",
+     "peak": 2.43,
+     "path": "TARGET"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-01-11",
+     "side": "P",
+     "minute": 857,
+     "lots": 2,
+     "entry": 19.0,
+     "net": -1246.76,
+     "origin": "E032",
+     "peak": 1.36,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-08-14",
+     "side": "P",
+     "minute": 807,
+     "lots": 5,
+     "entry": 8.65,
+     "net": -621.53,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-29",
+     "side": "C",
+     "minute": 889,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -471.0,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 6,
+    "changed_delta": 411.9,
+    "biggest": [
+     {
+      "day": "2024-03-28",
+      "side": "P",
+      "was": 11770.72,
+      "now": 12499.4
+     },
+     {
+      "day": "2024-01-11",
+      "side": "P",
+      "was": -646.98,
+      "now": -1246.76
+     },
+     {
+      "day": "2024-10-31",
+      "side": "P",
+      "was": 590.07,
+      "now": 802.5
+     }
+    ]
+   }
+  },
+  "2025": {
+   "net": 7853.25,
+   "tickets": 21,
+   "winners": 13,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 6,
+     "net": 964.88
+    },
+    "P": {
+     "tickets": 10,
+     "winners": 7,
+     "net": 6888.37
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1421.02
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 690.69
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 2066.37
+    },
+    "TIME": {
+     "tickets": 15,
+     "winners": 11,
+     "net": 6721.93
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 7,
+     "winners": 4,
+     "net": 1747.18
+    },
+    "13:30-14:00": {
+     "tickets": 6,
+     "winners": 5,
+     "net": 2649.32
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 4,
+     "net": 4373.14
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -916.39
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 21,
+     "winners": 13,
+     "net": 7853.25
+    }
+   },
+   "best": [
+    {
+     "day": "2025-09-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 3,
+     "entry": 15.05,
+     "net": 2066.37,
+     "origin": "E032",
+     "peak": 2.5,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 3,
+     "entry": 13.4,
+     "net": 1902.59,
+     "origin": "E032",
+     "peak": 1.99,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-08-21",
+     "side": "P",
+     "minute": 868,
+     "lots": 8,
+     "entry": 5.15,
+     "net": 1269.9,
+     "origin": "E032",
+     "peak": 1.49,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-11-11",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 17.7,
+     "net": -491.08,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-06",
+     "side": "C",
+     "minute": 882,
+     "lots": 2,
+     "entry": 8.55,
+     "net": -478.01,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-08-28",
+     "side": "P",
+     "minute": 786,
+     "lots": 3,
+     "entry": 12.45,
+     "net": -451.93,
+     "origin": "E032",
+     "peak": 1.45,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 1,
+    "added_net": -451.93,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 6,
+    "changed_delta": 2368.37,
+    "biggest": [
+     {
+      "day": "2025-09-02",
+      "side": "P",
+      "was": 1046.91,
+      "now": 2066.37
+     },
+     {
+      "day": "2025-08-07",
+      "side": "P",
+      "was": 1252.67,
+      "now": 1902.59
+     },
+     {
+      "day": "2025-08-21",
+      "side": "P",
+      "was": 940.63,
+      "now": 1269.9
+     }
+    ]
+   }
+  }
+ },
+ "EN04 puts 3x": {
+  "2023": {
+   "net": -4214.8,
+   "tickets": 14,
+   "winners": 5,
+   "by_side": {
+    "C": {
+     "tickets": 8,
+     "winners": 2,
+     "net": -1460.98
+    },
+    "P": {
+     "tickets": 6,
+     "winners": 3,
+     "net": -2753.82
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -3857.07
+    },
+    "TIME": {
+     "tickets": 9,
+     "winners": 4,
+     "net": -395.73
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 38.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -1013.42
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 2,
+     "net": -1220.48
+    },
+    "14:00-14:30": {
+     "tickets": 3,
+     "winners": 2,
+     "net": 163.87
+    },
+    "14:30-15:00": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -2144.77
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 14,
+     "winners": 5,
+     "net": -4214.8
+    }
+   },
+   "best": [
+    {
+     "day": "2023-06-22",
+     "side": "P",
+     "minute": 865,
+     "lots": 2,
+     "entry": 5.4,
+     "net": 528.52,
+     "origin": "E032",
+     "peak": 1.97,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-07-27",
+     "side": "P",
+     "minute": 813,
+     "lots": 2,
+     "entry": 11.7,
+     "net": 78.94,
+     "origin": "E032",
+     "peak": 1.44,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-04-27",
+     "side": "C",
+     "minute": 803,
+     "lots": 1,
+     "entry": 10.15,
+     "net": 48.55,
+     "origin": "E032",
+     "peak": 1.15,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-06-15",
+     "side": "P",
+     "minute": 881,
+     "lots": 9,
+     "entry": 5.6,
+     "net": -1719.02,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "P",
+     "minute": 831,
+     "lots": 3,
+     "entry": 15.4,
+     "net": -1309.65,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-08-17",
+     "side": "C",
+     "minute": 881,
+     "lots": 2,
+     "entry": 7.4,
+     "net": -425.75,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 3,
+    "removed_net": -1032.8,
+    "changed": 5,
+    "changed_delta": -1602.48,
+    "biggest": [
+     {
+      "day": "2023-06-22",
+      "side": "P",
+      "was": 1104.25,
+      "now": 528.52
+     },
+     {
+      "day": "2023-06-15",
+      "side": "P",
+      "was": -1161.74,
+      "now": -1719.02
+     },
+     {
+      "day": "2023-03-16",
+      "side": "P",
+      "was": -888.83,
+      "now": -1309.65
+     }
+    ]
+   }
+  },
+  "2024": {
+   "net": 24802.08,
+   "tickets": 19,
+   "winners": 8,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 5,
+     "net": 23716.58
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 6,
+     "winners": 0,
+     "net": -2806.36
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -322.26
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 18420.16
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 6181.34
+    },
+    "TIME": {
+     "tickets": 5,
+     "winners": 2,
+     "net": 1443.04
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 1,
+     "net": 1583.49
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": 243.39
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 1965.72
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 21009.48
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 19,
+     "winners": 8,
+     "net": 24802.08
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 7,
+     "entry": 7.6,
+     "net": 18420.16,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 3,
+     "entry": 17.85,
+     "net": 2691.12,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-05-09",
+     "side": "P",
+     "minute": 877,
+     "lots": 3,
+     "entry": 18.15,
+     "net": 2340.66,
+     "origin": "E032",
+     "peak": 2.07,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-01-11",
+     "side": "P",
+     "minute": 857,
+     "lots": 2,
+     "entry": 19.0,
+     "net": -1246.76,
+     "origin": "E032",
+     "peak": 1.36,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-08-14",
+     "side": "P",
+     "minute": 807,
+     "lots": 6,
+     "entry": 8.65,
+     "net": -736.39,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-29",
+     "side": "C",
+     "minute": 889,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -471.0,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 8,
+    "changed_delta": 9221.34,
+    "biggest": [
+     {
+      "day": "2024-03-28",
+      "side": "P",
+      "was": 11770.72,
+      "now": 18420.16
+     },
+     {
+      "day": "2024-08-08",
+      "side": "P",
+      "was": 1376.9,
+      "now": 2691.12
+     },
+     {
+      "day": "2024-05-09",
+      "side": "P",
+      "was": 1049.19,
+      "now": 2340.66
+     }
+    ]
+   }
+  },
+  "2025": {
+   "net": 9363.12,
+   "tickets": 21,
+   "winners": 13,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 6,
+     "net": 964.88
+    },
+    "P": {
+     "tickets": 10,
+     "winners": 7,
+     "net": 8398.24
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1555.94
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 690.69
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 2066.37
+    },
+    "TIME": {
+     "tickets": 15,
+     "winners": 11,
+     "net": 8366.72
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 7,
+     "winners": 4,
+     "net": 2454.68
+    },
+    "13:30-14:00": {
+     "tickets": 6,
+     "winners": 5,
+     "net": 3380.28
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 4,
+     "net": 4537.78
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1009.62
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 21,
+     "winners": 13,
+     "net": 9363.12
+    }
+   },
+   "best": [
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 4,
+     "entry": 13.4,
+     "net": 2552.52,
+     "origin": "E032",
+     "peak": 1.99,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-09-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 3,
+     "entry": 15.05,
+     "net": 2066.37,
+     "origin": "E032",
+     "peak": 2.5,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2025-06-12",
+     "side": "P",
+     "minute": 818,
+     "lots": 3,
+     "entry": 17.25,
+     "net": 1472.63,
+     "origin": "E032",
+     "peak": 1.42,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-08-28",
+     "side": "P",
+     "minute": 786,
+     "lots": 4,
+     "entry": 12.45,
+     "net": -586.85,
+     "origin": "E032",
+     "peak": 1.45,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-11-11",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 17.7,
+     "net": -491.08,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-06",
+     "side": "C",
+     "minute": 882,
+     "lots": 2,
+     "entry": 8.55,
+     "net": -478.01,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 1,
+    "added_net": -586.85,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 9,
+    "changed_delta": 4013.16,
+    "biggest": [
+     {
+      "day": "2025-08-07",
+      "side": "P",
+      "was": 1252.67,
+      "now": 2552.52
+     },
+     {
+      "day": "2025-09-02",
+      "side": "P",
+      "was": 1046.91,
+      "now": 2066.37
+     },
+     {
+      "day": "2025-06-12",
+      "side": "P",
+      "was": 966.02,
+      "now": 1472.63
+     }
+    ]
+   }
+  }
+ },
+ "EN04 puts 3.5x": {
+  "2023": {
+   "net": -4522.01,
+   "tickets": 9,
+   "winners": 3,
+   "by_side": {
+    "C": {
+     "tickets": 6,
+     "winners": 2,
+     "net": -911.65
+    },
+    "P": {
+     "tickets": 3,
+     "winners": 1,
+     "net": -3610.36
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -4037.89
+    },
+    "TIME": {
+     "tickets": 5,
+     "winners": 2,
+     "net": -522.12
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 38.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 3,
+     "winners": 1,
+     "net": -546.77
+    },
+    "13:30-14:00": {
+     "tickets": 3,
+     "winners": 1,
+     "net": -1705.82
+    },
+    "14:00-14:30": {
+     "tickets": 2,
+     "winners": 1,
+     "net": -364.65
+    },
+    "14:30-15:00": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -1904.77
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 9,
+     "winners": 3,
+     "net": -4522.01
+    }
+   },
+   "best": [
+    {
+     "day": "2023-04-27",
+     "side": "C",
+     "minute": 803,
+     "lots": 1,
+     "entry": 10.15,
+     "net": 48.55,
+     "origin": "E032",
+     "peak": 1.15,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "C",
+     "minute": 851,
+     "lots": 1,
+     "entry": 15.5,
+     "net": 38.0,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "TRAIL"
+    },
+    {
+     "day": "2023-03-02",
+     "side": "P",
+     "minute": 819,
+     "lots": 5,
+     "entry": 11.7,
+     "net": 24.88,
+     "origin": "E032",
+     "peak": 1.22,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-06-15",
+     "side": "P",
+     "minute": 881,
+     "lots": 10,
+     "entry": 5.6,
+     "net": -1904.77,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "P",
+     "minute": 831,
+     "lots": 4,
+     "entry": 15.4,
+     "net": -1730.47,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-02-02",
+     "side": "C",
+     "minute": 865,
+     "lots": 1,
+     "entry": 12.2,
+     "net": -402.65,
+     "origin": "E032",
+     "peak": 1.09,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 8,
+    "removed_net": -678.94,
+    "changed": 3,
+    "changed_delta": -1555.83,
+    "biggest": [
+     {
+      "day": "2023-03-16",
+      "side": "P",
+      "was": -888.83,
+      "now": -1730.47
+     },
+     {
+      "day": "2023-06-15",
+      "side": "P",
+      "was": -1161.74,
+      "now": -1904.77
+     },
+     {
+      "day": "2023-03-02",
+      "side": "P",
+      "was": -3.96,
+      "now": 24.88
+     }
+    ]
+   }
+  },
+  "2024": {
+   "net": 29665.02,
+   "tickets": 19,
+   "winners": 8,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 5,
+     "net": 28579.52
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 6,
+     "winners": 0,
+     "net": -3406.14
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -322.26
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 23612.25
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 6181.34
+    },
+    "TIME": {
+     "tickets": 5,
+     "winners": 2,
+     "net": 1713.67
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 1,
+     "net": 1454.05
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": 243.39
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 1766.01
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 26201.57
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 19,
+     "winners": 8,
+     "net": 29665.02
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 8,
+     "entry": 7.6,
+     "net": 23612.25,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 3,
+     "entry": 17.85,
+     "net": 2691.12,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-05-09",
+     "side": "P",
+     "minute": 877,
+     "lots": 3,
+     "entry": 18.15,
+     "net": 2340.66,
+     "origin": "E032",
+     "peak": 2.07,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-01-11",
+     "side": "P",
+     "minute": 857,
+     "lots": 3,
+     "entry": 19.0,
+     "net": -1846.54,
+     "origin": "E032",
+     "peak": 1.36,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-08-14",
+     "side": "P",
+     "minute": 807,
+     "lots": 7,
+     "entry": 8.65,
+     "net": -851.25,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-29",
+     "side": "C",
+     "minute": 889,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -471.0,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 8,
+    "changed_delta": 14084.28,
+    "biggest": [
+     {
+      "day": "2024-03-28",
+      "side": "P",
+      "was": 11770.72,
+      "now": 23612.25
+     },
+     {
+      "day": "2024-08-08",
+      "side": "P",
+      "was": 1376.9,
+      "now": 2691.12
+     },
+     {
+      "day": "2024-05-09",
+      "side": "P",
+      "was": 1049.19,
+      "now": 2340.66
+     }
+    ]
+   }
+  },
+  "2025": {
+   "net": 9575.09,
+   "tickets": 21,
+   "winners": 13,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 6,
+     "net": 964.88
+    },
+    "P": {
+     "tickets": 10,
+     "winners": 7,
+     "net": 8610.21
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1690.85
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 690.69
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 2164.61
+    },
+    "TIME": {
+     "tickets": 15,
+     "winners": 11,
+     "net": 8615.36
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 7,
+     "winners": 4,
+     "net": 2319.77
+    },
+    "13:30-14:00": {
+     "tickets": 6,
+     "winners": 5,
+     "net": 3380.28
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 4,
+     "net": 4977.89
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1102.85
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 21,
+     "winners": 13,
+     "net": 9575.09
+    }
+   },
+   "best": [
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 4,
+     "entry": 13.4,
+     "net": 2552.52,
+     "origin": "E032",
+     "peak": 1.99,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-09-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 4,
+     "entry": 15.05,
+     "net": 2164.61,
+     "origin": "E032",
+     "peak": 2.5,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2025-08-21",
+     "side": "P",
+     "minute": 868,
+     "lots": 10,
+     "entry": 5.15,
+     "net": 1599.18,
+     "origin": "E032",
+     "peak": 1.49,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-08-28",
+     "side": "P",
+     "minute": 786,
+     "lots": 5,
+     "entry": 12.45,
+     "net": -721.76,
+     "origin": "E032",
+     "peak": 1.45,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-05-22",
+     "side": "P",
+     "minute": 865,
+     "lots": 4,
+     "entry": 14.45,
+     "net": -510.23,
+     "origin": "E032",
+     "peak": 1.03,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-11-11",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 17.7,
+     "net": -491.08,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 1,
+    "added_net": -721.76,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 9,
+    "changed_delta": 4360.04,
+    "biggest": [
+     {
+      "day": "2025-08-07",
+      "side": "P",
+      "was": 1252.67,
+      "now": 2552.52
+     },
+     {
+      "day": "2025-09-02",
+      "side": "P",
+      "was": 1046.91,
+      "now": 2164.61
+     },
+     {
+      "day": "2025-08-21",
+      "side": "P",
+      "was": 940.63,
+      "now": 1599.18
+     }
+    ]
+   }
+  }
+ },
+ "EN05 put runner 1.2": {
+  "2024": {
+   "net": 14631.77,
+   "tickets": 19,
+   "winners": 8,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 5,
+     "net": 13546.27
+    }
+   },
+   "by_exit": {
+    "PUT_RUNNER+RUNNER_TRAIL": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 594.08
+    },
+    "STOP": {
+     "tickets": 6,
+     "winners": 0,
+     "net": -2206.58
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -322.26
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 11770.72
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 3575.65
+    },
+    "TIME": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -666.0
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 1,
+     "net": 528.19
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": 243.39
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 791.62
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 13068.57
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 19,
+     "winners": 8,
+     "net": 14631.77
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 4,
+     "entry": 7.6,
+     "net": 11770.72,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 14.45,
+     "net": 1312.95,
+     "origin": "E032",
+     "peak": 2.43,
+     "path": "TARGET"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-01-11",
+     "side": "P",
+     "minute": 857,
+     "lots": 1,
+     "entry": 19.0,
+     "net": -646.98,
+     "origin": "E032",
+     "peak": 1.36,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-08-14",
+     "side": "P",
+     "minute": 807,
+     "lots": 4,
+     "entry": 8.65,
+     "net": -506.66,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-29",
+     "side": "C",
+     "minute": 889,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -471.0,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 2,
+    "changed_delta": -948.97,
+    "biggest": [
+     {
+      "day": "2024-08-22",
+      "side": "P",
+      "was": 952.98,
+      "now": 287.11
+     },
+     {
+      "day": "2024-10-31",
+      "side": "P",
+      "was": 590.07,
+      "now": 306.97
+     }
+    ]
+   }
+  },
+  "2025": {
+   "net": 3719.2,
+   "tickets": 20,
+   "winners": 13,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 6,
+     "net": 964.88
+    },
+    "P": {
+     "tickets": 9,
+     "winners": 7,
+     "net": 2754.32
+    }
+   },
+   "by_exit": {
+    "PUT_RUNNER+RUNNER_TRAIL": {
+     "tickets": 6,
+     "winners": 6,
+     "net": 2219.79
+    },
+    "STOP": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -969.09
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 690.69
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 1046.91
+    },
+    "TIME": {
+     "tickets": 9,
+     "winners": 5,
+     "net": 935.62
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 6,
+     "winners": 4,
+     "net": 569.89
+    },
+    "13:30-14:00": {
+     "tickets": 6,
+     "winners": 5,
+     "net": 2008.53
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 4,
+     "net": 2057.17
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -916.39
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 20,
+     "winners": 13,
+     "net": 3719.2
+    }
+   },
+   "best": [
+    {
+     "day": "2025-09-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 2,
+     "entry": 15.05,
+     "net": 1046.91,
+     "origin": "E032",
+     "peak": 2.5,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2025-04-17",
+     "side": "C",
+     "minute": 833,
+     "lots": 1,
+     "entry": 16.35,
+     "net": 761.22,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 2,
+     "entry": 13.4,
+     "net": 729.52,
+     "origin": "E032",
+     "peak": 2.54,
+     "path": "PUT_RUNNER+RUNNER_TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-11-11",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 17.7,
+     "net": -491.08,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-06",
+     "side": "C",
+     "minute": 882,
+     "lots": 2,
+     "entry": 8.55,
+     "net": -478.01,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-02-06",
+     "side": "C",
+     "minute": 808,
+     "lots": 1,
+     "entry": 13.25,
+     "net": -324.96,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 6,
+    "changed_delta": -2217.61,
+    "biggest": [
+     {
+      "day": "2025-08-07",
+      "side": "P",
+      "was": 1252.67,
+      "now": 729.52
+     },
+     {
+      "day": "2025-08-21",
+      "side": "P",
+      "was": 940.63,
+      "now": 488.86
+     },
+     {
+      "day": "2025-11-25",
+      "side": "P",
+      "was": 538.78,
+      "now": 200.53
+     }
+    ]
+   }
+  }
+ },
+ "EN08 calm-morning gate": {
+  "2023": {
+   "net": -1775.66,
+   "tickets": 8,
+   "winners": 2,
+   "by_side": {
+    "C": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -1024.88
+    },
+    "P": {
+     "tickets": 3,
+     "winners": 1,
+     "net": -750.78
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1717.23
+    },
+    "TIME": {
+     "tickets": 4,
+     "winners": 1,
+     "net": -96.43
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 38.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -234.25
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": -751.01
+    },
+    "14:00-14:30": {
+     "tickets": 2,
+     "winners": 1,
+     "net": -364.65
+    },
+    "14:30-15:00": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -425.75
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 8,
+     "winners": 2,
+     "net": -1775.66
+    }
+   },
+   "best": [
+    {
+     "day": "2023-07-27",
+     "side": "P",
+     "minute": 813,
+     "lots": 3,
+     "entry": 11.7,
+     "net": 142.01,
+     "origin": "E032",
+     "peak": 1.44,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "C",
+     "minute": 851,
+     "lots": 1,
+     "entry": 15.5,
+     "net": 38.0,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "TRAIL"
+    },
+    {
+     "day": "2023-02-09",
+     "side": "C",
+     "minute": 815,
+     "lots": 1,
+     "entry": 10.95,
+     "net": -0.23,
+     "origin": "E032",
+     "peak": 1.09,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-03-16",
+     "side": "P",
+     "minute": 831,
+     "lots": 2,
+     "entry": 15.4,
+     "net": -888.83,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-08-17",
+     "side": "C",
+     "minute": 881,
+     "lots": 2,
+     "entry": 7.4,
+     "net": -425.75,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-02-02",
+     "side": "C",
+     "minute": 865,
+     "lots": 1,
+     "entry": 12.2,
+     "net": -402.65,
+     "origin": "E032",
+     "peak": 1.09,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 9,
+    "removed_net": -1869.46,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2024": {
+   "net": 15872.38,
+   "tickets": 15,
+   "winners": 7,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 1085.5
+    },
+    "P": {
+     "tickets": 4,
+     "winners": 4,
+     "net": 14786.88
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 5,
+     "winners": 0,
+     "net": -1559.6
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -322.26
+    },
+    "TARGET": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 2357.16
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 11770.72
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 3575.65
+    },
+    "TIME": {
+     "tickets": 2,
+     "winners": 1,
+     "net": 521.71
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 3,
+     "winners": 1,
+     "net": 1125.83
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": 243.39
+    },
+    "14:00-14:30": {
+     "tickets": 3,
+     "winners": 2,
+     "net": 1434.59
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 13068.57
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 15,
+     "winners": 7,
+     "net": 15872.38
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 4,
+     "entry": 7.6,
+     "net": 11770.72,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 14.45,
+     "net": 1312.95,
+     "origin": "E032",
+     "peak": 2.43,
+     "path": "TARGET"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-02-29",
+     "side": "C",
+     "minute": 889,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -471.0,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    },
+    {
+     "day": "2024-04-04",
+     "side": "C",
+     "minute": 812,
+     "lots": 1,
+     "entry": 13.4,
+     "net": -386.61,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-05-23",
+     "side": "C",
+     "minute": 813,
+     "lots": 1,
+     "entry": 13.55,
+     "net": -360.69,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 4,
+    "removed_net": -291.64,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2025": {
+   "net": 2398.83,
+   "tickets": 15,
+   "winners": 8,
+   "by_side": {
+    "C": {
+     "tickets": 9,
+     "winners": 4,
+     "net": -46.78
+    },
+    "P": {
+     "tickets": 6,
+     "winners": 4,
+     "net": 2445.61
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -969.09
+    },
+    "TIME": {
+     "tickets": 12,
+     "winners": 8,
+     "net": 3572.64
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 6,
+     "winners": 4,
+     "net": 1356.69
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 3,
+     "net": 1637.66
+    },
+    "14:00-14:30": {
+     "tickets": 2,
+     "winners": 1,
+     "net": 320.87
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -916.39
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 15,
+     "winners": 8,
+     "net": 2398.83
+    }
+   },
+   "best": [
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 2,
+     "entry": 13.4,
+     "net": 1252.67,
+     "origin": "E032",
+     "peak": 1.99,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-06-12",
+     "side": "P",
+     "minute": 818,
+     "lots": 2,
+     "entry": 17.25,
+     "net": 966.02,
+     "origin": "E032",
+     "peak": 1.42,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-04-17",
+     "side": "C",
+     "minute": 833,
+     "lots": 1,
+     "entry": 16.35,
+     "net": 761.22,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-11-11",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 17.7,
+     "net": -491.08,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-06",
+     "side": "C",
+     "minute": 882,
+     "lots": 2,
+     "entry": 8.55,
+     "net": -478.01,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-02-06",
+     "side": "C",
+     "minute": 808,
+     "lots": 1,
+     "entry": 13.25,
+     "net": -324.96,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 5,
+    "removed_net": 3537.98,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  }
+ },
+ "EN09 breakout added": {
+  "2023": {
+   "net": -4013.42,
+   "tickets": 18,
+   "winners": 5,
+   "by_side": {
+    "C": {
+     "tickets": 10,
+     "winners": 2,
+     "net": -1662.56
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 3,
+     "net": -2350.86
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 6,
+     "winners": 0,
+     "net": -3542.52
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -558.29
+    },
+    "TIME": {
+     "tickets": 11,
+     "winners": 5,
+     "net": 87.39
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 6,
+     "winners": 1,
+     "net": -1190.82
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": -877.15
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 3,
+     "net": -214.23
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1731.22
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 12,
+     "winners": 3,
+     "net": -2739.71
+    },
+    "SQUEEZE": {
+     "tickets": 6,
+     "winners": 2,
+     "net": -1273.71
+    }
+   },
+   "best": [
+    {
+     "day": "2023-05-25",
+     "side": "C",
+     "minute": 847,
+     "lots": 1,
+     "entry": 8.95,
+     "net": 356.89,
+     "origin": "SQUEEZE",
+     "peak": 1.69,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-06-22",
+     "side": "P",
+     "minute": 865,
+     "lots": 1,
+     "entry": 5.4,
+     "net": 240.66,
+     "origin": "E032",
+     "peak": 1.97,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-02-23",
+     "side": "P",
+     "minute": 867,
+     "lots": 2,
+     "entry": 15.45,
+     "net": 149.16,
+     "origin": "SQUEEZE",
+     "peak": 1.35,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-03-16",
+     "side": "P",
+     "minute": 831,
+     "lots": 2,
+     "entry": 15.4,
+     "net": -888.83,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-09",
+     "side": "P",
+     "minute": 871,
+     "lots": 5,
+     "entry": 6.55,
+     "net": -701.0,
+     "origin": "SQUEEZE",
+     "peak": 1.46,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-06-15",
+     "side": "P",
+     "minute": 881,
+     "lots": 3,
+     "entry": 5.6,
+     "net": -604.47,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 6,
+    "added_net": -1273.71,
+    "added_winners": 2,
+    "removed": 5,
+    "removed_net": -1337.87,
+    "changed": 3,
+    "changed_delta": -432.46,
+    "biggest": [
+     {
+      "day": "2023-06-22",
+      "side": "P",
+      "was": 1104.25,
+      "now": 240.66
+     },
+     {
+      "day": "2023-06-15",
+      "side": "P",
+      "was": -1161.74,
+      "now": -604.47
+     },
+     {
+      "day": "2023-07-27",
+      "side": "P",
+      "was": 142.01,
+      "now": 15.87
+     }
+    ]
+   }
+  },
+  "2024": {
+   "net": -965.65,
+   "tickets": 36,
+   "winners": 11,
+   "by_side": {
+    "C": {
+     "tickets": 17,
+     "winners": 5,
+     "net": 799.19
+    },
+    "P": {
+     "tickets": 19,
+     "winners": 6,
+     "net": -1764.84
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 10,
+     "winners": 0,
+     "net": -5386.25
+    },
+    "STRUCTURE": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -908.07
+    },
+    "TARGET": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 3038.64
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 3575.65
+    },
+    "TIME": {
+     "tickets": 17,
+     "winners": 5,
+     "net": -814.62
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 14,
+     "winners": 2,
+     "net": -1540.78
+    },
+    "13:30-14:00": {
+     "tickets": 11,
+     "winners": 3,
+     "net": -2081.61
+    },
+    "14:00-14:30": {
+     "tickets": 6,
+     "winners": 3,
+     "net": 677.41
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 1979.33
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 18,
+     "winners": 8,
+     "net": 4601.34
+    },
+    "SQUEEZE": {
+     "tickets": 18,
+     "winners": 3,
+     "net": -5566.99
+    }
+   },
+   "best": [
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 14.45,
+     "net": 1312.95,
+     "origin": "E032",
+     "peak": 2.43,
+     "path": "TARGET"
+    },
+    {
+     "day": "2024-07-18",
+     "side": "C",
+     "minute": 841,
+     "lots": 2,
+     "entry": 8.25,
+     "net": 1149.56,
+     "origin": "E032",
+     "peak": 3.55,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-09-05",
+     "side": "P",
+     "minute": 863,
+     "lots": 3,
+     "entry": 12.1,
+     "net": -850.76,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-10-10",
+     "side": "P",
+     "minute": 834,
+     "lots": 3,
+     "entry": 11.25,
+     "net": -850.37,
+     "origin": "SQUEEZE",
+     "peak": 1.02,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-07-04",
+     "side": "P",
+     "minute": 784,
+     "lots": 2,
+     "entry": 13.6,
+     "net": -778.0,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 18,
+    "added_net": -5566.99,
+    "added_winners": 3,
+    "removed": 1,
+    "removed_net": -322.26,
+    "changed": 2,
+    "changed_delta": -11301.66,
+    "biggest": [
+     {
+      "day": "2024-03-28",
+      "side": "P",
+      "was": 11770.72,
+      "now": 681.48
+     },
+     {
+      "day": "2024-10-31",
+      "side": "P",
+      "was": 590.07,
+      "now": 377.65
+     }
+    ]
+   }
+  },
+  "2025": {
+   "net": -4192.4,
+   "tickets": 10,
+   "winners": 1,
+   "by_side": {
+    "C": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -1319.22
+    },
+    "P": {
+     "tickets": 6,
+     "winners": 1,
+     "net": -2873.18
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -2473.08
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -824.64
+    },
+    "TIME": {
+     "tickets": 4,
+     "winners": 1,
+     "net": -689.96
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -2124.03
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": -1059.27
+    },
+    "14:00-14:30": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -804.38
+    },
+    "14:30-15:00": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 2,
+     "winners": 1,
+     "net": 196.78
+    },
+    "SQUEEZE": {
+     "tickets": 8,
+     "winners": 0,
+     "net": -4389.18
+    }
+   },
+   "best": [
+    {
+     "day": "2025-02-13",
+     "side": "P",
+     "minute": 819,
+     "lots": 2,
+     "entry": 17.6,
+     "net": 401.5,
+     "origin": "E032",
+     "peak": 1.43,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-03-13",
+     "side": "P",
+     "minute": 788,
+     "lots": 2,
+     "entry": 8.6,
+     "net": -192.57,
+     "origin": "SQUEEZE",
+     "peak": 1.4,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-01-02",
+     "side": "C",
+     "minute": 895,
+     "lots": 2,
+     "entry": 5.9,
+     "net": -204.72,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-02-27",
+     "side": "P",
+     "minute": 795,
+     "lots": 6,
+     "entry": 5.2,
+     "net": -830.51,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-02-20",
+     "side": "P",
+     "minute": 782,
+     "lots": 2,
+     "entry": 17.6,
+     "net": -824.64,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STRUCTURE"
+    },
+    {
+     "day": "2025-01-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 2,
+     "entry": 15.0,
+     "net": -804.38,
+     "origin": "SQUEEZE",
+     "peak": 1.01,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 8,
+    "added_net": -4389.18,
+    "added_winners": 0,
+    "removed": 18,
+    "removed_net": 5740.03,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  }
+ },
+ "EN09 breakout alone": {
+  "2023": {
+   "net": -2919.91,
+   "tickets": 13,
+   "winners": 3,
+   "by_side": {
+    "C": {
+     "tickets": 8,
+     "winners": 2,
+     "net": -794.73
+    },
+    "P": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -2125.18
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -2414.44
+    },
+    "STRUCTURE": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -824.38
+    },
+    "TIME": {
+     "tickets": 7,
+     "winners": 3,
+     "net": 318.91
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 7,
+     "winners": 1,
+     "net": -1083.85
+    },
+    "13:30-14:00": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -1082.82
+    },
+    "14:00-14:30": {
+     "tickets": 3,
+     "winners": 2,
+     "net": -52.24
+    },
+    "14:30-15:00": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -701.0
+    }
+   },
+   "by_origin": {
+    "SQUEEZE": {
+     "tickets": 13,
+     "winners": 3,
+     "net": -2919.91
+    }
+   },
+   "best": [
+    {
+     "day": "2023-05-25",
+     "side": "C",
+     "minute": 847,
+     "lots": 1,
+     "entry": 8.95,
+     "net": 356.89,
+     "origin": "SQUEEZE",
+     "peak": 1.69,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-10-26",
+     "side": "C",
+     "minute": 783,
+     "lots": 1,
+     "entry": 9.75,
+     "net": 158.89,
+     "origin": "SQUEEZE",
+     "peak": 1.32,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-02-23",
+     "side": "P",
+     "minute": 867,
+     "lots": 2,
+     "entry": 15.45,
+     "net": 149.16,
+     "origin": "SQUEEZE",
+     "peak": 1.35,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-11-23",
+     "side": "P",
+     "minute": 817,
+     "lots": 2,
+     "entry": 13.0,
+     "net": -816.73,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-09",
+     "side": "P",
+     "minute": 871,
+     "lots": 5,
+     "entry": 6.55,
+     "net": -701.0,
+     "origin": "SQUEEZE",
+     "peak": 1.46,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-02",
+     "side": "P",
+     "minute": 844,
+     "lots": 2,
+     "entry": 16.45,
+     "net": -558.29,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STRUCTURE"
+    }
+   ],
+   "vs_control": {
+    "added": 13,
+    "added_net": -2919.91,
+    "added_winners": 3,
+    "removed": 17,
+    "removed_net": -3645.12,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2024": {
+   "net": -4200.32,
+   "tickets": 13,
+   "winners": 1,
+   "by_side": {
+    "C": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -600.61
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 0,
+     "net": -3599.71
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -1820.94
+    },
+    "STRUCTURE": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -908.07
+    },
+    "TIME": {
+     "tickets": 7,
+     "winners": 1,
+     "net": -1471.31
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 0,
+     "net": -1915.56
+    },
+    "13:30-14:00": {
+     "tickets": 7,
+     "winners": 1,
+     "net": -1969.71
+    },
+    "14:00-14:30": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -315.05
+    }
+   },
+   "by_origin": {
+    "SQUEEZE": {
+     "tickets": 13,
+     "winners": 1,
+     "net": -4200.32
+    }
+   },
+   "best": [
+    {
+     "day": "2024-07-11",
+     "side": "C",
+     "minute": 831,
+     "lots": 2,
+     "entry": 6.85,
+     "net": 301.02,
+     "origin": "SQUEEZE",
+     "peak": 1.52,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-08",
+     "side": "P",
+     "minute": 833,
+     "lots": 2,
+     "entry": 17.75,
+     "net": -130.52,
+     "origin": "SQUEEZE",
+     "peak": 1.25,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-22",
+     "side": "C",
+     "minute": 790,
+     "lots": 1,
+     "entry": 13.1,
+     "net": -133.55,
+     "origin": "SQUEEZE",
+     "peak": 1.13,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-07-04",
+     "side": "P",
+     "minute": 784,
+     "lots": 2,
+     "entry": 13.6,
+     "net": -778.0,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 824,
+     "lots": 2,
+     "entry": 12.75,
+     "net": -609.06,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STRUCTURE"
+    },
+    {
+     "day": "2024-01-18",
+     "side": "P",
+     "minute": 818,
+     "lots": 3,
+     "entry": 11.85,
+     "net": -539.24,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "TIME"
+    }
+   ],
+   "vs_control": {
+    "added": 13,
+    "added_net": -4200.32,
+    "added_winners": 1,
+    "removed": 19,
+    "removed_net": 15580.74,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  },
+  "2025": {
+   "net": -4196.61,
+   "tickets": 7,
+   "winners": 0,
+   "by_side": {
+    "C": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1114.5
+    },
+    "P": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -3082.11
+    }
+   },
+   "by_exit": {
+    "STOP": {
+     "tickets": 4,
+     "winners": 0,
+     "net": -2473.08
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -824.64
+    },
+    "TIME": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -898.89
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1931.46
+    },
+    "13:30-14:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -1460.77
+    },
+    "14:00-14:30": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -804.38
+    }
+   },
+   "by_origin": {
+    "SQUEEZE": {
+     "tickets": 7,
+     "winners": 0,
+     "net": -4196.61
+    }
+   },
+   "best": [
+    {
+     "day": "2025-02-06",
+     "side": "C",
+     "minute": 804,
+     "lots": 1,
+     "entry": 13.25,
+     "net": -276.31,
+     "origin": "SQUEEZE",
+     "peak": 1.03,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-03-06",
+     "side": "C",
+     "minute": 816,
+     "lots": 2,
+     "entry": 6.8,
+     "net": -412.6,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-01-16",
+     "side": "C",
+     "minute": 837,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -425.59,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-02-27",
+     "side": "P",
+     "minute": 795,
+     "lots": 6,
+     "entry": 5.2,
+     "net": -830.51,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-02-20",
+     "side": "P",
+     "minute": 782,
+     "lots": 2,
+     "entry": 17.6,
+     "net": -824.64,
+     "origin": "SQUEEZE",
+     "peak": 1.0,
+     "path": "STRUCTURE"
+    },
+    {
+     "day": "2025-01-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 2,
+     "entry": 15.0,
+     "net": -804.38,
+     "origin": "SQUEEZE",
+     "peak": 1.01,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 7,
+    "added_net": -4196.61,
+    "added_winners": 0,
+    "removed": 20,
+    "removed_net": 5936.81,
+    "changed": 0,
+    "changed_delta": 0,
+    "biggest": []
+   }
+  }
+ },
+ "EN10 one-lot bank": {
+  "2023": {
+   "net": -3045.03,
+   "tickets": 17,
+   "winners": 4,
+   "by_side": {
+    "C": {
+     "tickets": 10,
+     "winners": 2,
+     "net": -1063.4
+    },
+    "P": {
+     "tickets": 7,
+     "winners": 2,
+     "net": -1981.63
+    }
+   },
+   "by_exit": {
+    "ONE_LOT_BANK": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 638.09
+    },
+    "STOP": {
+     "tickets": 5,
+     "winners": 0,
+     "net": -3709.26
+    },
+    "TIME": {
+     "tickets": 11,
+     "winners": 3,
+     "net": 26.14
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 7,
+     "winners": 1,
+     "net": -1912.8
+    },
+    "13:30-14:00": {
+     "tickets": 5,
+     "winners": 1,
+     "net": -884.43
+    },
+    "14:00-14:30": {
+     "tickets": 3,
+     "winners": 2,
+     "net": 1339.69
+    },
+    "14:30-15:00": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -1587.49
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 17,
+     "winners": 4,
+     "net": -3045.03
+    }
+   },
+   "best": [
+    {
+     "day": "2023-06-22",
+     "side": "P",
+     "minute": 865,
+     "lots": 4,
+     "entry": 5.4,
+     "net": 1104.25,
+     "origin": "E032",
+     "peak": 1.97,
+     "path": "TIME"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "C",
+     "minute": 851,
+     "lots": 1,
+     "entry": 15.5,
+     "net": 638.09,
+     "origin": "E032",
+     "peak": 1.72,
+     "path": "ONE_LOT_BANK"
+    },
+    {
+     "day": "2023-07-27",
+     "side": "P",
+     "minute": 813,
+     "lots": 3,
+     "entry": 11.7,
+     "net": 142.01,
+     "origin": "E032",
+     "peak": 1.44,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2023-06-15",
+     "side": "P",
+     "minute": 881,
+     "lots": 6,
+     "entry": 5.6,
+     "net": -1161.74,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-03-16",
+     "side": "P",
+     "minute": 831,
+     "lots": 2,
+     "entry": 15.4,
+     "net": -888.83,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2023-12-07",
+     "side": "P",
+     "minute": 789,
+     "lots": 2,
+     "entry": 14.9,
+     "net": -830.29,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 1,
+    "changed_delta": 600.09,
+    "biggest": [
+     {
+      "day": "2023-03-16",
+      "side": "C",
+      "was": 38.0,
+      "now": 638.09
+     }
+    ]
+   }
+  },
+  "2024": {
+   "net": 15217.45,
+   "tickets": 19,
+   "winners": 9,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 4,
+     "net": 722.21
+    },
+    "P": {
+     "tickets": 8,
+     "winners": 5,
+     "net": 14495.24
+    }
+   },
+   "by_exit": {
+    "ONE_LOT_BANK": {
+     "tickets": 2,
+     "winners": 2,
+     "net": 766.95
+    },
+    "STOP": {
+     "tickets": 5,
+     "winners": 0,
+     "net": -2023.87
+    },
+    "STRUCTURE": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -322.26
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 1044.21
+    },
+    "TARGET_BASE+HERO_TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 11770.72
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 3575.65
+    },
+    "TIME": {
+     "tickets": 5,
+     "winners": 2,
+     "net": 877.05
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -471.0
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 5,
+     "winners": 2,
+     "net": 1138.02
+    },
+    "13:30-14:00": {
+     "tickets": 4,
+     "winners": 1,
+     "net": -729.73
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 1740.59
+    },
+    "14:30-15:00": {
+     "tickets": 5,
+     "winners": 3,
+     "net": 13068.57
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 19,
+     "winners": 9,
+     "net": 15217.45
+    }
+   },
+   "best": [
+    {
+     "day": "2024-03-28",
+     "side": "P",
+     "minute": 894,
+     "lots": 4,
+     "entry": 7.6,
+     "net": 11770.72,
+     "origin": "E032",
+     "peak": 11.41,
+     "path": "TARGET_BASE+HERO_TARGET"
+    },
+    {
+     "day": "2024-08-08",
+     "side": "P",
+     "minute": 781,
+     "lots": 2,
+     "entry": 17.85,
+     "net": 1376.9,
+     "origin": "E032",
+     "peak": 2.53,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2024-07-18",
+     "side": "C",
+     "minute": 841,
+     "lots": 2,
+     "entry": 8.25,
+     "net": 1149.56,
+     "origin": "E032",
+     "peak": 3.55,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2024-01-11",
+     "side": "P",
+     "minute": 857,
+     "lots": 1,
+     "entry": 19.0,
+     "net": -646.98,
+     "origin": "E032",
+     "peak": 1.36,
+     "path": "STOP"
+    },
+    {
+     "day": "2024-08-14",
+     "side": "P",
+     "minute": 807,
+     "lots": 4,
+     "entry": 8.65,
+     "net": -506.66,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    },
+    {
+     "day": "2024-02-29",
+     "side": "C",
+     "minute": 889,
+     "lots": 2,
+     "entry": 6.85,
+     "net": -471.0,
+     "origin": "E032",
+     "peak": 1.55,
+     "path": "TRAIL"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 2,
+    "changed_delta": -363.29,
+    "biggest": [
+     {
+      "day": "2024-02-22",
+      "side": "C",
+      "was": 1312.95,
+      "now": 339.83
+     },
+     {
+      "day": "2024-07-18",
+      "side": "C",
+      "was": -182.71,
+      "now": 427.12
+     }
+    ]
+   }
+  },
+  "2025": {
+   "net": 5852.47,
+   "tickets": 20,
+   "winners": 13,
+   "by_side": {
+    "C": {
+     "tickets": 11,
+     "winners": 6,
+     "net": 880.54
+    },
+    "P": {
+     "tickets": 9,
+     "winners": 7,
+     "net": 4971.93
+    }
+   },
+   "by_exit": {
+    "ONE_LOT_BANK": {
+     "tickets": 3,
+     "winners": 3,
+     "net": 1256.3
+    },
+    "STOP": {
+     "tickets": 2,
+     "winners": 0,
+     "net": -969.09
+    },
+    "TARGET": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 690.69
+    },
+    "TARGET_BASE+RUNNER_TRAIL": {
+     "tickets": 1,
+     "winners": 1,
+     "net": 1046.91
+    },
+    "TIME": {
+     "tickets": 12,
+     "winners": 8,
+     "net": 4032.38
+    },
+    "TRAIL": {
+     "tickets": 1,
+     "winners": 0,
+     "net": -204.72
+    }
+   },
+   "by_window": {
+    "13:00-13:30": {
+     "tickets": 6,
+     "winners": 4,
+     "net": 1570.78
+    },
+    "13:30-14:00": {
+     "tickets": 6,
+     "winners": 5,
+     "net": 2350.89
+    },
+    "14:00-14:30": {
+     "tickets": 5,
+     "winners": 4,
+     "net": 2847.19
+    },
+    "14:30-15:00": {
+     "tickets": 3,
+     "winners": 0,
+     "net": -916.39
+    }
+   },
+   "by_origin": {
+    "E032": {
+     "tickets": 20,
+     "winners": 13,
+     "net": 5852.47
+    }
+   },
+   "best": [
+    {
+     "day": "2025-08-07",
+     "side": "P",
+     "minute": 797,
+     "lots": 2,
+     "entry": 13.4,
+     "net": 1252.67,
+     "origin": "E032",
+     "peak": 1.99,
+     "path": "TIME"
+    },
+    {
+     "day": "2025-09-02",
+     "side": "P",
+     "minute": 840,
+     "lots": 2,
+     "entry": 15.05,
+     "net": 1046.91,
+     "origin": "E032",
+     "peak": 2.5,
+     "path": "TARGET_BASE+RUNNER_TRAIL"
+    },
+    {
+     "day": "2025-06-12",
+     "side": "P",
+     "minute": 818,
+     "lots": 2,
+     "entry": 17.25,
+     "net": 966.02,
+     "origin": "E032",
+     "peak": 1.42,
+     "path": "TIME"
+    }
+   ],
+   "worst": [
+    {
+     "day": "2025-11-11",
+     "side": "C",
+     "minute": 834,
+     "lots": 1,
+     "entry": 17.7,
+     "net": -491.08,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-03-06",
+     "side": "C",
+     "minute": 882,
+     "lots": 2,
+     "entry": 8.55,
+     "net": -478.01,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "STOP"
+    },
+    {
+     "day": "2025-02-06",
+     "side": "C",
+     "minute": 808,
+     "lots": 1,
+     "entry": 13.25,
+     "net": -324.96,
+     "origin": "E032",
+     "peak": 1.0,
+     "path": "TIME"
+    }
+   ],
+   "vs_control": {
+    "added": 0,
+    "added_net": 0,
+    "added_winners": 0,
+    "removed": 0,
+    "removed_net": 0,
+    "changed": 3,
+    "changed_delta": -84.34,
+    "biggest": [
+     {
+      "day": "2025-04-17",
+      "side": "C",
+      "was": 761.22,
+      "now": 543.89
+     },
+     {
+      "day": "2025-10-14",
+      "side": "C",
+      "was": 258.45,
+      "now": 472.54
+     },
+     {
+      "day": "2025-12-16",
+      "side": "C",
+      "was": 320.97,
+      "now": 239.87
+     }
+    ]
+   }
+  }
+ }
+}
