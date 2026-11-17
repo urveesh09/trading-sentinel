@@ -101,6 +101,34 @@ first three January ones were never downloaded.
 - The system now records paper results honestly, so each new expiry adds real evidence.
 - What can genuinely move this forward is new data (below) and forward paper tickets.
 
+## Fifteen more slots (EN11–EN25): ten from the auditor, five of mine
+
+None beat E03.2, so it stays exactly as it is. Every slot's anatomy, where it won and where it lost, is in
+[ANATOMY3.md](research/simulation/2026-11-17-expiry-en/ANATOMY3.md).
+
+| Slot | Idea | What happened | Worth keeping |
+|---|---|---|---|
+| EN11 | Sell the moment the price touches the stop | Worse every year. Cheap expiry options dip through the stop and come back: 16 of 42 did within a minute. | Selling on the completed minute is right. |
+| EN12 | At 2x, sell just enough to get the money back | Changed one ticket | The "keep a runner" rule paid only on the one big day (+8,903). On the other four 2x winners it cost 4,104. |
+| EN13 | Trade sideways days: buy at the edge, sell at the middle | Lost every year | Nothing. The move to the middle is too small for an expiry option. |
+| EN14 | Wait for the second push of a fast move | Lost in 2 of 3 years | Always better than chasing the first burst (+7,707 over three years). |
+| EN15 | Watch the 50 stocks for an early lead | No lead at all | Not worth buying stock-minute data for this. |
+| EN16 | Check the next week's options before buying | Agrees almost always, so it filters nothing | — |
+| EN17 | Buy a call and a put on a sudden burst | 13 of 15 lost | Nothing |
+| EN18 | Pick the cheaper strike next door | The cheaper strike always costs more per rupee (about double) | E03.2's strike choice is already the efficient one. |
+| EN19 | One small late shot when the index leaves a strike | Lost in 2 of 3 years | Its few runners paid. |
+| EN20 | Re-enter after a stop only if the move proves itself | Only one retry in three years | E03.2's existing retries are profitable. Keep them. |
+| **EN21** (mine) | Buy half first, add the rest only once it rises 20% | Halved 2023's stop losses, but halved slow 2025 winners | The best "smaller loss when wrong" idea, but most of its gain is the one big day. |
+| **EN22** (mine) | No stop at all, just the time and trend exits | About the same | The stop isn't the leak; the losing entries are. |
+| **EN23** (mine) | Last-half-hour momentum (a known index effect) | 4 winners in 25 | Too small an effect for expiry options. |
+| **EN24** (mine) | Only enter when futures volume backs the move | Removed the 2024 big day | Volume is not a quality signal here. |
+| **EN25** (mine) | Wait at the bid instead of paying the ask | About even normally; much better when fills are bad | A safety idea to measure on real quotes. |
+
+**Bottom line:**
+- Every exit idea (faster stop, no stop, smaller runner) and every entry filter (volume, calm mornings) either moves money from one year to another or removes the one big 2024 day.
+- E03.2 loses on wrong entries. None of these fifteen fixes that.
+- Only fresh data can move this forward: SENSEX, NIFTY 2026, and forward paper tickets.
+
 ## Data that would help next
 
 All of it through the download skill.

@@ -224,3 +224,52 @@ Fills for EN08–EN10 each year (ordinary / adverse):
   1. NIFTY 2026 expiry afternoons;
   2. SENSEX expiry afternoons;
   3. forward paper tickets.
+
+## EN11–EN25: the auditor's ten slots plus five of mine (Nov 17–18)
+
+**Inputs and files:**
+- **Brief:** `../../../EXPIRY_RESEARCH_EN11_EN20.md`.
+- **Plan:** [PLAN3.md](PLAN3.md), frozen at `d2f53af7` (`freeze3.json`) before any score.
+- **Scored once:** `python en_score3.py score`, start receipt `results3-started.json`, output `results3.json` + `anatomy3.json`.
+- **Write-up:** [ANATOMY3.md](ANATOMY3.md); every table is rendered in [ANATOMY3-tables.md](ANATOMY3-tables.md) by `render3.py`.
+
+**Verification before the freeze:**
+- `python en_lab3.py`: CHECK_OK. With every hook off, the lab reproduces E03.2 day by day on 2023–25 at all three fill levels, and every arm runs. Only counts were printed.
+- `python rec2026.py`: 19 sealed expiry sessions, every file hash-checked.
+- `python en15_breadth.py`: 50 names, 143 sessions.
+- `python en11_seconds.py`: 22 contracts.
+- `python en_score3.py selftest`: the whole pipeline on 2 days a year, with no rupees printed.
+
+**Data:**
+- **NIFTY 2023–25 chains** (seen): EN11–EN14, EN17, EN19–EN25.
+- **2026 recorded quotes:** forward-panel export `20261117T103003Z`, 9 NIFTY + 10 SENSEX sealed expiry sessions, Sep 10 – Nov 13, real bid/ask and 5-level depth, both weeklies. Used for EN16 and EN18; now seen for these questions.
+- **Kite 15-minute bars, Jan–Jul 2026:** EN15 breadth.
+- **NIFTY 1-second trades, Jan–Mar 2026:** EN11's speed measure.
+- No download, no `.env`, source or Production change.
+
+| Slot | Result | Lesson |
+|---|---|---|
+| EN11 fast exit | FAIL: worse every year (−361 / −1,833 / −973) | Intrabar stops cut 9 winners (−5,300) to save 17 losers (+2,133). 1-second data: fast exits are 0.4% of entry worse than the minute cadence, and 16 of 42 stop touches recover within 60 s. Keep the completed-minute stop. |
+| EN12 pay for the runner | INCONCLUSIVE (1 ticket) | The full-sale diagnostic shows the runner is a hero lottery: +8,903 on 2024-03-28, −4,104 over the 4 other 2x tickets. |
+| EN13 range rotation | FAIL: −2,608 / −2,924 / −4,033 | Midpoint targets win, but range breaks and the clock lose more. Below the random-side null in 2023 and 2025. |
+| EN14 second wave | FAIL: +1,768 / −3,203 / −1,064 | Beats the immediate-impulse entry every year (+7,707 in total). Chasing a burst loses about Rs 3,400 a year. |
+| EN15 breadth | FAIL | When 80% of names move together the index always agrees (0 disagreements), and the next bar continues 45%. No lead. |
+| EN16 next-expiry confirmation | FAIL | Agrees 155 of 162 times (the same index), so it is no filter. The trigger's one-lot trades lose −68 each on real quotes. |
+| EN17 burst pair | FAIL: −628 / −1,388 / −1,525 | 10 of 15 pairs fade; below the random-minute null every year. |
+| EN18 strike by real cost | FAIL | The further strike is never cheaper per rupee. Round trip: NIFTY 11.0% against 5.7%, SENSEX 7.6% against 5.0%. E03.2's pick is already the efficient one. |
+| EN19 late pin release | FAIL: +1,629 / −2,530 / −2,697 | The one-lot runner works when it comes; stops dominate (2025: −5,713). |
+| EN20 proven re-entry | INCONCLUSIVE (1 retry) | E03.2's own retries after a stop are positive (blocking them costs 1,740 in 2024). Keep them. |
+| EN21 scale in when right | FAIL: −3,042 / +21,293 / +3,922 | Halves wrong multi-lot puts (2023 +604) but halves slow winners (2025 −2,015). The 2024 gain is the hero (+6,658). |
+| EN22 no hard stop | FAIL: +884 over three years, worse in 2023 and 2025 | The stop is roughly neutral. Stopped trades were wrong entries. |
+| EN23 last-half-hour momentum | FAIL: +2,815 / −3,049 / −1,176 | 4 winners in 25; calls lose every year. Gao et al.'s index effect is too small for 15:00 expiry options. |
+| EN24 futures participation | FAIL: −1,271 / +3,595 / +4,634 | It removes the 2024 hero (4 tickets, +11,986). Like EN08: it helps the bad year and removes the good years' winners. |
+| EN25 patient entry | FAIL: +286 / −572 / +188 | It fills almost every time and is about neutral in ordinary fills. Far better under severe fills: it keeps the 2024 hero, which a market order loses to its 8% limit. An execution safety to measure forward. |
+
+**Conclusion:**
+- E03.2 is unchanged. Its stop level and cadence, retry, strike choice and runner were each challenged, and each held up.
+- Its losses come from wrong entries, which no exit or filter here repairs without removing the 2024 hero.
+- Fresh data is the only lever left:
+  - SENSEX expiry afternoons;
+  - NIFTY 2026 chains;
+  - forward paper tickets;
+  - EN25's resting-bid fill rate on recorded quotes.

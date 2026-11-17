@@ -1,3 +1,42 @@
+## November 18 (after midnight) - EN11–EN25 scored once: none passes, E03.2 unchanged (research only, Dev; nothing deployed; Production stays 55b5e942)
+
+**Owner (Nov 17):** run the auditor's ten slots (`docs/EXPIRY_RESEARCH_EN11_EN20.md`) plus five of my own. Plan `docs/research/simulation/2026-11-17-expiry-en/PLAN3.md`, frozen `d2f53af7` before any score. Scored once by `en_score3.py` into `results3.json`, `anatomy3.json` and `results3-started.json`. The write-up with each slot's wins, losses, good and bad parts is `ANATOMY3.md`; the plain report is `docs/EXPIRY_RESEARCH_EN.md`.
+
+- **Verdicts:** 13 FAIL. **EN12** (pay for the runner) and **EN20** (proven re-entry) are INCONCLUSIVE: one ticket moved each.
+- **Exits held:**
+  - EN11, the intrabar fast stop, is worse every year. 1-second data shows 16 of 42 stop touches recover within 60 s.
+  - EN22, no hard stop, is roughly neutral.
+  - EN12's diagnostic shows the runner pays only the 2024 hero (+8,903) and costs −4,104 over the other four 2x tickets.
+- **Entries held:**
+  - EN18: E03.2's nearest-OTM strike is the cheapest per rupee on real 2026 quotes.
+  - EN20: E03.2's own retries after a stop are positive.
+  - EN24, the futures-volume filter, removes the 2024 hero.
+- **New setups each lose in their own book:**
+  - EN13 range rotation;
+  - EN14 second wave: it beats chasing the impulse by +7,707 over three years, but still fails;
+  - EN17 burst pair;
+  - EN19 late pin release;
+  - EN23 last-half-hour momentum.
+- **Signals:**
+  - EN15: breadth adds no lead at 15 minutes.
+  - EN16: the next-expiry check agrees 155 of 162 times, so it filters nothing.
+- **Parts worth keeping (hypotheses only):**
+  - EN21 scale-in halves wrong multi-lot puts;
+  - EN25's resting bid is neutral in ordinary fills and much safer under severe ones.
+- **Data now seen:**
+  - forward-panel quotes, 19 expiry sessions Sep 10 – Nov 13 2026 (for these questions);
+  - Kite 15-minute bars Jan–Jul 2026, for breadth;
+  - NIFTY 1-second trades Jan–Mar 2026, for stop speed.
+- **Verification:**
+  - `en_lab3.py` CHECK_OK: hooks off = E03.2 day by day, 2023–25 × 3 fill levels;
+  - the loader checks and `en_score3.py selftest` passed before the freeze.
+  - Engine suite not re-run (no engine or source change in this round).
+- **No impact:** no source, config, schema or `.env` change, and no download.
+- **Next:**
+  - forward paper tickets (0 of 20);
+  - the owner's call on downloading SENSEX expiry afternoons and NIFTY 2026 chains through the skill;
+  - measuring EN25's resting-bid fill rate on recorded quotes before any execution change.
+
 ## November 17 (late night) - EN07–EN10 and the release. The 2023 coverage re-score is identical; the volatility-regime gate, compression breakout and one-lot bank all fail with their lessons; E03.2 is unchanged. EN01 + EN02 + EN06 released to Production (DEPLOYED: Production 55b5e942, PR #142, verify_deployment exit 0)
 
 **Owner (Nov 17):** five extra EN slots, each to improve the system or teach something. The auditor's brief is `docs/EXPIRY_RESEARCH_EN06_EN15.md`. Plan `docs/research/simulation/2026-11-17-expiry-en/PLAN2.md`, frozen `2b586f36`. Results in `README.md` there and in `docs/EXPIRY_RESEARCH_EN.md`.
