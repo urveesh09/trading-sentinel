@@ -127,4 +127,7 @@
 SN426 → SN427 → SN428 → SN429 → SN434 → SN436 → SN437 → SN438 → SN439 → SN440 → SN430 → SN432 → SN433 → SN431 → SN435.
 
 ## 4. Amendments
-(none yet)
+- **SN426 (date labels, after the run).** The script's SPECIAL rule (no index minute 09:15–09:20) also caught dates with no Breeze index minutes at all. By date-level evidence the 12 are 4 special sessions (muhurat 2022-10-24, 2023-11-12, 2024-11-01, 2025-10-21) and 8 data holes; recorded in the README.
+- **SN430 (blocked).** nseindia.com returned 403 to an automated request from this PC. A cookie retry was refused by the session's safety check and was not worked around. The slot needs the owner's approval for a fetch method, or the auditor's filing list.
+- **SN436 (crash fix).** N08's control trades carry no `n091_entry`. Its stream is built from the tradingsymbol; the crash came before any +N08 number.
+- **SN439b (disclosed follow-up).** A breakeven lock (10 / 20 / 30%), from SN439's 82-of-106 finding.
