@@ -1,3 +1,20 @@
+## November 17 (midday) - SN426–SN440: the hindsight money is mostly timing and direction (break-even needs ~56% / ~68% direction at ₹205 / ₹400); Gold's expiry mornings hold ~7 signals a year (insufficient); Gold's exit headroom exists, but every exit rule cuts its winners; ₹205 is the realistic cost (Gold ≈ ₹617 a real session); a hard loss bound stops Gold at ₹30k (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN426–SN435 (`docs/SN426_SN435_RESEARCH_BRIEF.md`) plus five own slots. Plan `123301ac`. Results: `docs/research/fno/2026-11-17-sn426/README.md`.
+
+**Findings:**
+- **Dates and signals (SN426):** of 1,195 sessions Gold's replay holds 932; 251 are expiries, 4 special and 8 data holes. Gold skips 66 signals because it already holds a position.
+- **Expiry mornings (SN427):** a hooked N11 rerun (parity with every saved evaluation) finds a morning candidate on 27 of ~200 expiry days; the 5 priced cases lose; insufficient.
+- **The hindsight money (SN428):** per decision, perfect side +₹1,269, perfect exit +₹1,240, perfect entry minute +₹2,126 (₹205).
+- **Exits (SN429 / SN439 / SN439b):** Gold leaves ₹2,085 a lot of exit headroom, but fixed checkpoints, no-progress cuts and breakeven locks all lose more than they save.
+- **Loss bound (SN434):** a full-loss bound leaves Gold 4 trades in four years; the current trigger stop keeps up to ₹1 lakh at risk.
+- **Feed, size, edge map (SN436–SN438):** no extra panel book, size-by-expert rule or time cutoff improves both 2022 and 2023–26.
+- **Real cost (SN440):** paper fills cost a median ₹6.5 a lot (mean ₹59) more than the model, so ₹205 stress is conservative.
+- **Blocked:** SN430 (NSE refused automated access), SN431 (recorder not deployed).
+- **Plumbing (SN432):** 5-second ask confirmation filled better on one morning; plumbing only.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow, the recorder's BANKNIFTY chains (`1bfed1d0`).
+
 ## November 17 (late morning) - SN411–SN425: every day offered ₹750 (hindsight), so the gap is selection; Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205, not ₹791); Gold's signal settings are flat and its exposure settings are leverage; BANKNIFTY is the only other venue, mostly in its last week; recorder change for BANKNIFTY in Dev (NOT deployed)
 
 **Owner (Nov 17):** the auditor's SN411–SN420 (`docs/SN411_SN420_RESEARCH_BRIEF.md`) plus five own slots. Plan `e5cc95b7`. Results: `docs/research/fno/2026-11-17-sn411/README.md`.

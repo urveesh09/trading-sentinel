@@ -362,3 +362,10 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **Other venues:** BANKNIFTY's ATM fits ₹15k mainly in its last five sessions before monthly expiry (93%; 30% of all sessions). FINNIFTY is thin and NIFTYNXT50 is untraded (SN413).
 - **A bank-sector residual reverses rather than persists** (SN414). It is pre-registered forward as F1 once BANKNIFTY quotes are recorded.
 - **Still closed:** company results and USDINR lack data on this PC (SN415 / SN416); RBI days are too few (SN402).
+
+## 25. Status after SN426–SN440 (Nov 17, 2026)
+
+- **What a signal must do.** With hindsight over one decision at a time (SN428), a one-hour 1-ITM trade from a coin-flip side loses ₹169 a decision at ₹205. It needs about 56% directional accuracy at ₹205, and about 68% at ₹400, to break even. The best entry minute within ±30 minutes is the single most valuable decision.
+- **NIFTY's expiry mornings, a fifth of all sessions, are not a hidden Gold opportunity.** Gold's own signal fires on about 7 of them a year, and the few priced cases lose (SN427).
+- **Gold's realistic income is about ₹617 a real market session at ₹30k (₹205 stress).** Production's paper fills cost only a median ₹6.5 a lot more than the model (SN440). The gap to ₹750 is about ₹154 per non-Gold session.
+- **No simple exit, feed or size rule improves Gold in both its unseen year and its development years** (SN429 / SN434 / SN436–SN439b).

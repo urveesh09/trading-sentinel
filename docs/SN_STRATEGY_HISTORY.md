@@ -54,6 +54,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN381–SN395 (Nov 16): under honest rules the opening ITM trade is break-even (+₹46 a session, −₹447 after Sep 7); the robust part is ITM over ATM; Gold's 2022 exam closed (N10 sheet D yes, N10 retry the sheets' lead); the wage is a capital question.** Forward fw7a / fw8 / fw9 frozen. See the SN381–SN395 section at the end.
 - **SN396–SN410 (Nov 17): on the real 09:16:00 clock the opening trade loses (−₹81 a session; the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected (p 0.80) and pre-auction checks; the 2022 N10–N11 gap is the stand-aside alone; Gold survives a minute of latency.** Forward fw7b / fw9a / fw8a frozen. See the SN396–SN410 section at the end.
 - **SN411–SN425 (Nov 17): every day offered ₹750 in hindsight (the gap is selection); Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205); Gold's exposure settings are leverage; BANKNIFTY is the only other venue (last week of the month).** Recorder BANKNIFTY change in Dev (not deployed); fw7c / fw9b frozen; F1 pre-registered. See the SN411–SN425 section at the end.
+- **SN426–SN440 (Nov 17): break-even needs ~56% / ~68% direction (₹205 / ₹400) for a one-hour ITM trade; Gold's expiry mornings hold ~7 signals a year; Gold's exit headroom (₹2,085 a lot) resists every simple rule; ₹205 is the realistic Gold cost (₹617 a real session).** See the SN426–SN440 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1131,3 +1132,23 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - The opportunity exists every day; selection is the problem.
 - Gold's empty days are a signal shortage.
 - Gold's size is the owner's leverage decision.
+
+## SN426–SN440 (Nov 17, 2026): expiry mornings, the hindsight decomposition, exits, the loss bound, Gold's feed / edge / cost (folder `docs/research/fno/2026-11-17-sn426`)
+
+**Owner:** the auditor's SN426–SN435 plus five own slots. Plan `123301ac`.
+
+| SN | Result |
+|---|---|
+| 426 | 263 non-Gold dates = 251 expiries + 4 special + 8 data holes; 66 signals skipped while Gold held a position |
+| 427 | Hooked N11 rerun (parity); expiry-morning candidates on 27 of ~200 expiry days; 5 priced, all net losers; insufficient |
+| 428 | Hindsight per decision: side +1,269, exit +1,240, entry minute +2,126, coin −169 (₹205); break-even direction ~56% (₹205) / ~68% (₹400) |
+| 429 / 439 / 439b | Checkpoints, no-progress cuts and breakeven locks all cut Gold's winners; headroom ₹2,085 a lot |
+| 434 | A full-loss bound leaves Gold 4 trades; the trigger stop's worst debit at risk is ₹1 lakh |
+| 436–438 | No extra feed book, size-by-expert rule or entry-hour cutoff helps both periods |
+| 440 | Paper fills vs model: median +₹6.5 a lot; ₹205 is the realistic Gold cost (₹617 a real session) |
+| 430 / 431 / 432 / 433 / 435 | Blocked (NSE access) / blocked (recorder) / plumbing (CONFIRM-5) / back-fill 1 trade / not triggered |
+
+**Lessons:**
+- Selection needs ~56–68% direction accuracy for a one-hour ITM trade.
+- Gold's exits cannot be improved by simple rules.
+- Gold's realistic income is ₹617 a real session at ₹30k.
