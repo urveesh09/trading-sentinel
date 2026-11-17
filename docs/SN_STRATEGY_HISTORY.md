@@ -57,6 +57,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN426–SN440 (Nov 17): break-even needs ~56% / ~68% direction (₹205 / ₹400) for a one-hour ITM trade; Gold's expiry mornings hold ~7 signals a year; Gold's exit headroom (₹2,085 a lot) resists every simple rule; ₹205 is the realistic Gold cost (₹617 a real session).** See the SN426–SN440 section at the end.
 - **SN441–SN455 (Nov 17): on Gold's empty days a one-hour ITM trade needs ~62% / 77% direction (₹205 / ₹400); timing headroom cannot be captured and Gold's entries must stay immediate; Gold's replay is future-blind and ₹205 covers its cost at 6 lots; bank results, the London clock and expiry pinning give nothing usable; a development number has predicted almost nothing (median unseen / development −0.22).** See the SN441–SN455 section at the end.
 - **SN456–SN475 (Nov 17): prior-session FII positioning adds nothing (CW p 0.62); Kronos-small forecasts worse than no change; none of Gold's six-lot exits lacked bids; Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill (break-even needs a forecast correlated ~0.2 with the next hour), not capacity; our forward verdicts are low-power screens (only fx5's paired design is informative).** See the SN456–SN475 section at the end.
+- **SN476–SN490 (Nov 17): Gold v5 unchanged loses on its never-run 2020–21 sample (−₹64,783 @205 from ₹30k), so it has lost in four of seven years and earned only in 2024–26; the live engine takes every trade the benchmark credits and matches its rules to the paisa; no challenger survives (failed-add exit, faster entry, expert adds, oil / rupee filter, next-week option, ETF trend); held-contract research pin in Dev.** See the SN476–SN490 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1200,3 +1201,24 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - The gap is skill, not capacity (break-even correlation ~0.2).
 - Scheduled forward verdicts are screens with little power; prefer paired designs.
 - Gold's cost risk sits in deep-ITM winners the archive never recorded.
+
+## SN476–SN490 (Nov 17, 2026): runtime vs replay Gold, the held-contract pin, faster entry, stop slippage, failed adds, the next-week option, Gold on 2020–21, oil and the rupee, a slow ETF trend, the forward contest; own: failed-add neighbours, Gold's P&L parts, Gold's uncertainty, expert adds, the 2020–21 holdout (folder `docs/research/fno/2026-11-17-sn476`)
+
+Plan `bf895633` (A1–A4); README for every number. Nothing beats Gold v5, and Gold itself loses on its never-run sample.
+
+| SN | Result |
+|---|---|
+| 482 / 490 | Gold v5 unchanged on NIFTY Jan 2020 – Aug 2021 (SN366's route): ₹30k −64,783 @205 / −93,971 @400, 5/20 months+; one lot −35,767 / −52,884; Gold has lost in 4 of 7 years (2020–23), earned in 2024–26. No frozen candidate survives the holdout |
+| 476 | Live Gold: 0 eligible decisions Nov 13–17; the paper record gated at 0.85 holds all 186 benchmark trades; rules match to the paisa; divergences: stop omits the ₹205 reserve, growth on unstressed nets, sampled stops, future vs index |
+| 477 | `research_pins.py` (Dev): Gold / N11 paper contracts pinned in the minute collector until 15:20; SN464's two lost winners recovered on trace; the tick recorder already keeps contracts all day |
+| 480 / 486 | Selling a failed add: 2023–26 −1,56,875 @205; every threshold hurts 2023–26; dipped adds recover. Self-funded ₹30k at ₹400 is bust by 2023-12-22 |
+| 478 | One minute faster: mixed (+15k ₹30k 2023–26, −1.4k 2022, −13k one lot): FAIL; live acts ~40 s after the bar |
+| 479 | No real stop with packets; mechanism: packet stop-limit recovers ₹140–160 a lot on the same touch |
+| 481 / 483 / 484 | Next-week option INSUFFICIENT (no data; 5/5 archive pairs favour the front); oil + rupee add filter −59k; NIFTYBEES 12-month trend CAGR 1.7% vs 10.7% buy-and-hold (2020–26) |
+| 487 / 488 / 489 | 79% of Gold's money is first lots (puts, TPB); candidate differences need 2–667 years to confirm; expert-specific adds pass leave-one-year-out but fail 2023–26 @205 |
+| 485 | Forward: Gold alone from 2026-11-18 for 585 market sessions (`fw10.py`) |
+
+**Lessons:**
+- Judge Gold on all years (2020–26: ₹612 a replay session @205 on ₹30k, ₹11 a lot @400), not on 2023–26.
+- The live engine trades what the replay credits; the gap is regime, not wiring.
+- Funding (refills) is part of Gold; at ₹400 a self-funded ₹30k does not survive 2023.

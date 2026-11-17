@@ -384,3 +384,7 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **Skill is the constraint.** A 10:00 one-hour 1-ITM buyer needs a forecast correlated about 0.2 with the next hour's move to break even at ₹205 (0.1 trading only the top 30%), and about 0.31–0.37 for ₹154 a market session (SN475). Nothing built so far exceeds about 0.1, and its confidence did not map to cash (SN462).
 - **No new information source helped.** Participant positioning (SN456 / SN473) and Kronos (SN458: Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp)) add nothing. FII cash is blocked (SN466) and bank filings are too few (SN457).
 - **The forward verdicts are low-power screens** (SN469 / SN472). Only paired designs such as fx5 separate an edge from none at their horizons.
+
+## 28. Status after SN476–SN490 (Nov 17, 2026)
+
+Gold v5, the benchmark the gap is measured against, loses on its never-run sample (NIFTY Jan 2020 – Aug 2021: −₹64,783 @205 from ₹30k) and has lost in four of seven years; across 2020–26 its ₹30k book averages ₹612 a replay session @205 and one lot ₹11 @400. The ₹154-a-non-Gold-day hurdle assumed Gold's 2023–26 rate; on all years Gold itself is far from ₹750 a session. No challenger beat Gold on any of the round's ten mechanisms. Gold's forward record (`fw10.py`, 585 market sessions from 2026-11-18) decides whether the edge is real. See `docs/research/fno/2026-11-17-sn476/README.md`.
