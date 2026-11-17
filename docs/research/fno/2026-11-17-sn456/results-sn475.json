@@ -1,0 +1,207 @@
+{
+ "dates": 703,
+ "ledger_dates": 742,
+ "market_sessions": 942,
+ "states": {
+  "CE": {
+   "ENTERED": 711,
+   "UNRESOLVED": 2,
+   "NO_QUOTE_OR_UNAFFORDABLE": 29
+  },
+  "PE": {
+   "ENTERED": 714,
+   "UNRESOLVED": 2,
+   "NO_QUOTE_OR_UNAFFORDABLE": 26
+  }
+ },
+ "coin_per_decision": {
+  "205": -316.2,
+  "400": -510.1
+ },
+ "grid": {
+  "0.0": {
+   "ALL": {
+    "hit": 0.4984,
+    "per_decision_205": -315.1,
+    "per_decision_400": -509.3,
+    "per_market_session_205": -235.1,
+    "per_market_session_400": -380.1
+   },
+   "TOP30": {
+    "hit": 0.4979,
+    "per_decision_205": -317.2,
+    "per_decision_400": -511.0,
+    "per_market_session_205": -71.0,
+    "per_market_session_400": -114.5
+   }
+  },
+  "0.02": {
+   "ALL": {
+    "hit": 0.5041,
+    "per_decision_205": -285.6,
+    "per_decision_400": -480.2,
+    "per_market_session_205": -213.1,
+    "per_market_session_400": -358.4
+   },
+   "TOP30": {
+    "hit": 0.5091,
+    "per_decision_205": -255.7,
+    "per_decision_400": -450.2,
+    "per_market_session_205": -57.3,
+    "per_market_session_400": -100.9
+   }
+  },
+  "0.05": {
+   "ALL": {
+    "hit": 0.5125,
+    "per_decision_205": -242.5,
+    "per_decision_400": -437.7,
+    "per_market_session_205": -181.0,
+    "per_market_session_400": -326.6
+   },
+   "TOP30": {
+    "hit": 0.5255,
+    "per_decision_205": -164.3,
+    "per_decision_400": -360.0,
+    "per_market_session_205": -36.8,
+    "per_market_session_400": -80.6
+   }
+  },
+  "0.08": {
+   "ALL": {
+    "hit": 0.5211,
+    "per_decision_205": -196.0,
+    "per_decision_400": -391.8,
+    "per_market_session_205": -146.3,
+    "per_market_session_400": -292.4
+   },
+   "TOP30": {
+    "hit": 0.5433,
+    "per_decision_205": -70.0,
+    "per_decision_400": -267.0,
+    "per_market_session_205": -15.7,
+    "per_market_session_400": -59.8
+   }
+  },
+  "0.1": {
+   "ALL": {
+    "hit": 0.5264,
+    "per_decision_205": -168.9,
+    "per_decision_400": -365.0,
+    "per_market_session_205": -126.0,
+    "per_market_session_400": -272.4
+   },
+   "TOP30": {
+    "hit": 0.554,
+    "per_decision_205": -11.6,
+    "per_decision_400": -209.2,
+    "per_market_session_205": -2.6,
+    "per_market_session_400": -46.9
+   }
+  },
+  "0.15": {
+   "ALL": {
+    "hit": 0.5409,
+    "per_decision_205": -93.0,
+    "per_decision_400": -290.3,
+    "per_market_session_205": -69.4,
+    "per_market_session_400": -216.6
+   },
+   "TOP30": {
+    "hit": 0.5824,
+    "per_decision_205": 154.2,
+    "per_decision_400": -45.0,
+    "per_market_session_205": 34.5,
+    "per_market_session_400": -10.1
+   }
+  },
+  "0.2": {
+   "ALL": {
+    "hit": 0.5557,
+    "per_decision_205": -20.5,
+    "per_decision_400": -218.6,
+    "per_market_session_205": -15.3,
+    "per_market_session_400": -163.2
+   },
+   "TOP30": {
+    "hit": 0.6097,
+    "per_decision_205": 319.1,
+    "per_decision_400": 118.8,
+    "per_market_session_205": 71.5,
+    "per_market_session_400": 26.6
+   }
+  },
+  "0.3": {
+   "ALL": {
+    "hit": 0.5838,
+    "per_decision_205": 116.4,
+    "per_decision_400": -83.7,
+    "per_market_session_205": 86.8,
+    "per_market_session_400": -62.4
+   },
+   "TOP30": {
+    "hit": 0.6657,
+    "per_decision_205": 648.7,
+    "per_decision_400": 447.2,
+    "per_market_session_205": 145.3,
+    "per_market_session_400": 100.2
+   }
+  },
+  "0.5": {
+   "ALL": {
+    "hit": 0.644,
+    "per_decision_205": 380.8,
+    "per_decision_400": 177.6,
+    "per_market_session_205": 284.2,
+    "per_market_session_400": 132.5
+   },
+   "TOP30": {
+    "hit": 0.7773,
+    "per_decision_205": 1324.7,
+    "per_decision_400": 1122.9,
+    "per_market_session_205": 296.7,
+    "per_market_session_400": 251.5
+   }
+  },
+  "1.0": {
+   "ALL": {
+    "hit": 0.9915,
+    "per_decision_205": 1124.6,
+    "per_decision_400": 920.1,
+    "per_market_session_205": 839.3,
+    "per_market_session_400": 686.6
+   },
+   "TOP30": {
+    "hit": 1.0,
+    "per_decision_205": 3139.8,
+    "per_decision_400": 2945.8,
+    "per_market_session_205": 703.3,
+    "per_market_session_400": 659.8
+   }
+  }
+ },
+ "crossings": {
+  "ALL@205": {
+   "rho_break_even": 0.215,
+   "rho_for_target_per_session": 0.3681
+  },
+  "ALL@400": {
+   "rho_break_even": 0.3641,
+   "rho_for_target_per_session": 0.8298
+  },
+  "TOP30@205": {
+   "rho_break_even": 0.1035,
+   "rho_for_target_per_session": 0.3115
+  },
+  "TOP30@400": {
+   "rho_break_even": 0.1637,
+   "rho_for_target_per_session": 0.8019
+  }
+ },
+ "realised": {
+  "SN456_dates": 689,
+  "SN456_yA_corr": 0.0908,
+  "SN456_yB_corr": 0.1138,
+  "SN193_LSTM": "50-52% sign accuracy, near its base rate (SN186-SN200 README)"
+ }
+}
