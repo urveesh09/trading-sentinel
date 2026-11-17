@@ -1,0 +1,118 @@
+{
+ "sessions_with_reading": 406,
+ "cheap_fixed": 115,
+ "prior_SN377_cheap_ATM_gap@205": -147.8,
+ "CHEAP fixed": {
+  "n": 115,
+  "fills": 113,
+  "per_session@205": 18.8,
+  "without_best@205": -71.9,
+  "by_year@205": {
+   "2022": 555.2,
+   "2023": 106.7,
+   "2024": -261.2,
+   "2025": -236.6
+  },
+  "years_positive@205": 2,
+  "per_session@400": -147.2,
+  "without_best@400": -237.7,
+  "by_year@400": {
+   "2022": 411.7,
+   "2023": -71.6,
+   "2024": -469.2,
+   "2025": -384.4
+  },
+  "years_positive@400": 1
+ },
+ "OTHER fixed": {
+  "n": 291,
+  "fills": 284,
+  "per_session@205": -210.8,
+  "without_best@205": -252.2,
+  "by_year@205": {
+   "2022": -29.3,
+   "2023": -62.8,
+   "2024": -513.7,
+   "2025": -183.8
+  },
+  "years_positive@205": 0,
+  "per_session@400": -386.1,
+  "without_best@400": -427.5,
+  "by_year@400": {
+   "2022": -211.3,
+   "2023": -243.6,
+   "2024": -688.0,
+   "2025": -345.0
+  },
+  "years_positive@400": 0
+ },
+ "CHEAP moving": {
+  "n": 139,
+  "fills": 136,
+  "per_session@205": -113.7,
+  "without_best@205": -189.6,
+  "by_year@205": {
+   "2022": 534.2,
+   "2023": -146.2,
+   "2024": -380.1,
+   "2025": -174.8
+  },
+  "years_positive@205": 1,
+  "per_session@400": -279.7,
+  "without_best@400": -355.4,
+  "by_year@400": {
+   "2022": 391.6,
+   "2023": -330.2,
+   "2024": -559.1,
+   "2025": -327.4
+  },
+  "years_positive@400": 1
+ },
+ "OTHER moving": {
+  "n": 210,
+  "fills": 204,
+  "per_session@205": -290.3,
+  "without_best@205": -332.2,
+  "by_year@205": {
+   "2022": -848.7,
+   "2023": 47.7,
+   "2024": -491.9,
+   "2025": -234.7
+  },
+  "years_positive@205": 1,
+  "per_session@400": -462.3,
+  "without_best@400": -504.1,
+  "by_year@400": {
+   "2022": -987.7,
+   "2023": -130.3,
+   "2024": -674.9,
+   "2025": -393.7
+  },
+  "years_positive@400": 0
+ },
+ "ALL": {
+  "n": 406,
+  "fills": 397,
+  "per_session@205": -145.8,
+  "without_best@205": -175.3,
+  "by_year@205": {
+   "2022": 136.8,
+   "2023": -22.5,
+   "2024": -458.1,
+   "2025": -205.0
+  },
+  "years_positive@205": 1,
+  "per_session@400": -318.4,
+  "without_best@400": -347.9,
+  "by_year@400": {
+   "2022": -34.2,
+   "2023": -202.7,
+   "2024": -639.8,
+   "2025": -360.9
+  },
+  "years_positive@400": 0
+ },
+ "fw9 rule per session over all readings@205": 5.3,
+ "fw9 rule per session over all readings@400": -41.7,
+ "supports_fw9": false
+}
