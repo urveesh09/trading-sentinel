@@ -1,0 +1,570 @@
+{
+ "DEPLOYED | 2022 @205": {
+  "net": -15281,
+  "by_year": {
+   "2022": -15281
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9276,
+  "worst_day": -5992,
+  "refilled": 53896,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -80.4,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-1 | 2022 @205": {
+  "net": -17502,
+  "by_year": {
+   "2022": -17502
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9787,
+  "worst_day": -5993,
+  "refilled": 54479,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -92.1,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-3 | 2022 @205": {
+  "net": -25159,
+  "by_year": {
+   "2022": -25159
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -10489,
+  "worst_day": -5990,
+  "refilled": 54202,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -132.4,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-5 | 2022 @205": {
+  "net": -22614,
+  "by_year": {
+   "2022": -22614
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -11555,
+  "worst_day": -5983,
+  "refilled": 54018,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -119.0,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "PLAIN-5 | 2022 @205": {
+  "net": -14669,
+  "by_year": {
+   "2022": -14669
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -6810,
+  "worst_day": -3936,
+  "refilled": 34866,
+  "trades": 21,
+  "sessions": 190,
+  "per_session": -77.2,
+  "final_wallet": 30000,
+  "states": {
+   "FILLED": 21,
+   "WINDOW_END": 11
+  },
+  "mean_improvement_per_lot_on_fills": 243.9
+ },
+ "DISCOUNT-5 | 2022 @205": {
+  "net": -19373,
+  "by_year": {
+   "2022": -19373
+  },
+  "months_positive": 2,
+  "months": 12,
+  "worst_month": -9787,
+  "worst_day": -5990,
+  "refilled": 43971,
+  "trades": 21,
+  "sessions": 190,
+  "per_session": -102.0,
+  "final_wallet": 30000,
+  "states": {
+   "FILLED": 21,
+   "WINDOW_END": 10
+  },
+  "mean_improvement_per_lot_on_fills": 92.1
+ },
+ "DISCOUNT-OR-MARKET-5 | 2022 @205": {
+  "net": -21184,
+  "by_year": {
+   "2022": -21184
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9787,
+  "worst_day": -5991,
+  "refilled": 54204,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -111.5,
+  "final_wallet": 30000,
+  "states": {
+   "FILLED": 21,
+   "MARKET_AT_5": 9
+  },
+  "mean_improvement_per_lot_on_fills": -120.8
+ },
+ "DEPLOYED | 2022 @400": {
+  "net": -23511,
+  "by_year": {
+   "2022": -23511
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -9667,
+  "worst_day": -5994,
+  "refilled": 59839,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -123.7,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-1 | 2022 @400": {
+  "net": -24720,
+  "by_year": {
+   "2022": -24720
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -10178,
+  "worst_day": -5994,
+  "refilled": 59207,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -130.1,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-3 | 2022 @400": {
+  "net": -32181,
+  "by_year": {
+   "2022": -32181
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -10880,
+  "worst_day": -5991,
+  "refilled": 59145,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -169.4,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-5 | 2022 @400": {
+  "net": -29993,
+  "by_year": {
+   "2022": -29993
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -11972,
+  "worst_day": -5995,
+  "refilled": 59379,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -157.9,
+  "final_wallet": 30000,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "PLAIN-5 | 2022 @400": {
+  "net": -20519,
+  "by_year": {
+   "2022": -20519
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -7590,
+  "worst_day": -4326,
+  "refilled": 39007,
+  "trades": 21,
+  "sessions": 190,
+  "per_session": -108.0,
+  "final_wallet": 30000,
+  "states": {
+   "FILLED": 21,
+   "WINDOW_END": 11
+  },
+  "mean_improvement_per_lot_on_fills": 243.9
+ },
+ "DISCOUNT-5 | 2022 @400": {
+  "net": -25224,
+  "by_year": {
+   "2022": -25224
+  },
+  "months_positive": 2,
+  "months": 12,
+  "worst_month": -10178,
+  "worst_day": -5991,
+  "refilled": 48503,
+  "trades": 21,
+  "sessions": 190,
+  "per_session": -132.8,
+  "final_wallet": 30000,
+  "states": {
+   "FILLED": 21,
+   "WINDOW_END": 10
+  },
+  "mean_improvement_per_lot_on_fills": 92.1
+ },
+ "DISCOUNT-OR-MARKET-5 | 2022 @400": {
+  "net": -28402,
+  "by_year": {
+   "2022": -28402
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -10178,
+  "worst_day": -5992,
+  "refilled": 59059,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -149.5,
+  "final_wallet": 30000,
+  "states": {
+   "FILLED": 21,
+   "MARKET_AT_5": 9
+  },
+  "mean_improvement_per_lot_on_fills": -120.8
+ },
+ "DEPLOYED | 2023-2026 @205": {
+  "net": 850883,
+  "by_year": {
+   "2023": -12107,
+   "2024": 187476,
+   "2025": 292811,
+   "2026": 382702
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -38531,
+  "worst_day": -21113,
+  "refilled": 562130,
+  "trades": 156,
+  "sessions": 742,
+  "per_session": 1146.7,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-1 | 2023-2026 @205": {
+  "net": 776641,
+  "by_year": {
+   "2023": -14954,
+   "2024": 183361,
+   "2025": 245065,
+   "2026": 363169
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -36090,
+  "worst_day": -20237,
+  "refilled": 538802,
+  "trades": 154,
+  "sessions": 742,
+  "per_session": 1046.7,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-3 | 2023-2026 @205": {
+  "net": 823835,
+  "by_year": {
+   "2023": -15310,
+   "2024": 135793,
+   "2025": 236270,
+   "2026": 467081
+  },
+  "months_positive": 24,
+  "months": 46,
+  "worst_month": -14486,
+  "worst_day": -20230,
+  "refilled": 484909,
+  "trades": 156,
+  "sessions": 742,
+  "per_session": 1110.3,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-5 | 2023-2026 @205": {
+  "net": 744593,
+  "by_year": {
+   "2023": -12994,
+   "2024": 131156,
+   "2025": 184965,
+   "2026": 441465
+  },
+  "months_positive": 24,
+  "months": 46,
+  "worst_month": -14533,
+  "worst_day": -20212,
+  "refilled": 481093,
+  "trades": 156,
+  "sessions": 742,
+  "per_session": 1003.5,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "PLAIN-5 | 2023-2026 @205": {
+  "net": 218870,
+  "by_year": {
+   "2023": -18243,
+   "2024": 98267,
+   "2025": 39293,
+   "2026": 99554
+  },
+  "months_positive": 14,
+  "months": 46,
+  "worst_month": -26282,
+  "worst_day": -13728,
+  "refilled": 297705,
+  "trades": 107,
+  "sessions": 742,
+  "per_session": 295.0,
+  "final_wallet": 101250,
+  "states": {
+   "WINDOW_END": 60,
+   "FILLED": 107,
+   "PREMISE_FAILED": 2
+  },
+  "mean_improvement_per_lot_on_fills": 264.4
+ },
+ "DISCOUNT-5 | 2023-2026 @205": {
+  "net": 580450,
+  "by_year": {
+   "2023": -2047,
+   "2024": 163868,
+   "2025": 226207,
+   "2026": 192421
+  },
+  "months_positive": 19,
+  "months": 46,
+  "worst_month": -34114,
+  "worst_day": -20206,
+  "refilled": 394185,
+  "trades": 117,
+  "sessions": 742,
+  "per_session": 782.3,
+  "final_wallet": 101250,
+  "states": {
+   "FILLED": 117,
+   "WINDOW_END": 40,
+   "PREMISE_FAILED": 10
+  },
+  "mean_improvement_per_lot_on_fills": 27.6
+ },
+ "DISCOUNT-OR-MARKET-5 | 2023-2026 @205": {
+  "net": 655550,
+  "by_year": {
+   "2023": -12167,
+   "2024": 143455,
+   "2025": 235147,
+   "2026": 289115
+  },
+  "months_positive": 24,
+  "months": 46,
+  "worst_month": -17762,
+  "worst_day": -20222,
+  "refilled": 483968,
+  "trades": 146,
+  "sessions": 742,
+  "per_session": 883.5,
+  "final_wallet": 101250,
+  "states": {
+   "FILLED": 108,
+   "MARKET_AT_5": 38,
+   "PREMISE_FAILED": 10
+  },
+  "mean_improvement_per_lot_on_fills": -85.6
+ },
+ "DEPLOYED | 2023-2026 @400": {
+  "net": 495597,
+  "by_year": {
+   "2023": -20385,
+   "2024": 86356,
+   "2025": 92429,
+   "2026": 337198
+  },
+  "months_positive": 23,
+  "months": 46,
+  "worst_month": -41913,
+  "worst_day": -20202,
+  "refilled": 494651,
+  "trades": 154,
+  "sessions": 742,
+  "per_session": 667.9,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-1 | 2023-2026 @400": {
+  "net": 461253,
+  "by_year": {
+   "2023": -23148,
+   "2024": 73719,
+   "2025": 93543,
+   "2026": 317139
+  },
+  "months_positive": 23,
+  "months": 46,
+  "worst_month": -40387,
+  "worst_day": -20241,
+  "refilled": 467610,
+  "trades": 155,
+  "sessions": 742,
+  "per_session": 621.6,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-3 | 2023-2026 @400": {
+  "net": 451045,
+  "by_year": {
+   "2023": -23380,
+   "2024": 91913,
+   "2025": 63106,
+   "2026": 319405
+  },
+  "months_positive": 22,
+  "months": 46,
+  "worst_month": -42484,
+  "worst_day": -20235,
+  "refilled": 468723,
+  "trades": 154,
+  "sessions": 742,
+  "per_session": 607.9,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "DELAY-5 | 2023-2026 @400": {
+  "net": 484908,
+  "by_year": {
+   "2023": -21720,
+   "2024": 87804,
+   "2025": 54186,
+   "2026": 364638
+  },
+  "months_positive": 20,
+  "months": 46,
+  "worst_month": -15724,
+  "worst_day": -20206,
+  "refilled": 425093,
+  "trades": 154,
+  "sessions": 742,
+  "per_session": 653.5,
+  "final_wallet": 101250,
+  "states": {},
+  "mean_improvement_per_lot_on_fills": null
+ },
+ "PLAIN-5 | 2023-2026 @400": {
+  "net": 92546,
+  "by_year": {
+   "2023": -22925,
+   "2024": 71704,
+   "2025": 1073,
+   "2026": 42693
+  },
+  "months_positive": 13,
+  "months": 46,
+  "worst_month": -21614,
+  "worst_day": -9191,
+  "refilled": 238986,
+  "trades": 108,
+  "sessions": 742,
+  "per_session": 124.7,
+  "final_wallet": 67500,
+  "states": {
+   "WINDOW_END": 60,
+   "FILLED": 108,
+   "PREMISE_FAILED": 2
+  },
+  "mean_improvement_per_lot_on_fills": 262.6
+ },
+ "DISCOUNT-5 | 2023-2026 @400": {
+  "net": 409669,
+  "by_year": {
+   "2023": -8771,
+   "2024": 123449,
+   "2025": 136892,
+   "2026": 158098
+  },
+  "months_positive": 18,
+  "months": 46,
+  "worst_month": -41329,
+  "worst_day": -20209,
+  "refilled": 426485,
+  "trades": 117,
+  "sessions": 742,
+  "per_session": 552.1,
+  "final_wallet": 101250,
+  "states": {
+   "FILLED": 117,
+   "WINDOW_END": 40,
+   "PREMISE_FAILED": 10
+  },
+  "mean_improvement_per_lot_on_fills": 27.6
+ },
+ "DISCOUNT-OR-MARKET-5 | 2023-2026 @400": {
+  "net": 393569,
+  "by_year": {
+   "2023": -19868,
+   "2024": 96963,
+   "2025": 131596,
+   "2026": 184878
+  },
+  "months_positive": 20,
+  "months": 46,
+  "worst_month": -39368,
+  "worst_day": -20225,
+  "refilled": 534311,
+  "trades": 146,
+  "sessions": 742,
+  "per_session": 530.4,
+  "final_wallet": 101250,
+  "states": {
+   "FILLED": 108,
+   "MARKET_AT_5": 38,
+   "PREMISE_FAILED": 10
+  },
+  "mean_improvement_per_lot_on_fills": -85.6
+ },
+ "pass": {
+  "DELAY-1": false,
+  "DELAY-3": false,
+  "DELAY-5": false,
+  "PLAIN-5": false,
+  "DISCOUNT-5": false,
+  "DISCOUNT-OR-MARKET-5": false
+ }
+}
