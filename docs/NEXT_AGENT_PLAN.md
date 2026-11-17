@@ -1,3 +1,79 @@
+## November 17 (night) - EN01–EN05: E03.2 improvements per the Nov 17 audit. Honest expiry exits (EN01) and a 12:47 recording start, so live E03.2 decides from 13:00 like its lab (EN02), in Dev. The put gate, put size and put runner arms (EN03–EN05) fail their frozen rules, so E03.2 is unchanged and 3x puts become an arm of the prepared NIFTY 2023 exam (Dev only, not deployed)
+
+**Owner (Nov 17):**
+- Five SN-style slots, EN01 to EN05, each an improvement on the E03.2 baseline, tested on our data.
+- Audit of Production `0b645d77`: E03.2 opened 0 paper tickets in 4 live sessions (Nov 5, 9, 12, 17); its
+  efficiency gate gave 404 of 480 refusals. It also found two exit defects and a Dec 7 close question.
+- Plan frozen `08bc55b8`. Results: `docs/research/simulation/2026-11-17-expiry-en/README.md`. Plain
+  report: `docs/EXPIRY_RESEARCH_EN.md`.
+
+**EN01 (engine, Dev): honest exits.**
+- `expiry_e02.run_tick` makes one exit attempt per quote snapshot. FLAT_TIME waits a snapshot when a sale
+  or a latched exit already used this tick's bids; the old code could sell one displayed lot twice at
+  15:14.
+- Every sale is returned as a notice (the old code kept only the last).
+- A leg still open after its session is settled instead of returning `UNRESOLVED_PRIOR_DAY` on every
+  later tick (`settle()`, `booked()`, `SETTLED`):
+  - SETTLED_ASSUMED at intrinsic, less exercise STT, from our sampled post-auction index (before CAS 2.0);
+  - otherwise UNRESOLVED at its worst case;
+  - the value goes in `assumed_pnl` and is never a fill.
+- The cash journal, `day_results` and `summary_lines` include assumed values.
+- `expiry_e02.reconcile(db_path, variant, now)` settles a stuck leg the same evening. The hourly
+  `_run_expiry_paper_reconcile_safe` calls it for every variant and queues the main ticket's notice.
+- `expiry_paper.can_fill` / `last_flat` / `expiring_close` (via `market_calendar.expiring_index_close_time`):
+  - no paper fill at or after the expiring contracts' close (15:40, or 15:30 from 2026-12-07);
+  - every flat time capped two minutes before it, so A/B/C's FINAL_FLAT 15:38 becomes 15:28 from Dec 7;
+  - before Dec 7 nothing changes.
+- The settlement source for A/B/C from Dec 7 (official VWAP 15:00–15:30 against our sampled index) is
+  still open.
+
+**EN02 (engine, Dev): the 13:00 warm-up.**
+- `expiry_paper.TICK_START` is 12:47 (it was 12:59); `EXPECTED_SLOTS` is 1,038 (it was 966).
+- E03.2's signal needs 12 one-minute bars, so live it could not decide before about 13:11. The lab trades
+  from 13:00; 2 of its 39 tickets (+Rs 1,715) were decided at 13:00–13:10.
+- A, B and C act only inside their own 13:00+ windows.
+- Rollback: `TICK_START` 12:59.
+
+**EN03–EN05 (lab, in-sample NIFTY 2024 + 2025; `en_lab.py` reproduces E03.2 +21,517.55 day by day):**
+
+| Arm | Ordinary | Adverse | Severe | Verdict |
+|---|---:|---:|---:|---|
+| E03.2 (control) | +21,518 | +20,001 | −2,438 | — |
+| EN03 put gate 0.65 | +10,367 | +7,367 | −4,070 | Fails all checks |
+| EN04 puts 3x | +34,165 | +31,341 | −3,277 | Passes alone and passes `RISK_PLAN.md`. Neighbours fail: 2.5x on 2024 net without the best day (lot rounding); 3.5x on severe −4,232. Not adopted. |
+| EN05 put runner 1.2 | +18,351 | +17,166 | −3,046 | Both years lower; fails |
+
+- EN03's added put tickets lose in both years. At 0.60: 2024 had 16 tickets, 4 winners, −4,183; 2025 had
+  14 tickets, 3 winners, −7,221. The edge exists only in the strongest trends.
+- No candidate: E03.2 is unchanged.
+
+**Other checks and the 2023 exam:**
+- **SENSEX calibration (descriptive, on the forward-panel quote archive):** in-band strikes exist on
+  83–100% of 13:00–15:00 minutes, except puts on Sep 10 and Oct 1. No bug.
+- **Engine replay** on the 9 Production recordings with 5-level packets: identical to the Nov 5 receipt
+  (2 tickets, −822.96).
+- **Data census (row counts only):** the Breeze database has same-day-expiry afternoon option rows only
+  for NIFTY 2023 (protected), 2024 and 2025. NIFTY 2019–22, NIFTY 2026 and SENSEX 2024–26 have none.
+- **Exam:** `EXAM_EN_ADDENDUM.md` + `exam2023.py` add E03.2-stands (test 7) and 3x puts with neighbours
+  (test 8) to the frozen E03-family exam. The route is NIFTY 2023 from the sealed export.
+  `exam2023.py check` proves the loader against `data.load_year` on 2024.
+- **Scoring needs the owner's word** (`OWNER_WORD.md`, then `freeze`, commit, `score` once).
+
+**Next:**
+1. The owner's word on NIFTY 2023.
+2. A download, through the breeze-history-download skill only, of expiry-afternoon chains: NIFTY 2026,
+   SENSEX Oct 2024 – Nov 2026, NIFTY 2020–22.
+3. E03.2 forward tickets: 0 of 20.
+
+**Verification:**
+- `tests/test_expiry_en01.py` 8 passed; 6 of its first 7 fail on the old code.
+- `-k expiry` 231 passed; `test_expiry_en01` + `test_expiry_paper` 71 passed after EN02.
+- Full engine suite: 6,465 passed, 4 skipped, exit 0 (11 min 36 s). Commits: plan `08bc55b8`, implementation + results `0604fae0`.
+- Atlas regenerated.
+
+**State:** no `.env` or schema change; Dev only, not pushed or deployed until the owner says so. Docker
+Desktop was not running at 20:55 IST on Nov 17, so Production was down; it was not started from here.
+
 ## November 17 (night) - SN476–SN490: Gold v5 unchanged loses on its never-run 2020–21 sample (−₹64,783 @205 from ₹30k), so Gold has lost in four of seven years and earned only in 2024–26; the live engine can take every trade the benchmark credits and matches its rules to the paisa; no challenger survives (failed-add exit, faster entry, expert adds, oil / rupee filter, next-week option, ETF trend); held-contract research pin in Dev (research only, nothing deployed)
 
 **Owner (Nov 17):** the auditor's ten Gold slots (`docs/research/fno/2026-11-17-sn476/BRIEF.md`, byte-exact copy of `2026-11-17-gold-v5-next-ten/HANDOFF.md`) plus five own. Plan `bf895633` (amendments A1–A4). Results: `docs/research/fno/2026-11-17-sn476/README.md`.
