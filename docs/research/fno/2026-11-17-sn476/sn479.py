@@ -95,11 +95,10 @@ def load(day):
     ftok = futs[0][1]
     exps = sorted({x["expiry"] for x in meta.values() if x.get("underlying") == "NIFTY" and x.get("type") in ("CE", "PE") and x["expiry"] > day})
     exp = exps[0]
-    F = tk.load_day(folder, keep=lambda tok, x: tok == ftok)[ftok]
-    lo, hi = float(np.min(F["ltp"][F["ltp"] > 0])), float(np.max(F["ltp"]))
-    want = {t for t, x in meta.items() if x.get("underlying") == "NIFTY" and x.get("type") in ("CE", "PE") and x["expiry"] == exp
-            and lo - 400 <= float(x["strike"]) <= hi + 400}
-    D = tk.load_day(folder, keep=lambda tok, x: tok in want)
+    want = {t for t, x in meta.items() if x.get("underlying") == "NIFTY" and x.get("type") in ("CE", "PE") and x["expiry"] == exp}
+    loaded = tk.load_day(folder, keep=lambda tok, x: tok == ftok or tok in want)
+    D = loaded[1] if isinstance(loaded, tuple) else loaded
+    F = D.pop(ftok)
     opt = {(int(round(float(meta[t]["strike"]))), meta[t]["type"]): t for t in want if t in D}
     lot = int(next(x["lot_size"] for x in meta.values() if x.get("underlying") == "NIFTY" and x.get("type") in ("CE", "PE")))
     return F, D, opt, lot, exp
