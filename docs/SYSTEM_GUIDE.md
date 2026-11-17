@@ -1,3 +1,7 @@
+## November 17, 2026 - Ten 10:00 NIFTY challenger research slots
+
+[Results and receipts](research/fno/2026-11-17-ten-slots/README.md) follow SN456–SN475. No challenger advances. The robust direct-payoff test (R6) removed 56 decisions that lost ₹38,186 at ₹400 stress. The remaining 21 modeled fills made ₹610, or −₹10,897 without the best day. With Gold priority it made −₹1,691. The native Gold v5 replay matches the prior control and remains the baseline. The 2023 expiry-chain exam and pending forward verdicts remain sealed. Dev research only.
+
 ## November 17 (evening) - SN456–SN475: prior-session FII positioning adds nothing to a 10:00 NIFTY forecast (Clark–West p 0.62) and the popular FII long-ratio rule is wrong-signed; Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp); none of Gold's six-lot exits lacked bids (the gaps were recording gaps, including deep-ITM winners outside the archive's strike window); Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill, not capacity: break-even needs a forecast correlated ~0.2 with the next hour; our forward verdicts mostly cannot tell an edge from none (only fx5 is informative); BANKNIFTY F1 cannot reach its verdict (research only, nothing deployed)
 
 **Owner (Nov 17):** the auditor's SN456–SN470 (`docs/SN456_SN470_AI_RESEARCH_BRIEF.md`, `6f6d9d0f`) plus five own slots. Plan `83e1b444`. Results: `docs/research/fno/2026-11-17-sn456/README.md`.

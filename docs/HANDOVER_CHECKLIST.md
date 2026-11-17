@@ -1,3 +1,9 @@
+## November 17, 2026 - Ten follow-up F&O slots verified
+
+- [Ten-slot report and reproducibility trail](research/fno/2026-11-17-ten-slots/README.md), frozen at `ddf21285`, serialization correction and scored source `4acf76ba`.
+- Offline run completed. Clock and cash checks passed, 76 ledger parity checks and 2,050 modeled fill records reconciled. Gold's control replay matched.
+- No admission, configuration change, migration, push or deployment. The 2023 expiry-chain exam was excluded.
+
 ## November 17 (evening) - SN456–SN475: prior-session FII positioning adds nothing to a 10:00 NIFTY forecast (Clark–West p 0.62) and the popular FII long-ratio rule is wrong-signed; Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp); none of Gold's six-lot exits lacked bids (the gaps were recording gaps, including deep-ITM winners outside the archive's strike window); Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill, not capacity: break-even needs a forecast correlated ~0.2 with the next hour; our forward verdicts mostly cannot tell an edge from none (only fx5 is informative); BANKNIFTY F1 cannot reach its verdict (research only, nothing deployed)
 
 **Owner (Nov 17):** the auditor's SN456–SN470 (`docs/SN456_SN470_AI_RESEARCH_BRIEF.md`, `6f6d9d0f`) plus five own slots. Plan `83e1b444`. Results: `docs/research/fno/2026-11-17-sn456/README.md`.

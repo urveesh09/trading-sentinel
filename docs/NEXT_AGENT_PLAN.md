@@ -1,3 +1,10 @@
+## November 17, 2026 - Ten NIFTY challenger slots complete
+
+- Plan and receipts in [the ten-slot report](research/fno/2026-11-17-ten-slots/README.md). Scored source `4acf76ba`. No challenger met the frozen admission criteria.
+- Keep the robust objective as a hypothesis. It improved by shrinking the trading set and its positive total disappeared without one trade. The archive overlap supplied zero R6 signals for a depth check.
+- Next measurement for this finding. Use the existing quote recorder to distinguish Gold's stop-trigger-to-bid market movement from order-path delay once fresh stop examples accrue. Keep the protected 2023 expiry-chain exam sealed.
+- Research-only release. No new runtime setting, migration, push or deployment.
+
 ## November 17 (evening) - SN456–SN475: prior-session FII positioning adds nothing to a 10:00 NIFTY forecast (Clark–West p 0.62) and the popular FII long-ratio rule is wrong-signed; Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp); none of Gold's six-lot exits lacked bids (the gaps were recording gaps, including deep-ITM winners outside the archive's strike window); Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill, not capacity: break-even needs a forecast correlated ~0.2 with the next hour; our forward verdicts mostly cannot tell an edge from none (only fx5 is informative); BANKNIFTY F1 cannot reach its verdict (research only, nothing deployed)
 
 **Owner (Nov 17):** the auditor's SN456–SN470 (`docs/SN456_SN470_AI_RESEARCH_BRIEF.md`, `6f6d9d0f`) plus five own slots. Plan `83e1b444`. Results: `docs/research/fno/2026-11-17-sn456/README.md`.
