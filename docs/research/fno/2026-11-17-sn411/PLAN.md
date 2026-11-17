@@ -155,4 +155,6 @@
 SN411 → SN413 → SN414 → SN412 → SN418 → SN419 → SN421 → SN422 → SN423 → SN424 → SN425 → SN415 / SN416 / SN417 → SN420.
 
 ## 4. Amendments
-(none yet)
+- **SN413 A (disclosed follow-up after the first scoring).** MIDCPNIFTY had no observations: the official index file names it "Nifty Midcap Select". It was re-scored with the right name, adding NIFTYNXT50, in `results-sn413a-followup.json`. The first results are unchanged.
+- **SN414b (disclosed follow-up after SN414's numbers).** The full 27-cell threshold grid × 4 horizons, cash level only, published whole.
+- **SN413 C (Dev change `1bfed1d0`).** BANKNIFTY only. FINNIFTY has no instrument book, and adding one would touch the partner-tips analytics path; SN413 A also shows it thin.
