@@ -1,0 +1,957 @@
+{
+ "days": 42,
+ "all": {
+  "days": 42,
+  "ceiling@205": {
+   "median": 9376,
+   "mean": 9919,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@205": {
+   "median": 9376,
+   "mean": 9919,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling@400": {
+   "median": 9181,
+   "mean": 9724,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@400": {
+   "median": 9181,
+   "mean": 9724,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  }
+ },
+ "gold_empty": {
+  "days": 22,
+  "ceiling@205": {
+   "median": 9354,
+   "mean": 9738,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@205": {
+   "median": 9354,
+   "mean": 9738,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling@400": {
+   "median": 9160,
+   "mean": 9543,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@400": {
+   "median": 9160,
+   "mean": 9543,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  }
+ },
+ "gold_days": {
+  "days": 9,
+  "ceiling@205": {
+   "median": 10378,
+   "mean": 10592,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@205": {
+   "median": 10378,
+   "mean": 10592,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling@400": {
+   "median": 10183,
+   "mean": 10397,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@400": {
+   "median": 10183,
+   "mean": 10397,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  }
+ },
+ "no_replay": {
+  "days": 11,
+  "ceiling@205": {
+   "median": 8938,
+   "mean": 9732,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@205": {
+   "median": 8938,
+   "mean": 9732,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling@400": {
+   "median": 8743,
+   "mean": 9537,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  },
+  "ceiling_stop@400": {
+   "median": 8743,
+   "mean": 9537,
+   "share_ge_750": 1.0,
+   "share_ge_1648": 1.0
+  }
+ },
+ "clock 09:30 @205": {
+  "cells": 42,
+  "affordable": 41,
+  "share_ge_750": 0.951,
+  "share_best_is_loss": 0.0,
+  "median_best": 2875
+ },
+ "clock 10:00 @205": {
+  "cells": 42,
+  "affordable": 42,
+  "share_ge_750": 0.929,
+  "share_best_is_loss": 0.0,
+  "median_best": 2013
+ },
+ "clock 11:00 @205": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.914,
+  "share_best_is_loss": 0.0,
+  "median_best": 2117
+ },
+ "clock 12:00 @205": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.971,
+  "share_best_is_loss": 0.0,
+  "median_best": 2549
+ },
+ "clock 13:00 @205": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.886,
+  "share_best_is_loss": 0.0,
+  "median_best": 2753
+ },
+ "clock 14:00 @205": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.886,
+  "share_best_is_loss": 0.0,
+  "median_best": 2378
+ },
+ "clock 09:30 @400": {
+  "cells": 42,
+  "affordable": 41,
+  "share_ge_750": 0.927,
+  "share_best_is_loss": 0.0,
+  "median_best": 2680
+ },
+ "clock 10:00 @400": {
+  "cells": 42,
+  "affordable": 42,
+  "share_ge_750": 0.929,
+  "share_best_is_loss": 0.0,
+  "median_best": 1785
+ },
+ "clock 11:00 @400": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.886,
+  "share_best_is_loss": 0.0,
+  "median_best": 1922
+ },
+ "clock 12:00 @400": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.914,
+  "share_best_is_loss": 0.0,
+  "median_best": 2354
+ },
+ "clock 13:00 @400": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.829,
+  "share_best_is_loss": 0.0,
+  "median_best": 2508
+ },
+ "clock 14:00 @400": {
+  "cells": 42,
+  "affordable": 35,
+  "share_ge_750": 0.886,
+  "share_best_is_loss": 0.0,
+  "median_best": 2183
+ },
+ "best_contract_side_stop@205": {
+  "CE": 21,
+  "PE": 21
+ },
+ "rows": [
+  {
+   "day": "2026-09-10",
+   "gold": "EMPTY",
+   "contracts": 52,
+   "holes": 4424,
+   "ceiling@205": 4651,
+   "ceiling_stop@205": 4651,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 134.1,
+    "entry_min": 187,
+    "exit_min": 351,
+    "ask": 222.35
+   },
+   "ceiling@400": 4456,
+   "ceiling_stop@400": 4456
+  },
+  {
+   "day": "2026-09-11",
+   "gold": "EMPTY",
+   "contracts": 60,
+   "holes": 7236,
+   "ceiling@205": 9365,
+   "ceiling_stop@205": 9365,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -55.0,
+    "entry_min": 33,
+    "exit_min": 289,
+    "ask": 106.2
+   },
+   "ceiling@400": 9170,
+   "ceiling_stop@400": 9170
+  },
+  {
+   "day": "2026-09-15",
+   "gold": "EMPTY",
+   "contracts": 68,
+   "holes": 10676,
+   "ceiling@205": 12970,
+   "ceiling_stop@205": 12970,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 1,
+    "strike_minus_future": -41.9,
+    "entry_min": 29,
+    "exit_min": 333,
+    "ask": 142.8
+   },
+   "ceiling@400": 12775,
+   "ceiling_stop@400": 12775
+  },
+  {
+   "day": "2026-09-16",
+   "gold": "EMPTY",
+   "contracts": 56,
+   "holes": 6328,
+   "ceiling@205": 4750,
+   "ceiling_stop@205": 4750,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -98.9,
+    "entry_min": 30,
+    "exit_min": 234,
+    "ask": 211.45
+   },
+   "ceiling@400": 4555,
+   "ceiling_stop@400": 4555
+  },
+  {
+   "day": "2026-09-17",
+   "gold": "EMPTY",
+   "contracts": 56,
+   "holes": 5806,
+   "ceiling@205": 6656,
+   "ceiling_stop@205": 6656,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -100.9,
+    "entry_min": 113,
+    "exit_min": 203,
+    "ask": 173.85
+   },
+   "ceiling@400": 6461,
+   "ceiling_stop@400": 6461
+  },
+  {
+   "day": "2026-09-21",
+   "gold": "EMPTY",
+   "contracts": 48,
+   "holes": 2960,
+   "ceiling@205": 5302,
+   "ceiling_stop@205": 5302,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -175.0,
+    "entry_min": 1,
+    "exit_min": 285,
+    "ask": 181.8
+   },
+   "ceiling@400": 5107,
+   "ceiling_stop@400": 5107
+  },
+  {
+   "day": "2026-09-22",
+   "gold": "EMPTY",
+   "contracts": 56,
+   "holes": 5800,
+   "ceiling@205": 8556,
+   "ceiling_stop@205": 8556,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 131.5,
+    "entry_min": 54,
+    "exit_min": 228,
+    "ask": 141.1
+   },
+   "ceiling@400": 8361,
+   "ceiling_stop@400": 8361
+  },
+  {
+   "day": "2026-09-23",
+   "gold": "EMPTY",
+   "contracts": 52,
+   "holes": 5000,
+   "ceiling@205": 4394,
+   "ceiling_stop@205": 4394,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -130.1,
+    "entry_min": 39,
+    "exit_min": 185,
+    "ask": 200.5
+   },
+   "ceiling@400": 4199,
+   "ceiling_stop@400": 4199
+  },
+  {
+   "day": "2026-09-24",
+   "gold": "GOLD",
+   "contracts": 64,
+   "holes": 8477,
+   "ceiling@205": 10378,
+   "ceiling_stop@205": 10378,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 1,
+    "strike_minus_future": 27.3,
+    "entry_min": 17,
+    "exit_min": 309,
+    "ask": 167.7
+   },
+   "ceiling@400": 10183,
+   "ceiling_stop@400": 10183
+  },
+  {
+   "day": "2026-09-25",
+   "gold": "EMPTY",
+   "contracts": 56,
+   "holes": 7084,
+   "ceiling@205": 7917,
+   "ceiling_stop@205": 7917,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -119.5,
+    "entry_min": 260,
+    "exit_min": 289,
+    "ask": 179.35
+   },
+   "ceiling@400": 7722,
+   "ceiling_stop@400": 7722
+  },
+  {
+   "day": "2026-09-28",
+   "gold": "GOLD",
+   "contracts": 64,
+   "holes": 8951,
+   "ceiling@205": 9743,
+   "ceiling_stop@205": 9743,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 51.0,
+    "entry_min": 2,
+    "exit_min": 324,
+    "ask": 121.0
+   },
+   "ceiling@400": 9548,
+   "ceiling_stop@400": 9548
+  },
+  {
+   "day": "2026-09-29",
+   "gold": "EMPTY",
+   "contracts": 56,
+   "holes": 6068,
+   "ceiling@205": 9344,
+   "ceiling_stop@205": 9344,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -93.0,
+    "entry_min": 66,
+    "exit_min": 171,
+    "ask": 115.6
+   },
+   "ceiling@400": 9149,
+   "ceiling_stop@400": 9149
+  },
+  {
+   "day": "2026-09-30",
+   "gold": "EMPTY",
+   "contracts": 64,
+   "holes": 8708,
+   "ceiling@205": 10358,
+   "ceiling_stop@205": 10358,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 21.0,
+    "entry_min": 213,
+    "exit_min": 328,
+    "ask": 190.1
+   },
+   "ceiling@400": 10163,
+   "ceiling_stop@400": 10163
+  },
+  {
+   "day": "2026-10-01",
+   "gold": "EMPTY",
+   "contracts": 76,
+   "holes": 13300,
+   "ceiling@205": 17191,
+   "ceiling_stop@205": 17191,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": -86.0,
+    "entry_min": 81,
+    "exit_min": 287,
+    "ask": 114.95
+   },
+   "ceiling@400": 16996,
+   "ceiling_stop@400": 16996
+  },
+  {
+   "day": "2026-10-05",
+   "gold": "GOLD",
+   "contracts": 64,
+   "holes": 7100,
+   "ceiling@205": 11213,
+   "ceiling_stop@205": 11213,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 72.0,
+    "entry_min": 35,
+    "exit_min": 172,
+    "ask": 196.45
+   },
+   "ceiling@400": 11018,
+   "ceiling_stop@400": 11018
+  },
+  {
+   "day": "2026-10-06",
+   "gold": "EMPTY",
+   "contracts": 56,
+   "holes": 4392,
+   "ceiling@205": 6483,
+   "ceiling_stop@205": 6483,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 1,
+    "strike_minus_future": -96.5,
+    "entry_min": 1,
+    "exit_min": 211,
+    "ask": 202.5
+   },
+   "ceiling@400": 6288,
+   "ceiling_stop@400": 6288
+  },
+  {
+   "day": "2026-10-07",
+   "gold": "GOLD",
+   "contracts": 56,
+   "holes": 4260,
+   "ceiling@205": 7798,
+   "ceiling_stop@205": 7798,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 77.0,
+    "entry_min": 170,
+    "exit_min": 235,
+    "ask": 213.9
+   },
+   "ceiling@400": 7603,
+   "ceiling_stop@400": 7603
+  },
+  {
+   "day": "2026-10-08",
+   "gold": "GOLD",
+   "contracts": 72,
+   "holes": 9940,
+   "ceiling@205": 13772,
+   "ceiling_stop@205": 13772,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": -56.5,
+    "entry_min": 2,
+    "exit_min": 341,
+    "ask": 138.15
+   },
+   "ceiling@400": 13577,
+   "ceiling_stop@400": 13577
+  },
+  {
+   "day": "2026-10-09",
+   "gold": "GOLD",
+   "contracts": 68,
+   "holes": 8608,
+   "ceiling@205": 9652,
+   "ceiling_stop@205": 9652,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 1,
+    "strike_minus_future": 17.6,
+    "entry_min": 10,
+    "exit_min": 307,
+    "ask": 183.8
+   },
+   "ceiling@400": 9457,
+   "ceiling_stop@400": 9457
+  },
+  {
+   "day": "2026-10-12",
+   "gold": "EMPTY",
+   "contracts": 68,
+   "holes": 8520,
+   "ceiling@205": 16515,
+   "ceiling_stop@205": 16515,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": -54.0,
+    "entry_min": 2,
+    "exit_min": 327,
+    "ask": 82.65
+   },
+   "ceiling@400": 16320,
+   "ceiling_stop@400": 16320
+  },
+  {
+   "day": "2026-10-13",
+   "gold": "EMPTY",
+   "contracts": 80,
+   "holes": 16916,
+   "ceiling@205": 12609,
+   "ceiling_stop@205": 12609,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 1,
+    "strike_minus_future": 126.0,
+    "entry_min": 1,
+    "exit_min": 342,
+    "ask": 106.9
+   },
+   "ceiling@400": 12414,
+   "ceiling_stop@400": 12414
+  },
+  {
+   "day": "2026-10-14",
+   "gold": "GOLD",
+   "contracts": 52,
+   "holes": 14368,
+   "ceiling@205": 3489,
+   "ceiling_stop@205": 3489,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -165.0,
+    "entry_min": 17,
+    "exit_min": 34,
+    "ask": 226.4
+   },
+   "ceiling@400": 3294,
+   "ceiling_stop@400": 3294
+  },
+  {
+   "day": "2026-10-15",
+   "gold": "EMPTY",
+   "contracts": 76,
+   "holes": 12020,
+   "ceiling@205": 13730,
+   "ceiling_stop@205": 13730,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 1,
+    "strike_minus_future": 92.3,
+    "entry_min": 7,
+    "exit_min": 269,
+    "ask": 179.65
+   },
+   "ceiling@400": 13535,
+   "ceiling_stop@400": 13535
+  },
+  {
+   "day": "2026-10-16",
+   "gold": "EMPTY",
+   "contracts": 56,
+   "holes": 17636,
+   "ceiling@205": 7118,
+   "ceiling_stop@205": 7118,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -120.4,
+    "entry_min": 21,
+    "exit_min": 53,
+    "ask": 165.05
+   },
+   "ceiling@400": 6923,
+   "ceiling_stop@400": 6923
+  },
+  {
+   "day": "2026-10-19",
+   "gold": "EMPTY",
+   "contracts": 68,
+   "holes": 8865,
+   "ceiling@205": 15244,
+   "ceiling_stop@205": 15244,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": -30.0,
+    "entry_min": 4,
+    "exit_min": 252,
+    "ask": 59.95
+   },
+   "ceiling@400": 15049,
+   "ceiling_stop@400": 15049
+  },
+  {
+   "day": "2026-10-21",
+   "gold": "GOLD",
+   "contracts": 84,
+   "holes": 14200,
+   "ceiling@205": 15676,
+   "ceiling_stop@205": 15676,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": -179.6,
+    "entry_min": 21,
+    "exit_min": 335,
+    "ask": 97.45
+   },
+   "ceiling@400": 15481,
+   "ceiling_stop@400": 15481
+  },
+  {
+   "day": "2026-10-22",
+   "gold": "EMPTY",
+   "contracts": 64,
+   "holes": 7100,
+   "ceiling@205": 8913,
+   "ceiling_stop@205": 8913,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -20.0,
+    "entry_min": 20,
+    "exit_min": 117,
+    "ask": 181.3
+   },
+   "ceiling@400": 8718,
+   "ceiling_stop@400": 8718
+  },
+  {
+   "day": "2026-10-23",
+   "gold": "GOLD",
+   "contracts": 76,
+   "holes": 11360,
+   "ceiling@205": 13609,
+   "ceiling_stop@205": 13609,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": -130.5,
+    "entry_min": 1,
+    "exit_min": 216,
+    "ask": 100.45
+   },
+   "ceiling@400": 13414,
+   "ceiling_stop@400": 13414
+  },
+  {
+   "day": "2026-10-26",
+   "gold": "EMPTY",
+   "contracts": 72,
+   "holes": 9940,
+   "ceiling@205": 13355,
+   "ceiling_stop@205": 13355,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": 50.0,
+    "entry_min": 11,
+    "exit_min": 53,
+    "ask": 110.55
+   },
+   "ceiling@400": 13160,
+   "ceiling_stop@400": 13160
+  },
+  {
+   "day": "2026-10-27",
+   "gold": "EMPTY",
+   "contracts": 60,
+   "holes": 5680,
+   "ceiling@205": 9430,
+   "ceiling_stop@205": 9430,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 64.9,
+    "entry_min": 209,
+    "exit_min": 255,
+    "ask": 86.25
+   },
+   "ceiling@400": 9235,
+   "ceiling_stop@400": 9235
+  },
+  {
+   "day": "2026-10-28",
+   "gold": "EMPTY",
+   "contracts": 68,
+   "holes": 8575,
+   "ceiling@205": 9387,
+   "ceiling_stop@205": 9387,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": 30.0,
+    "entry_min": 67,
+    "exit_min": 225,
+    "ask": 156.85
+   },
+   "ceiling@400": 9192,
+   "ceiling_stop@400": 9192
+  },
+  {
+   "day": "2026-10-29",
+   "gold": "NO_REPLAY",
+   "contracts": 72,
+   "holes": 10336,
+   "ceiling@205": 8882,
+   "ceiling_stop@205": 8882,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 1,
+    "strike_minus_future": 45.1,
+    "entry_min": 1,
+    "exit_min": 321,
+    "ask": 212.5
+   },
+   "ceiling@400": 8687,
+   "ceiling_stop@400": 8687
+  },
+  {
+   "day": "2026-10-30",
+   "gold": "NO_REPLAY",
+   "contracts": 52,
+   "holes": 14236,
+   "ceiling@205": 4670,
+   "ceiling_stop@205": 4670,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 89.7,
+    "entry_min": 37,
+    "exit_min": 63,
+    "ask": 225.3
+   },
+   "ceiling@400": 4475,
+   "ceiling_stop@400": 4475
+  },
+  {
+   "day": "2026-11-02",
+   "gold": "NO_REPLAY",
+   "contracts": 60,
+   "holes": 5680,
+   "ceiling@205": 9124,
+   "ceiling_stop@205": 9124,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 81.0,
+    "entry_min": 181,
+    "exit_min": 238,
+    "ask": 181.05
+   },
+   "ceiling@400": 8929,
+   "ceiling_stop@400": 8929
+  },
+  {
+   "day": "2026-11-03",
+   "gold": "NO_REPLAY",
+   "contracts": 64,
+   "holes": 7100,
+   "ceiling@205": 8938,
+   "ceiling_stop@205": 8938,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -72.3,
+    "entry_min": 1,
+    "exit_min": 248,
+    "ask": 80.4
+   },
+   "ceiling@400": 8743,
+   "ceiling_stop@400": 8743
+  },
+  {
+   "day": "2026-11-04",
+   "gold": "NO_REPLAY",
+   "contracts": 64,
+   "holes": 7100,
+   "ceiling@205": 8936,
+   "ceiling_stop@205": 8936,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 32.0,
+    "entry_min": 39,
+    "exit_min": 180,
+    "ask": 222.25
+   },
+   "ceiling@400": 8741,
+   "ceiling_stop@400": 8741
+  },
+  {
+   "day": "2026-11-05",
+   "gold": "NO_REPLAY",
+   "contracts": 68,
+   "holes": 8560,
+   "ceiling@205": 11912,
+   "ceiling_stop@205": 11912,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 1,
+    "strike_minus_future": 17.5,
+    "entry_min": 18,
+    "exit_min": 292,
+    "ask": 210.6
+   },
+   "ceiling@400": 11717,
+   "ceiling_stop@400": 11717
+  },
+  {
+   "day": "2026-11-06",
+   "gold": "NO_REPLAY",
+   "contracts": 96,
+   "holes": 18460,
+   "ceiling@205": 18604,
+   "ceiling_stop@205": 18604,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 1,
+    "strike_minus_future": 264.9,
+    "entry_min": 2,
+    "exit_min": 355,
+    "ask": 145.3
+   },
+   "ceiling@400": 18409,
+   "ceiling_stop@400": 18409
+  },
+  {
+   "day": "2026-11-09",
+   "gold": "NO_REPLAY",
+   "contracts": 60,
+   "holes": 5680,
+   "ceiling@205": 11333,
+   "ceiling_stop@205": 11333,
+   "best_stop@205": {
+    "side": "CE",
+    "expiry_rank": 0,
+    "strike_minus_future": -53.0,
+    "entry_min": 89,
+    "exit_min": 145,
+    "ask": 93.95
+   },
+   "ceiling@400": 11138,
+   "ceiling_stop@400": 11138
+  },
+  {
+   "day": "2026-11-11",
+   "gold": "NO_REPLAY",
+   "contracts": 68,
+   "holes": 8520,
+   "ceiling@205": 10818,
+   "ceiling_stop@205": 10818,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": -58.0,
+    "entry_min": 30,
+    "exit_min": 353,
+    "ask": 213.1
+   },
+   "ceiling@400": 10623,
+   "ceiling_stop@400": 10623
+  },
+  {
+   "day": "2026-11-12",
+   "gold": "NO_REPLAY",
+   "contracts": 60,
+   "holes": 5680,
+   "ceiling@205": 6674,
+   "ceiling_stop@205": 6674,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 31.0,
+    "entry_min": 45,
+    "exit_min": 202,
+    "ask": 229.3
+   },
+   "ceiling@400": 6479,
+   "ceiling_stop@400": 6479
+  },
+  {
+   "day": "2026-11-13",
+   "gold": "NO_REPLAY",
+   "contracts": 60,
+   "holes": 5680,
+   "ceiling@205": 7159,
+   "ceiling_stop@205": 7159,
+   "best_stop@205": {
+    "side": "PE",
+    "expiry_rank": 0,
+    "strike_minus_future": 75.0,
+    "entry_min": 94,
+    "exit_min": 306,
+    "ask": 213.25
+   },
+   "ceiling@400": 6964,
+   "ceiling_stop@400": 6964
+  }
+ ]
+}
