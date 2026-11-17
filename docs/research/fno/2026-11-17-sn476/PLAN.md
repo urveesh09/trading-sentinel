@@ -181,3 +181,7 @@ the commits. Nothing deployed; nothing pushed without the owner.
   (`gold.M` for `goldx.M`) before printing or writing anything; fixed and rerun. SN476 D on GOLD_30K moved −4,941 at ₹205 but +1,77,306
   at ₹400 through the growth wallet's path; supplementary `sn476b.py` repeats C and D on the fixed ONE_15K ledger to show the
   trade-level effect without compounding (added after seeing D, disclosed here; it does not change SN476's verdicts).
+- **A2 (SN480, after its run, before SN486):** the SELF_30K ledger as frozen has no size ceiling: at ₹205 it compounds to ₹4.3 crore on
+  2023–26 (lots = W / 15k without limit, no liquidity model), at ₹400 it falls under ₹7,500 and stops trading. Both stay in SN480's
+  receipt as frozen. Supplementary SN480b (in `sn486.py`) adds SELF_30K capped at Gold's own ceiling (₹1,01,250) and the bust date of
+  the uncapped ₹400 path. SN480's verdicts (all FAIL) do not depend on it.
