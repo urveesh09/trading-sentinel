@@ -52,10 +52,17 @@ def test_a_latched_exit_and_the_flat_sale_never_share_one_displayed_bid(tmp_path
     sold=[e for e in saved['_events'] if e['action']!='BUY']
     assert [(e['action'],e['lots']) for e in sold]==[('STOP',1)] and saved['lots_open']==1 and saved['status']=='OPEN'
     assert [k.rsplit(':',1)[1] for k,_ in out['notices']]==['STOP']
+    # [EN06] A newer packet repeating the same one-lot bid is the depth already sold into: no second sale.
     later=now+timedelta(seconds=10)
     with sqlite3.connect(str(base)+'.expiry-paper.db') as c:
         c.execute('INSERT INTO expiry_paper_ticks VALUES(?,?,?,?,?,?)',(later.date().isoformat(),'NIFTY',later.isoformat(),10018.,10018.,json.dumps(dict(legs={'X':_one_lot_quote(5.,later)}))))
     out=X.run_tick(base,enabled=False,now=later,variant=X.E032)
+    assert _saved(base,X.E032)['status']=='OPEN' and out['notices']==[]
+    # A changed book is a fresh market: the second lot sells.
+    third=later+timedelta(seconds=10)
+    with sqlite3.connect(str(base)+'.expiry-paper.db') as c:
+        c.execute('INSERT INTO expiry_paper_ticks VALUES(?,?,?,?,?,?)',(third.date().isoformat(),'NIFTY',third.isoformat(),10018.,10018.,json.dumps(dict(legs={'X':_one_lot_quote(4.95,third)}))))
+    out=X.run_tick(base,enabled=False,now=third,variant=X.E032)
     assert _saved(base,X.E032)['status']=='CLOSED' and [k.rsplit(':',1)[1] for k,_ in out['notices']]==['STOP']
 
 

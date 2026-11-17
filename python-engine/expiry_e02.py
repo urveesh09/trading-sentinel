@@ -33,6 +33,11 @@ session is settled (``settle``: SETTLED_ASSUMED at our sampled post-auction intr
 otherwise UNRESOLVED at its worst case, both in ``assumed_pnl``, never a fill) by the next tick or the
 hourly ``reconcile`` instead of blocking every later expiry. EN02: the recorder starts at 12:47, so the
 twelve-bar signal can decide from 13:00 as in the lab.
+
+EN06 (auditor's brief): the depth a paper sale took is saved with the fill (``state['consumed']``), so neither a
+repeated callback on the same archived packet nor a newer packet repeating the same bids sells it again
+(``usable`` / ``consume``); the day line shows filled sales, the assumed residual and open tickets apart; the
+main ticket's notices are stored with the fill in ``e02_notices`` and drained to the outbox idempotently.
 """
 from __future__ import annotations
 
@@ -204,6 +209,41 @@ def logged_quote(raw):
         if stamp is not None and stamp.tzinfo is None:stamp=stamp.replace(tzinfo=EP.IST)
         return EP.Quote(levels('b'),levels('a'),EP._positive(raw.get('ltp')),stamp)
     except (TypeError,ValueError,KeyError):return None
+
+
+def _book(raw_bids):return [[float(p),int(q)] for p,q in raw_bids]
+
+
+def usable(q,consumed,packet,diagnostics=None):
+    """[EN06] The bids an exit may use now. A paper sale is not in the market, so a later read of the same
+    displayed book still shows the depth we 'sold'. When this packet is the one already sold into, or a newer
+    packet repeats the same bids, the depth our own sales took is removed first; a changed book is taken as a
+    fresh market. Counted apart: SAME_PACKET (no new archive row) and UNCHANGED_DEPTH (new row, same bids)."""
+    if q is None or not consumed:return q
+    if consumed.get('packet')!=packet and consumed.get('bids')!=_book(q.bids):return q
+    _count(diagnostics,'exit','same_packet' if consumed.get('packet')==packet else 'unchanged_depth')
+    left=[]
+    taken={round(p,4):n for p,n in consumed.get('taken',[])}
+    for price,qty in q.bids:
+        rest=qty-taken.get(round(price,4),0)
+        if rest>0:left.append((price,rest))
+    return EP.Quote(tuple(left),q.asks,q.ltp,q.ts,q.oi)
+
+
+def consume(consumed,q,packet,units):
+    """[EN06] Record the depth a paper sale took from this displayed book (best levels first)."""
+    if q is None:return consumed
+    record=consumed if consumed and (consumed.get('packet')==packet or consumed.get('bids')==_book(q.bids)) else dict(bids=_book(q.bids),taken=[])
+    record['packet']=packet
+    taken={round(p,4):n for p,n in record['taken']}
+    left=units
+    for price,qty in q.bids:
+        if left<=0:break
+        free=qty-taken.get(round(price,4),0)
+        take=min(max(free,0),left)
+        if take:taken[round(price,4)]=taken.get(round(price,4),0)+take;left-=take
+    record['taken']=[[p,n] for p,n in sorted(taken.items(),reverse=True)]
+    return record
 
 
 def sell_base(pos,quote,lots,now):
@@ -438,14 +478,18 @@ def summary_lines(db_path,day,underlying,variant=None):
                      +(f", net Rs {p['net_pnl']:+,.2f} after fees Rs {p['costs']:,.2f}" if p['status']=='CLOSED' else '')
                      +(f", fills Rs {p['net_pnl']:+,.2f} + assumed Rs {p['assumed_pnl']:+,.2f} (not a fill)" if p['status'] in SETTLED[1:] else '')+(f" ({sold})" if sold else ''))
     closed=[p for p in mine if p.get('status') in SETTLED]
-    net=round(sum(p['net_pnl'] for p in today if p.get('status')=='CLOSED'),2)
-    assumed=round(sum(booked(p) for p in today if p.get('status') in SETTLED[1:]),2)
-    lines.append(f"  main day: {name} filled net Rs {net:+,.2f}"+(f" + settled (assumed) Rs {assumed:+,.2f}" if assumed else '')
+    # [EN06] Filled net is every booked sale (a settled ticket's partial sales included); the assumed residual
+    # is only the settlement value of lots that could not be sold; open tickets are counted, never valued here.
+    done=[p for p in today if p.get('status') in SETTLED]
+    filled=round(sum(p['net_pnl'] for p in done),2);assumed=round(sum(p.get('assumed_pnl') or 0. for p in done),2)
+    still=sum(1 for p in today if p.get('status')=='OPEN')
+    lines.append(f"  main day: {name} filled net Rs {filled:+,.2f}"+(f" + assumed residual Rs {assumed:+,.2f} (not a fill) = Rs {filled+assumed:+,.2f}" if any(p['status']!='CLOSED' for p in done) else '')
+                 +(f"; {still} ticket{'s' if still!=1 else ''} still open" if still else '')
                  +f"; {underlying} to date {len(closed)} tickets, Rs {sum(booked(p) for p in closed):+,.2f}")
     return lines
 
 
-def reconcile(db_path,variant,now=None):
+def reconcile(db_path,variant,now=None,keep_notices=False):
     """[EN01] Settle this variant's leg if it is still open after its expiry session (the hourly expiry
     reconcile calls this, so a stuck leg is valued the same evening, not at the next expiry's first tick).
     Returns the owner notices; nothing when the book is flat or the session is still trading."""
@@ -470,12 +514,40 @@ def reconcile(db_path,variant,now=None):
             event=settle(position,spot,now)
             _save_position(dst,position)
             state['cash']=round(state['cash']+booked(position),2);state['peak']=max(state['peak'],state['cash'])
-            state['position']=None;state['pending']=None;state['last_close']=now.isoformat()
+            state['position']=None;state['pending']=None;state['last_close']=now.isoformat();state['consumed']={}
+            notes=[(f"{position['day']}:{position.get('underlying','NIFTY')}:{variant.play}:{position['id']}:{event['action']}",settle_text(variant,position,event))]
+            if keep_notices:_keep_notices(dst,notes,now)
             _store(dst,state)
-            return [(f"{position['day']}:{position.get('underlying','NIFTY')}:{variant.play}:{position['id']}:{event['action']}",settle_text(variant,position,event))]
+            return notes
 
 
-def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
+NOTICE_TABLE='CREATE TABLE IF NOT EXISTS e02_notices(key TEXT PRIMARY KEY,message TEXT NOT NULL,created_at TEXT NOT NULL,queued_at TEXT)'
+
+
+def _keep_notices(dst,notes,now):
+    """[EN06] Owner notices live in the variant's own DB, written in the same transaction as the fill or the
+    settlement they describe, and are queued to the expiry outbox afterwards (drain_notices; idempotent by key)."""
+    dst.execute(NOTICE_TABLE)
+    dst.executemany('INSERT OR IGNORE INTO e02_notices(key,message,created_at) VALUES(?,?,?)',[(k,m,now.isoformat()) for k,m in notes])
+
+
+def drain_notices(db_path,variant,queue,now=None):
+    """Hand unqueued notices to ``queue`` (a list of (key, text)), then mark them queued. A crash between the two
+    re-sends the same keys, which the outbox ignores. Returns how many were handed over."""
+    path=Path(path_for(db_path,variant))
+    if not path.exists():return 0
+    now=now or datetime.now(EP.IST)
+    with closing(sqlite3.connect(path,timeout=1)) as c:
+        c.execute(NOTICE_TABLE)
+        rows=c.execute('SELECT key,message FROM e02_notices WHERE queued_at IS NULL ORDER BY created_at,key').fetchall()
+        if not rows:return 0
+        queue([(k,m) for k,m in rows])
+        with c:
+            c.executemany('UPDATE e02_notices SET queued_at=? WHERE key=?',[(now.isoformat(),k) for k,_ in rows])
+    return len(rows)
+
+
+def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02,keep_notices=False):
     """Incremental read-only source, separate transactional paper state, no network."""
     now=now or datetime.now(EP.IST)
     if now.tzinfo is None:raise ValueError('Timezone-aware E02 clock required')
@@ -509,7 +581,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                     state['cash']=round(state['cash']+booked(stale),2);state['peak']=max(state['peak'],state['cash']);state['position']=None
                 if not state.get('day') or state['day']['date']!=now.date().isoformat():
                     dd=state['peak']-state['cash'];scale=0 if dd>=4000 else .25 if dd>=3000 else .5 if dd>=1500 else 1
-                    state.update(day=dict(date=now.date().isoformat(),budget=min(DAY_CEILING*day_scale(variant)*scale,state['cash']),spent=0.,trades=0),bars=[],building=None,pending=None,last_decided=None)
+                    state.update(day=dict(date=now.date().isoformat(),budget=min(DAY_CEILING*day_scale(variant)*scale,state['cash']),spent=0.,trades=0),bars=[],building=None,pending=None,last_decided=None,consumed={})
                     state.pop("decision_counts", None)
                 diagnostics = state.setdefault("decision_counts", {}) if variant == E032 else None
                 # Reconcile realized cash from immutable closed records before risk admission.
@@ -528,7 +600,9 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                 state['watermark']=latest['ts']
                 legs=json.loads(latest['quotes']).get('legs',{});position=state['position'];event=None;events=[]
                 if position:
-                    q=logged_quote(legs.get(position['symbol']))
+                    packet=latest['ts'];consumed=(state.get('consumed') or {}).get(position['symbol'])
+                    raw_q=logged_quote(legs.get(position['symbol']))
+                    q=usable(raw_q,consumed,packet,diagnostics)
                     if position['exit_pending']:
                         event=EP._try_exit(position,q,position['lots_open'],position['exit_pending'],now)
                     elif completed:
@@ -544,6 +618,9 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                     if now.time()>=EP.last_flat(now.date(),flat_time(position)) and position['status']=='OPEN' and not events and not position['exit_pending']:
                         event=EP._try_exit(position,q,position['lots_open'],'FLAT_TIME',now)
                         if event:events.append(event)
+                    for ev in events:
+                        consumed=consume(consumed,raw_q,packet,ev['lots']*position['lot_size'])
+                    state['consumed']={position['symbol']:consumed} if consumed and position['status']=='OPEN' else {}
                     _save_position(dst,position)
                     for ev in events:notes.append((f"{position['day']}:{position['underlying']}:{variant.play}:{position['id']}:{ev['ts']}:{ev['action']}",exit_text(variant,position,ev)))
                     if position['status']=='CLOSED':
@@ -591,6 +668,7 @@ def run_tick(db_path,*,enabled=False,now=None,book=None,variant=E02):
                                     _count(diagnostics, "pending", reason)
                 if not enabled:state['pending']=None
                 if state['day']['spent']>state['day']['budget']+.01:raise ValueError('E02 daily reserve exceeded')
+                if keep_notices and notes:_keep_notices(dst,notes,now)
                 _store(dst,state)
                 return dict(status='OPEN' if state['position'] else 'OBSERVING',version=variant.version,qualification=QUALIFICATION,cash=state['cash'],day=state['day'],event=event,
                             underlying=underlying,notices=notes,

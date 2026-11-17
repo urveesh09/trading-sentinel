@@ -1247,12 +1247,16 @@ def register_penny_scheduler_jobs(scheduler):
         for variant, enabled in variants:
             try:
                 if enabled or expiry_e02.has_open_book(settings.DB_PATH, variant):
-                    result = await asyncio.to_thread(expiry_e02.run_tick, settings.DB_PATH,
-                                                     enabled=enabled, variant=variant)
+                    main_ticket = variant.play == settings.EXPIRY_MAIN_STRATEGY
+                    await asyncio.to_thread(expiry_e02.run_tick, settings.DB_PATH,
+                                            enabled=enabled, variant=variant, keep_notices=main_ticket)
                     # expiry-v5: the main ticket's buys and sells go to the expiry outbox (owner notices).
-                    if variant.play == settings.EXPIRY_MAIN_STRATEGY and isinstance(result, dict) and result.get("notices"):
+                    # [EN06] They are stored with the fill in the variant's DB first, then drained (idempotent).
+                    if main_ticket:
                         import expiry_paper
-                        expiry_paper.queue_notices(settings.DB_PATH, result["notices"], datetime.now(expiry_paper.IST))
+                        await asyncio.to_thread(
+                            expiry_e02.drain_notices, settings.DB_PATH, variant,
+                            lambda notes: expiry_paper.queue_notices(settings.DB_PATH, notes, datetime.now(expiry_paper.IST)))
             except Exception as exc:
                 logger.error("expiry_%s_shadow_failed err=%s", variant.name, type(exc).__name__, exc_info=True)
 
@@ -1269,24 +1273,28 @@ def register_penny_scheduler_jobs(scheduler):
             return
         if not await _main.is_trading_day(datetime.now(IST).date(), settings.DB_PATH):
             return
+        # [EN01/EN06] E02-family legs left open after their session are valued (never sold) the same evening,
+        # BEFORE the expiry book's reconcile queues the day summary, so the summary never freezes an open main
+        # ticket that this same job values; the main ticket's notice is stored with the settlement, then drained.
+        try:
+            import expiry_e02
+            for variant in expiry_e02.VARIANTS:
+                main_ticket = variant.play == settings.EXPIRY_MAIN_STRATEGY
+                notes = await asyncio.to_thread(expiry_e02.reconcile, settings.DB_PATH, variant, None, main_ticket)
+                if notes:
+                    logger.info("expiry_%s_reconciled positions=%d", variant.name, len(notes))
+                if main_ticket:
+                    await asyncio.to_thread(
+                        expiry_e02.drain_notices, settings.DB_PATH, variant,
+                        lambda queued: xp.queue_notices(settings.DB_PATH, queued, datetime.now(xp.IST)))
+        except Exception as exc:
+            logger.error("expiry_e02_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
         try:
             settled = await asyncio.to_thread(xp.reconcile)
             if settled:
                 logger.info("expiry_paper_reconciled positions=%d", settled)
         except Exception as exc:
             logger.error("expiry_paper_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
-        # [EN01] E02-family legs left open after their session are valued (never sold) the same evening, so
-        # no stuck leg blocks the next expiry; the main ticket's settlement notice goes to the owner.
-        try:
-            import expiry_e02
-            for variant in expiry_e02.VARIANTS:
-                notes = await asyncio.to_thread(expiry_e02.reconcile, settings.DB_PATH, variant)
-                if notes:
-                    logger.info("expiry_%s_reconciled positions=%d", variant.name, len(notes))
-                    if variant.play == settings.EXPIRY_MAIN_STRATEGY:
-                        xp.queue_notices(settings.DB_PATH, notes, datetime.now(xp.IST))
-        except Exception as exc:
-            logger.error("expiry_e02_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
         await _flush_expiry_paper_notices()
 
     scheduler.add_job(

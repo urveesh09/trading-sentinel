@@ -1,3 +1,46 @@
+## November 17 (late night) - EN06: the paper execution contract (auditor's brief `docs/EXPIRY_RESEARCH_EN06_EN15.md`), and the NIFTY 2023 E03-family exam scored once on the owner's word. Every arm loses: E03.2 −3,645 ordinary on 17 tickets, and puts are no better than calls. E03.2 stays paper only with no size step (Dev; release PR #142)
+
+**NIFTY 2023 exam:**
+- The owner's word is "Yes, open 2023 now", recorded in `docs/research/simulation/2026-11-17-expiry-en/OWNER_WORD.md`. Freeze `af484542`, results `33425393` (`exam2023-results.json`).
+- It covered 49 of 52 expiries. Jan 5, 12 and 19 have no option rows and count as unavailable.
+
+| Arm | Ordinary | Adverse |
+|---|---:|---:|
+| E02 | −2,416 | −2,764 |
+| E03 | −3,222 | −3,167 |
+| E03.1 | −3,132 | −3,076 |
+| E03.2 | −3,645 | −4,036 |
+| 3x puts | −4,215 | −4,319 |
+
+- E03.2 had 17 tickets and 3 winning days. Every arm lost in every quarter.
+- E03.1 did worse than 39 of 40 random-entry books.
+- The put asymmetry failed: per ticket, puts −212 and calls −165.
+- The auditor found the coverage check too loose: it tested strike membership over the whole day, not at
+  the decision minute, and the random pool was not matched to available decisions. A corrected re-score is
+  EN07 (disclosed; the rules stay unchanged).
+
+**EN06 (engine, Dev):**
+- `expiry_e02.usable` / `consume` / `state['consumed']`: the depth a paper sale took is saved with the fill.
+  Neither a repeated callback on the same archived packet nor a newer packet with identical bids sells it
+  again. These are counted apart as `exit.same_packet` / `exit.unchanged_depth`.
+- `summary_lines` shows filled net (partial sales of settled tickets included), the assumed residual (not a
+  fill) and open tickets apart.
+- Notices are stored with the fill in `e02_notices` (`keep_notices` for the main ticket) and drained to the
+  outbox by key (`drain_notices`).
+- The hourly job reconciles E02-family legs BEFORE the expiry book queues its day summary.
+- `fill_model(clock, day)`: AUCTION_WINDOW from 15:15 under CAS phase 1, from 15:30 under CAS 2.0.
+  `_settlement_spot` returns None from 2026-12-07, so a leg left open is UNRESOLVED at its worst case; the
+  constituent-VWAP official settlement is not wired in. BSE is treated the same (conservative, unverified).
+
+**Tests:**
+- `tests/test_expiry_en06.py`, 8 tests. 6 fail on the EN01 engine. The other 2 are a 13:00 route fixture:
+  recorder ticks from 12:47 → signal → plan → fill at 13:00, and a late login and a missing minute refuse.
+- `-k "expiry or scheduler"`: 344 passed. The merged release tree before EN06: 6,468 passed, 4 skipped,
+  exit 0.
+
+**Rollback caution:** once E03.2 holds a SETTLED_ASSUMED or UNRESOLVED ticket, pre-EN01 code fails its cash
+journal check (it totals CLOSED only). Roll back only to EN01+ code, or repair that ticket's row first.
+
 ## November 17 (night) - EN01–EN05: E03.2 improvements per the Nov 17 audit. Honest expiry exits (EN01) and a 12:47 recording start, so live E03.2 decides from 13:00 like its lab (EN02), in Dev. The put gate, put size and put runner arms (EN03–EN05) fail their frozen rules, so E03.2 is unchanged and 3x puts become an arm of the prepared NIFTY 2023 exam (Dev only, not deployed)
 
 **Owner (Nov 17):**

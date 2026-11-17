@@ -715,8 +715,15 @@ def condor_fill(legs: list[tuple[Quote, str]], lot_size: int, width: float, spot
     return 0, [], 0.0, "DEPTH_OR_BUDGET"
 
 
-def fill_model(clock: time) -> str:
-    return "AUCTION_WINDOW" if clock >= AUCTION_START else "CONTINUOUS"
+def fill_model(clock: time, day: Optional[date] = None) -> str:
+    """CONTINUOUS, or AUCTION_WINDOW once the session's auction phase has begun: 15:15 under CAS phase 1
+    (2026-08-03 to 2026-12-04); from NSE CAS 2.0 (2026-12-07) continuous trading runs to 15:30 [EN06]."""
+    from market_calendar import cas2_in_force
+    start = EXPIRING_CLOSE_CAS2 if day is not None and cas2_in_force(day) else AUCTION_START
+    return "AUCTION_WINDOW" if clock >= start else "CONTINUOUS"
+
+
+EXPIRING_CLOSE_CAS2 = time(15, 30)
 
 
 # [EN01 2026-11-17] The expiring contracts' last traded minute is date-aware: 15:40 until 2026-12-04, 15:30
@@ -1050,7 +1057,7 @@ def _sell(pos: dict, lots: int, price: float, reason: str, now: datetime) -> dic
         pos["status"], pos["exit_pending"], pos["bank_pending"] = "CLOSED", None, 0
     event = {"ts": now.isoformat(), "action": reason, "lots": lots, "price": price,
              "gross": round(gross, 2), "charges": round(costs, 2), "net": round(gross - costs, 2),
-             "fill_model": fill_model(now.time())}
+             "fill_model": fill_model(now.time(), now.date())}
     pos["_events"].append(event)
     return event
 
@@ -1071,7 +1078,7 @@ def _new_position(day: str, underlying: str, play: str, exchange: str, contract,
             "fee_snapshot": json.dumps(schedule, sort_keys=True), "execution": EXECUTION_VERSION,
             "side": "LONG", "width": None,
             "_events": [{"ts": now.isoformat(), "action": "BUY", "lots": lots, "price": price,
-                         "charges": charges, "fill_model": fill_model(now.time())}]}
+                         "charges": charges, "fill_model": fill_model(now.time(), now.date())}]}
 
 
 def _save_position(conn, pos: dict) -> None:
@@ -1381,8 +1388,14 @@ def context_lines(state: dict, settle: Optional[float]) -> list[str]:
 def _settlement_spot(conn, day: str, underlying: str) -> Optional[float]:
     """The last index quote we sampled after the closing auction (15:36-15:40), if any.
 
-    This is our own sample, not the exchange's published settlement price.
+    This is our own sample, not the exchange's published settlement price. [EN06] From NSE CAS 2.0
+    (2026-12-07) the official settlement of expiring index contracts is the constituents' VWAP over the last
+    30 minutes of continuous trading, which this sample cannot stand in for: None, so the leg is valued at its
+    worst case (UNRESOLVED) until an official record is wired in. BSE is treated the same way (conservative).
     """
+    from market_calendar import cas2_in_force
+    if cas2_in_force(date.fromisoformat(day)):
+        return None
     row = conn.execute("SELECT spot FROM expiry_paper_ticks WHERE day=? AND underlying=? AND spot IS NOT NULL "
                        "AND substr(ts, 12, 8) >= ? ORDER BY ts DESC LIMIT 1",
                        (day, underlying, AUCTION_CLOSE_KNOWN.isoformat())).fetchone()
@@ -1589,7 +1602,7 @@ def _record_tick(conn, state: dict, day: str, underlying: str, started: datetime
     conn.execute("INSERT OR REPLACE INTO expiry_paper_ticks VALUES (?,?,?,?,?,?)", (
         day, underlying, now.isoformat(), spot, fut,
         json.dumps({"execution": EXECUTION_VERSION, "started": started.isoformat(),
-                    "fill_model": fill_model(now.time()), **payload}, separators=(",", ":"))))
+                    "fill_model": fill_model(now.time(), now.date()), **payload}, separators=(",", ":"))))
 
 
 def _save_state(conn, day: str, underlying: str, state: dict, now: datetime) -> None:
