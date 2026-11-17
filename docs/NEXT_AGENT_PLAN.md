@@ -1,3 +1,37 @@
+## November 17 (evening) - SN456–SN475: prior-session FII positioning adds nothing to a 10:00 NIFTY forecast (Clark–West p 0.62) and the popular FII long-ratio rule is wrong-signed; Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp); none of Gold's six-lot exits lacked bids (the gaps were recording gaps, including deep-ITM winners outside the archive's strike window); Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill, not capacity: break-even needs a forecast correlated ~0.2 with the next hour; our forward verdicts mostly cannot tell an edge from none (only fx5 is informative); BANKNIFTY F1 cannot reach its verdict (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN456–SN470 (`docs/SN456_SN470_AI_RESEARCH_BRIEF.md`, `6f6d9d0f`) plus five own slots. Plan `83e1b444`. Results: `docs/research/fno/2026-11-17-sn456/README.md`.
+
+**Findings:**
+- **Positioning (SN456 / SN473 / SN471):**
+  - 1,508 out-of-sample days: Clark–West −1.34 (p 0.62), permutation p 0.82.
+  - No horizon shows the information (correlations with gap / open / 10–11 / afternoon all within ±0.03).
+  - The contrarian FII long-ratio rule is wrong-signed.
+  - On Gold's own trades: agreeing trades earn more in 2023–26 but the sign flips in 2022 (fails; post-hoc hypothesis only).
+- **Kronos (SN458):** Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp).
+- **Gold's exits (SN464 / SN474):**
+  - 0 observed ZERO_BID / PARTIAL; 2 feed stops; 2 deep-ITM winners outside the 11-strike window.
+  - 15:10 books hold 6 lots 100% of the time.
+  - 15:05 looked better (+8%) but the clock curve zig-zags (sensitivity only).
+- **Capacity and skill (SN461 / SN475 / SN462):**
+  - Gold is clear at 10:00 on 98.8% of replay days.
+  - Break-even needs a correlation of 0.215 (0.104 on the top 30%).
+  - SN456's forecasts were uncalibrated (₹10.5 a session at ₹205).
+- **Verdict power (SN469 / SN472):**
+  - A wage-level edge clears zero in 10% of 60-session tests.
+  - fw9a passes a zero-edge book 19.8% of the time and its own claim 36.9%; SN300a / F1 barely pass at all.
+  - fx5 is informative (93% at ₹154 a decision).
+- **Plumbing:**
+  - BANKNIFTY F1 needs about 4 years for 30 triggers (SN467).
+  - `wallet_sm.py` + 8 fixtures (SN468).
+  - Exit depth INSUFFICIENT (SN460).
+  - The duplicate screen finds 71% (SN463).
+  - The filing parser works on NSE's rendered view (SN457).
+  - FII cash BLOCKED (SN466).
+
+**Runtime:** no change. Still awaiting "deploy": SN329 hours, the V8 shadow, the recorder's BANKNIFTY chains (`1bfed1d0`). The protected 2023 expiry exam is unspent.
+
+
 ## November 17 (afternoon) - SN441–SN455: on Gold's empty days a one-hour ITM trade needs ~62% / 77% direction (₹205 / ₹400); timing headroom (~₹1,000 a decision in hindsight) cannot be captured by waits, discounts or resting bids, and Gold's entries must stay immediate; Gold's replay is future-blind and ₹205 covers its cost at 6 lots; bank results, the London clock and expiry-afternoon pinning give nothing usable; expiry momentum is real-looking but does not pay; a development number has predicted almost nothing (median unseen / development −0.22) (research only, nothing deployed)
 
 **Owner (Nov 17):** the auditor's SN441–SN450 (`docs/SN441_SN450_RESEARCH_BRIEF.md` + `docs/research/fno/2026-11-17-sn441/nse-bank-filings-pilot.csv`, `6141c1df`) plus five own slots. Plan `f56f5807`. Results: `docs/research/fno/2026-11-17-sn441/README.md`.

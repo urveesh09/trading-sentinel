@@ -56,6 +56,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN411–SN425 (Nov 17): every day offered ₹750 in hindsight (the gap is selection); Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205); Gold's exposure settings are leverage; BANKNIFTY is the only other venue (last week of the month).** Recorder BANKNIFTY change in Dev (not deployed); fw7c / fw9b frozen; F1 pre-registered. See the SN411–SN425 section at the end.
 - **SN426–SN440 (Nov 17): break-even needs ~56% / ~68% direction (₹205 / ₹400) for a one-hour ITM trade; Gold's expiry mornings hold ~7 signals a year; Gold's exit headroom (₹2,085 a lot) resists every simple rule; ₹205 is the realistic Gold cost (₹617 a real session).** See the SN426–SN440 section at the end.
 - **SN441–SN455 (Nov 17): on Gold's empty days a one-hour ITM trade needs ~62% / 77% direction (₹205 / ₹400); timing headroom cannot be captured and Gold's entries must stay immediate; Gold's replay is future-blind and ₹205 covers its cost at 6 lots; bank results, the London clock and expiry pinning give nothing usable; a development number has predicted almost nothing (median unseen / development −0.22).** See the SN441–SN455 section at the end.
+- **SN456–SN475 (Nov 17): prior-session FII positioning adds nothing (CW p 0.62); Kronos-small forecasts worse than no change; none of Gold's six-lot exits lacked bids; Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill (break-even needs a forecast correlated ~0.2 with the next hour), not capacity; our forward verdicts are low-power screens (only fx5's paired design is informative).** See the SN456–SN475 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1177,3 +1178,25 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - Timing headroom exists only in hindsight; Gold's entries must stay immediate.
 - Gold is honest (future-blind, cost holds) but lumpy.
 - Development results are hypotheses only; frozen forward tests decide.
+
+## SN456–SN475 (Nov 17, 2026): participant positioning, Kronos, filings, Gold's six-lot exits, decision-time capacity, calibration, a duplicate screen, F1's feasibility, the shared-wallet state machine, verdict power, the forecast skill an option buyer needs (folder `docs/research/fno/2026-11-17-sn456`)
+
+**Owner:** the auditor's SN456–SN470 plus five own slots. Plan `83e1b444`.
+
+| SN | Result |
+|---|---|
+| 456 / 473 | Prior-session FII positioning adds no forecast value (CW p 0.62; partial correlation −0.012) at any intraday clock; the contrarian FII long-ratio rule is wrong-signed |
+| 471 | On Gold's own trades, positioning agreement +₹6,125 a trade in 2023–26 but −₹1,181 in 2022: fails (post-hoc without the largest trades both positive: a forward hypothesis) |
+| 458 | Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp) |
+| 464 | None of Gold's 10 six-lot exits lacked bids: 6 full, 2 feed stops, 2 deep-ITM winners outside the archive's strike window; SN445 corrected (held lots; 2 of 3 15:10 exits unpriced) |
+| 474 | 15:10 books hold 6 lots 100%; exit at 15:00 / 15:05 / 15:10 / ext 15:15 = 8.71 / 9.21 / 8.51 / 8.19 lakh (2023–26 at ₹205), non-monotonic: 15:10 stays |
+| 461 / 475 / 462 | Gold is clear at 10:00 on 98.8% of replay days (1.3% collide); break-even needs a correlation of 0.215 (0.104 top 30%); ₹154 a session needs 0.31–0.37; confidence did not map to cash |
+| 469 / 472 | Wage-level edges clear zero in 10% of 60-session tests; fw9a passes a zero-edge book 19.8% of the time; only fx5's paired verdict is informative |
+| 467 / 468 / 460 / 463 / 457 / 466 | F1 needs ~4 years for 30 triggers; `wallet_sm.py` (8 fixtures; 0 SN419 conflicts); exit-depth model INSUFFICIENT (+₹604 a lot of stop slippage); duplicate screen 71%; the NSE filing parser works; FII cash BLOCKED |
+| 465 / 459 / 470 | DEFERRED / NOT_RUN / NOT_TRIGGERED |
+
+**Lessons:**
+- Positioning shows no intraday direction.
+- The gap is skill, not capacity (break-even correlation ~0.2).
+- Scheduled forward verdicts are screens with little power; prefer paired designs.
+- Gold's cost risk sits in deep-ITM winners the archive never recorded.

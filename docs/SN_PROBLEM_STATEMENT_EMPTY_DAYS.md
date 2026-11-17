@@ -377,3 +377,10 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **No outside information clock was found.** Bank results are insufficient, there is no London clock and no expiry pin. Expiry-afternoon momentum is real-looking but does not pay (SN447 / SN448 / SN451).
 - **Gold is honest but lumpy.** Its replay is future-blind (SN452), and ₹205 covers its cost at 6 lots (SN445). In 2023–26 it pays ₹750+ on 6.2% of sessions, its best 5 days are 41% of profit, and it went 226 sessions without a new high (SN450).
 - **Development results have predicted almost nothing** (SN455: 5 of 19 pairs kept their sign). New ideas go to frozen forward tests, such as `fx5` (SN444).
+
+## 27. Status after SN456–SN475 (Nov 17, 2026)
+
+- **Capacity is not the constraint.** Gold is clear at 10:00 on 98.8% of its replay days and enters inside the next hour on 1.3% (SN461).
+- **Skill is the constraint.** A 10:00 one-hour 1-ITM buyer needs a forecast correlated about 0.2 with the next hour's move to break even at ₹205 (0.1 trading only the top 30%), and about 0.31–0.37 for ₹154 a market session (SN475). Nothing built so far exceeds about 0.1, and its confidence did not map to cash (SN462).
+- **No new information source helped.** Participant positioning (SN456 / SN473) and Kronos (SN458: Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp)) add nothing. FII cash is blocked (SN466) and bank filings are too few (SN457).
+- **The forward verdicts are low-power screens** (SN469 / SN472). Only paired designs such as fx5 separate an edge from none at their horizons.
