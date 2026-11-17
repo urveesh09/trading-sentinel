@@ -9,11 +9,13 @@ audit of Production `0b645d77`.
   - EN01, honest exits (the audit's three items);
   - EN02, the 13:00 warm-up, so live E03.2 trades the window it was tested on.
 - **The three strategy ideas failed their frozen rules.** E03.2 stays unchanged.
+- **The NIFTY 2023 exam was opened on the owner's word, and the whole E03 family loses**: E03.2 −3,645
+  ordinary, −4,036 adverse, 4 of 17 tickets winning; puts did not beat calls. See the exam section below.
   - The clearest lesson is EN03: the put tickets just below E03.2's 0.70 trend-strength gate lose
     heavily in both years.
   - EN04's 3x puts beat E03.2 on their own but failed the neighbour rule. They go to the 2023 exam as an
     arm.
-- No Production change, no deploy, no `.env` or schema change, no download. NIFTY 2023 not read.
+- No `.env` or schema change, no download.
 
 ## Data census (`census.py` → `census.json`, row counts only)
 
@@ -110,17 +112,53 @@ packets (Oct 8 – Nov 5; Oct 6 has none).
 - Net −822.96 on 2 tickets.
 - These recordings start at 12:59, so EN02 cannot show here.
 
-## The 2023 exam (prepared, not opened)
+## The 2023 exam: scored once, the E03 family FAILS
 
-`EXAM_EN_ADDENDUM.md` and `exam2023.py` add to the frozen E03-family exam:
-- **Arms:** E03.2 stands (test 7) and puts at 3x with neighbours (test 8).
-- **Route:** NIFTY 2023's chains from the sealed export.
+The owner assigned NIFTY 2023 to the exam on Nov 17 (`OWNER_WORD.md`). Freeze `af484542`; scored once
+(`exam2023.py score` → `exam2023-results.json`).
+- The loader was proven on 2024 beforehand (`exam2023.py check`).
+- 52 expiry days: 49 have full chains. Jan 5, 12 and 19 have no option rows; they are unavailable, never
+  zero.
+- 5 decisions on Jan 25 were unavailable (strikes missing).
+- Index and futures are complete on every day.
 
-`exam2023.py check` proves on 2024:
-- the loader equals `data.load_year`;
-- every arm reproduces its known 2024 result.
+| Arm | Ordinary | Adverse | Severe | Without best day | Worst day | Tickets | Winning days |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| E02 | −2,416 | −2,764 | −3,184 | −2,533 | −439 | 17 | 3 |
+| E03 | −3,222 | −3,167 | −3,420 | −3,339 | −604 | 17 | 3 |
+| E031 | −3,132 | −3,076 | −3,418 | −3,249 | −604 | 17 | 3 |
+| E031_L8 | −3,132 | −3,508 | −3,327 | −3,249 | −604 | 17 | 3 |
+| **E032** | **−3,645** | **−4,036** | **−4,173** | **−4,626** | **−1,162** | 17 | 3 |
+| EN04 puts 2.5x | −4,061 | −3,584 | −4,172 | −4,178 | −1,348 | 14 | 3 |
+| EN04 puts 3x | −4,215 | −4,319 | −4,772 | −4,620 | −1,719 | 14 | 4 |
+| EN04 puts 3.5x | −4,522 | −4,970 | −4,076 | −4,571 | −1,905 | 9 | 2 |
 
-The route then waits for the owner's word (`OWNER_WORD.md`). Then `freeze`, commit, and `score` once.
+Every arm loses in every quarter of 2023.
+
+**Tests:**
+- 1, E03.1 stands: **fail.** It is worse than 39 of 40 random-entry books (random median −1,832).
+- 2, E03.1 vs E03: pass.
+- 3, the 8% limit: fail. Severe is better, adverse worse.
+- 5, E03.2 vs E03.1: **fail.**
+- 6, the put-over-call asymmetry: **fail.** Per ticket, puts made −212 and calls −165. E03.2's puts:
+  7 tickets, −1,982, 2 winners. Its calls: 10 tickets, −1,663, 2 winners.
+- 7, E03.2 stands: **fail.**
+- 8, puts at 3x: **fail.**
+
+The EN03 lesson did not repeat. In 2023, the put tickets a 0.65 gate adds (10, mean +226) beat E03.2's own
+puts (7, mean −283). Neither sample is large.
+
+**Meaning:**
+- The E03 family's afternoon pullback edge is a 2024–2025 result. It is not confirmed on a year it never
+  saw, and the put premise behind E03.2 fails on 2023.
+- 2023 was the year every option-buying book here lost (N08's frozen 2023 test, Nov 1). This is the same
+  regime point: low volatility, a grinding market.
+- **E03.2 stays a paper strategy:**
+  - no size increase;
+  - nothing toward real money;
+  - the forward count (0 of 20 tickets) is the only remaining evidence.
+- Whether E03.2 or A/B/C carries the main paper ticket is the owner's call. Neither has a fresh-year pass:
+  E01.1 lost 2024, −9,012.
 
 ## Verification
 

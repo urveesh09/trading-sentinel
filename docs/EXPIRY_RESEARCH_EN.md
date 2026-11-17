@@ -3,7 +3,8 @@
 November 17, 2026.
 - **Two fixes make the paper book honest and make live E03.2 trade the window it was tested on.**
 - **The three strategy ideas all failed their frozen tests**, so the E03.2 rule stays exactly as it is.
-- All of this is Dev only; nothing is deployed. Paper only, no real orders.
+- **On NIFTY 2023, the one year it had never seen, E03.2 and its whole family lost money.**
+- Paper only, no real orders.
 
 ## Why E03.2 has not traded yet
 
@@ -19,7 +20,7 @@ In four live sessions (Nov 5, 9, 12, 17) it opened no ticket:
 | **EN01** | Honest exits (the audit's three items) | **Done in Dev**, 8 tests |
 | **EN02** | Start recording at 12:47, so E03.2 can decide from 13:00 | **Done in Dev** |
 | EN03 | More put tickets (a looser trend check for puts) | **Failed**: the extra tickets lose |
-| EN04 | Bigger puts (2.5x, 3x, 3.5x) | **Failed as frozen**: 3x passed, its neighbours did not; now an exam arm |
+| EN04 | Bigger puts (2.5x, 3x, 3.5x) | **Failed as frozen**: 3x passed, its neighbours did not. It also lost on 2023 |
 | EN05 | Keep part of a winning put after the 8-minute clock | **Failed**: worse in both years |
 
 **EN01, honest exits:**
@@ -56,18 +57,33 @@ NIFTY 2024 + 2025, one Rs 25,000 book. In-sample, because E03.2 was built on the
   - 3x puts passed every test, including the risk limits frozen on Nov 3.
   - The rule written for this round also required 2.5x and 3.5x to pass. 2.5x fell short of E03.2 without
     its best day (lot rounding), and 3.5x lost more on very bad fills.
-  - So 3x is not adopted. It goes to the 2023 exam as an arm.
+  - So 3x was not adopted. It went to the 2023 exam as an arm and lost there too.
 - **The 8-minute sale is right for puts too.** Keeping a runner after it gave money back in both years.
 
-## What would settle it: NIFTY 2023
+## NIFTY 2023: the fresh test, and it failed
 
-The history database already holds NIFTY 2023's full expiry chains, 48 expiries. They are kept sealed as
-the one fresh test for this strategy family.
-- The exam is written and frozen in advance (`EXAM_E03_FAMILY.md`, `EXAM_E032_ADDENDUM.md`,
-  `EXAM_EN_ADDENDUM.md`).
-- It tests whether E03.2 earns on a year it has never seen, whether puts still beat calls, and whether 3x
-  puts are safe.
-- It runs once, only on your word.
+You said open it, so it was scored once, exactly as frozen. It covered 49 of 2023's 52 expiries; the
+first three January ones were never downloaded.
+
+| | E02 | E03 | E03.1 | **E03.2** | Puts 3x |
+|---|---:|---:|---:|---:|---:|
+| Normal fills | −2,416 | −3,222 | −3,132 | **−3,645** | −4,215 |
+| Worse fills | −2,764 | −3,167 | −3,076 | **−4,036** | −4,319 |
+| Tickets (winning days) | 17 (3) | 17 (3) | 17 (3) | **17 (3)** | 14 (4) |
+
+**What this means, plainly:**
+- **Every version loses in 2023, in every quarter.** E03.1's signal did worse than 39 of 40 books that
+  bought at random minutes.
+- **The put advantage did not hold.** E03.2's puts lost Rs 1,982 over 7 tickets and its calls Rs 1,663
+  over 10. Bigger puts lose more.
+- 2023 is also the year every option-buying strategy in this system lost, including the F&O books on
+  Nov 1. That year was calm and grinding, a hard market for option buyers.
+- So E03.2's profit is a 2024–2025 result, not a proven edge.
+
+**What changes:**
+- E03.2 stays on paper only. No size increase, nothing toward real money.
+- Its forward paper tickets (0 of 20 so far) are now the main evidence.
+- The fixes (EN01, EN02) still matter: they make that paper record honest and complete.
 
 ## Data that would help next
 
