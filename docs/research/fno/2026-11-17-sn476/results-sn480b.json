@@ -1,0 +1,409 @@
+{
+ "SELF_30K_CAPPED 2022 @205": {
+  "gold": {
+   "net": -15708,
+   "by_year": {
+    "2022": -15708
+   },
+   "months_positive": 4,
+   "months": 12,
+   "worst_month": -6626,
+   "worst_day": -4679,
+   "refilled": 42507,
+   "trades": 29,
+   "sessions": 190,
+   "per_session": -82.7,
+   "final_wallet": 9627
+  },
+  "challenger": {
+   "net": -15483,
+   "by_year": {
+    "2022": -15483
+   },
+   "months_positive": 4,
+   "months": 12,
+   "worst_month": -6701,
+   "worst_day": -4679,
+   "refilled": 42676,
+   "trades": 29,
+   "sessions": 190,
+   "per_session": -81.5,
+   "final_wallet": 9851
+  },
+  "diff_total": 225,
+  "diff_by_year": {
+   "2022": 225
+  },
+  "diff_ci90": [
+   -2334,
+   2669
+  ],
+  "sessions": 190,
+  "sessions_changed": 7,
+  "most_affected_session": [
+   "2022-01-18",
+   943
+  ],
+  "diff_without_most_affected": -718,
+  "worst_day": [
+   -4679,
+   -4679
+  ],
+  "losing_day_sum": [
+   -42507,
+   -42676
+  ],
+  "worst_month": [
+   -6626,
+   -6701
+  ],
+  "refilled": [
+   42507,
+   42676
+  ],
+  "gold_top5": [
+   [
+    "2022-03-08",
+    6408,
+    6802
+   ],
+   [
+    "2022-12-30",
+    4666,
+    4666
+   ],
+   [
+    "2022-03-09",
+    4595,
+    4595
+   ],
+   [
+    "2022-03-21",
+    4540,
+    4540
+   ],
+   [
+    "2022-10-11",
+    3659,
+    3659
+   ]
+  ],
+  "failed_add_sales": 2,
+  "failed_add_matched": 2,
+  "failed_add_sale_net": -2436,
+  "same_add_pieces_net_in_gold": -4043,
+  "adds_gold": 2,
+  "adds_challenger": 2,
+  "gold_min_wallet": 8793,
+  "gold_end_wallet_plus_day": 14292
+ },
+ "SELF_30K_CAPPED 2022 @400": {
+  "gold": {
+   "net": -23059,
+   "by_year": {
+    "2022": -23059
+   },
+   "months_positive": 2,
+   "months": 9,
+   "worst_month": -6721,
+   "worst_day": -4579,
+   "refilled": 40309,
+   "trades": 24,
+   "sessions": 140,
+   "per_session": -164.7,
+   "final_wallet": 8671
+  },
+  "challenger": {
+   "net": -23567,
+   "by_year": {
+    "2022": -23567
+   },
+   "months_positive": 2,
+   "months": 9,
+   "worst_month": -6568,
+   "worst_day": -4427,
+   "refilled": 40817,
+   "trades": 24,
+   "sessions": 140,
+   "per_session": -168.3,
+   "final_wallet": 8036
+  },
+  "diff_total": -508,
+  "diff_by_year": {
+   "2022": -508
+  },
+  "diff_ci90": [
+   -3549,
+   2124
+  ],
+  "sessions": 140,
+  "sessions_changed": 6,
+  "most_affected_session": [
+   "2022-04-27",
+   -1634
+  ],
+  "diff_without_most_affected": 1126,
+  "worst_day": [
+   -4579,
+   -4427
+  ],
+  "losing_day_sum": [
+   -40309,
+   -40817
+  ],
+  "worst_month": [
+   -6721,
+   -6568
+  ],
+  "refilled": [
+   40309,
+   40817
+  ],
+  "gold_top5": [
+   [
+    "2022-03-08",
+    6213,
+    6213
+   ],
+   [
+    "2022-03-21",
+    4345,
+    4345
+   ],
+   [
+    "2022-03-09",
+    4205,
+    4205
+   ],
+   [
+    "2022-06-13",
+    2271,
+    2271
+   ],
+   [
+    "2022-06-10",
+    215,
+    215
+   ]
+  ],
+  "failed_add_sales": 2,
+  "failed_add_matched": 1,
+  "failed_add_sale_net": -1192,
+  "same_add_pieces_net_in_gold": -2136,
+  "adds_gold": 1,
+  "adds_challenger": 2,
+  "gold_min_wallet": 8671,
+  "gold_end_wallet_plus_day": 6941
+ },
+ "SELF_30K_CAPPED 2023-2026 @205": {
+  "gold": {
+   "net": 889565,
+   "by_year": {
+    "2023": -6756,
+    "2024": 220808,
+    "2025": 292811,
+    "2026": 382702
+   },
+   "months_positive": 25,
+   "months": 46,
+   "worst_month": -38531,
+   "worst_day": -21113,
+   "refilled": 579001,
+   "trades": 156,
+   "sessions": 742,
+   "per_session": 1198.9,
+   "final_wallet": 101250
+  },
+  "challenger": {
+   "net": 768069,
+   "by_year": {
+    "2023": -4485,
+    "2024": 209781,
+    "2025": 230845,
+    "2026": 331928
+   },
+   "months_positive": 24,
+   "months": 46,
+   "worst_month": -38531,
+   "worst_day": -21113,
+   "refilled": 518725,
+   "trades": 156,
+   "sessions": 742,
+   "per_session": 1035.1,
+   "final_wallet": 101250
+  },
+  "diff_total": -121496,
+  "diff_by_year": {
+   "2023": 2271,
+   "2024": -11026,
+   "2025": -61966,
+   "2026": -50774
+  },
+  "diff_ci90": [
+   -231196,
+   -22750
+  ],
+  "sessions": 742,
+  "sessions_changed": 48,
+  "most_affected_session": [
+   "2025-08-11",
+   -27232
+  ],
+  "diff_without_most_affected": -94263,
+  "worst_day": [
+   -21113,
+   -21113
+  ],
+  "losing_day_sum": [
+   -579001,
+   -518725
+  ],
+  "worst_month": [
+   -38531,
+   -38531
+  ],
+  "refilled": [
+   579001,
+   518725
+  ],
+  "gold_top5": [
+   [
+    "2024-11-12",
+    79210,
+    79210
+   ],
+   [
+    "2025-01-21",
+    75503,
+    75503
+   ],
+   [
+    "2025-02-11",
+    73797,
+    54376
+   ],
+   [
+    "2026-10-21",
+    71732,
+    71732
+   ],
+   [
+    "2024-11-05",
+    70275,
+    70275
+   ]
+  ],
+  "failed_add_sales": 32,
+  "failed_add_matched": 31,
+  "failed_add_sale_net": -60680,
+  "same_add_pieces_net_in_gold": 62525,
+  "adds_gold": 57,
+  "adds_challenger": 57,
+  "gold_min_wallet": 14782,
+  "gold_end_wallet_plus_day": 101250
+ },
+ "SELF_30K_CAPPED 2023-2026 @400": {
+  "gold": {
+   "net": -22947,
+   "by_year": {
+    "2023": -22947
+   },
+   "months_positive": 2,
+   "months": 12,
+   "worst_month": -7277,
+   "worst_day": -5704,
+   "refilled": 32567,
+   "trades": 24,
+   "sessions": 189,
+   "per_session": -121.4,
+   "final_wallet": 8812
+  },
+  "challenger": {
+   "net": -23497,
+   "by_year": {
+    "2023": -23497
+   },
+   "months_positive": 2,
+   "months": 12,
+   "worst_month": -7234,
+   "worst_day": -5085,
+   "refilled": 33117,
+   "trades": 24,
+   "sessions": 189,
+   "per_session": -124.3,
+   "final_wallet": 8123
+  },
+  "diff_total": -550,
+  "diff_by_year": {
+   "2023": -550
+  },
+  "diff_ci90": [
+   -3562,
+   1871
+  ],
+  "sessions": 189,
+  "sessions_changed": 6,
+  "most_affected_session": [
+   "2023-03-28",
+   -1506
+  ],
+  "diff_without_most_affected": 957,
+  "worst_day": [
+   -5704,
+   -5085
+  ],
+  "losing_day_sum": [
+   -32567,
+   -33117
+  ],
+  "worst_month": [
+   -7277,
+   -7234
+  ],
+  "refilled": [
+   32567,
+   33117
+  ],
+  "gold_top5": [
+   [
+    "2023-03-15",
+    7623,
+    7623
+   ],
+   [
+    "2023-11-01",
+    1772,
+    1772
+   ],
+   [
+    "2023-01-10",
+    225,
+    225
+   ],
+   [
+    "2023-01-02",
+    0,
+    0
+   ],
+   [
+    "2023-01-03",
+    0,
+    0
+   ]
+  ],
+  "failed_add_sales": 1,
+  "failed_add_matched": 1,
+  "failed_add_sale_net": -1259,
+  "same_add_pieces_net_in_gold": -2303,
+  "adds_gold": 3,
+  "adds_challenger": 4,
+  "gold_min_wallet": 8812,
+  "gold_end_wallet_plus_day": 7053
+ },
+ "SELF_30K uncapped 2023-2026 @400 path": {
+  "first_session_below_7500": "2023-12-22",
+  "min_equity": 7053,
+  "sessions_logged": 189,
+  "net": -22947
+ }
+}
