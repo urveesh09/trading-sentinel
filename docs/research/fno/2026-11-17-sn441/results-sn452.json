@@ -1,0 +1,38 @@
+{
+ "A 2022": {
+  "net_with_check": -15281,
+  "trades": 30,
+  "calls": 30,
+  "compared": 30,
+  "both_none": 0,
+  "mismatches": 0,
+  "mismatch_rows": []
+ },
+ "B 2022": {
+  "days_checked": 20,
+  "changed": 0,
+  "rows": []
+ },
+ "A 2023-2026": {
+  "net_with_check": 850883,
+  "trades": 156,
+  "calls": 156,
+  "compared": 156,
+  "both_none": 0,
+  "mismatches": 0,
+  "mismatch_rows": []
+ },
+ "B 2023-2026": {
+  "days_checked": 20,
+  "changed": 0,
+  "rows": []
+ },
+ "C": {
+  "trades": 434,
+  "violations": 0,
+  "rows": [],
+  "min_seconds_after_bar_close": 59.0,
+  "median_seconds_after_bar_close": 59.0
+ },
+ "pass": true
+}
