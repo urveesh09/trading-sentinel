@@ -34,7 +34,7 @@ def main():
     from research_leg_subscriptions import ResearchLegSubscriptionStore
     rows = json.loads((HERE.parent / "2026-11-17-sn456" / "results-sn464.json").read_text(encoding="utf-8"))["rows"]
     res = {"traces": []}
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         settings.RESEARCH_ARCHIVE_PATH = tmp
         settings.RESEARCH_ARCHIVE_ENABLED = True
         settings.RESEARCH_PIN_PAPER_LEGS = True
