@@ -192,3 +192,6 @@ the commits. Nothing deployed; nothing pushed without the owner.
   Production's recorder holds only Nov 16–17, with no paper stop since Nov 11: SN479's planned sample has no stop with packets, so
   its planned verdict is INCONCLUSIVE; `sn479.py` adds a declared mechanism study on the two recorder days with synthetic one-lot
   stops (0.15% underlying, 15% premium), which informs the engineering question but qualifies nothing.
+- **A4 (SN484, after its run):** Yahoo's NIFTYBEES series has one bad print (2019-12-19 close ₹13.02 between ₹129.25 and ₹129.93; no
+  split event exists). It falls on no signal or trade date, so only the 2010–2026 window's drawdowns are wrong (89.9–90.1%); the
+  windows from 2020 are untouched. Supplementary `sn484b.py` reruns 2010–2026 without that row; SN484's receipt stays as written.
