@@ -524,7 +524,7 @@ async def test_an_expiry_whose_index_never_answers_is_still_recorded(tmp_path):
     assert state["ticks"] == ticks == 217 and state["spot_refusals"] == {"MISSING": 217}
     assert state["box_status"] == "UNUSABLE_0_SAMPLES" and _positions(db) == []
     summary = _summary(db)
-    assert "ticks 217 of 966 slots" in summary and "index refused 217 (MISSING 217)" in summary
+    assert "ticks 217 of 1038 slots" in summary and "index refused 217 (MISSING 217)" in summary
 
 
 def test_charges_follow_the_exchange_and_are_frozen_at_entry(monkeypatch):
@@ -768,8 +768,8 @@ async def test_a_move_beyond_the_reserve_is_recorded_as_a_breach_not_capped_t2(t
 
 @pytest.mark.asyncio
 async def test_the_slot_count_matches_the_ticks_the_scheduler_can_run_t5(tmp_path):
-    # 12:59:00 through 15:39:50 is 966 starts; the 15:40:00 callback never runs.
-    assert xp.EXPECTED_SLOTS == 966
+    # 12:47:00 (EN02; 12:59:00 before) through 15:39:50 is 1,038 starts; the 15:40:00 callback never runs.
+    assert xp.EXPECTED_SLOTS == 1038
     market = _Market(_book(), _breakout_day)
     market.now = _at(TUESDAY, 15, 40)
     await xp.run_expiry_tick(market, str(tmp_path / "t.db"), now=market.now, books={"NIFTY": market.book})

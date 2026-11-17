@@ -1,0 +1,98 @@
+{
+ "vol (deployed) | 2022 @205": {
+  "net": -15281,
+  "trades": 30,
+  "months_positive": 4,
+  "worst_month": -9276
+ },
+ "vol (deployed) | 2022 @400": {
+  "net": -23511,
+  "trades": 30,
+  "months_positive": 3,
+  "worst_month": -9667
+ },
+ "vol (deployed) | 2023-2026 @205": {
+  "net": 850883,
+  "trades": 156,
+  "months_positive": 25,
+  "worst_month": -38531
+ },
+ "vol (deployed) | 2023-2026 @400": {
+  "net": 495597,
+  "trades": 154,
+  "months_positive": 23,
+  "worst_month": -41913
+ },
+ "setup EFF | 2022 @205": {
+  "net": -13524,
+  "trades": 30,
+  "months_positive": 4,
+  "worst_month": -6711
+ },
+ "setup EFF | 2022 @400": {
+  "net": -20544,
+  "trades": 30,
+  "months_positive": 4,
+  "worst_month": -7296
+ },
+ "setup EFF | 2023-2026 @205": {
+  "net": 651744,
+  "trades": 156,
+  "months_positive": 25,
+  "worst_month": -40927
+ },
+ "setup EFF | 2023-2026 @400": {
+  "net": 426431,
+  "trades": 156,
+  "months_positive": 24,
+  "worst_month": -44638
+ },
+ "setup EFF+TPB | 2022 @205": {
+  "net": -16606,
+  "trades": 30,
+  "months_positive": 4,
+  "worst_month": -9276
+ },
+ "setup EFF+TPB | 2022 @400": {
+  "net": -24836,
+  "trades": 30,
+  "months_positive": 3,
+  "worst_month": -9667
+ },
+ "setup EFF+TPB | 2023-2026 @205": {
+  "net": 813546,
+  "trades": 156,
+  "months_positive": 25,
+  "worst_month": -39264
+ },
+ "setup EFF+TPB | 2023-2026 @400": {
+  "net": 544351,
+  "trades": 156,
+  "months_positive": 23,
+  "worst_month": -43170
+ },
+ "setup TPB | 2022 @205": {
+  "net": -21827,
+  "trades": 30,
+  "months_positive": 4,
+  "worst_month": -9276
+ },
+ "setup TPB | 2022 @400": {
+  "net": -29861,
+  "trades": 30,
+  "months_positive": 3,
+  "worst_month": -9667
+ },
+ "setup TPB | 2023-2026 @205": {
+  "net": 755110,
+  "trades": 156,
+  "months_positive": 25,
+  "worst_month": -33633
+ },
+ "setup TPB | 2023-2026 @400": {
+  "net": 568434,
+  "trades": 157,
+  "months_positive": 23,
+  "worst_month": -36758
+ }
+}

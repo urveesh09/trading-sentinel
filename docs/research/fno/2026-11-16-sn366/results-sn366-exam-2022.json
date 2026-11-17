@@ -1,0 +1,396 @@
+{
+ "sessions_scored": "242 sessions, 190 with options (fewer than 200: scored as it exists, per N10's sheet)",
+ "stats": {
+  "panel|N11": {
+   "net": -14079,
+   "worst_day": -5955,
+   "fall_pct": 9.01,
+   "worst_trade": -3865,
+   "trades": 32,
+   "unresolved": 0
+  },
+  "panel|R0.85": {
+   "net": -14331,
+   "worst_day": -5955,
+   "fall_pct": 8.6,
+   "worst_trade": -3865,
+   "trades": 33,
+   "unresolved": 0
+  },
+  "panel|R0.95": {
+   "net": -13328,
+   "worst_day": -5955,
+   "fall_pct": 8.35,
+   "worst_trade": -3865,
+   "trades": 29,
+   "unresolved": 0
+  },
+  "panel|N15": {
+   "net": -24443,
+   "worst_day": -5955,
+   "fall_pct": 10.68,
+   "worst_trade": -3865,
+   "trades": 37,
+   "unresolved": 0
+  },
+  "panel|N25": {
+   "net": -11325,
+   "worst_day": -5955,
+   "fall_pct": 9.01,
+   "worst_trade": -3865,
+   "trades": 28,
+   "unresolved": 0
+  },
+  "panel|X0.75": {
+   "net": -13891,
+   "worst_day": -5767,
+   "fall_pct": 8.93,
+   "worst_trade": -4230,
+   "trades": 32,
+   "unresolved": 0
+  },
+  "panel|X1.25": {
+   "net": -14079,
+   "worst_day": -5955,
+   "fall_pct": 9.01,
+   "worst_trade": -3865,
+   "trades": 32,
+   "unresolved": 0
+  },
+  "panel|NO_STAND": {
+   "net": -8630,
+   "worst_day": -5955,
+   "fall_pct": 9.52,
+   "worst_trade": -3865,
+   "trades": 53,
+   "unresolved": 0
+  },
+  "panel|NO_LOSS": {
+   "net": -9252,
+   "worst_day": -5955,
+   "fall_pct": 8.84,
+   "worst_trade": -3865,
+   "trades": 32,
+   "unresolved": 0
+  },
+  "panel|NO_ADD": {
+   "net": -14079,
+   "worst_day": -5955,
+   "fall_pct": 9.01,
+   "worst_trade": -3865,
+   "trades": 32,
+   "unresolved": 0
+  },
+  "panel|NO_VOL": {
+   "net": -14079,
+   "worst_day": -5955,
+   "fall_pct": 9.01,
+   "worst_trade": -3865,
+   "trades": 32,
+   "unresolved": 0
+  },
+  "panel|DOUBLE": {
+   "net": -21499,
+   "worst_day": -6795,
+   "fall_pct": 10.92,
+   "worst_trade": -4285,
+   "trades": 32,
+   "unresolved": 0
+  },
+  "ctrl|N08": {
+   "net": -6874,
+   "worst_day": -5955,
+   "fall_pct": 9.87,
+   "worst_trade": -3865,
+   "trades": 53,
+   "unresolved": 0
+  },
+  "ctrl|VOL_CLOCK": {
+   "net": -4363,
+   "worst_day": -5955,
+   "fall_pct": 9.37,
+   "worst_trade": -3865,
+   "trades": 53,
+   "unresolved": 0
+  },
+  "ctrl|N10": {
+   "net": -3803,
+   "worst_day": -5955,
+   "fall_pct": 9.35,
+   "worst_trade": -3865,
+   "trades": 53,
+   "unresolved": 0
+  },
+  "CUSHION": {
+   "net": -4363,
+   "worst_day": -5955,
+   "fall_pct": 9.37,
+   "worst_trade": -3865,
+   "trades": 53,
+   "unresolved": 0
+  },
+  "STRICT": {
+   "net": -4363,
+   "worst_day": -5955,
+   "fall_pct": 9.37,
+   "worst_trade": -3865,
+   "trades": 53,
+   "unresolved": 0
+  },
+  "rand|RANDOM|00|BASE": {
+   "net": -118634,
+   "worst_day": -3988,
+   "fall_pct": 47.45,
+   "worst_trade": -2656,
+   "trades": 336,
+   "unresolved": 0
+  },
+  "rand|RANDOM|00|ADD": {
+   "net": -113027,
+   "worst_day": -3988,
+   "fall_pct": 45.21,
+   "worst_trade": -2656,
+   "trades": 337,
+   "unresolved": 0
+  },
+  "rand|RANDOM|00|STAND": {
+   "net": -79080,
+   "worst_day": -3988,
+   "fall_pct": 31.63,
+   "worst_trade": -2656,
+   "trades": 216,
+   "unresolved": 0
+  },
+  "rand|RANDOM|01|BASE": {
+   "net": -97819,
+   "worst_day": -5401,
+   "fall_pct": 44.95,
+   "worst_trade": -2618,
+   "trades": 445,
+   "unresolved": 0
+  },
+  "rand|RANDOM|01|ADD": {
+   "net": -116597,
+   "worst_day": -6407,
+   "fall_pct": 50.53,
+   "worst_trade": -2633,
+   "trades": 432,
+   "unresolved": 0
+  },
+  "rand|RANDOM|01|STAND": {
+   "net": -82799,
+   "worst_day": -5401,
+   "fall_pct": 35.19,
+   "worst_trade": -2618,
+   "trades": 298,
+   "unresolved": 0
+  },
+  "rand|RANDOM|02|BASE": {
+   "net": -105562,
+   "worst_day": -3161,
+   "fall_pct": 42.22,
+   "worst_trade": -2506,
+   "trades": 271,
+   "unresolved": 0
+  },
+  "rand|RANDOM|02|ADD": {
+   "net": -121145,
+   "worst_day": -3751,
+   "fall_pct": 48.46,
+   "worst_trade": -3549,
+   "trades": 269,
+   "unresolved": 0
+  },
+  "rand|RANDOM|02|STAND": {
+   "net": -74635,
+   "worst_day": -3161,
+   "fall_pct": 29.85,
+   "worst_trade": -2318,
+   "trades": 168,
+   "unresolved": 0
+  },
+  "rand|RANDOM|03|BASE": {
+   "net": -42088,
+   "worst_day": -2761,
+   "fall_pct": 17.38,
+   "worst_trade": -2048,
+   "trades": 125,
+   "unresolved": 0
+  },
+  "rand|RANDOM|03|ADD": {
+   "net": -44834,
+   "worst_day": -3413,
+   "fall_pct": 19.35,
+   "worst_trade": -3413,
+   "trades": 126,
+   "unresolved": 0
+  },
+  "rand|RANDOM|03|STAND": {
+   "net": -30990,
+   "worst_day": -2761,
+   "fall_pct": 13.4,
+   "worst_trade": -2048,
+   "trades": 72,
+   "unresolved": 0
+  },
+  "rand|RANDOM|04|BASE": {
+   "net": -46208,
+   "worst_day": -3166,
+   "fall_pct": 22.77,
+   "worst_trade": -2873,
+   "trades": 217,
+   "unresolved": 0
+  },
+  "rand|RANDOM|04|ADD": {
+   "net": -38543,
+   "worst_day": -3166,
+   "fall_pct": 21.41,
+   "worst_trade": -2873,
+   "trades": 217,
+   "unresolved": 0
+  },
+  "rand|RANDOM|04|STAND": {
+   "net": -38650,
+   "worst_day": -2873,
+   "fall_pct": 16.01,
+   "worst_trade": -2873,
+   "trades": 135,
+   "unresolved": 0
+  },
+  "rand|RANDOM|05|BASE": {
+   "net": -15049,
+   "worst_day": -3361,
+   "fall_pct": 13.39,
+   "worst_trade": -2958,
+   "trades": 100,
+   "unresolved": 0
+  },
+  "rand|RANDOM|05|ADD": {
+   "net": -27095,
+   "worst_day": -5384,
+   "fall_pct": 20.11,
+   "worst_trade": -4162,
+   "trades": 100,
+   "unresolved": 0
+  },
+  "rand|RANDOM|05|STAND": {
+   "net": -17622,
+   "worst_day": -3361,
+   "fall_pct": 10.98,
+   "worst_trade": -2958,
+   "trades": 70,
+   "unresolved": 0
+  },
+  "rand|RANDOM|06|BASE": {
+   "net": -2322,
+   "worst_day": -2151,
+   "fall_pct": 5.27,
+   "worst_trade": -2151,
+   "trades": 55,
+   "unresolved": 0
+  },
+  "rand|RANDOM|06|ADD": {
+   "net": 333,
+   "worst_day": -3370,
+   "fall_pct": 5.17,
+   "worst_trade": -3370,
+   "trades": 54,
+   "unresolved": 0
+  },
+  "rand|RANDOM|06|STAND": {
+   "net": 4634,
+   "worst_day": -2151,
+   "fall_pct": 3.81,
+   "worst_trade": -2151,
+   "trades": 34,
+   "unresolved": 0
+  },
+  "rand|RANDOM|07|BASE": {
+   "net": -54305,
+   "worst_day": -2859,
+   "fall_pct": 22.8,
+   "worst_trade": -2051,
+   "trades": 145,
+   "unresolved": 0
+  },
+  "rand|RANDOM|07|ADD": {
+   "net": -77255,
+   "worst_day": -3491,
+   "fall_pct": 32.55,
+   "worst_trade": -3491,
+   "trades": 145,
+   "unresolved": 0
+  },
+  "rand|RANDOM|07|STAND": {
+   "net": -39002,
+   "worst_day": -2859,
+   "fall_pct": 16.74,
+   "worst_trade": -2051,
+   "trades": 95,
+   "unresolved": 0
+  },
+  "rand|RANDOM|08|BASE": {
+   "net": -100769,
+   "worst_day": -6129,
+   "fall_pct": 44.49,
+   "worst_trade": -2732,
+   "trades": 419,
+   "unresolved": 0
+  },
+  "rand|RANDOM|08|ADD": {
+   "net": -95915,
+   "worst_day": -6799,
+   "fall_pct": 48.58,
+   "worst_trade": -2952,
+   "trades": 422,
+   "unresolved": 0
+  },
+  "rand|RANDOM|08|STAND": {
+   "net": -59553,
+   "worst_day": -6129,
+   "fall_pct": 30.35,
+   "worst_trade": -2732,
+   "trades": 292,
+   "unresolved": 0
+  },
+  "rand|RANDOM|09|BASE": {
+   "net": -106781,
+   "worst_day": -6627,
+   "fall_pct": 43.47,
+   "worst_trade": -4286,
+   "trades": 353,
+   "unresolved": 1
+  },
+  "rand|RANDOM|09|ADD": {
+   "net": -117326,
+   "worst_day": -6627,
+   "fall_pct": 49.07,
+   "worst_trade": -4286,
+   "trades": 347,
+   "unresolved": 1
+  },
+  "rand|RANDOM|09|STAND": {
+   "net": -61395,
+   "worst_day": -6627,
+   "fall_pct": 25.83,
+   "worst_trade": -4286,
+   "trades": 237,
+   "unresolved": 1
+  }
+ },
+ "N11_sheet": {
+  "A_beats_the_others": false,
+  "B_stand_aside": false,
+  "B_fires_proxy": 21,
+  "C_honest_add": true,
+  "D_size_by_volatility": true,
+  "random_entry_median_net": -76062,
+  "random_base_books": 10
+ },
+ "N10_sheet": {
+  "A_earned_lot": true,
+  "B_retry": true,
+  "C_beats_N08": true,
+  "D_watch_one_account_2022_2026": "pending (a separate carry run)"
+ }
+}

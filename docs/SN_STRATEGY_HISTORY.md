@@ -18,7 +18,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 
 ---
 
-## 1. Current state (updated Nov 15, 2026 evening, after SN250: Gold v6 built in Dev, Gold v7 chosen) — read this first
+## 1. Current state (updated Nov 16, 2026 morning, after SN275: Gold v7 on Production paper; no margin-free gap-day leg) — read this first
 
 **In Production (`052a6d6e`, PR #139, deployed Nov 15 night, verified): Gold v7 on paper (SN Gold v5 + WK-H band 0.8, `sn_wkh.py`), plus everything below from `826f0727` (PR #138, Nov 13 evening):**
 - **SN Gold v5 on PAPER** (`python-engine/sn_gold.py`, since Nov 13, release `82b08371`):
@@ -43,6 +43,21 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
   - the owner made Gold v5 + WK-H the baseline Gold v6; it is built in Dev as `python-engine/sn_wkh.py` (paper, `1690bb71`, not deployed);
   - SN231–SN250 chose **Gold v7 = the same leg with hedge band 0.8**: over Jan 2023 – Oct 2026, 33 of 46 months positive against 31, worst month −₹28,981 against −₹38,228, net +₹13.71 lakh against +₹11.96 lakh. It is the Dev default;
   - every month positive was not reached. The remaining bad months come from WK-H's quiet or sudden-move weeks and Gold v5's own losing months.
+- **SN251–SN275 (Nov 16): Gold's gap days from Gold's own wallet, without margin: nothing passed.** Options-only WK-H (wings instead of futures) loses on 4–5 of 5 samples (−₹2.1 to −₹2.7 lakh per lot); the hot-day watches fail two new unseen buyer exams (NIFTY Oct 2020 – Mar 2022, SENSEX Oct 2024 – Apr 2026); buying every day loses ₹150–660 per lot per day; 13 new studies fail. A wage pot from Gold pays ₹500–750 a session over years, with ₹0.5–3.1 lakh advanced first (SN269). See the SN251–SN275 section at the end.
+- **SN276–SN285 (Nov 16): every earlier gap-day signal combined on 1,465 pooled sessions: nothing passed** (walk-forward learners −₹1.3–1.8 lakh, the vote −₹973 pooled). Pre-holiday calls are positive on all four samples (post-hoc, ~10 a year): a forward watch candidate. See the SN276–SN285 section at the end.
+- **SN286–SN300 (Nov 16): the auditor's brief.** Corrected holiday calls are carried by their best day (forward ledger only); the partner's first minute is not tradable at real prices; two tick-recorder candidates (futures pressure, lagging strike) are frozen for a 20-session forward verdict (`fwd.py`, about Dec 17–19). See the SN286–SN300 section at the end.
+- **SN301–SN315 (Nov 16): the forward test protected and Gold v5's own losses audited.** Amended scorer and verified archive (`sn301/fwd2.py`; verdict after session 20, Dec 23). Gold's losses are signal losses (stops, adds, costs and cash checks sound; extension neutral); no Gold change. From Dec 7 F&O closes at 15:45 (engine assumes 15:40). See the SN301–SN315 section at the end.
+- **SN316–SN330 (Nov 16): the partner's chart sequence fails on one-second data; Gold's losses have no early signature; WK-H passes the 2020 crash exam; Gold V8 = Gold v5 executed for real money** (`sn316/GOLD_V8.md`). Dec 7 CAS 2.0 hours fixed in Dev (`52a77adf`, not deployed). See the SN316–SN330 section at the end.
+- **SN331–SN350 (Nov 16): no short-horizon option edge at any clock** (failed-break reversals have no room; entries after fast moves are worse than random). **Gold V8 = Gold v5**; the wage comes from Gold's capital (₹881 a session at ₹205 with a one-wallet reserve). See the SN331–SN350 section at the end.
+- **SN351–SN365 (Nov 16): the wage corrected to ₹785 a session (SN342 double-counted ₹71,250 of growth cash); the auction's direction is information already priced; opening premium is rich; no entry state has room at ₹205.** Forward scorers fw5 / fw6 frozen. See the SN351–SN365 section at the end.
+- **SN366–SN380 (Nov 16): Gold v5 on unseen 2022 lost ₹15,281 from ₹30k (4 of 12 months positive, like 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option.** Forward fw7 frozen. See the SN366–SN380 section at the end.
+- **SN381–SN395 (Nov 16): under honest rules the opening ITM trade is break-even (+₹46 a session, −₹447 after Sep 7); the robust part is ITM over ATM; Gold's 2022 exam closed (N10 sheet D yes, N10 retry the sheets' lead); the wage is a capital question.** Forward fw7a / fw8 / fw9 frozen. See the SN381–SN395 section at the end.
+- **SN396–SN410 (Nov 17): on the real 09:16:00 clock the opening trade loses (−₹81 a session; the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected (p 0.80) and pre-auction checks; the 2022 N10–N11 gap is the stand-aside alone; Gold survives a minute of latency.** Forward fw7b / fw9a / fw8a frozen. See the SN396–SN410 section at the end.
+- **SN411–SN425 (Nov 17): every day offered ₹750 in hindsight (the gap is selection); Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205); Gold's exposure settings are leverage; BANKNIFTY is the only other venue (last week of the month).** Recorder BANKNIFTY change in Dev (not deployed); fw7c / fw9b frozen; F1 pre-registered. See the SN411–SN425 section at the end.
+- **SN426–SN440 (Nov 17): break-even needs ~56% / ~68% direction (₹205 / ₹400) for a one-hour ITM trade; Gold's expiry mornings hold ~7 signals a year; Gold's exit headroom (₹2,085 a lot) resists every simple rule; ₹205 is the realistic Gold cost (₹617 a real session).** See the SN426–SN440 section at the end.
+- **SN441–SN455 (Nov 17): on Gold's empty days a one-hour ITM trade needs ~62% / 77% direction (₹205 / ₹400); timing headroom cannot be captured and Gold's entries must stay immediate; Gold's replay is future-blind and ₹205 covers its cost at 6 lots; bank results, the London clock and expiry pinning give nothing usable; a development number has predicted almost nothing (median unseen / development −0.22).** See the SN441–SN455 section at the end.
+- **SN456–SN475 (Nov 17): prior-session FII positioning adds nothing (CW p 0.62); Kronos-small forecasts worse than no change; none of Gold's six-lot exits lacked bids; Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill (break-even needs a forecast correlated ~0.2 with the next hour), not capacity; our forward verdicts are low-power screens (only fx5's paired design is informative).** See the SN456–SN475 section at the end.
+- **SN476–SN490 (Nov 17): Gold v5 unchanged loses on its never-run 2020–21 sample (−₹64,783 @205 from ₹30k), so it has lost in four of seven years and earned only in 2024–26; the live engine takes every trade the benchmark credits and matches its rules to the paisa; no challenger survives (failed-add exit, faster entry, expert adds, oil / rupee filter, next-week option, ETF trend); held-contract research pin in Dev.** See the SN476–SN490 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -792,3 +807,418 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - `d87c0031`: SN231–SN234 and the amendment.
 - `13850b41`: SN235–SN248.
 - The Gold v7 runtime and docs commit follows.
+
+## SN251–SN275 (Nov 16, 2026): Gold's gap days from Gold's own wallet, without margin (folder `docs/research/fno/2026-11-16-sn251`)
+
+**Owner:**
+- "use the same wallet that the Gold V5 is using … to trade on the Gold gap days … I don't want to use margin because there is potential of unlimited loss … the amount we can refill [is] by max the wallet's full amount … option buying every day has a potential to earn more than 10% … 25 slots till SN 275";
+- and: why not hedge WK-H with options only.
+
+**Method:**
+- **Freezes:** plan `fb7e7523` (amendment `c22d0b0f` before SN271–SN272); engine `gl.py` / `ow.py` at `0555a559`; each Block C slot frozen before its run.
+- **Tier A:** bought options only. **Tier B:** defined-risk spreads, as information.
+- **One wallet:** SN110's contract. With no leg, `ow.py` reproduces Gold v5 exactly (₹8,50,882).
+- **Samples:**
+  - DEV: NIFTY Apr 2022 – Aug 2026;
+  - TEST: Aug 20 – Oct 28 2026;
+  - **two new buyer exams**, scored once per slot: EXAM-N (NIFTY Oct 2020 – Mar 2022, 286 sessions) and EXAM-S (SENSEX Oct 2024 – Apr 2026, 306 sessions).
+- **Pass rule:**
+  - G1: DEV net > 0 and ≥ 3 of 5 years positive;
+  - G2: a same-budget random null;
+  - G3: both exams positive;
+  - G4: DEV positive at ₹400 and one minute late.
+  - The pick is the max-min variant of ≤ 12.
+
+| SN | Result | Verdict |
+|---|---|---|
+| 251 | Options-only WK-H: iron flies (wings 0.5 / 1.0 / 2.0) and condors, per lot over 5 samples −₹2.13 to −₹2.72 lakh (0–1 of 5 positive); largest loss per lot ₹1.1k–11k. WK-H with futures +₹3.86 / +₹4.19 lakh | Wings lose the profit |
+| 252 | 944 sessions, 811 gap days (609 non-expiry + 202 expiry); Gold v5 +₹8,50,883, 25 of 46 months positive. ₹1,500 a session needs ₹697 more per gap day | Census |
+| 253 | Exams sealed; ATM legs priced on ≥ 99.7% of sessions | Data |
+| 254 | SN95-L: EXAM-N −₹17,654 (19 trades), EXAM-S −₹8,541 (21); SN171 lost every EXAM-N trade | FAIL |
+| 255 | Buying every day: −₹150 to −₹660 per lot per day on every sample; random side 0 of 200 seeds positive on DEV | Cost of activity |
+| 256–263 | Weekend straddles (−₹2.3 lakh DEV), weekday overnights, swing (exams + but DEV −₹70k), events (Budget pick, RBI straddles −₹20.9k), opening gaps, the cheap weekly straddle, LightGBM (exams −₹11.7k / +₹13.5k), gap-day afternoons | All FAIL |
+| 264 | Expiry days: no unseen data; E03.2 in-sample only, 0 tickets on Production paper since Nov 5 | No verdict |
+| 265–268 | No survivor | Not run |
+| 269 | Wage pot from Gold v5 alone: ₹500–750 every session is affordable over years; the owner advances ₹0.5–3.1 lakh first (₹1.16 lakh from Jan 2024, ₹3.13 lakh from Jan 2023 at ₹750) | – |
+| 271 | Overnight index ETF (cash): the tradeable 15:20 → 09:16–09:30 drift is about zero after charges and the ₹15.34 DP fee | FAIL |
+| 272 | Pre-holiday calls (post-hoc): DEV +₹13,331, EXAM-N +₹25,327, EXAM-S +₹8,884, ~10 trades a year; fails G2 | FAIL by rule |
+| 273–275 | – | Unused |
+
+**Lessons:**
+1. A defined-risk (winged) seller has a small deposit and a fixed worst case, but the wings cost as much as the weekly edge. What made WK-H work is the futures hedge, which needs margin.
+2. With bought options only, Gold's gap days have no edge after costs, on two more unseen samples. The one real effect, NIFTY's overnight drift, sits in the closing and opening prints and cannot be collected with options or an ETF.
+3. A daily income comes from Gold's profit through a wage pot, with money advanced at the start.
+
+### Open items, Nov 16, 2026, after SN275 (the current list)
+
+1. **Mon Nov 16 15:15:**
+   - the first Gold v7 WK-H paper entry ("🥇 Gold v7 · WK-H (paper): sold …", a `gold_v6_wkh_weeks` row);
+   - Tue Nov 17 hedges and the 15:24 close; Wed Nov 18 09:15 settlement.
+2. **The 2020 crash test** (`sn248.py --data-complete`) after the download.
+3. **Owner's decisions:**
+   - a pre-holiday call forward paper watch (~10 a year);
+   - a wage pot amount;
+   - WK-H with real money only after the `SN_GOLD.md` gates and with margin.
+4. **Do not repeat** on these samples:
+   - everything in SN251–SN272;
+   - options-only WK-H structures;
+   - every-day buyers.
+
+### Commit index, SN251–SN275
+
+- Plan `fb7e7523`.
+- Results: `0555a559`, `f781a9fa`, `fbc949aa`, `e60e28ba`, `24ca38b2`, `c22d0b0f`, `4773927b`, `4f91377e`.
+- The docs commit adds this section.
+- **Production:** `c6cbceb1` (PR #140, another release) carries SN251–SN257's research files; no runtime change from SN251–SN275.
+
+## SN276–SN285 (Nov 16, 2026): every earlier gap-day signal combined, on all the data (folder `docs/research/fno/2026-11-16-sn276`)
+
+**Owner:** "10 slots more. Try some other perspective … same wallet … learn from the good points of strategies … use whatever you want."
+
+**Method:**
+- Plan `c300be88` before any number.
+- SN251's engine, unchanged.
+- 1,465 pooled sessions (NIFTY Oct 2020 – Oct 2026, SENSEX Oct 2024 – Apr 2026), 21 features at 10:00.
+- Learners walk-forward by half-year, 2022 H1 – 2026 H2, each trained only on earlier sessions.
+
+| SN | Result | Verdict |
+|---|---|---|
+| 276 | Every plain 10:00 action loses on average on every sample (straddle −₹580 to −₹1,015, call −₹224 to −₹1,194, put −₹212 to −₹481) | Base rates |
+| 277 | Action-value LightGBM: −₹1,28,556, 4 of 10 half-years positive | FAIL |
+| 278 | Two-stage classifier: −₹1,34,370, 2 of 10 | FAIL |
+| 279 | Vote of seven frozen signals: k = 3 DEV +₹13,988, EXAM-N −₹11,040, EXAM-S −₹28,680 | FAIL |
+| 280 | Controls for the vote: pooled −₹973 (null −₹62.8k), ₹400 −₹53.9k | FAIL |
+| 281 | Pre-holiday call positive on all four samples (ITM +₹46,674 over 73 trades); debit spreads and the breakout swing lose | Description |
+| 282 | SN126-L: EXAM-N +₹132 (12 trades), ₹400 negative | FAIL |
+| 283 | Cash-equity paper books: 4–5 forward sessions, slightly negative, cash conflict with Gold | Not a fit |
+| 284 | The pre-holiday ITM call in Gold's wallet (information, in-sample): +₹14,970, positive months 25 → 28, worst month −₹38.5k → −₹20.5k | Watch candidate |
+| 285 | Synthesis | – |
+
+**Lessons:**
+1. Weak signals combined stay weak. The 10:00 option's cost (₹200–650 a day) exceeds what any gap-day information predicts.
+2. The pre-holiday calendar effect is the only buyer signal positive everywhere. It is post-hoc and rare (about 10 a year).
+3. WK-H (Gold v7) won 57.6% of weeks over 368 weeks; it is not a partner strategy (margin, selling, automation).
+
+**Open items** (added to the SN275 list):
+- a pre-holiday ITM call forward paper watch on the owner's word;
+- the next weekday NSE holiday is its first forward test.
+
+**Commits:** `c300be88`, `c0521449`, `0dc1d2dc`, `d53009ee`, and the docs commit that adds this section.
+
+## SN286–SN300 (Nov 16, 2026): the auditor's brief tested (folder `docs/research/fno/2026-11-16-sn286`)
+
+**Owner:** "test it out see if you can agree to it … improve it … slots till 300." Brief: `docs/SN286_SN300_RESEARCH_BRIEF.md`.
+
+**The auditor was right on SN284:**
+- one call carried the in-wallet gain;
+- Saturday special sessions were admitted;
+- two 12:30 sessions booked 15:10 exits.
+
+| SN | Result |
+|---|---|
+| 286 | Corrected holiday rule: ITM call DEV +₹22,932 (40), TEST +₹5,464, EXAM-N +₹10,050, EXAM-S +₹12,010; without the best day +₹4.2k / −₹3.0k / −₹5.1k / −₹14.4k; in Gold's wallet +₹18,016, −₹741 without the best. Forward ledger only |
+| 287 | Partner: after the give-back alert, later entries made 145% of the change; "no new entries after the alert" better in 3 of 4 |
+| 288 | Partner first minute at executable prices: −0.22% vs +0.09% control; not tradable |
+| 289 | Recorder qualification built; the Nov 16 development day is clean |
+| 290 | Real one-lot ATM round trip ₹90–100 (straddle ₹190); the model is ₹4–9 conservative; delay is noise |
+| 291 / 293 | Packet candidates (futures pressure; lagging strike) frozen; forward verdict on the first 20 qualified sessions from Nov 17 |
+| 294–296, 298 | Diagnostics, exit challenger and holiday shadow frozen on the same window |
+| 292, 297 | Deferred |
+| 299–300 | One-wallet contract written; verdict code frozen (`fwd.py`) |
+
+**Open items:**
+- `python fwd.py collect` before ~Dec 20; `python fwd.py verdict` once 20 sessions qualify (about Dec 17–19).
+- Coaching idea (owner's call): after the give-back alert, a "stop adding trades" line.
+
+**Commits:** `d5cfb8f1`, `9153f68b`, `64cfa082`, `d5168b0f`, and the docs commit.
+
+## SN301–SN315 (Nov 16, 2026): the forward test protected, Gold v5's own losses audited (folder `docs/research/fno/2026-11-16-sn301`)
+
+**Owner:** "use these 15 slots to make me a better strategy … losses are cut and nothing unreasonable is happening." Review: `docs/SN301_SN315_RESEARCH_AUDIT.md`. Plan `94c772cd`.
+
+**Agreed with the auditor, fixed:**
+- the verdict could pass on missing evidence (unknown Gold days, an empty control);
+- `fw.hold` filled into a zero-quantity bid and booked missing exits early;
+- the collector could freeze a partial copy;
+- raw totals were compared against a control at a different frequency.
+
+**Not agreed:**
+- SN299's "debit within ₹3,000" was a wording error; the one-wallet rule (premium ≤ wallet − ₹15,000, ₹3,000 stop) decides, and the strict share is reported;
+- the original freeze is kept and reported as superseded;
+- SN312 was a cost audit first.
+
+| SN | Result |
+|---|---|
+| 301–305, 300a, 315 | Verified archive, executable contract, Gold labels, matched controls, affordability, amended verdict and replication block (`fw2.py`, `fwd2.py`; 12 tests). Session 20 = Dec 23 |
+| 306 | One-minute delay on 748 real-quote cases: entry late PE −₹50–56, CE +₹10–19, straddle −₹37–39; exit late −₹19 to +₹37. The cost is at the entry |
+| 307–309 | Price cap, order-flow change, premise-fail exit: frozen forward comparisons |
+| 310 | Gold v5 waterfall (156 trades): losers −₹6.00 lakh (first piece −₹5.01 lakh, adds −₹0.99 lakh; 78 at N11's exit, 8 stops; overshoot ₹988); winners +₹14.51 lakh (adds +₹2.77 lakh); extension +₹232 over 16 trades; fees + stress ₹1.98 lakh; the best 10 trades are 71% |
+| 311 | Scale-in cash: Gold v5 never over-commits (G1 = G0); "true cash" +₹62.6k at ₹205 but +₹5.7k at ₹400 and less in 2023–24, so it fails the frozen rule; no change |
+| 312 | Real in-the-money costs (ATM to 3 ITM, 1–6 lots): the model is ₹0.6–6.5 a lot conservative; depth ample; no challenger |
+| 313 | Partner, order by order: new trades after the alert lost in 3 of 4 sessions; "no new trades" better in 3 of 4 |
+| 314 | Dec 7 (NSE CAS 2.0): F&O to 15:45, expiring index contracts stop at 15:30; about 15 engine files assume 15:40 (`SN314_CLOCKS.md`); runtime slice on the owner's word |
+
+**Lesson:** Gold's losses are signal losses, not execution losses. Its cost model, stops, adds and cash checks are sound at its sizes, so the remaining lever is which entries it takes, and every frozen attempt there has failed (SN92–SN285).
+
+**Open items:**
+- `python fwd2.py collect` evenings until Dec 23;
+- `python fwd2.py verdict` once;
+- the Dec 7 clock slice (owner's word);
+- the partner coaching line (owner's call).
+
+## SN316–SN330 (Nov 16, 2026): the partner's chart sequence, Gold's entry failures, 2019–2020 history, Gold V8 (folder `docs/research/fno/2026-11-16-sn316`)
+
+**Owner:** the auditor's SN316–SN325 plus five own slots, toward a real-money Gold V8. Plan `657b74b9`. **Correction given to the owner:** SN301–SN315 found no Gold improvement ("true cash" adds failed the frozen ₹400 test).
+
+| SN | Result |
+|---|---|
+| 316 | Seal: 2019 H2 122 sessions (options on the days before each expiry; Jul 30 and Nov 6 without the ATM pair); 2020 Q1–Q3 all 39 expiries with legs and hedge marks (Mar 13 halt: no 09:30 bar); Jan 16 – Apr 2 2026 52 one-second days |
+| 317 | Frozen crash exam: Gold v7's WK-H leg PASS (+₹42,570 per lot, Mar 2020 −₹23,171); band 0.6 +₹64,999; unhedged March −₹69,274 |
+| 318 | One-minute break-and-hold, unseen 2019: FAIL (Q3 −₹2.10 lakh, Q4 −₹2.25 lakh), below every random book on every sample |
+| 319–322 | The partner's 1m / 30s / 5s sequence: dev −₹277 to −₹299 a trade on every clock; test (Jan–Apr 2026, once) break −₹337, five-second pullback −₹357, gate −₹353; ceiling ≥ ₹750 on only 12–20% of breaks. FAIL |
+| 78 | SN78's picks on their reserved window: −₹6,015 / −₹44,576. Retired |
+| 323 | Gold's losers do not fail early: 0 of 86 broke N11's level in the first minute; 62 never did |
+| 324 | Cancel failing TPB entries: avoided ₹15.7k, missed ₹36.1k. Not adopted; a one-minute-late TPB entry costs ₹29k |
+| 325 | `fw3.py` (the chart sequence on packets + the wallet) frozen; scored with SN300a after Dec 23 |
+| 326 | Gold v5 on 2022: blocked by the N08 → N11 stack; step plan written |
+| 327 | Real-money risk: month refills ≤ 63% of the wallet (81% at ₹400); 20-session ≤ 96% (123%); worst month −38% |
+| 328 | `GOLD_V8.md`: Gold v5's rules plus a real-money execution contract and gates |
+| 329 | Dec 7 NSE CAS 2.0 hours in Dev (`52a77adf`), full suite passes; not deployed |
+| 330 | Nightly verified collection task registered |
+
+**Lessons:**
+- The seconds clocks add no edge for a bought ATM option: the round trip costs more than the moves the breaks offer.
+- One- to three-minute breaks in NIFTY tend to revert (worse than random).
+- Gold's losses are not failed setups.
+- The futures hedge is what carries WK-H through a crash.
+- **Gold V8 = Gold v5, executed for real money.**
+
+**Open items:**
+- deploy SN329 before Dec 7 (the owner's word);
+- the Gold V8 live module (the owner's word);
+- `fwd2.py` / `fw3.py` verdicts after Dec 23;
+- SN326's 2022 replay as its own round.
+
+## SN331–SN350 (Nov 16, 2026): the failed break, Gold's execution and the wage (folder `docs/research/fno/2026-11-16-sn331`)
+
+**Owner:** the auditor's SN331–SN340 plus ten own slots; "much more profitable than the current best Gold … the wage". Plan `95287d3f`.
+
+| SN | Result |
+|---|---|
+| 331 | Failed breaks reverse only 0.5–2.1 index points in 5 min; buying the reversal −₹70–89 a trade at zero stress, −₹275–295 at ₹205; archive real prices −₹131 to −₹169 gross. No room |
+| 345 | Reversal + 5-second confirmation: FAIL (−₹278 to −₹294 a trade) |
+| 344 | Minute reversal (DEV, TEST, 2019 Q3 / Q4): FAIL, below every random book; entries after fast moves cost about ₹95 a lot more than random |
+| 335 | Rebalance days: closed (mean rank 0.76, mixed signs) |
+| 334 / 343 | Not triggered / already answered by SN264 |
+| 341 | Gold's lot ceiling on real depth: 12 lots |
+| 339 | A fixed ₹30k reserve stalls Gold once the wallet grows (386 paused sessions); ₹60k holds at ₹205 |
+| 342 | Wage with reserve = one wallet: ₹881 a session at ₹205 (₹14.5k a month; 14 of 45 months pay), ₹414 at ₹400 |
+| 347 | NO_STAND half-size gap fill: FAIL (₹8.51 → ₹6.98 lakh) |
+| 348 | 4 / 5 growth steps: ₹11.65 / ₹15.51 lakh, worst month −₹54.8k / −₹83.6k; FAIL the frozen rule (risk choice) |
+| 350 | V8 configuration = Gold v5 |
+| 336 | Gold on 2022: route recorded (N08 POINTS → N09 / N10 / N101 / N11 replays); its own round |
+| 337 / 338 | V8 shadow own inventory; order-lifecycle state machine (Dev, tests) |
+| 332 / 333 / 340 / 346 / 349 | Frozen in `fw4.py`; scored once after Dec 23 |
+
+**Lessons:**
+- NIFTY's short-horizon option market prices fast moves instantly. At any tradable clock, buying after a move (with or against it) is worse than random, and random is about break-even before the stress.
+- Gold's return depends on its entries' timing (a late entry costs) and on capital.
+- The wage scales with the capital the owner can keep beside Gold.
+
+## SN351–SN365 (Nov 16, 2026): information before the option reprices, the corrected wage, Gold's execution (folder `docs/research/fno/2026-11-16-sn351`)
+
+**Owner:** the auditor's SN351–SN360 plus five own slots, one slot at a time. Plan `cbdbc54c`, amendments A1–A6.
+
+| SN | Result |
+|---|---|
+| 352 | SN342's wage counted ₹71,250 of growth cash twice. Corrected journal: ₹5,82,754 over 45 months = ₹785 a session at ₹205 (₹318 at ₹400); 14 / 45 months pay; 2023 pays nothing; growth never short of cash |
+| 363 | Never-failing fixed salary: ₹500 a month (owner ₹60k), ₹3,000 (₹90k), ₹4,500 (₹1.2 lakh) at ₹205; ₹0 / 2,500 / 3,500 at ₹400. ₹15,750 a month needs ₹3.7 lakh at ₹205, impossible at ₹400 |
+| 353 | Auction fields decoded (A2). Price-only gap: +₹183 gross, −₹30 at ₹205 (172 sessions), −₹257 on real quotes: CLOSED. Queue-pressure arm and a post-hoc 0.2–0.5% gap watch frozen forward (`fw5.py`, SN300a's window) |
+| 361 | Opening premium rich: ATM straddle at 09:16 −₹226 by 09:45, −₹338 by 10:15 (−₹156 / −₹255 against 11:00; 885 sessions; every year) |
+| 365 | Auction agreement with Gold's trades: p = 0.55, no information |
+| 351 | No state has room at ₹205 (8,488 positions; hindsight ceiling ₹1,048 a lot; −₹295 at 20 minutes; buying with a just-finished move worst) |
+| 362 | Gold via SENSEX options: FAIL (one-trade mean; −₹292 at ₹400). Real per-lot spreads are equal (₹16 / ₹17) |
+| 359 | V8 lifecycle on real depth: 9 / 10 decisions entered with every lot; on priced exits V8 ₹1,25,866 vs replay ₹99,262 at ₹205 |
+| 354 / 355 / 356 | Blocked / untestable here / blocked and mostly unaffordable (BANKNIFTY lot 30) |
+| 357 / 360 | Not triggered |
+| 364 | CAS 2.0 closing window frozen forward (`fw6.py`, needs the recorder to 15:46) |
+| 358 | Not run: the next round's first slot (N08 → N11 route on 2022) |
+
+**Lessons:**
+- The opening auction's direction is real information, already in the price to within the costs. Opening option premium is rich.
+- No entry state for a bought option has room after ₹205. The room is in the path (hindsight), which no tested predictor reaches.
+- Gold's wage is capital-bound and lumpy. A promised salary is set by the worst early stretch, not the average.
+
+## SN366–SN380 (Nov 16, 2026): Gold's unseen 2022 exam, the opening family, chain pressure sensors (folder `docs/research/fno/2026-11-16-sn366`)
+
+**Owner:** the auditor's SN366–SN375 plus five own slots, one at a time with quality. Plan `3740b461`, amendments B1–B4.
+
+| SN | Result |
+|---|---|
+| 366 | NIFTY 2022 exam (second opening after a disclosed volatility-source correction): N10 retry −₹3,803, CUSHION −₹4,363, N08 −₹6,874, NO_STAND −₹8,630, N11 −₹14,079, random median −₹76,062. N11 sheet A no, B no; N10 sheet A–C yes, D not run. **Gold v5 from ₹30k: −₹15,281 at ₹205 (−₹23,511 at ₹400), 4 of 12 months positive** (2023: −₹12,107, 3 of 12) |
+| 371 | Opening direction at 10:15: no value left (gap −₹361 at ₹205 vs coin −₹386); auction direction reverses (−₹619 vs −₹245) |
+| 376 | ITM leg at 09:16 keeps ₹55–110 more: auction +₹67 at ₹205 (171, 2026); 2022–26 gap negative → SN380's forward candidate |
+| 377 | Opening richness ∝ overnight IV jump (straddle −₹226 / −₹282 / −₹550 by 10:15 by tercile); cheap opens still −₹148 at ₹205 |
+| 368 / 378 / 379 / 372 | Wings (two tenors not computable on the archive; the front tenor points the other way), synthetic-forward lead (+3.2 bp / 15 min), signed flow (15 events), expiry pressure (9 events): all closed |
+| 367 | ₹750 bracket: 37% reach it (fills +₹982), 58% time out at −₹851; bracket = fixed hold = coin |
+| 373 | Resting mid limit: saves ₹17.7, misses the winners; retired |
+| 374 | Withdrawals: profit-only pays nothing in 63% of months; a payout down to the day-stop cover traps the account |
+| 370 / 369 | Hong Kong reopen (+1.35 bp DiD, p 0.15) closed; NIFTYBEES blocked (no data) |
+| 380 / 375 | fw7 frozen forward (AUCTION ITM); SN375 not triggered |
+
+**Lessons:**
+- Direction at the open is real for 20–30 minutes and already priced at 10:15.
+- Chain pressure precedes 3–9 bp moves, too small for a bought option's hourly cost (₹300–850).
+- Gold's first year from ₹30k lost in both 2022 and 2023: a real-money plan must expect it.
+
+## SN381–SN395 (Nov 16, 2026): the opening trade made honest, Gold's 2022 exam closed, the wage's capital (folder `docs/research/fno/2026-11-16-sn381`)
+
+**Owner:** the auditor's SN381–SN390 plus five own slots. Plan `c6e99cee`.
+
+| SN | Result |
+|---|---|
+| 381 | fw7a companion audit (cash room, price cap, receipt-time signal, paired judge), 9 synthetic tests |
+| 382 | Opening ITM under honest rules: +₹46 a session at ₹205 (−₹7 without the best day), −₹137 at ₹400; −₹447 after Sep 7. ITM beats ATM +₹122 a trade (se 39) everywhere |
+| 383 / 384 | ITM = mostly a larger delta; the 09:36 exit does not help |
+| 385 / 391 / 393 | Cash agreement (coverage), indicative drift (9 sessions), auction size (the opposite): closed |
+| 394 | Cheap opens +₹396 / +₹199 per session (73), p 0.031, best of ~10 splits → fw9 forward |
+| 387 | 2022: 51 of 52 option-less days are expiries; N10 sheet D yes (₹4,41,853 vs CUSHION ₹4,15,120); N10 retry is the sheets' lead |
+| 392 / 388 | Gold v5 2022: N11 signals −₹15,281 vs N10 +₹4,681; the stand-aside skipped 6 big winners (cost ₹5,449); 2022–26 deployed still leads in sample |
+| 389 / 395 | Profit-only from ₹60k: ~₹525 a session on a bad start, 21-month dry spell; ₹750 a session needs ₹2–5 lakh outside |
+| 386 | fw8 packet-level signed flow, forward (92% signable) |
+| 390 | Not triggered |
+
+**Lessons:**
+- Honest execution rules turn the opening edge into break-even; the robust part is choosing ITM over ATM.
+- A filter that sits out bad stretches misses the trend book's big winners.
+- The daily wage is a capital question.
+
+## SN396–SN410 (Nov 17, 2026): the opening trade on the real clock, "cheap" tested four ways, N10 vs N11 inside Gold, Gold's clocks (folder `docs/research/fno/2026-11-17-sn396`)
+
+**Owner:** the auditor's SN396–SN405 plus five own slots. Plan `00693405`.
+
+| SN | Result |
+|---|---|
+| 396 | HONEST 09:16:00 clock: −₹81 / −₹235 a session (ORIGINAL +₹46 was a one-minute lead); LATE −₹253; CHEAP +₹335 / +₹182; archive costs ≈ model in the median; fw7b / fw9a frozen (16 tests) |
+| 397 | Cheap = mostly direction (+12.7 vs +2.4 points), calendar-tangled, no slope in the jump; reality check p 0.80 / studentized 0.90 |
+| 399 | Hurdle about 13 index points against a forecast of 1.3: never trades |
+| 406 | 720 cells: no unfiltered cell positive at ₹400; CHEAP patch at ₹205; best cell p 0.83 |
+| 407 | fw9's rule on 2022 – Dec 2025 gap days: +₹19 / −₹147; does not support fw9 |
+| 410 | Before Sep 7, +14.5 points follow-through after 09:16; from Sep 7, spent before 09:16 (−13) |
+| 398 / 401 / 402 | Roll days 3 of 7 affordable; SENSEX on NIFTY expiry days −₹547; RBI 3 events all stopped: closed |
+| 403 | 2022 N10–N11 gap = the stand-aside only; blocked trades −₹822 over five years; DEPLOYED leads 2022–26 |
+| 404 / 408 | Option richness at entry predicts no Gold outcome |
+| 409 | Gold +1 min latency −7.7%; −1 min (lookahead) +₹2.48L; intact |
+| 400 | Kite bundles about 198 trades per packet: strict signing 0%; fw8a frozen on last-print flow |
+| 405 | Gold ₹791 / ₹409 a session, trades 17% of sessions; the opener never conflicts with Gold |
+
+**Lessons:**
+- A bar labelled by its start and traded at its close is a minute ahead of a live decision.
+- "Cheap" sorts opening mornings but has not shown an edge after the search.
+- Gold's stand-aside is a path effect; its losses are signal losses, not price losses.
+
+## SN411–SN425 (Nov 17, 2026): observability, the hindsight ceiling, other indices, the bank residual, Gold's robustness (folder `docs/research/fno/2026-11-17-sn411`)
+
+**Owner:** the auditor's SN411–SN420 plus five own slots. Plan `e5cc95b7`.
+
+| SN | Result |
+|---|---|
+| 411 | fw7c / fw9b frozen (today's trade, pre-decision offset, 2 s strike / book); live entries 44–53 s after the bar end against the replay's 59 s |
+| 412 | Hindsight: median ₹9,376 a day, every day ≥ ₹750; fixed-clock windows 83–97% ≥ ₹750 |
+| 413 | BANKNIFTY front ATM affordable 30% (93% in its last week); FINNIFTY thin; recorder Dev change `1bfed1d0` (not deployed) |
+| 414 | The bank residual does not persist (−4.4 bp at 45 min); it reverses at 15–30 min (post hoc grid) |
+| 418 / 419 | Stand-aside: one regime, mildly positive at one lot; opener + Gold in one ledger +₹22.8k / +₹12.2k |
+| 421–425 | Gold: signal side flat, exposure side leverage; the replay excludes expiry days (₹617 a real session); no expert is dead weight; size ladder 1 lot ₹2.14L → cap 5 ₹15.5L; tail: no-bid bound ₹1L |
+| 415 / 416 / 417 / 420 | Closed at feasibility / protocol only / F1 pre-registered (BANKNIFTY residual fade) |
+
+**Lessons:**
+- The opportunity exists every day; selection is the problem.
+- Gold's empty days are a signal shortage.
+- Gold's size is the owner's leverage decision.
+
+## SN426–SN440 (Nov 17, 2026): expiry mornings, the hindsight decomposition, exits, the loss bound, Gold's feed / edge / cost (folder `docs/research/fno/2026-11-17-sn426`)
+
+**Owner:** the auditor's SN426–SN435 plus five own slots. Plan `123301ac`.
+
+| SN | Result |
+|---|---|
+| 426 | 263 non-Gold dates = 251 expiries + 4 special + 8 data holes; 66 signals skipped while Gold held a position |
+| 427 | Hooked N11 rerun (parity); expiry-morning candidates on 27 of ~200 expiry days; 5 priced, all net losers; insufficient |
+| 428 | Hindsight per decision: side +1,269, exit +1,240, entry minute +2,126, coin −169 (₹205); break-even direction ~56% (₹205) / ~68% (₹400) |
+| 429 / 439 / 439b | Checkpoints, no-progress cuts and breakeven locks all cut Gold's winners; headroom ₹2,085 a lot |
+| 434 | A full-loss bound leaves Gold 4 trades; the trigger stop's worst debit at risk is ₹1 lakh |
+| 436–438 | No extra feed book, size-by-expert rule or entry-hour cutoff helps both periods |
+| 440 | Paper fills vs model: median +₹6.5 a lot; ₹205 is the realistic Gold cost (₹617 a real session) |
+| 430 / 431 / 432 / 433 / 435 | Blocked (NSE access) / blocked (recorder) / plumbing (CONFIRM-5) / back-fill 1 trade / not triggered |
+
+**Lessons:**
+- Selection needs ~56–68% direction accuracy for a one-hour ITM trade.
+- Gold's exits cannot be improved by simple rules.
+- Gold's realistic income is ₹617 a real session at ₹30k.
+
+## SN441–SN455 (Nov 17, 2026): the direction hurdle, waiting and discounts, passive and confirmed fills, Gold's cost at size, the loss bound's strike, bank results, the London clock, expiry-afternoon flows, Gold's future-blind check, the program's own record (folder `docs/research/fno/2026-11-17-sn441`)
+
+**Owner:** the auditor's SN441–SN450 plus five own slots. Plan `f56f5807`.
+
+| SN | Result |
+|---|---|
+| 441 | Break-even direction for a one-hour 1-ITM trade: 57.6% / 66.5% overall, **61.8% / 77.2% on Gold-empty days** (₹205 / ₹400); the gross coin is already negative there |
+| 442 | Hindsight's forward best price in 30 minutes is worth ~₹1,027 a decision; fixed waits +42 to +146 (decay, not timing) |
+| 443 / 453 / 454 | A delta-adjusted discount, plain limits, delays and a resting bid all lose; inside Gold, patient entries cost 3–74% |
+| 444 | `fx5.py` frozen (an unconditional 5-second control; persistence must be observed with ≤ 2 s gaps); plumbing: the delay explains the gain |
+| 445 | Gold at 6 lots on real depth: +₹120 a lot over the model (inside ₹205); 15:10 exits often unpriceable; dated STT +0.6% |
+| 446 | Full-loss bound with a cheaper-strike ladder: 39 trades, ₹18,204 in 2023–26 |
+| 447 / 448 | Bank results INSUFFICIENT (8 sessions, no drift); no London clock (the clock-change DiD reverses) |
+| 449 / 450 | No lead can cover ₹154 a session (momentum needs ~72 years of expiries to verify); Gold-only baseline: ₹901 a session, ₹750+ on 6.2%, best 5 days = 41% |
+| 451 | No expiry pin (44%); expiry-afternoon momentum 57.7% (placebo 43.8%) but +₹88 / −₹94 a trade |
+| 452 | Gold's replay is future-blind (186 decisions identical with the future removed; signals 59 s after the bar) |
+| 455 | 5 of 19 frozen development / unseen pairs kept their sign; median unseen / development rate −0.22; only WK-H kept its rate |
+
+**Lessons:**
+- The empty-day direction bar is ~62% / 77%.
+- Timing headroom exists only in hindsight; Gold's entries must stay immediate.
+- Gold is honest (future-blind, cost holds) but lumpy.
+- Development results are hypotheses only; frozen forward tests decide.
+
+## SN456–SN475 (Nov 17, 2026): participant positioning, Kronos, filings, Gold's six-lot exits, decision-time capacity, calibration, a duplicate screen, F1's feasibility, the shared-wallet state machine, verdict power, the forecast skill an option buyer needs (folder `docs/research/fno/2026-11-17-sn456`)
+
+**Owner:** the auditor's SN456–SN470 plus five own slots. Plan `83e1b444`.
+
+| SN | Result |
+|---|---|
+| 456 / 473 | Prior-session FII positioning adds no forecast value (CW p 0.62; partial correlation −0.012) at any intraday clock; the contrarian FII long-ratio rule is wrong-signed |
+| 471 | On Gold's own trades, positioning agreement +₹6,125 a trade in 2023–26 but −₹1,181 in 2022: fails (post-hoc without the largest trades both positive: a forward hypothesis) |
+| 458 | Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp) |
+| 464 | None of Gold's 10 six-lot exits lacked bids: 6 full, 2 feed stops, 2 deep-ITM winners outside the archive's strike window; SN445 corrected (held lots; 2 of 3 15:10 exits unpriced) |
+| 474 | 15:10 books hold 6 lots 100%; exit at 15:00 / 15:05 / 15:10 / ext 15:15 = 8.71 / 9.21 / 8.51 / 8.19 lakh (2023–26 at ₹205), non-monotonic: 15:10 stays |
+| 461 / 475 / 462 | Gold is clear at 10:00 on 98.8% of replay days (1.3% collide); break-even needs a correlation of 0.215 (0.104 top 30%); ₹154 a session needs 0.31–0.37; confidence did not map to cash |
+| 469 / 472 | Wage-level edges clear zero in 10% of 60-session tests; fw9a passes a zero-edge book 19.8% of the time; only fx5's paired verdict is informative |
+| 467 / 468 / 460 / 463 / 457 / 466 | F1 needs ~4 years for 30 triggers; `wallet_sm.py` (8 fixtures; 0 SN419 conflicts); exit-depth model INSUFFICIENT (+₹604 a lot of stop slippage); duplicate screen 71%; the NSE filing parser works; FII cash BLOCKED |
+| 465 / 459 / 470 | DEFERRED / NOT_RUN / NOT_TRIGGERED |
+
+**Lessons:**
+- Positioning shows no intraday direction.
+- The gap is skill, not capacity (break-even correlation ~0.2).
+- Scheduled forward verdicts are screens with little power; prefer paired designs.
+- Gold's cost risk sits in deep-ITM winners the archive never recorded.
+
+## SN476–SN490 (Nov 17, 2026): runtime vs replay Gold, the held-contract pin, faster entry, stop slippage, failed adds, the next-week option, Gold on 2020–21, oil and the rupee, a slow ETF trend, the forward contest; own: failed-add neighbours, Gold's P&L parts, Gold's uncertainty, expert adds, the 2020–21 holdout (folder `docs/research/fno/2026-11-17-sn476`)
+
+Plan `bf895633` (A1–A4); README for every number. Nothing beats Gold v5, and Gold itself loses on its never-run sample.
+
+| SN | Result |
+|---|---|
+| 482 / 490 | Gold v5 unchanged on NIFTY Jan 2020 – Aug 2021 (SN366's route): ₹30k −64,783 @205 / −93,971 @400, 5/20 months+; one lot −35,767 / −52,884; Gold has lost in 4 of 7 years (2020–23), earned in 2024–26. No frozen candidate survives the holdout |
+| 476 | Live Gold: 0 eligible decisions Nov 13–17; the paper record gated at 0.85 holds all 186 benchmark trades; rules match to the paisa; divergences: stop omits the ₹205 reserve, growth on unstressed nets, sampled stops, future vs index |
+| 477 | `research_pins.py` (Dev): Gold / N11 paper contracts pinned in the minute collector until 15:20; SN464's two lost winners recovered on trace; the tick recorder already keeps contracts all day |
+| 480 / 486 | Selling a failed add: 2023–26 −1,56,875 @205; every threshold hurts 2023–26; dipped adds recover. Self-funded ₹30k at ₹400 is bust by 2023-12-22 |
+| 478 | One minute faster: mixed (+15k ₹30k 2023–26, −1.4k 2022, −13k one lot): FAIL; live acts ~40 s after the bar |
+| 479 | No real stop with packets; mechanism: packet stop-limit recovers ₹140–160 a lot on the same touch |
+| 481 / 483 / 484 | Next-week option INSUFFICIENT (no data; 5/5 archive pairs favour the front); oil + rupee add filter −59k; NIFTYBEES 12-month trend CAGR 1.7% vs 10.7% buy-and-hold (2020–26) |
+| 487 / 488 / 489 | 79% of Gold's money is first lots (puts, TPB); candidate differences need 2–667 years to confirm; expert-specific adds pass leave-one-year-out but fail 2023–26 @205 |
+| 485 | Forward: Gold alone from 2026-11-18 for 585 market sessions (`fw10.py`) |
+
+**Lessons:**
+- Judge Gold on all years (2020–26: ₹612 a replay session @205 on ₹30k, ₹11 a lot @400), not on 2023–26.
+- The live engine trades what the replay credits; the gap is regime, not wiring.
+- Funding (refills) is part of Gold; at ₹400 a self-funded ₹30k does not survive 2023.

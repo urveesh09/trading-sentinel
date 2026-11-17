@@ -1,0 +1,4 @@
+{
+ "note": "Disclosed after the run (Nov 16): results-sn366-gateW-chain.json records pass=false only because the wrapper also required the three parent books' task keys (computed in N11's lab namespace) to equal the keys stored by the parents' own labs (N09 diag, N09.1 primary, N10 panel2). A task key hashes the book configuration as each lab builds it, so cross-lab keys cannot match; N11's own parity() compares economics only. The economics comparison is trade for trade (entry_time, tradingsymbol, entry_premium, exit_time, exit_premium, exit_reason, net_pnl, entry_qty) and is equal for all four books, and N11's own key equals its stored key.",
+ "gate_W": "PASS on trade-for-trade economics: N08 75 trades Rs 58,646.53; VOL_CLOCK 75 Rs 52,319.97; N10 retry 74 Rs 51,582.51; N11 74 Rs 53,094.68 (= stored 2025), replayed from an empty folder on the TEST2025 route; N08's own repoint test also identical (results-sn366-gateW-n08.json)"
+}

@@ -110,6 +110,49 @@ def cas_phase1_in_force(day: date) -> bool:
     trading ended at 15:15 (CAS_PHASE1_FROM <= day < CAS_PHASE1_UNTIL)."""
     return CAS_PHASE1_FROM <= day < CAS_PHASE1_UNTIL
 
+
+# [SN329 2026-11-16] NSE CAS 2.0 (NSE FAQ updated 2026-11-06; circulars NSE/CMTR/77355 and NSE/FAOP/77356), from
+# Monday 2026-12-07:
+#   * equity derivatives (index and stock) trade until 15:45 on every day; on an index derivatives expiry day the
+#     EXPIRING index contracts stop at 15:30 (the other contracts continue to 15:45);
+#   * cash stocks in the closing auction trade continuously until 15:30; the auction is 15:30-15:31 (reference
+#     price), 15:31-15:36 (order entry), 15:36-15:40 (limit orders only), 15:40-15:45 (matching), then a transition
+#     to 15:50 and the post-close session to 16:00;
+#   * the final settlement price of expiring index contracts is unchanged (constituents' VWAP 15:00-15:30).
+# Callers that need a session's close use these helpers with the session's IST date; the constants above stay the
+# values for sessions before 2026-12-07.
+CAS2_FROM: date = date(2026, 12, 7)
+DERIVATIVES_CLOSE_TIME_CAS2: time = time(15, 45)
+EXPIRING_INDEX_CLOSE_TIME_CAS2: time = time(15, 30)
+
+
+def cas2_in_force(day: date) -> bool:
+    """[SN329] Whether ``day`` follows NSE CAS 2.0's session timings (from 2026-12-07)."""
+    return day >= CAS2_FROM
+
+
+def derivatives_close_time(day: date) -> time:
+    """[SN329] When equity derivatives stop trading on ``day``: 15:40 until 2026-12-04, 15:45 from 2026-12-07."""
+    return DERIVATIVES_CLOSE_TIME_CAS2 if cas2_in_force(day) else DERIVATIVES_CLOSE_TIME
+
+
+def derivatives_close_minute(day: date) -> int:
+    """[SN329] ``derivatives_close_time(day)`` as minutes after midnight IST."""
+    t = derivatives_close_time(day)
+    return t.hour * 60 + t.minute
+
+
+def expiring_index_close_time(day: date) -> time:
+    """[SN329] When an index derivative contract expiring on ``day`` stops trading: the derivatives close until
+    2026-12-04, 15:30 from 2026-12-07."""
+    return EXPIRING_INDEX_CLOSE_TIME_CAS2 if cas2_in_force(day) else DERIVATIVES_CLOSE_TIME
+
+
+def ist_date_of(observation_at: datetime) -> date:
+    """[SN329] The IST calendar date of a timestamp (naive = UTC, as ``_ist_clock_minutes``)."""
+    aware = observation_at.replace(tzinfo=pytz.UTC) if observation_at.tzinfo is None else observation_at.astimezone(pytz.UTC)
+    return aware.astimezone(IST).date()
+
 # [ROADMAP-3.10 2026-07-12] Static NSE trading-holiday list -- the
 # LAST-RESORT fallback when both the DB cache is empty and the
 # nseindia.com fetch fails (it routinely bot-blocks). Source: the NSE
@@ -770,6 +813,13 @@ def classify_session_phase(
     cas_match_end = CAS_MATCHING_END.hour * 60 + CAS_MATCHING_END.minute
     cas_post_end = CAS_POST_CLOSE_END.hour * 60 + CAS_POST_CLOSE_END.minute
     deriv_close = DERIVATIVES_CLOSE_TIME.hour * 60 + DERIVATIVES_CLOSE_TIME.minute
+    # Derivatives' continuous trading ends at the cash close (15:30) in both regimes; the band after it runs to the
+    # derivatives close.
+    deriv_cts_end = market_close
+    if cas2_in_force(ist_date_of(observation_at)):
+        # [SN329] NSE CAS 2.0 from 2026-12-07: the cash auction is 15:30-15:45; derivatives close at 15:45.
+        cas_open, cas_ref_end, cas_order_end, cas_limit_end, cas_match_end = 930, 931, 936, 940, 945
+        deriv_close = derivatives_close_minute(ist_date_of(observation_at))
     # Before pre-market: closed (covers 00:00-08:59).
     if time_minutes < pre_open:
         return SESSION_PHASE_CLOSED
@@ -784,7 +834,7 @@ def classify_session_phase(
     # (NSE equity derivatives session is 09:15-15:40; the
     # CAS-aligned band at 15:30-15:40 is handled separately below).
     if is_derivative:
-        if market_open <= time_minutes < cas_limit_end:
+        if market_open <= time_minutes < deriv_cts_end:
             return SESSION_PHASE_CONTINUOUS_TRADING
     else:
         if market_open <= time_minutes < cas_open:
@@ -823,7 +873,7 @@ def classify_session_phase(
     # window for stock and index futures. This window ONLY applies to
     # derivative symbols; for cash the 15:30 close is the end of the
     # regular session.
-    if is_derivative and cas_limit_end <= time_minutes < deriv_close:
+    if is_derivative and deriv_cts_end <= time_minutes < deriv_close:
         return SESSION_PHASE_DERIVATIVES_CAS_ALIGNED
     # 15:40 onward for derivatives: session is closed (15:40 is the
     # last minute of CAS-aligned band; 15:40 IST itself = closed).

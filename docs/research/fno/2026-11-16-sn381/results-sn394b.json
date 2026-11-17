@@ -1,0 +1,44 @@
+{
+ "with_reading": 124,
+ "cheap": 73,
+ "per_session@205": 396.3,
+ "without_best_day@205": 277.0,
+ "pre@205": {
+  "n": 63,
+  "per_session": 292.9
+ },
+ "post@205": {
+  "n": 10,
+  "per_session": 1047.9
+ },
+ "match_row@205": {
+  "n": 44,
+  "per_session": 203.4
+ },
+ "fallback_0915_open@205": {
+  "n": 29,
+  "per_session": 689.0
+ },
+ "per_session@400": 198.9,
+ "without_best_day@400": 79.6,
+ "pre@400": {
+  "n": 63,
+  "per_session": 90.5
+ },
+ "post@400": {
+  "n": 10,
+  "per_session": 882.1
+ },
+ "match_row@400": {
+  "n": 44,
+  "per_session": 40.7
+ },
+ "fallback_0915_open@400": {
+  "n": 29,
+  "per_session": 438.9
+ },
+ "weeks": 43,
+ "weeks_positive": 23,
+ "permutation_p_both_stresses": 0.031,
+ "freeze_forward": true
+}

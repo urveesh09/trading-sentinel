@@ -1,0 +1,27 @@
+{
+ "N11": {
+  "economics_equal": true,
+  "trades": 74,
+  "net": 53094.68,
+  "stored_net": 53094.68
+ },
+ "CUSHION": {
+  "economics_equal": true,
+  "trades": 74,
+  "net": 46737.81,
+  "stored_net": 46737.81
+ },
+ "STRICT": {
+  "economics_equal": true,
+  "trades": 74,
+  "net": 46737.81,
+  "stored_net": 46737.81
+ },
+ "N10": {
+  "economics_equal": true,
+  "trades": 74,
+  "net": 51582.51,
+  "stored_net": 51582.51
+ },
+ "pass": true
+}

@@ -1,0 +1,110 @@
+{
+ "A": {
+  "pre": {
+   "sessions": 144,
+   "abs_gap_pts": {
+    "n": 144,
+    "mean": 96.73,
+    "median": 59.0,
+    "t": 10.17,
+    "share_positive": 1.0
+   },
+   "first_minute_drift_pts": {
+    "n": 144,
+    "mean": 8.01,
+    "median": 8.2,
+    "t": 2.52,
+    "share_positive": 0.611
+   },
+   "follow_through_pts": {
+    "n": 144,
+    "mean": 14.53,
+    "median": 14.65,
+    "t": 2.65,
+    "share_positive": 0.597
+   },
+   "follow_share_of_gap": {
+    "n": 144,
+    "mean": -0.18,
+    "median": 0.26,
+    "t": -0.49,
+    "share_positive": 0.597
+   },
+   "match_rows": 81,
+   "ITM_mid_change_split_per_lot": {
+    "dmid": 331.6,
+    "delta": 364.3,
+    "vega": -129.5,
+    "theta": -50.9,
+    "resid": 147.8,
+    "cost": 69.2
+   },
+   "ITM_decomposed_n": 119
+  },
+  "post": {
+   "sessions": 27,
+   "abs_gap_pts": {
+    "n": 27,
+    "mean": 65.06,
+    "median": 56.9,
+    "t": 7.37,
+    "share_positive": 1.0
+   },
+   "first_minute_drift_pts": {
+    "n": 27,
+    "mean": 22.96,
+    "median": 30.1,
+    "t": 3.32,
+    "share_positive": 0.704
+   },
+   "follow_through_pts": {
+    "n": 27,
+    "mean": -13.18,
+    "median": -1.6,
+    "t": -0.67,
+    "share_positive": 0.481
+   },
+   "follow_share_of_gap": {
+    "n": 27,
+    "mean": -0.4,
+    "median": -0.02,
+    "t": -0.52,
+    "share_positive": 0.481
+   },
+   "match_rows": 16,
+   "ITM_mid_change_split_per_lot": {
+    "dmid": -348.1,
+    "delta": -688.8,
+    "vega": -3.9,
+    "theta": -48.6,
+    "resid": 393.3,
+    "cost": 68.3
+   },
+   "ITM_decomposed_n": 26
+  }
+ },
+ "B": {
+  "days": 33,
+  "09:16": {
+   "quotes": 244,
+   "spread_per_lot_median": 22.75,
+   "spread_per_lot_p90": 35.75,
+   "walk_over_mid_per_lot_median": 11.37,
+   "walk_over_mid_per_lot_p90": 17.88
+  },
+  "10:16": {
+   "quotes": 202,
+   "spread_per_lot_median": 19.5,
+   "spread_per_lot_p90": 32.5,
+   "walk_over_mid_per_lot_median": 9.75,
+   "walk_over_mid_per_lot_p90": 16.25
+  },
+  "11:00": {
+   "quotes": 218,
+   "spread_per_lot_median": 19.5,
+   "spread_per_lot_p90": 32.5,
+   "walk_over_mid_per_lot_median": 9.75,
+   "walk_over_mid_per_lot_p90": 16.25
+  }
+ }
+}

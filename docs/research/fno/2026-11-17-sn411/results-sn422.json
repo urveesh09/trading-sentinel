@@ -1,0 +1,47 @@
+{
+ "calendar_sessions": 1195,
+ "gold_sessions": 932,
+ "not_in_gold": 263,
+ "not_in_gold_by_weekday": {
+  "Thu": 183,
+  "Wed": 12,
+  "Tue": 60,
+  "Mon": 6,
+  "Sun": 1,
+  "Fri": 1
+ },
+ "classes": {
+  "NO_SIGNAL": 730,
+  "GOLD": 161,
+  "STAND_ASIDE": 41
+ },
+ "by_year": {
+  "2022": {
+   "NO_SIGNAL": 149,
+   "GOLD": 28,
+   "STAND_ASIDE": 13
+  },
+  "2023": {
+   "NO_SIGNAL": 139,
+   "GOLD": 25,
+   "STAND_ASIDE": 28
+  },
+  "2024": {
+   "GOLD": 25,
+   "NO_SIGNAL": 171
+  },
+  "2025": {
+   "GOLD": 48,
+   "NO_SIGNAL": 146
+  },
+  "2026": {
+   "NO_SIGNAL": 125,
+   "GOLD": 35
+  }
+ },
+ "stand_aside_days_net_in_NO_STAND": -23924,
+ "stand_aside_days_winners_in_NO_STAND": 8,
+ "per_gold_session": 790.7,
+ "per_calendar_session": 616.6,
+ "empty_share_of_calendar": 0.865
+}

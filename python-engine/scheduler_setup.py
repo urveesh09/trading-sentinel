@@ -25,6 +25,7 @@ from time import monotonic
 
 import background_tasks
 from config import settings
+from market_calendar import derivatives_close_minute  # [SN329]
 
 
 def _log_fno_watchdog_payload(logger, payload):
@@ -153,7 +154,7 @@ def register_fno_scheduler_jobs(scheduler):
         15:39, an F&O pass runs only while a position or a structure is still
         open: an exit not yet filled is still worked, and a broker's own 15:25
         MIS square-off is read back the same day, not the next morning."""
-        if not (15 * 60 + 25 < nm < 15 * 60 + 40):
+        if not (15 * 60 + 25 < nm < derivatives_close_minute(datetime.now(IST).date())):    # [SN329] 15:45 from 2026-12-07
             return False
         from fno_orchestrator import fast_exit_has_work
         import fno_dr_book
@@ -294,7 +295,8 @@ def register_fno_scheduler_jobs(scheduler):
         from fno_orchestrator import fast_exit_has_work
         now_ist = datetime.now(IST)
         nm = now_ist.hour * 60 + now_ist.minute
-        if not (9 * 60 + 15 <= nm < 15 * 60 + 40) or fno_lock.locked():     # [O26c] to 15:39: work-gated below
+        # [O26c] to the last minute before the derivatives close (15:39; [SN329] 15:44 from 2026-12-07): work-gated below
+        if not (9 * 60 + 15 <= nm < derivatives_close_minute(now_ist.date())) or fno_lock.locked():
             return
         if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH) or not _main.kite.access_token:
             return
@@ -1203,7 +1205,7 @@ def register_penny_scheduler_jobs(scheduler):
 
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book (plays
     # A/B/C, docs/2026-10-05-expiry-day-paper-book.md). Every 10 s in the
-    # 12:59-15:40 window; it acts only when NIFTY or SENSEX expires today
+    # 12:47-15:40 window (12:59 before EN02); it acts only when NIFTY or SENSEX expires today
     # per the instrument dump. Never places an order. Notices go to the
     # book's outbox and are marked sent only after a 2xx response; an hourly
     # reconcile (09:45-17:45) settles legs left open by an outage.
@@ -1273,6 +1275,18 @@ def register_penny_scheduler_jobs(scheduler):
                 logger.info("expiry_paper_reconciled positions=%d", settled)
         except Exception as exc:
             logger.error("expiry_paper_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
+        # [EN01] E02-family legs left open after their session are valued (never sold) the same evening, so
+        # no stuck leg blocks the next expiry; the main ticket's settlement notice goes to the owner.
+        try:
+            import expiry_e02
+            for variant in expiry_e02.VARIANTS:
+                notes = await asyncio.to_thread(expiry_e02.reconcile, settings.DB_PATH, variant)
+                if notes:
+                    logger.info("expiry_%s_reconciled positions=%d", variant.name, len(notes))
+                    if variant.play == settings.EXPIRY_MAIN_STRATEGY:
+                        xp.queue_notices(settings.DB_PATH, notes, datetime.now(xp.IST))
+        except Exception as exc:
+            logger.error("expiry_e02_reconcile_failed err=%s", type(exc).__name__, exc_info=True)
         await _flush_expiry_paper_notices()
 
     scheduler.add_job(

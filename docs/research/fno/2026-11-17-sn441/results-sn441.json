@@ -1,0 +1,4281 @@
+{
+ "parity": {
+  "BASE_mean": -169,
+  "BASE_receipt": -169,
+  "SIDE_mean": 1269,
+  "SIDE_receipt": 1269,
+  "BASE_priced": 105,
+  "SIDE_priced": 108,
+  "ok": true
+ },
+ "row_states": {
+  "ALL": {
+   "ENTERED": 202,
+   "NO_QUOTE": 30,
+   "UNRESOLVED": 8,
+   "UNAFFORDABLE": 12
+  },
+  "EMPTY": {
+   "ENTERED": 73,
+   "NO_QUOTE": 12,
+   "UNRESOLVED": 2,
+   "UNAFFORDABLE": 3
+  },
+  "GOLD": {
+   "ENTERED": 44,
+   "NO_QUOTE": 8,
+   "UNRESOLVED": 2
+  },
+  "EXPIRY": {
+   "ENTERED": 46,
+   "NO_QUOTE": 6,
+   "UNRESOLVED": 2
+  },
+  "NO_REPLAY": {
+   "ENTERED": 39,
+   "UNAFFORDABLE": 9,
+   "UNRESOLVED": 2,
+   "NO_QUOTE": 4
+  }
+ },
+ "common ALL": {
+  "gross": {
+   "cells": 98,
+   "dates": 37,
+   "mean_better": 1738,
+   "mean_worse": -1717,
+   "coin": 10,
+   "p_star": 0.497,
+   "ce_better_share": 0.459
+  },
+  "fees_only": {
+   "cells": 98,
+   "dates": 37,
+   "mean_better": 1665,
+   "mean_worse": -1782,
+   "coin": -59,
+   "p_star": 0.517,
+   "ce_better_share": 0.459
+  },
+  "net@205": {
+   "cells": 98,
+   "dates": 37,
+   "mean_better": 1460,
+   "mean_worse": -1987,
+   "coin": -264,
+   "p_star": 0.576,
+   "ce_better_share": 0.459
+  },
+  "net@400": {
+   "cells": 98,
+   "dates": 37,
+   "mean_better": 1098,
+   "mean_worse": -2174,
+   "coin": -538,
+   "p_star": 0.665,
+   "ce_better_share": 0.48
+  },
+  "boot@205": {
+   "coin_90ci": [
+    -363,
+    -163
+   ],
+   "p_star_90ci": [
+    0.543,
+    0.614
+   ]
+  },
+  "boot@400": {
+   "coin_90ci": [
+    -654,
+    -421
+   ],
+   "p_star_90ci": [
+    0.618,
+    0.718
+   ]
+  },
+  "alignment@205": {
+   "cells": 98,
+   "coin_old_exit": -263,
+   "coin_legal_exit": -264,
+   "rows_exit_moved": 7
+  },
+  "alignment@400": {
+   "cells": 98,
+   "coin_old_exit": -538,
+   "coin_legal_exit": -538,
+   "rows_exit_moved": 7
+  },
+  "single_side_mean_all_resolved@205": {
+   "rows": 202,
+   "mean": -286
+  },
+  "single_side_mean_all_resolved@400": {
+   "rows": 202,
+   "mean": -557
+  },
+  "clock 10:00 @205": {
+   "cells": 34,
+   "dates": 34,
+   "mean_better": 1195,
+   "mean_worse": -1867,
+   "coin": -336,
+   "p_star": 0.61,
+   "ce_better_share": 0.382
+  },
+  "clock 11:00 @205": {
+   "cells": 31,
+   "dates": 31,
+   "mean_better": 1498,
+   "mean_worse": -2075,
+   "coin": -289,
+   "p_star": 0.581,
+   "ce_better_share": 0.548
+  },
+  "clock 13:00 @205": {
+   "cells": 33,
+   "dates": 33,
+   "mean_better": 1697,
+   "mean_worse": -2028,
+   "coin": -165,
+   "p_star": 0.544,
+   "ce_better_share": 0.455
+  }
+ },
+ "common EMPTY": {
+  "gross": {
+   "cells": 35,
+   "dates": 13,
+   "mean_better": 1429,
+   "mean_worse": -1594,
+   "coin": -82,
+   "p_star": 0.527,
+   "ce_better_share": 0.543
+  },
+  "fees_only": {
+   "cells": 35,
+   "dates": 13,
+   "mean_better": 1356,
+   "mean_worse": -1660,
+   "coin": -152,
+   "p_star": 0.55,
+   "ce_better_share": 0.543
+  },
+  "net@205": {
+   "cells": 35,
+   "dates": 13,
+   "mean_better": 1151,
+   "mean_worse": -1865,
+   "coin": -357,
+   "p_star": 0.618,
+   "ce_better_share": 0.543
+  },
+  "net@400": {
+   "cells": 35,
+   "dates": 13,
+   "mean_better": 610,
+   "mean_worse": -2059,
+   "coin": -725,
+   "p_star": 0.772,
+   "ce_better_share": 0.571
+  },
+  "boot@205": {
+   "coin_90ci": [
+    -488,
+    -238
+   ],
+   "p_star_90ci": [
+    0.571,
+    0.678
+   ]
+  },
+  "boot@400": {
+   "coin_90ci": [
+    -948,
+    -512
+   ],
+   "p_star_90ci": [
+    0.675,
+    0.905
+   ]
+  },
+  "alignment@205": {
+   "cells": 35,
+   "coin_old_exit": -358,
+   "coin_legal_exit": -357,
+   "rows_exit_moved": 4
+  },
+  "alignment@400": {
+   "cells": 35,
+   "coin_old_exit": -726,
+   "coin_legal_exit": -725,
+   "rows_exit_moved": 4
+  },
+  "single_side_mean_all_resolved@205": {
+   "rows": 73,
+   "mean": -385
+  },
+  "single_side_mean_all_resolved@400": {
+   "rows": 73,
+   "mean": -744
+  },
+  "clock 10:00 @205": {
+   "cells": 13,
+   "dates": 13,
+   "mean_better": 1138,
+   "mean_worse": -1676,
+   "coin": -269,
+   "p_star": 0.596,
+   "ce_better_share": 0.462
+  },
+  "clock 11:00 @205": {
+   "cells": 11,
+   "dates": 11,
+   "mean_better": 1008,
+   "mean_worse": -1895,
+   "coin": -443,
+   "p_star": 0.653,
+   "ce_better_share": 0.727
+  },
+  "clock 13:00 @205": {
+   "cells": 11,
+   "dates": 11,
+   "mean_better": 1309,
+   "mean_worse": -2058,
+   "coin": -375,
+   "p_star": 0.611,
+   "ce_better_share": 0.455
+  }
+ },
+ "common GOLD": {
+  "gross": {
+   "cells": 22,
+   "dates": 8,
+   "mean_better": 2301,
+   "mean_worse": -1771,
+   "coin": 265,
+   "p_star": 0.435,
+   "ce_better_share": 0.364
+  },
+  "fees_only": {
+   "cells": 22,
+   "dates": 8,
+   "mean_better": 2224,
+   "mean_worse": -1839,
+   "coin": 193,
+   "p_star": 0.453,
+   "ce_better_share": 0.364
+  },
+  "net@205": {
+   "cells": 22,
+   "dates": 8,
+   "mean_better": 2019,
+   "mean_worse": -2044,
+   "coin": -12,
+   "p_star": 0.503,
+   "ce_better_share": 0.364
+  },
+  "net@400": {
+   "cells": 22,
+   "dates": 8,
+   "mean_better": 1824,
+   "mean_worse": -2222,
+   "coin": -199,
+   "p_star": 0.549,
+   "ce_better_share": 0.364
+  },
+  "boot@205": {
+   "coin_90ci": [
+    -233,
+    191
+   ],
+   "p_star_90ci": [
+    0.46,
+    0.575
+   ]
+  },
+  "boot@400": {
+   "coin_90ci": [
+    -421,
+    -4
+   ],
+   "p_star_90ci": [
+    0.501,
+    0.637
+   ]
+  },
+  "alignment@205": {
+   "cells": 22,
+   "coin_old_exit": -9,
+   "coin_legal_exit": -12,
+   "rows_exit_moved": 1
+  },
+  "alignment@400": {
+   "cells": 22,
+   "coin_old_exit": -196,
+   "coin_legal_exit": -199,
+   "rows_exit_moved": 1
+  },
+  "single_side_mean_all_resolved@205": {
+   "rows": 44,
+   "mean": -12
+  },
+  "single_side_mean_all_resolved@400": {
+   "rows": 44,
+   "mean": -199
+  },
+  "clock 10:00 @205": {
+   "cells": 8,
+   "dates": 8,
+   "mean_better": 2178,
+   "mean_worse": -2075,
+   "coin": 52,
+   "p_star": 0.488,
+   "ce_better_share": 0.375
+  },
+  "clock 11:00 @205": {
+   "cells": 7,
+   "dates": 7,
+   "mean_better": 2184,
+   "mean_worse": -1931,
+   "coin": 126,
+   "p_star": 0.469,
+   "ce_better_share": 0.143
+  },
+  "clock 13:00 @205": {
+   "cells": 7,
+   "dates": 7,
+   "mean_better": 1673,
+   "mean_worse": -2121,
+   "coin": -224,
+   "p_star": 0.559,
+   "ce_better_share": 0.571
+  }
+ },
+ "common EXPIRY": {
+  "gross": {
+   "cells": 23,
+   "dates": 9,
+   "mean_better": 1674,
+   "mean_worse": -1847,
+   "coin": -86,
+   "p_star": 0.525,
+   "ce_better_share": 0.435
+  },
+  "fees_only": {
+   "cells": 23,
+   "dates": 9,
+   "mean_better": 1609,
+   "mean_worse": -1903,
+   "coin": -147,
+   "p_star": 0.542,
+   "ce_better_share": 0.435
+  },
+  "net@205": {
+   "cells": 23,
+   "dates": 9,
+   "mean_better": 1404,
+   "mean_worse": -2108,
+   "coin": -352,
+   "p_star": 0.6,
+   "ce_better_share": 0.435
+  },
+  "net@400": {
+   "cells": 23,
+   "dates": 9,
+   "mean_better": 1209,
+   "mean_worse": -2244,
+   "coin": -517,
+   "p_star": 0.65,
+   "ce_better_share": 0.435
+  },
+  "boot@205": {
+   "coin_90ci": [
+    -528,
+    -164
+   ],
+   "p_star_90ci": [
+    0.545,
+    0.671
+   ]
+  },
+  "boot@400": {
+   "coin_90ci": [
+    -691,
+    -333
+   ],
+   "p_star_90ci": [
+    0.59,
+    0.735
+   ]
+  },
+  "alignment@205": {
+   "cells": 23,
+   "coin_old_exit": -352,
+   "coin_legal_exit": -352,
+   "rows_exit_moved": 2
+  },
+  "alignment@400": {
+   "cells": 23,
+   "coin_old_exit": -517,
+   "coin_legal_exit": -517,
+   "rows_exit_moved": 2
+  },
+  "single_side_mean_all_resolved@205": {
+   "rows": 46,
+   "mean": -352
+  },
+  "single_side_mean_all_resolved@400": {
+   "rows": 46,
+   "mean": -517
+  },
+  "clock 10:00 @205": {
+   "cells": 8,
+   "dates": 8,
+   "mean_better": 586,
+   "mean_worse": -2155,
+   "coin": -785,
+   "p_star": 0.786,
+   "ce_better_share": 0.375
+  },
+  "clock 11:00 @205": {
+   "cells": 7,
+   "dates": 7,
+   "mean_better": 2013,
+   "mean_worse": -2501,
+   "coin": -244,
+   "p_star": 0.554,
+   "ce_better_share": 0.714
+  },
+  "clock 13:00 @205": {
+   "cells": 8,
+   "dates": 8,
+   "mean_better": 1690,
+   "mean_worse": -1718,
+   "coin": -14,
+   "p_star": 0.504,
+   "ce_better_share": 0.25
+  }
+ },
+ "rows": [
+  {
+   "day": "2026-09-10",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -559.54,
+    "x@205": 105,
+    "gross": -292.5,
+    "fees_only": -354.54,
+    "old@205": -559.54,
+    "state@400": "ENTERED",
+    "net@400": -754.54,
+    "x@400": 105,
+    "old@400": -754.54,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -164.06,
+    "x@205": 105,
+    "gross": 117.0,
+    "fees_only": 40.94,
+    "old@205": -164.06,
+    "state@400": "ENTERED",
+    "net@400": -359.06,
+    "x@400": 105,
+    "old@400": -359.06,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-10",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 802.83,
+    "x@205": 165,
+    "gross": 1075.75,
+    "fees_only": 1007.83,
+    "old@205": 802.83,
+    "state@400": "ENTERED",
+    "net@400": 607.83,
+    "x@400": 165,
+    "old@400": 607.83,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1586.55,
+    "x@205": 165,
+    "gross": -1313.0,
+    "fees_only": -1381.55,
+    "old@205": -1586.55,
+    "state@400": "ENTERED",
+    "net@400": -1781.55,
+    "x@400": 165,
+    "old@400": -1781.55,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-10",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -617.55,
+    "x@205": 285,
+    "gross": -347.75,
+    "fees_only": -412.55,
+    "old@205": -617.55,
+    "state@400": "ENTERED",
+    "net@400": -812.55,
+    "x@400": 285,
+    "old@400": -812.55,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -294.45,
+    "x@205": 285,
+    "gross": -19.5,
+    "fees_only": -89.45,
+    "old@205": -294.45,
+    "state@400": "ENTERED",
+    "net@400": -489.45,
+    "x@400": 285,
+    "old@400": -489.45,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-11",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1138.47,
+    "x@205": 105,
+    "gross": 1410.5,
+    "fees_only": 1343.47,
+    "old@205": 1138.47,
+    "state@400": "ENTERED",
+    "net@400": 943.47,
+    "x@400": 105,
+    "old@400": 943.47,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1488.23,
+    "x@205": 105,
+    "gross": -1215.5,
+    "fees_only": -1283.23,
+    "old@205": -1488.23,
+    "state@400": "ENTERED",
+    "net@400": -1683.23,
+    "x@400": 105,
+    "old@400": -1683.23,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-11",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2294.16,
+    "x@205": 165,
+    "gross": 2567.5,
+    "fees_only": 2499.16,
+    "old@205": 2294.16,
+    "state@400": "ENTERED",
+    "net@400": 2099.16,
+    "x@400": 165,
+    "old@400": 2099.16,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2735.68,
+    "x@205": 165,
+    "gross": -2463.5,
+    "fees_only": -2530.68,
+    "old@205": -2735.68,
+    "state@400": "ENTERED",
+    "net@400": -3057.19,
+    "x@400": 149,
+    "old@400": -3057.19,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-11",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1927.37,
+    "x@205": 285,
+    "gross": 2200.25,
+    "fees_only": 2132.37,
+    "old@205": 1927.37,
+    "state@400": "ENTERED",
+    "net@400": 1732.37,
+    "x@400": 285,
+    "old@400": 1732.37,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2371.4,
+    "x@205": 285,
+    "gross": -2099.5,
+    "fees_only": -2166.4,
+    "old@205": -2371.4,
+    "state@400": "ENTERED",
+    "net@400": -2566.4,
+    "x@400": 285,
+    "old@400": -2566.4,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-15",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1828.0,
+    "x@205": 106,
+    "gross": -1569.75,
+    "fees_only": -1623.0,
+    "old@205": -1818.27,
+    "state@400": "ENTERED",
+    "net@400": -2023.0,
+    "x@400": 106,
+    "old@400": -2013.27,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1984.46,
+    "x@205": 106,
+    "gross": 2262.0,
+    "fees_only": 2189.46,
+    "old@205": 1994.19,
+    "state@400": "ENTERED",
+    "net@400": 1789.46,
+    "x@400": 106,
+    "old@400": 1799.19,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-15",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-15",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-16",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 451.29,
+    "x@205": 106,
+    "gross": 731.25,
+    "fees_only": 656.29,
+    "old@205": 6.9,
+    "state@400": "ENTERED",
+    "net@400": 256.29,
+    "x@400": 106,
+    "old@400": -188.1,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1293.42,
+    "x@205": 106,
+    "gross": -1010.75,
+    "fees_only": -1088.42,
+    "old@205": -800.37,
+    "state@400": "ENTERED",
+    "net@400": -1488.42,
+    "x@400": 106,
+    "old@400": -995.37,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-16",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-16",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-17",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1482.6,
+    "x@205": 106,
+    "gross": -1209.0,
+    "fees_only": -1277.6,
+    "old@205": -921.42,
+    "state@400": "ENTERED",
+    "net@400": -1677.6,
+    "x@400": 106,
+    "old@400": -1116.42,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 615.72,
+    "x@205": 106,
+    "gross": 893.75,
+    "fees_only": 820.72,
+    "old@205": -94.67,
+    "state@400": "ENTERED",
+    "net@400": 420.72,
+    "x@400": 106,
+    "old@400": -289.67,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-17",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-17",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-21",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -795.83,
+    "x@205": 105,
+    "gross": -529.75,
+    "fees_only": -590.83,
+    "old@205": -795.83,
+    "state@400": "ENTERED",
+    "net@400": -990.83,
+    "x@400": 105,
+    "old@400": -990.83,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2.22,
+    "x@205": 105,
+    "gross": 266.5,
+    "fees_only": 202.78,
+    "old@205": -2.22,
+    "state@400": "ENTERED",
+    "net@400": -197.22,
+    "x@400": 105,
+    "old@400": -197.22,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-21",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1223.01,
+    "x@205": 165,
+    "gross": 1491.75,
+    "fees_only": 1428.01,
+    "old@205": 1223.01,
+    "state@400": "ENTERED",
+    "net@400": 1028.01,
+    "x@400": 165,
+    "old@400": 1028.01,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1864.8,
+    "x@205": 165,
+    "gross": -1599.0,
+    "fees_only": -1659.8,
+    "old@205": -1864.8,
+    "state@400": "ENTERED",
+    "net@400": -2059.8,
+    "x@400": 165,
+    "old@400": -2059.8,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-21",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2019.15,
+    "x@205": 285,
+    "gross": 2291.25,
+    "fees_only": 2224.15,
+    "old@205": 2019.15,
+    "state@400": "ENTERED",
+    "net@400": 1824.15,
+    "x@400": 285,
+    "old@400": 1824.15,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2024.25,
+    "x@205": 285,
+    "gross": -1761.5,
+    "fees_only": -1819.25,
+    "old@205": -2024.25,
+    "state@400": "ENTERED",
+    "net@400": -2219.25,
+    "x@400": 285,
+    "old@400": -2219.25,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-22",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3093.26,
+    "x@205": 87,
+    "gross": -2834.0,
+    "fees_only": -2888.26,
+    "old@205": -3093.26,
+    "state@400": "ENTERED",
+    "net@400": -3288.26,
+    "x@400": 87,
+    "old@400": -3288.26,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 3756.17,
+    "x@205": 105,
+    "gross": 4026.75,
+    "fees_only": 3961.17,
+    "old@205": 3756.17,
+    "state@400": "ENTERED",
+    "net@400": 3561.17,
+    "x@400": 105,
+    "old@400": 3561.17,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-22",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1644.02,
+    "x@205": 165,
+    "gross": -1384.5,
+    "fees_only": -1439.02,
+    "old@205": -1644.02,
+    "state@400": "ENTERED",
+    "net@400": -1839.02,
+    "x@400": 165,
+    "old@400": -1839.02,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1015.02,
+    "x@205": 165,
+    "gross": 1283.75,
+    "fees_only": 1220.02,
+    "old@205": 1015.02,
+    "state@400": "ENTERED",
+    "net@400": 820.02,
+    "x@400": 165,
+    "old@400": 820.02,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-22",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 219.82,
+    "x@205": 255,
+    "gross": 481.0,
+    "fees_only": 424.82,
+    "old@205": 219.82,
+    "state@400": "ENTERED",
+    "net@400": 24.82,
+    "x@400": 255,
+    "old@400": 24.82,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -745.85,
+    "x@205": 255,
+    "gross": -481.0,
+    "fees_only": -540.85,
+    "old@205": -745.85,
+    "state@400": "ENTERED",
+    "net@400": -940.85,
+    "x@400": 255,
+    "old@400": -940.85,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-23",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 710.52,
+    "x@205": 105,
+    "gross": 988.0,
+    "fees_only": 915.52,
+    "old@205": 710.52,
+    "state@400": "ENTERED",
+    "net@400": 515.52,
+    "x@400": 105,
+    "old@400": 515.52,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1438.21,
+    "x@205": 105,
+    "gross": -1166.75,
+    "fees_only": -1233.21,
+    "old@205": -1438.21,
+    "state@400": "ENTERED",
+    "net@400": -1633.21,
+    "x@400": 105,
+    "old@400": -1633.21,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-23",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 80.33,
+    "x@205": 165,
+    "gross": 354.25,
+    "fees_only": 285.33,
+    "old@205": 80.33,
+    "state@400": "ENTERED",
+    "net@400": -114.67,
+    "x@400": 165,
+    "old@400": -114.67,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -774.59,
+    "x@205": 165,
+    "gross": -500.5,
+    "fees_only": -569.59,
+    "old@205": -774.59,
+    "state@400": "ENTERED",
+    "net@400": -969.59,
+    "x@400": 165,
+    "old@400": -969.59,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-23",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1252.23,
+    "x@205": 285,
+    "gross": -978.25,
+    "fees_only": -1047.23,
+    "old@205": -1252.23,
+    "state@400": "ENTERED",
+    "net@400": -1447.23,
+    "x@400": 285,
+    "old@400": -1447.23,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 152.61,
+    "x@205": 285,
+    "gross": 425.75,
+    "fees_only": 357.61,
+    "old@205": 152.61,
+    "state@400": "ENTERED",
+    "net@400": -42.39,
+    "x@400": 285,
+    "old@400": -42.39,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-24",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -114.81,
+    "x@205": 106,
+    "gross": 159.25,
+    "fees_only": 90.19,
+    "old@205": 24.67,
+    "state@400": "ENTERED",
+    "net@400": -309.81,
+    "x@400": 106,
+    "old@400": -170.33,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1098.69,
+    "x@205": 105,
+    "gross": -825.5,
+    "fees_only": -893.69,
+    "old@205": -1098.69,
+    "state@400": "ENTERED",
+    "net@400": -1293.69,
+    "x@400": 105,
+    "old@400": -1293.69,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-24",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-24",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-09-25",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -137.91,
+    "x@205": 105,
+    "gross": 136.5,
+    "fees_only": 67.09,
+    "old@205": -137.91,
+    "state@400": "ENTERED",
+    "net@400": -332.91,
+    "x@400": 105,
+    "old@400": -332.91,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -964.75,
+    "x@205": 105,
+    "gross": -692.25,
+    "fees_only": -759.75,
+    "old@205": -964.75,
+    "state@400": "ENTERED",
+    "net@400": -1159.75,
+    "x@400": 105,
+    "old@400": -1159.75,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-25",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -397.79,
+    "x@205": 165,
+    "gross": -123.5,
+    "fees_only": -192.79,
+    "old@205": -397.79,
+    "state@400": "ENTERED",
+    "net@400": -592.79,
+    "x@400": 165,
+    "old@400": -592.79,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -817.19,
+    "x@205": 165,
+    "gross": -546.0,
+    "fees_only": -612.19,
+    "old@205": -817.19,
+    "state@400": "ENTERED",
+    "net@400": -1012.19,
+    "x@400": 165,
+    "old@400": -1012.19,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-25",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1512.31,
+    "x@205": 285,
+    "gross": 1787.5,
+    "fees_only": 1717.31,
+    "old@205": 1512.31,
+    "state@400": "ENTERED",
+    "net@400": 1317.31,
+    "x@400": 285,
+    "old@400": 1317.31,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2498.99,
+    "x@205": 285,
+    "gross": -2229.5,
+    "fees_only": -2293.99,
+    "old@205": -2498.99,
+    "state@400": "ENTERED",
+    "net@400": -2693.99,
+    "x@400": 285,
+    "old@400": -2693.99,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-28",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1854.5,
+    "x@205": 105,
+    "gross": -1586.0,
+    "fees_only": -1649.5,
+    "old@205": -1854.5,
+    "state@400": "ENTERED",
+    "net@400": -2049.5,
+    "x@400": 105,
+    "old@400": -2049.5,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1121.81,
+    "x@205": 105,
+    "gross": 1394.25,
+    "fees_only": 1326.81,
+    "old@205": 1121.81,
+    "state@400": "ENTERED",
+    "net@400": 926.81,
+    "x@400": 105,
+    "old@400": 926.81,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-28",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -580.69,
+    "x@205": 165,
+    "gross": -308.75,
+    "fees_only": -375.69,
+    "old@205": -580.69,
+    "state@400": "ENTERED",
+    "net@400": -775.69,
+    "x@400": 165,
+    "old@400": -775.69,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -304.11,
+    "x@205": 165,
+    "gross": -35.75,
+    "fees_only": -99.11,
+    "old@205": -304.11,
+    "state@400": "ENTERED",
+    "net@400": -499.11,
+    "x@400": 165,
+    "old@400": -499.11,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-28",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -160.11,
+    "x@205": 285,
+    "gross": 107.25,
+    "fees_only": 44.89,
+    "old@205": -160.11,
+    "state@400": "ENTERED",
+    "net@400": -355.11,
+    "x@400": 285,
+    "old@400": -355.11,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -810.62,
+    "x@205": 285,
+    "gross": -539.5,
+    "fees_only": -605.62,
+    "old@205": -810.62,
+    "state@400": "ENTERED",
+    "net@400": -1005.62,
+    "x@400": 285,
+    "old@400": -1005.62,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-29",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -596.03,
+    "x@205": 105,
+    "gross": -328.25,
+    "fees_only": -391.03,
+    "old@205": -596.03,
+    "state@400": "ENTERED",
+    "net@400": -791.03,
+    "x@400": 105,
+    "old@400": -791.03,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -894.49,
+    "x@205": 105,
+    "gross": -630.5,
+    "fees_only": -689.49,
+    "old@205": -894.49,
+    "state@400": "ENTERED",
+    "net@400": -1089.49,
+    "x@400": 105,
+    "old@400": -1089.49,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-29",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 6502.05,
+    "x@205": 165,
+    "gross": 6782.75,
+    "fees_only": 6707.05,
+    "old@205": 6502.05,
+    "state@400": "ENTERED",
+    "net@400": 6307.05,
+    "x@400": 165,
+    "old@400": 6307.05,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3134.45,
+    "x@205": 139,
+    "gross": -2876.25,
+    "fees_only": -2929.45,
+    "old@205": -3134.45,
+    "state@400": "ENTERED",
+    "net@400": -3164.02,
+    "x@400": 135,
+    "old@400": -3164.02,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-29",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1604.52,
+    "x@205": 255,
+    "gross": -1342.25,
+    "fees_only": -1399.52,
+    "old@205": -1604.52,
+    "state@400": "ENTERED",
+    "net@400": -1799.52,
+    "x@400": 255,
+    "old@400": -1799.52,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1107.42,
+    "x@205": 255,
+    "gross": 1374.75,
+    "fees_only": 1312.42,
+    "old@205": 1107.42,
+    "state@400": "ENTERED",
+    "net@400": 912.42,
+    "x@400": 255,
+    "old@400": 912.42,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-30",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1355.86,
+    "x@205": 105,
+    "gross": -1085.5,
+    "fees_only": -1150.86,
+    "old@205": -1355.86,
+    "state@400": "ENTERED",
+    "net@400": -1550.86,
+    "x@400": 105,
+    "old@400": -1550.86,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 891.86,
+    "x@205": 105,
+    "gross": 1179.75,
+    "fees_only": 1096.86,
+    "old@205": 891.86,
+    "state@400": "ENTERED",
+    "net@400": 696.86,
+    "x@400": 105,
+    "old@400": 696.86,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-30",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 576.27,
+    "x@205": 165,
+    "gross": 851.5,
+    "fees_only": 781.27,
+    "old@205": 576.27,
+    "state@400": "ENTERED",
+    "net@400": 381.27,
+    "x@400": 165,
+    "old@400": 381.27,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2031.99,
+    "x@205": 165,
+    "gross": -1751.75,
+    "fees_only": -1826.99,
+    "old@205": -2031.99,
+    "state@400": "ENTERED",
+    "net@400": -2226.99,
+    "x@400": 165,
+    "old@400": -2226.99,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-09-30",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2494.15,
+    "x@205": 285,
+    "gross": -2226.25,
+    "fees_only": -2289.15,
+    "old@205": -2494.15,
+    "state@400": "ENTERED",
+    "net@400": -2689.15,
+    "x@400": 285,
+    "old@400": -2689.15,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2961.25,
+    "x@205": 285,
+    "gross": 3250.0,
+    "fees_only": 3166.25,
+    "old@205": 2961.25,
+    "state@400": "ENTERED",
+    "net@400": 2766.25,
+    "x@400": 285,
+    "old@400": 2766.25,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-01",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -823.4,
+    "x@205": 105,
+    "gross": -555.75,
+    "fees_only": -618.4,
+    "old@205": -823.4,
+    "state@400": "ENTERED",
+    "net@400": -1018.4,
+    "x@400": 105,
+    "old@400": -1018.4,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 227.32,
+    "x@205": 105,
+    "gross": 513.5,
+    "fees_only": 432.32,
+    "old@205": 227.32,
+    "state@400": "ENTERED",
+    "net@400": 32.32,
+    "x@400": 105,
+    "old@400": 32.32,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-01",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -121.74,
+    "x@205": 165,
+    "gross": 149.5,
+    "fees_only": 83.26,
+    "old@205": -121.74,
+    "state@400": "ENTERED",
+    "net@400": -316.74,
+    "x@400": 165,
+    "old@400": -316.74,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -881.51,
+    "x@205": 165,
+    "gross": -601.25,
+    "fees_only": -676.51,
+    "old@205": -881.51,
+    "state@400": "ENTERED",
+    "net@400": -1076.51,
+    "x@400": 165,
+    "old@400": -1076.51,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-01",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2855.38,
+    "x@205": 285,
+    "gross": -2583.75,
+    "fees_only": -2650.38,
+    "old@205": -2855.38,
+    "state@400": "ENTERED",
+    "net@400": -3050.38,
+    "x@400": 285,
+    "old@400": -3050.38,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2986.8,
+    "x@205": 285,
+    "gross": 3276.0,
+    "fees_only": 3191.8,
+    "old@205": 2986.8,
+    "state@400": "ENTERED",
+    "net@400": -3089.14,
+    "x@400": 233,
+    "old@400": -3089.14,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-05",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1640.95,
+    "x@205": 105,
+    "gross": -1381.25,
+    "fees_only": -1435.95,
+    "old@205": -1640.95,
+    "state@400": "ENTERED",
+    "net@400": -1835.95,
+    "x@400": 105,
+    "old@400": -1835.95,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 3520.11,
+    "x@205": 105,
+    "gross": 3809.0,
+    "fees_only": 3725.11,
+    "old@205": 3520.11,
+    "state@400": "ENTERED",
+    "net@400": 3325.11,
+    "x@400": 105,
+    "old@400": 3325.11,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-05",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1942.23,
+    "x@205": 165,
+    "gross": -1680.25,
+    "fees_only": -1737.23,
+    "old@205": -1942.23,
+    "state@400": "ENTERED",
+    "net@400": -2137.23,
+    "x@400": 165,
+    "old@400": -2137.23,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 3104.45,
+    "x@205": 165,
+    "gross": 3389.75,
+    "fees_only": 3309.45,
+    "old@205": 3104.45,
+    "state@400": "ENTERED",
+    "net@400": 2909.45,
+    "x@400": 165,
+    "old@400": 2909.45,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-05",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2693.4,
+    "x@205": 285,
+    "gross": 2964.0,
+    "fees_only": 2898.4,
+    "old@205": 2693.4,
+    "state@400": "ENTERED",
+    "net@400": 2498.4,
+    "x@400": 285,
+    "old@400": 2498.4,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3186.02,
+    "x@205": 264,
+    "gross": -2912.0,
+    "fees_only": -2981.02,
+    "old@205": -3186.02,
+    "state@400": "ENTERED",
+    "net@400": -3381.02,
+    "x@400": 264,
+    "old@400": -3381.02,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-06",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -855.81,
+    "x@205": 105,
+    "gross": -598.0,
+    "fees_only": -650.81,
+    "old@205": -855.81,
+    "state@400": "ENTERED",
+    "net@400": -1050.81,
+    "x@400": 105,
+    "old@400": -1050.81,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -135.9,
+    "x@205": 105,
+    "gross": 139.75,
+    "fees_only": 69.1,
+    "old@205": -135.9,
+    "state@400": "ENTERED",
+    "net@400": -330.9,
+    "x@400": 105,
+    "old@400": -330.9,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-06",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -92.12,
+    "x@205": 165,
+    "gross": 165.75,
+    "fees_only": 112.88,
+    "old@205": -92.12,
+    "state@400": "ENTERED",
+    "net@400": -287.12,
+    "x@400": 165,
+    "old@400": -287.12,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1741.95,
+    "x@205": 165,
+    "gross": -1469.0,
+    "fees_only": -1536.95,
+    "old@205": -1741.95,
+    "state@400": "ENTERED",
+    "net@400": -1936.95,
+    "x@400": 165,
+    "old@400": -1936.95,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-06",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -596.49,
+    "x@205": 255,
+    "gross": -341.25,
+    "fees_only": -391.49,
+    "old@205": -596.49,
+    "state@400": "ENTERED",
+    "net@400": -791.49,
+    "x@400": 255,
+    "old@400": -791.49,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 114.3,
+    "x@205": 255,
+    "gross": 390.0,
+    "fees_only": 319.3,
+    "old@205": 114.3,
+    "state@400": "ENTERED",
+    "net@400": -80.7,
+    "x@400": 255,
+    "old@400": -80.7,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-07",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2888.72,
+    "x@205": 105,
+    "gross": 3172.0,
+    "fees_only": 3093.72,
+    "old@205": 2888.72,
+    "state@400": "ENTERED",
+    "net@400": 2693.72,
+    "x@400": 105,
+    "old@400": 2693.72,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3261.05,
+    "x@205": 74,
+    "gross": -2983.5,
+    "fees_only": -3056.05,
+    "old@205": -3261.05,
+    "state@400": "ENTERED",
+    "net@400": -3037.6,
+    "x@400": 66,
+    "old@400": -3037.6,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-07",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -749.28,
+    "x@205": 165,
+    "gross": -474.5,
+    "fees_only": -544.28,
+    "old@205": -749.28,
+    "state@400": "ENTERED",
+    "net@400": -944.28,
+    "x@400": 165,
+    "old@400": -944.28,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 9.38,
+    "x@205": 165,
+    "gross": 292.5,
+    "fees_only": 214.38,
+    "old@205": 9.38,
+    "state@400": "ENTERED",
+    "net@400": -185.62,
+    "x@400": 165,
+    "old@400": -185.62,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-07",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1972.64,
+    "x@205": 285,
+    "gross": -1699.75,
+    "fees_only": -1767.64,
+    "old@205": -1972.64,
+    "state@400": "ENTERED",
+    "net@400": -2167.64,
+    "x@400": 285,
+    "old@400": -2167.64,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2157.86,
+    "x@205": 285,
+    "gross": 2444.0,
+    "fees_only": 2362.86,
+    "old@205": 2157.86,
+    "state@400": "ENTERED",
+    "net@400": 1962.86,
+    "x@400": 285,
+    "old@400": 1962.86,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-08",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1396.23,
+    "x@205": 105,
+    "gross": -1127.75,
+    "fees_only": -1191.23,
+    "old@205": -1396.23,
+    "state@400": "ENTERED",
+    "net@400": -1591.23,
+    "x@400": 105,
+    "old@400": -1591.23,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1227.18,
+    "x@205": 105,
+    "gross": 1514.5,
+    "fees_only": 1432.18,
+    "old@205": 1227.18,
+    "state@400": "ENTERED",
+    "net@400": 1032.18,
+    "x@400": 105,
+    "old@400": 1032.18,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-08",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2130.23,
+    "x@205": 165,
+    "gross": -1862.25,
+    "fees_only": -1925.23,
+    "old@205": -2130.23,
+    "state@400": "ENTERED",
+    "net@400": -2325.23,
+    "x@400": 165,
+    "old@400": -2325.23,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 3703.61,
+    "x@205": 165,
+    "gross": 3994.25,
+    "fees_only": 3908.61,
+    "old@205": 3703.61,
+    "state@400": "ENTERED",
+    "net@400": 3508.61,
+    "x@400": 165,
+    "old@400": 3508.61,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-08",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -941.57,
+    "x@205": 285,
+    "gross": -669.5,
+    "fees_only": -736.57,
+    "old@205": -941.57,
+    "state@400": "ENTERED",
+    "net@400": -1136.57,
+    "x@400": 285,
+    "old@400": -1136.57,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 210.36,
+    "x@205": 285,
+    "gross": 497.25,
+    "fees_only": 415.36,
+    "old@205": 210.36,
+    "state@400": "ENTERED",
+    "net@400": 15.36,
+    "x@400": 285,
+    "old@400": 15.36,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-09",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 955.32,
+    "x@205": 105,
+    "gross": 1228.5,
+    "fees_only": 1160.32,
+    "old@205": 955.32,
+    "state@400": "ENTERED",
+    "net@400": 760.32,
+    "x@400": 105,
+    "old@400": 760.32,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2504.06,
+    "x@205": 105,
+    "gross": -2226.25,
+    "fees_only": -2299.06,
+    "old@205": -2504.06,
+    "state@400": "ENTERED",
+    "net@400": -2699.06,
+    "x@400": 105,
+    "old@400": -2699.06,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-09",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1966.15,
+    "x@205": 165,
+    "gross": -1699.75,
+    "fees_only": -1761.15,
+    "old@205": -1966.15,
+    "state@400": "ENTERED",
+    "net@400": -2161.15,
+    "x@400": 165,
+    "old@400": -2161.15,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2005.41,
+    "x@205": 165,
+    "gross": 2291.25,
+    "fees_only": 2210.41,
+    "old@205": 2005.41,
+    "state@400": "ENTERED",
+    "net@400": 1810.41,
+    "x@400": 165,
+    "old@400": 1810.41,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-09",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 467.43,
+    "x@205": 285,
+    "gross": 737.75,
+    "fees_only": 672.43,
+    "old@205": 467.43,
+    "state@400": "ENTERED",
+    "net@400": 272.43,
+    "x@400": 285,
+    "old@400": 272.43,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1977.06,
+    "x@205": 285,
+    "gross": -1699.75,
+    "fees_only": -1772.06,
+    "old@205": -1977.06,
+    "state@400": "ENTERED",
+    "net@400": -2172.06,
+    "x@400": 285,
+    "old@400": -2172.06,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-12",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3006.7,
+    "x@205": 97,
+    "gross": -2743.0,
+    "fees_only": -2801.7,
+    "old@205": -3006.7,
+    "state@400": "ENTERED",
+    "net@400": -3020.05,
+    "x@400": 96,
+    "old@400": -3020.05,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 4576.58,
+    "x@205": 105,
+    "gross": 4858.75,
+    "fees_only": 4781.58,
+    "old@205": 4576.58,
+    "state@400": "ENTERED",
+    "net@400": 4381.58,
+    "x@400": 105,
+    "old@400": 4381.58,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-12",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1971.39,
+    "x@205": 165,
+    "gross": -1706.25,
+    "fees_only": -1766.39,
+    "old@205": -1971.39,
+    "state@400": "ENTERED",
+    "net@400": -2166.39,
+    "x@400": 165,
+    "old@400": -2166.39,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2311.89,
+    "x@205": 165,
+    "gross": 2590.25,
+    "fees_only": 2516.89,
+    "old@205": 2311.89,
+    "state@400": "ENTERED",
+    "net@400": 2116.89,
+    "x@400": 165,
+    "old@400": 2116.89,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-12",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -582.08,
+    "x@205": 285,
+    "gross": -318.5,
+    "fees_only": -377.08,
+    "old@205": -582.08,
+    "state@400": "ENTERED",
+    "net@400": -777.08,
+    "x@400": 285,
+    "old@400": -777.08,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -445.93,
+    "x@205": 285,
+    "gross": -169.0,
+    "fees_only": -240.93,
+    "old@205": -445.93,
+    "state@400": "ENTERED",
+    "net@400": -640.93,
+    "x@400": 285,
+    "old@400": -640.93,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-13",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": -320.95,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": -515.95,
+    "state": "UNRESOLVED"
+   },
+   "PE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": -228.31,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": -423.31,
+    "state": "UNRESOLVED"
+   }
+  },
+  {
+   "day": "2026-10-13",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-10-13",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -750.52,
+    "x@205": 255,
+    "gross": -494.0,
+    "fees_only": -545.52,
+    "old@205": -750.52,
+    "state@400": "ENTERED",
+    "net@400": -945.52,
+    "x@400": 255,
+    "old@400": -945.52,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 158.75,
+    "x@205": 255,
+    "gross": 429.0,
+    "fees_only": 363.75,
+    "old@205": 158.75,
+    "state@400": "ENTERED",
+    "net@400": -36.25,
+    "x@400": 255,
+    "old@400": -36.25,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-14",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": -481.97,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": -676.97,
+    "state": "UNRESOLVED"
+   },
+   "PE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": -579.41,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": -774.41,
+    "state": "UNRESOLVED"
+   }
+  },
+  {
+   "day": "2026-10-14",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-10-14",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-10-15",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2282.68,
+    "x@205": 105,
+    "gross": 2561.0,
+    "fees_only": 2487.68,
+    "old@205": 2282.68,
+    "state@400": "ENTERED",
+    "net@400": 2087.68,
+    "x@400": 105,
+    "old@400": 2087.68,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3033.92,
+    "x@205": 92,
+    "gross": -2759.25,
+    "fees_only": -2828.92,
+    "old@205": -3033.92,
+    "state@400": "ENTERED",
+    "net@400": -3228.92,
+    "x@400": 92,
+    "old@400": -3228.92,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-15",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1145.97,
+    "x@205": 165,
+    "gross": 1423.5,
+    "fees_only": 1350.97,
+    "old@205": 1145.97,
+    "state@400": "ENTERED",
+    "net@400": 950.97,
+    "x@400": 165,
+    "old@400": 950.97,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1325.87,
+    "x@205": 165,
+    "gross": -1049.75,
+    "fees_only": -1120.87,
+    "old@205": -1325.87,
+    "state@400": "ENTERED",
+    "net@400": -1520.87,
+    "x@400": 165,
+    "old@400": -1520.87,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-15",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 352.96,
+    "x@205": 285,
+    "gross": 627.25,
+    "fees_only": 557.96,
+    "old@205": 352.96,
+    "state@400": "ENTERED",
+    "net@400": 157.96,
+    "x@400": 285,
+    "old@400": 157.96,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1567.04,
+    "x@205": 285,
+    "gross": -1290.25,
+    "fees_only": -1362.04,
+    "old@205": -1567.04,
+    "state@400": "ENTERED",
+    "net@400": -1762.04,
+    "x@400": 285,
+    "old@400": -1762.04,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-16",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": 897.52,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": 702.52,
+    "state": "UNRESOLVED"
+   },
+   "PE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": -1457.61,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": -1652.61,
+    "state": "UNRESOLVED"
+   }
+  },
+  {
+   "day": "2026-10-16",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-10-16",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-10-19",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -656.95,
+    "x@205": 105,
+    "gross": -390.0,
+    "fees_only": -451.95,
+    "old@205": -656.95,
+    "state@400": "ENTERED",
+    "net@400": -851.95,
+    "x@400": 105,
+    "old@400": -851.95,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3044.75,
+    "x@205": 75,
+    "gross": -2782.0,
+    "fees_only": -2839.75,
+    "old@205": -3044.75,
+    "state@400": "ENTERED",
+    "net@400": -3239.75,
+    "x@400": 75,
+    "old@400": -3239.75,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-19",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3169.96,
+    "x@205": 144,
+    "gross": -2908.75,
+    "fees_only": -2964.96,
+    "old@205": -3169.96,
+    "state@400": "ENTERED",
+    "net@400": -3131.41,
+    "x@400": 143,
+    "old@400": -3131.41,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 3422.82,
+    "x@205": 165,
+    "gross": 3695.25,
+    "fees_only": 3627.82,
+    "old@205": 3422.82,
+    "state@400": "ENTERED",
+    "net@400": 3227.82,
+    "x@400": 165,
+    "old@400": 3227.82,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-19",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1976.37,
+    "x@205": 255,
+    "gross": -1719.25,
+    "fees_only": -1771.37,
+    "old@205": -1976.37,
+    "state@400": "ENTERED",
+    "net@400": -2171.37,
+    "x@400": 255,
+    "old@400": -2171.37,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2741.52,
+    "x@205": 255,
+    "gross": 3016.0,
+    "fees_only": 2946.52,
+    "old@205": 2741.52,
+    "state@400": "ENTERED",
+    "net@400": 2546.52,
+    "x@400": 255,
+    "old@400": 2546.52,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-21",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1642.93,
+    "x@205": 105,
+    "gross": -1365.0,
+    "fees_only": -1437.93,
+    "old@205": -1642.93,
+    "state@400": "ENTERED",
+    "net@400": -1837.93,
+    "x@400": 105,
+    "old@400": -1837.93,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1251.01,
+    "x@205": 105,
+    "gross": 1537.25,
+    "fees_only": 1456.01,
+    "old@205": 1251.01,
+    "state@400": "ENTERED",
+    "net@400": 1056.01,
+    "x@400": 105,
+    "old@400": 1056.01,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-21",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3003.03,
+    "x@205": 129,
+    "gross": -2726.75,
+    "fees_only": -2798.03,
+    "old@205": -3003.03,
+    "state@400": "ENTERED",
+    "net@400": -3198.03,
+    "x@400": 129,
+    "old@400": -3198.03,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 7320.95,
+    "x@205": 165,
+    "gross": 7618.0,
+    "fees_only": 7525.95,
+    "old@205": 7320.95,
+    "state@400": "ENTERED",
+    "net@400": 7125.95,
+    "x@400": 165,
+    "old@400": 7125.95,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-21",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2532.49,
+    "x@205": 285,
+    "gross": -2255.5,
+    "fees_only": -2327.49,
+    "old@205": -2532.49,
+    "state@400": "ENTERED",
+    "net@400": -3165.39,
+    "x@400": 273,
+    "old@400": -3165.39,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1537.12,
+    "x@205": 285,
+    "gross": 1826.5,
+    "fees_only": 1742.12,
+    "old@205": 1537.12,
+    "state@400": "ENTERED",
+    "net@400": 1342.12,
+    "x@400": 285,
+    "old@400": 1342.12,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-22",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2737.6,
+    "x@205": 105,
+    "gross": 3025.75,
+    "fees_only": 2942.6,
+    "old@205": 2737.6,
+    "state@400": "ENTERED",
+    "net@400": 2542.6,
+    "x@400": 105,
+    "old@400": 2542.6,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3181.33,
+    "x@205": 68,
+    "gross": -2905.5,
+    "fees_only": -2976.33,
+    "old@205": -3181.33,
+    "state@400": "ENTERED",
+    "net@400": -3376.33,
+    "x@400": 68,
+    "old@400": -3376.33,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-22",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3468.81,
+    "x@205": 152,
+    "gross": -3194.75,
+    "fees_only": -3263.81,
+    "old@205": -3468.81,
+    "state@400": "ENTERED",
+    "net@400": -3663.81,
+    "x@400": 152,
+    "old@400": -3663.81,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 3455.19,
+    "x@205": 165,
+    "gross": 3744.0,
+    "fees_only": 3660.19,
+    "old@205": 3455.19,
+    "state@400": "ENTERED",
+    "net@400": -3016.48,
+    "x@400": 120,
+    "old@400": -3016.48,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-22",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3298.55,
+    "x@205": 252,
+    "gross": -3025.75,
+    "fees_only": -3093.55,
+    "old@205": -3298.55,
+    "state@400": "ENTERED",
+    "net@400": -3493.55,
+    "x@400": 252,
+    "old@400": -3493.55,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1698.45,
+    "x@205": 285,
+    "gross": 1982.5,
+    "fees_only": 1903.45,
+    "old@205": 1698.45,
+    "state@400": "ENTERED",
+    "net@400": 1503.45,
+    "x@400": 285,
+    "old@400": 1503.45,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-23",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3199.58,
+    "x@205": 59,
+    "gross": -2925.0,
+    "fees_only": -2994.58,
+    "old@205": -3199.58,
+    "state@400": "ENTERED",
+    "net@400": -3018.31,
+    "x@400": 57,
+    "old@400": -3018.31,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 6576.62,
+    "x@205": 105,
+    "gross": 6870.5,
+    "fees_only": 6781.62,
+    "old@205": 6576.62,
+    "state@400": "ENTERED",
+    "net@400": 6381.62,
+    "x@400": 105,
+    "old@400": 6381.62,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-23",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -551.77,
+    "x@205": 165,
+    "gross": -273.0,
+    "fees_only": -346.77,
+    "old@205": -551.77,
+    "state@400": "ENTERED",
+    "net@400": -746.77,
+    "x@400": 165,
+    "old@400": -746.77,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3146.22,
+    "x@205": 123,
+    "gross": -2869.75,
+    "fees_only": -2941.22,
+    "old@205": -3146.22,
+    "state@400": "ENTERED",
+    "net@400": -3341.22,
+    "x@400": 123,
+    "old@400": -3341.22,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-23",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 4805.53,
+    "x@205": 285,
+    "gross": 5092.75,
+    "fees_only": 5010.53,
+    "old@205": 4805.53,
+    "state@400": "ENTERED",
+    "net@400": 4610.53,
+    "x@400": 285,
+    "old@400": 4610.53,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3423.29,
+    "x@205": 264,
+    "gross": -3149.25,
+    "fees_only": -3218.29,
+    "old@205": -3423.29,
+    "state@400": "ENTERED",
+    "net@400": -3618.29,
+    "x@400": 264,
+    "old@400": -3618.29,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-26",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2366.38,
+    "x@205": 105,
+    "gross": -2096.25,
+    "fees_only": -2161.38,
+    "old@205": -2366.38,
+    "state@400": "ENTERED",
+    "net@400": -2561.38,
+    "x@400": 105,
+    "old@400": -2561.38,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1460.75,
+    "x@205": 105,
+    "gross": 1742.0,
+    "fees_only": 1665.75,
+    "old@205": 1460.75,
+    "state@400": "ENTERED",
+    "net@400": 1265.75,
+    "x@400": 105,
+    "old@400": 1265.75,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-26",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3384.23,
+    "x@205": 139,
+    "gross": -3116.75,
+    "fees_only": -3179.23,
+    "old@205": -3384.23,
+    "state@400": "ENTERED",
+    "net@400": -3579.23,
+    "x@400": 139,
+    "old@400": -3579.23,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -277.55,
+    "x@205": 165,
+    "gross": 0.0,
+    "fees_only": -72.55,
+    "old@205": -277.55,
+    "state@400": "ENTERED",
+    "net@400": -472.55,
+    "x@400": 165,
+    "old@400": -472.55,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-26",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1530.46,
+    "x@205": 285,
+    "gross": 1807.0,
+    "fees_only": 1735.46,
+    "old@205": 1530.46,
+    "state@400": "ENTERED",
+    "net@400": 1335.46,
+    "x@400": 285,
+    "old@400": 1335.46,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3079.03,
+    "x@205": 262,
+    "gross": -2811.25,
+    "fees_only": -2874.03,
+    "old@205": -3079.03,
+    "state@400": "ENTERED",
+    "net@400": -3274.03,
+    "x@400": 262,
+    "old@400": -3274.03,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-27",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3247.85,
+    "x@205": 68,
+    "gross": -2983.5,
+    "fees_only": -3042.85,
+    "old@205": -3247.85,
+    "state@400": "ENTERED",
+    "net@400": -3160.64,
+    "x@400": 66,
+    "old@400": -3160.64,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -866.13,
+    "x@205": 105,
+    "gross": -601.25,
+    "fees_only": -661.13,
+    "old@205": -866.13,
+    "state@400": "ENTERED",
+    "net@400": -1061.13,
+    "x@400": 105,
+    "old@400": -1061.13,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-27",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -381.9,
+    "x@205": 165,
+    "gross": -113.75,
+    "fees_only": -176.9,
+    "old@205": -381.9,
+    "state@400": "ENTERED",
+    "net@400": -576.9,
+    "x@400": 165,
+    "old@400": -576.9,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1594.57,
+    "x@205": 165,
+    "gross": -1332.5,
+    "fees_only": -1389.57,
+    "old@205": -1594.57,
+    "state@400": "ENTERED",
+    "net@400": -1789.57,
+    "x@400": 165,
+    "old@400": -1789.57,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-27",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3064.47,
+    "x@205": 254,
+    "gross": -2808.0,
+    "fees_only": -2859.47,
+    "old@205": -3064.47,
+    "state@400": "ENTERED",
+    "net@400": -3019.43,
+    "x@400": 247,
+    "old@400": -3019.43,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 6263.89,
+    "x@205": 255,
+    "gross": 6542.25,
+    "fees_only": 6468.89,
+    "old@205": 6263.89,
+    "state@400": "ENTERED",
+    "net@400": 6068.89,
+    "x@400": 255,
+    "old@400": 6068.89,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-28",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -927.33,
+    "x@205": 105,
+    "gross": -646.75,
+    "fees_only": -722.33,
+    "old@205": -927.33,
+    "state@400": "ENTERED",
+    "net@400": -1122.33,
+    "x@400": 105,
+    "old@400": -1122.33,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-10-28",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 877.66,
+    "x@205": 165,
+    "gross": 1160.25,
+    "fees_only": 1082.66,
+    "old@205": 877.66,
+    "state@400": "ENTERED",
+    "net@400": 682.66,
+    "x@400": 165,
+    "old@400": 682.66,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-10-28",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3092.89,
+    "x@205": 248,
+    "gross": -2817.75,
+    "fees_only": -2887.89,
+    "old@205": -3092.89,
+    "state@400": "ENTERED",
+    "net@400": -3151.65,
+    "x@400": 247,
+    "old@400": -3151.65,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-10-29",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2405.68,
+    "x@205": 105,
+    "gross": 2684.5,
+    "fees_only": 2610.68,
+    "old@205": 2405.68,
+    "state@400": "ENTERED",
+    "net@400": 2210.68,
+    "x@400": 105,
+    "old@400": 2210.68,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-10-29",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -188.24,
+    "x@205": 165,
+    "gross": 87.75,
+    "fees_only": 16.76,
+    "old@205": -188.24,
+    "state@400": "ENTERED",
+    "net@400": -383.24,
+    "x@400": 165,
+    "old@400": -383.24,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -809.5,
+    "x@205": 165,
+    "gross": -526.5,
+    "fees_only": -604.5,
+    "old@205": -809.5,
+    "state@400": "ENTERED",
+    "net@400": -1004.5,
+    "x@400": 165,
+    "old@400": -1004.5,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-29",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2253.18,
+    "x@205": 285,
+    "gross": 2531.75,
+    "fees_only": 2458.18,
+    "old@205": 2253.18,
+    "state@400": "ENTERED",
+    "net@400": 2058.18,
+    "x@400": 285,
+    "old@400": 2058.18,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3095.93,
+    "x@205": 280,
+    "gross": -2817.75,
+    "fees_only": -2890.93,
+    "old@205": -3095.93,
+    "state@400": "ENTERED",
+    "net@400": -3119.01,
+    "x@400": 279,
+    "old@400": -3119.01,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-10-30",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": -1990.18,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": -2185.18,
+    "state": "UNRESOLVED"
+   },
+   "PE": {
+    "state@205": "UNRESOLVED",
+    "net@205": null,
+    "x@205": null,
+    "old@205": 811.75,
+    "state@400": "UNRESOLVED",
+    "net@400": null,
+    "x@400": null,
+    "old@400": 616.75,
+    "state": "UNRESOLVED"
+   }
+  },
+  {
+   "day": "2026-10-30",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-10-30",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state": "NO_QUOTE"
+   },
+   "PE": {
+    "state": "NO_QUOTE"
+   }
+  },
+  {
+   "day": "2026-11-02",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -65.21,
+    "x@205": 105,
+    "gross": 198.25,
+    "fees_only": 139.79,
+    "old@205": -65.21,
+    "state@400": "ENTERED",
+    "net@400": -260.21,
+    "x@400": 105,
+    "old@400": -260.21,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1678.86,
+    "x@205": 105,
+    "gross": -1400.75,
+    "fees_only": -1473.86,
+    "old@205": -1678.86,
+    "state@400": "ENTERED",
+    "net@400": -1873.86,
+    "x@400": 105,
+    "old@400": -1873.86,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-02",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1110.2,
+    "x@205": 165,
+    "gross": -848.25,
+    "fees_only": -905.2,
+    "old@205": -1110.2,
+    "state@400": "ENTERED",
+    "net@400": -1305.2,
+    "x@400": 165,
+    "old@400": -1305.2,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1023.25,
+    "x@205": 165,
+    "gross": 1303.25,
+    "fees_only": 1228.25,
+    "old@205": 1023.25,
+    "state@400": "ENTERED",
+    "net@400": 828.25,
+    "x@400": 165,
+    "old@400": 828.25,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-02",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1434.01,
+    "x@205": 285,
+    "gross": -1173.25,
+    "fees_only": -1229.01,
+    "old@205": -1434.01,
+    "state@400": "ENTERED",
+    "net@400": -1629.01,
+    "x@400": 285,
+    "old@400": -1629.01,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1823.12,
+    "x@205": 285,
+    "gross": 2106.0,
+    "fees_only": 2028.12,
+    "old@205": 1823.12,
+    "state@400": "ENTERED",
+    "net@400": 1628.12,
+    "x@400": 285,
+    "old@400": 1628.12,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-03",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -21.23,
+    "x@205": 105,
+    "gross": 243.75,
+    "fees_only": 183.77,
+    "old@205": -21.23,
+    "state@400": "ENTERED",
+    "net@400": -216.23,
+    "x@400": 105,
+    "old@400": -216.23,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -1120.9,
+    "x@205": 105,
+    "gross": -854.75,
+    "fees_only": -915.9,
+    "old@205": -1120.9,
+    "state@400": "ENTERED",
+    "net@400": -1315.9,
+    "x@400": 105,
+    "old@400": -1315.9,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-03",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1124.45,
+    "x@205": 165,
+    "gross": 1387.75,
+    "fees_only": 1329.45,
+    "old@205": 1124.45,
+    "state@400": "ENTERED",
+    "net@400": 929.45,
+    "x@400": 165,
+    "old@400": 929.45,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2853.39,
+    "x@205": 165,
+    "gross": -2587.0,
+    "fees_only": -2648.39,
+    "old@205": -2853.39,
+    "state@400": "ENTERED",
+    "net@400": -3035.41,
+    "x@400": 162,
+    "old@400": -3035.41,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-03",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1049.69,
+    "x@205": 255,
+    "gross": 1309.75,
+    "fees_only": 1254.69,
+    "old@205": 1049.69,
+    "state@400": "ENTERED",
+    "net@400": 854.69,
+    "x@400": 255,
+    "old@400": 854.69,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2792.4,
+    "x@205": 255,
+    "gross": -2525.25,
+    "fees_only": -2587.4,
+    "old@205": -2792.4,
+    "state@400": "ENTERED",
+    "net@400": -2987.4,
+    "x@400": 255,
+    "old@400": -2987.4,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-04",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3070.11,
+    "x@205": 70,
+    "gross": -2795.0,
+    "fees_only": -2865.11,
+    "old@205": -3070.11,
+    "state@400": "ENTERED",
+    "net@400": -3265.11,
+    "x@400": 70,
+    "old@400": -3265.11,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-11-04",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2229.29,
+    "x@205": 165,
+    "gross": -1953.25,
+    "fees_only": -2024.29,
+    "old@205": -2229.29,
+    "state@400": "ENTERED",
+    "net@400": -2424.29,
+    "x@400": 165,
+    "old@400": -2424.29,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-11-04",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1759.4,
+    "x@205": 285,
+    "gross": 2044.25,
+    "fees_only": 1964.4,
+    "old@205": 1759.4,
+    "state@400": "ENTERED",
+    "net@400": 1564.4,
+    "x@400": 285,
+    "old@400": 1564.4,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3087.99,
+    "x@205": 260,
+    "gross": -2808.0,
+    "fees_only": -2882.99,
+    "old@205": -3087.99,
+    "state@400": "ENTERED",
+    "net@400": -3085.12,
+    "x@400": 259,
+    "old@400": -3085.12,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-05",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -852.08,
+    "x@205": 105,
+    "gross": -578.5,
+    "fees_only": -647.08,
+    "old@205": -852.08,
+    "state@400": "ENTERED",
+    "net@400": -1047.08,
+    "x@400": 105,
+    "old@400": -1047.08,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 539.6,
+    "x@205": 105,
+    "gross": 825.5,
+    "fees_only": 744.6,
+    "old@205": 539.6,
+    "state@400": "ENTERED",
+    "net@400": 344.6,
+    "x@400": 105,
+    "old@400": 344.6,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-05",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 605.08,
+    "x@205": 165,
+    "gross": 884.0,
+    "fees_only": 810.08,
+    "old@205": 605.08,
+    "state@400": "ENTERED",
+    "net@400": 410.08,
+    "x@400": 165,
+    "old@400": 410.08,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -2043.06,
+    "x@205": 165,
+    "gross": -1764.75,
+    "fees_only": -1838.06,
+    "old@205": -2043.06,
+    "state@400": "ENTERED",
+    "net@400": -2238.06,
+    "x@400": 165,
+    "old@400": -2238.06,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-05",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 4595.18,
+    "x@205": 285,
+    "gross": 4878.25,
+    "fees_only": 4800.18,
+    "old@205": 4595.18,
+    "state@400": "ENTERED",
+    "net@400": 4400.18,
+    "x@400": 285,
+    "old@400": 4400.18,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3022.21,
+    "x@205": 267,
+    "gross": -2746.25,
+    "fees_only": -2817.21,
+    "old@205": -3022.21,
+    "state@400": "ENTERED",
+    "net@400": -3217.21,
+    "x@400": 267,
+    "old@400": -3217.21,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-06",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2040.94,
+    "x@205": 105,
+    "gross": -1764.75,
+    "fees_only": -1835.94,
+    "old@205": -2040.94,
+    "state@400": "ENTERED",
+    "net@400": -2235.94,
+    "x@400": 105,
+    "old@400": -2235.94,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2199.23,
+    "x@205": 105,
+    "gross": 2489.5,
+    "fees_only": 2404.23,
+    "old@205": 2199.23,
+    "state@400": "ENTERED",
+    "net@400": -3104.69,
+    "x@400": 74,
+    "old@400": -3104.69,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-06",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 1436.68,
+    "x@205": 165,
+    "gross": 1719.25,
+    "fees_only": 1641.68,
+    "old@205": 1436.68,
+    "state@400": "ENTERED",
+    "net@400": 1241.68,
+    "x@400": 165,
+    "old@400": 1241.68,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3076.68,
+    "x@205": 111,
+    "gross": -2795.0,
+    "fees_only": -2871.68,
+    "old@205": -3076.68,
+    "state@400": "ENTERED",
+    "net@400": -3271.68,
+    "x@400": 111,
+    "old@400": -3271.68,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-06",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 6293.32,
+    "x@205": 285,
+    "gross": 6584.5,
+    "fees_only": 6498.32,
+    "old@205": 6293.32,
+    "state@400": "ENTERED",
+    "net@400": 6098.32,
+    "x@400": 285,
+    "old@400": 6098.32,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3023.61,
+    "x@205": 242,
+    "gross": -2746.25,
+    "fees_only": -2818.61,
+    "old@205": -3023.61,
+    "state@400": "ENTERED",
+    "net@400": -3218.61,
+    "x@400": 242,
+    "old@400": -3218.61,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-09",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3158.35,
+    "x@205": 86,
+    "gross": -2895.75,
+    "fees_only": -2953.35,
+    "old@205": -3158.35,
+    "state@400": "ENTERED",
+    "net@400": -3353.35,
+    "x@400": 86,
+    "old@400": -3353.35,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1220.51,
+    "x@205": 105,
+    "gross": 1495.0,
+    "fees_only": 1425.51,
+    "old@205": 1220.51,
+    "state@400": "ENTERED",
+    "net@400": 1025.51,
+    "x@400": 105,
+    "old@400": 1025.51,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-09",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": 2500.84,
+    "x@205": 165,
+    "gross": 2772.25,
+    "fees_only": 2705.84,
+    "old@205": 2500.84,
+    "state@400": "ENTERED",
+    "net@400": 2305.84,
+    "x@400": 165,
+    "old@400": 2305.84,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -3367.3,
+    "x@205": 138,
+    "gross": -3103.75,
+    "fees_only": -3162.3,
+    "old@205": -3367.3,
+    "state@400": "ENTERED",
+    "net@400": -3130.88,
+    "x@400": 137,
+    "old@400": -3130.88,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-09",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "expiring": true,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2213.23,
+    "x@205": 255,
+    "gross": -1953.25,
+    "fees_only": -2008.23,
+    "old@205": -2213.23,
+    "state@400": "ENTERED",
+    "net@400": -2408.23,
+    "x@400": 255,
+    "old@400": -2408.23,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1862.57,
+    "x@205": 255,
+    "gross": 2135.25,
+    "fees_only": 2067.57,
+    "old@205": 1862.57,
+    "state@400": "ENTERED",
+    "net@400": 1667.57,
+    "x@400": 255,
+    "old@400": 1667.57,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-11",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-11-11",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-11-11",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   },
+   "PE": {
+    "state@205": "UNAFFORDABLE",
+    "net@205": null,
+    "x@205": null,
+    "old@205": null,
+    "state@400": "UNAFFORDABLE",
+    "net@400": null,
+    "x@400": null,
+    "old@400": null,
+    "state": "UNAFFORDABLE"
+   }
+  },
+  {
+   "day": "2026-11-12",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2269.3,
+    "x@205": 105,
+    "gross": -1985.75,
+    "fees_only": -2064.3,
+    "old@205": -2269.3,
+    "state@400": "ENTERED",
+    "net@400": -2464.3,
+    "x@400": 105,
+    "old@400": -2464.3,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1441.39,
+    "x@205": 105,
+    "gross": 1732.25,
+    "fees_only": 1646.39,
+    "old@205": 1441.39,
+    "state@400": "ENTERED",
+    "net@400": 1246.39,
+    "x@400": 105,
+    "old@400": 1246.39,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-12",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -3086.02,
+    "x@205": 147,
+    "gross": -2804.75,
+    "fees_only": -2881.02,
+    "old@205": -3086.02,
+    "state@400": "ENTERED",
+    "net@400": -3281.02,
+    "x@400": 147,
+    "old@400": -3281.02,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 2074.02,
+    "x@205": 165,
+    "gross": 2366.0,
+    "fees_only": 2279.02,
+    "old@205": 2074.02,
+    "state@400": "ENTERED",
+    "net@400": 1879.02,
+    "x@400": 165,
+    "old@400": 1879.02,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-12",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -999.11,
+    "x@205": 285,
+    "gross": -715.0,
+    "fees_only": -794.11,
+    "old@205": -999.11,
+    "state@400": "ENTERED",
+    "net@400": -1194.11,
+    "x@400": 285,
+    "old@400": -1194.11,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -198.48,
+    "x@205": 285,
+    "gross": 87.75,
+    "fees_only": 6.52,
+    "old@205": -198.48,
+    "state@400": "ENTERED",
+    "net@400": -393.48,
+    "x@400": 285,
+    "old@400": -393.48,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-13",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -995.87,
+    "x@205": 105,
+    "gross": -718.25,
+    "fees_only": -790.87,
+    "old@205": -995.87,
+    "state@400": "ENTERED",
+    "net@400": -1190.87,
+    "x@400": 105,
+    "old@400": -1190.87,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -395.24,
+    "x@205": 105,
+    "gross": -110.5,
+    "fees_only": -190.24,
+    "old@205": -395.24,
+    "state@400": "ENTERED",
+    "net@400": -590.24,
+    "x@400": 105,
+    "old@400": -590.24,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-13",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -2337.14,
+    "x@205": 165,
+    "gross": -2063.75,
+    "fees_only": -2132.14,
+    "old@205": -2337.14,
+    "state@400": "ENTERED",
+    "net@400": -3018.71,
+    "x@400": 160,
+    "old@400": -3018.71,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": 1006.26,
+    "x@205": 165,
+    "gross": 1293.5,
+    "fees_only": 1211.26,
+    "old@205": 1006.26,
+    "state@400": "ENTERED",
+    "net@400": 811.26,
+    "x@400": 165,
+    "old@400": 811.26,
+    "state": "ENTERED"
+   }
+  },
+  {
+   "day": "2026-11-13",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "expiring": false,
+   "CE": {
+    "state@205": "ENTERED",
+    "net@205": -1025.8,
+    "x@205": 285,
+    "gross": -750.75,
+    "fees_only": -820.8,
+    "old@205": -1025.8,
+    "state@400": "ENTERED",
+    "net@400": -1220.8,
+    "x@400": 285,
+    "old@400": -1220.8,
+    "state": "ENTERED"
+   },
+   "PE": {
+    "state@205": "ENTERED",
+    "net@205": -160.8,
+    "x@205": 285,
+    "gross": 120.25,
+    "fees_only": 44.2,
+    "old@205": -160.8,
+    "state@400": "ENTERED",
+    "net@400": -355.8,
+    "x@400": 285,
+    "old@400": -355.8,
+    "state": "ENTERED"
+   }
+  }
+ ]
+}

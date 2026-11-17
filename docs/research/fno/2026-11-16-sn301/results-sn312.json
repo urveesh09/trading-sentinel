@@ -1,0 +1,510 @@
+{
+ "gold_trades": 156,
+ "mix_depth_lots": {
+  "PE itm3 x1": 10,
+  "CE itm3 x1": 5,
+  "PE itm1 x2": 13,
+  "CE itm1 x2": 8,
+  "PE itm1 x3": 3,
+  "PE itm0 x2": 1,
+  "PE itm0 x3": 2,
+  "PE itm0 x4": 4,
+  "PE itm1 x4": 6,
+  "PE itm3 x2": 1,
+  "CE itm1 x4": 2,
+  "PE itm1 x6": 33,
+  "PE itm0 x6": 22,
+  "CE itm1 x6": 10,
+  "CE itm0 x4": 1,
+  "PE itm3 x3": 26,
+  "CE itm3 x3": 6,
+  "CE itm0 x6": 3
+ },
+ "grid": {
+  "CE itm0 x1": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 119.0,
+   "real_per_lot": 81.8,
+   "model_per_lot": 87.1,
+   "excess_mean": -5.2,
+   "excess_p90": 0.0
+  },
+  "CE itm0 x2": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 119.0,
+   "real_per_lot": 58.7,
+   "model_per_lot": 63.5,
+   "excess_mean": -4.8,
+   "excess_p90": 0.0
+  },
+  "CE itm0 x3": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 119.0,
+   "real_per_lot": 51.2,
+   "model_per_lot": 55.6,
+   "excess_mean": -4.4,
+   "excess_p90": 0.0
+  },
+  "CE itm0 x4": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 119.0,
+   "real_per_lot": 47.6,
+   "model_per_lot": 51.7,
+   "excess_mean": -4.1,
+   "excess_p90": 0.0
+  },
+  "CE itm0 x6": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 119.0,
+   "real_per_lot": 44.3,
+   "model_per_lot": 47.8,
+   "excess_mean": -3.5,
+   "excess_p90": 1.1
+  },
+  "CE itm1 x1": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 144.0,
+   "real_per_lot": 89.4,
+   "model_per_lot": 94.4,
+   "excess_mean": -5.1,
+   "excess_p90": 0.0
+  },
+  "CE itm1 x2": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 144.0,
+   "real_per_lot": 66.2,
+   "model_per_lot": 70.8,
+   "excess_mean": -4.6,
+   "excess_p90": 0.0
+  },
+  "CE itm1 x3": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 144.0,
+   "real_per_lot": 58.7,
+   "model_per_lot": 63.0,
+   "excess_mean": -4.3,
+   "excess_p90": 0.0
+  },
+  "CE itm1 x4": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 144.0,
+   "real_per_lot": 55.1,
+   "model_per_lot": 59.0,
+   "excess_mean": -3.9,
+   "excess_p90": 0.8
+  },
+  "CE itm1 x6": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 144.0,
+   "real_per_lot": 51.8,
+   "model_per_lot": 55.1,
+   "excess_mean": -3.3,
+   "excess_p90": 1.6
+  },
+  "CE itm2 x1": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 172.3,
+   "real_per_lot": 97.4,
+   "model_per_lot": 103.9,
+   "excess_mean": -6.5,
+   "excess_p90": 0.0
+  },
+  "CE itm2 x2": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 172.3,
+   "real_per_lot": 74.3,
+   "model_per_lot": 80.3,
+   "excess_mean": -6.0,
+   "excess_p90": 0.0
+  },
+  "CE itm2 x3": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 172.3,
+   "real_per_lot": 66.9,
+   "model_per_lot": 72.4,
+   "excess_mean": -5.5,
+   "excess_p90": 0.0
+  },
+  "CE itm2 x4": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 172.3,
+   "real_per_lot": 63.5,
+   "model_per_lot": 68.5,
+   "excess_mean": -5.0,
+   "excess_p90": 0.8
+  },
+  "CE itm2 x6": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 172.3,
+   "real_per_lot": 60.4,
+   "model_per_lot": 64.5,
+   "excess_mean": -4.1,
+   "excess_p90": 1.6
+  },
+  "CE itm3 x1": {
+   "cases": 585,
+   "no_depth_share": 0.0,
+   "premium_mean": 203.8,
+   "real_per_lot": 107.4,
+   "model_per_lot": 113.9,
+   "excess_mean": -6.5,
+   "excess_p90": 0.0
+  },
+  "CE itm3 x2": {
+   "cases": 585,
+   "no_depth_share": 0.0,
+   "premium_mean": 203.8,
+   "real_per_lot": 84.4,
+   "model_per_lot": 90.3,
+   "excess_mean": -5.9,
+   "excess_p90": 0.0
+  },
+  "CE itm3 x3": {
+   "cases": 585,
+   "no_depth_share": 0.0,
+   "premium_mean": 203.8,
+   "real_per_lot": 77.1,
+   "model_per_lot": 82.5,
+   "excess_mean": -5.4,
+   "excess_p90": 0.0
+  },
+  "CE itm3 x4": {
+   "cases": 585,
+   "no_depth_share": 0.0,
+   "premium_mean": 203.8,
+   "real_per_lot": 73.8,
+   "model_per_lot": 78.5,
+   "excess_mean": -4.8,
+   "excess_p90": 1.6
+  },
+  "CE itm3 x6": {
+   "cases": 585,
+   "no_depth_share": 0.002,
+   "premium_mean": 203.8,
+   "real_per_lot": 70.9,
+   "model_per_lot": 74.6,
+   "excess_mean": -3.7,
+   "excess_p90": 2.7
+  },
+  "PE itm0 x1": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 157.2,
+   "real_per_lot": 92.8,
+   "model_per_lot": 98.9,
+   "excess_mean": -6.1,
+   "excess_p90": 0.0
+  },
+  "PE itm0 x2": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 157.2,
+   "real_per_lot": 69.7,
+   "model_per_lot": 75.3,
+   "excess_mean": -5.6,
+   "excess_p90": 0.0
+  },
+  "PE itm0 x3": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 157.2,
+   "real_per_lot": 62.3,
+   "model_per_lot": 67.5,
+   "excess_mean": -5.1,
+   "excess_p90": 0.0
+  },
+  "PE itm0 x4": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 157.2,
+   "real_per_lot": 58.8,
+   "model_per_lot": 63.5,
+   "excess_mean": -4.7,
+   "excess_p90": 0.8
+  },
+  "PE itm0 x6": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 157.2,
+   "real_per_lot": 55.7,
+   "model_per_lot": 59.6,
+   "excess_mean": -3.9,
+   "excess_p90": 1.6
+  },
+  "PE itm1 x1": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 185.6,
+   "real_per_lot": 101.8,
+   "model_per_lot": 108.0,
+   "excess_mean": -6.3,
+   "excess_p90": 0.0
+  },
+  "PE itm1 x2": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 185.6,
+   "real_per_lot": 78.6,
+   "model_per_lot": 84.4,
+   "excess_mean": -5.8,
+   "excess_p90": 0.0
+  },
+  "PE itm1 x3": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 185.6,
+   "real_per_lot": 71.3,
+   "model_per_lot": 76.6,
+   "excess_mean": -5.3,
+   "excess_p90": 1.1
+  },
+  "PE itm1 x4": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 185.6,
+   "real_per_lot": 67.9,
+   "model_per_lot": 72.6,
+   "excess_mean": -4.8,
+   "excess_p90": 1.6
+  },
+  "PE itm1 x6": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 185.6,
+   "real_per_lot": 65.0,
+   "model_per_lot": 68.7,
+   "excess_mean": -3.7,
+   "excess_p90": 2.2
+  },
+  "PE itm2 x1": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 217.3,
+   "real_per_lot": 112.1,
+   "model_per_lot": 118.2,
+   "excess_mean": -6.1,
+   "excess_p90": 0.0
+  },
+  "PE itm2 x2": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 217.3,
+   "real_per_lot": 89.2,
+   "model_per_lot": 94.6,
+   "excess_mean": -5.4,
+   "excess_p90": 0.0
+  },
+  "PE itm2 x3": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 217.3,
+   "real_per_lot": 82.1,
+   "model_per_lot": 86.8,
+   "excess_mean": -4.7,
+   "excess_p90": 1.1
+  },
+  "PE itm2 x4": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 217.3,
+   "real_per_lot": 78.8,
+   "model_per_lot": 82.8,
+   "excess_mean": -4.0,
+   "excess_p90": 2.4
+  },
+  "PE itm2 x6": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 217.3,
+   "real_per_lot": 76.1,
+   "model_per_lot": 78.9,
+   "excess_mean": -2.8,
+   "excess_p90": 3.8
+  },
+  "PE itm3 x1": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 252.1,
+   "real_per_lot": 124.0,
+   "model_per_lot": 126.9,
+   "excess_mean": -2.9,
+   "excess_p90": 6.5
+  },
+  "PE itm3 x2": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 252.1,
+   "real_per_lot": 100.9,
+   "model_per_lot": 103.3,
+   "excess_mean": -2.4,
+   "excess_p90": 6.5
+  },
+  "PE itm3 x3": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 252.1,
+   "real_per_lot": 93.8,
+   "model_per_lot": 95.4,
+   "excess_mean": -1.7,
+   "excess_p90": 6.5
+  },
+  "PE itm3 x4": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 252.1,
+   "real_per_lot": 90.6,
+   "model_per_lot": 91.5,
+   "excess_mean": -0.9,
+   "excess_p90": 7.3
+  },
+  "PE itm3 x6": {
+   "cases": 586,
+   "no_depth_share": 0.0,
+   "premium_mean": 252.1,
+   "real_per_lot": 88.2,
+   "model_per_lot": 87.6,
+   "excess_mean": 0.6,
+   "excess_p90": 8.7
+  }
+ },
+ "grid_cases": 23435,
+ "weighted_excess_per_lot": -3.8,
+ "gold_trades_in_archive": [
+  {
+   "day": "2026-09-24",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 153.25,
+   "real_ask": 156.0,
+   "replay_exit": 257.7,
+   "real_exit_bid": null,
+   "entry_gap_per_lot": 178.8,
+   "exit_gap_per_lot": null
+  },
+  {
+   "day": "2026-09-28",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 144.25,
+   "real_ask": 144.35,
+   "replay_exit": 163.85,
+   "real_exit_bid": 164.9083333333333,
+   "entry_gap_per_lot": 6.5,
+   "exit_gap_per_lot": -68.8
+  },
+  {
+   "day": "2026-09-28",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 128.1,
+   "real_ask": 127.1,
+   "replay_exit": 172.35,
+   "real_exit_bid": null,
+   "entry_gap_per_lot": -65.0,
+   "exit_gap_per_lot": null
+  },
+  {
+   "day": "2026-10-05",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 215.7,
+   "real_ask": 215.125,
+   "replay_exit": 255.9,
+   "real_exit_bid": 256.95,
+   "entry_gap_per_lot": -37.4,
+   "exit_gap_per_lot": -68.2
+  },
+  {
+   "day": "2026-10-07",
+   "depth": 0,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 233.95,
+   "real_ask": 227.45,
+   "replay_exit": 207.0,
+   "real_exit_bid": 214.13333333333333,
+   "entry_gap_per_lot": -422.5,
+   "exit_gap_per_lot": -463.7
+  },
+  {
+   "day": "2026-10-08",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 219.15,
+   "real_ask": 216.0,
+   "replay_exit": 371.6,
+   "real_exit_bid": null,
+   "entry_gap_per_lot": -204.8,
+   "exit_gap_per_lot": null
+  },
+  {
+   "day": "2026-10-09",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 229.95,
+   "real_ask": 225.66666666666666,
+   "replay_exit": 221.7,
+   "real_exit_bid": 221.35,
+   "entry_gap_per_lot": -278.4,
+   "exit_gap_per_lot": 22.8
+  },
+  {
+   "day": "2026-10-14",
+   "depth": 1,
+   "lots": 6,
+   "opt": "CE",
+   "replay_ask": 177.05,
+   "real_ask": null,
+   "replay_exit": 152.25,
+   "real_exit_bid": null,
+   "entry_gap_per_lot": null,
+   "exit_gap_per_lot": null
+  },
+  {
+   "day": "2026-10-21",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 225.95,
+   "real_ask": 229.175,
+   "replay_exit": 414.05,
+   "real_exit_bid": null,
+   "entry_gap_per_lot": 209.6,
+   "exit_gap_per_lot": null
+  },
+  {
+   "day": "2026-10-23",
+   "depth": 1,
+   "lots": 6,
+   "opt": "PE",
+   "replay_ask": 193.95,
+   "real_ask": 190.86666666666667,
+   "replay_exit": 222.3,
+   "real_exit_bid": 230.15,
+   "entry_gap_per_lot": -200.4,
+   "exit_gap_per_lot": -510.2
+  }
+ ],
+ "rule": "model confirmed (weighted excess <= Rs 100 a lot): nothing replayed"
+}

@@ -1,0 +1,1024 @@
+{
+ "live_latency_s": {
+  "paper_rows": {
+   "n": 8,
+   "median": 39.6,
+   "p10": 23.4,
+   "p90": 115.8,
+   "min": 23.2,
+   "max": 189.8
+  },
+  "nifty_evaluations": {
+   "n": 694,
+   "median": 45.3,
+   "p10": 10.3,
+   "p90": 82.8,
+   "min": 3.3,
+   "max": 298.2
+  },
+  "nifty_evaluations_within_0_300s": {
+   "n": 694,
+   "median": 45.3,
+   "p10": 10.3,
+   "p90": 82.8,
+   "min": 3.3,
+   "max": 298.2
+  }
+ },
+ "live_paper_rows": [
+  {
+   "id": 23,
+   "bar_ts": "2026-11-02 11:45:00",
+   "entry_time": "2026-11-02T11:50:39.143798+05:30",
+   "lag_s": 39.1,
+   "symbol": "NIFTY26N0323400PE",
+   "ask": 161.9
+  },
+  {
+   "id": 24,
+   "bar_ts": "2026-11-02 12:00:00",
+   "entry_time": "2026-11-02T12:05:40.125329+05:30",
+   "lag_s": 40.1,
+   "symbol": "NIFTY26N0323350CE",
+   "ask": 57.65
+  },
+  {
+   "id": 25,
+   "bar_ts": "2026-11-02 12:05:00",
+   "entry_time": "2026-11-02T12:13:09.837276+05:30",
+   "lag_s": 189.8,
+   "symbol": "NIFTY26N0323400CE",
+   "ask": 60.0
+  },
+  {
+   "id": 92,
+   "bar_ts": "2026-11-05 09:40:00",
+   "entry_time": "2026-11-05T09:45:23.176194+05:30",
+   "lag_s": 23.2,
+   "symbol": "NIFTY26N0924400CE",
+   "ask": 141.75
+  },
+  {
+   "id": 93,
+   "bar_ts": "2026-11-05 10:45:00",
+   "entry_time": "2026-11-05T10:51:24.147244+05:30",
+   "lag_s": 84.1,
+   "symbol": "NIFTY26N0924350CE",
+   "ask": 154.0
+  },
+  {
+   "id": 94,
+   "bar_ts": "2026-11-05 11:25:00",
+   "entry_time": "2026-11-05T11:30:25.076531+05:30",
+   "lag_s": 25.1,
+   "symbol": "NIFTY26N0924400CE",
+   "ask": 152.95
+  },
+  {
+   "id": 161,
+   "bar_ts": "2026-11-11 10:05:00",
+   "entry_time": "2026-11-11T10:10:52.666924+05:30",
+   "lag_s": 52.7,
+   "symbol": "NIFTY26N1725450PE",
+   "ask": 279.65
+  },
+  {
+   "id": 162,
+   "bar_ts": "2026-11-11 14:10:00",
+   "entry_time": "2026-11-11T14:15:23.455008+05:30",
+   "lag_s": 23.5,
+   "symbol": "NIFTY26N1725400PE",
+   "ask": 297.75
+  }
+ ],
+ "archive_check": [
+  {
+   "id": 23,
+   "lag_s": 39.1,
+   "live_ask": 161.9,
+   "ask_bar_end_minute_last": 159.3,
+   "ask_next_minute_last": 164.0
+  },
+  {
+   "id": 24,
+   "lag_s": 40.1,
+   "live_ask": 57.65,
+   "ask_bar_end_minute_last": 57.25,
+   "ask_next_minute_last": 58.05
+  },
+  {
+   "id": 25,
+   "lag_s": 189.8,
+   "live_ask": 60.0,
+   "ask_bar_end_minute_last": 50.25,
+   "ask_next_minute_last": 55.25
+  },
+  {
+   "id": 92,
+   "lag_s": 23.2,
+   "live_ask": 141.75,
+   "ask_bar_end_minute_last": 139.7,
+   "ask_next_minute_last": 145.1
+  },
+  {
+   "id": 93,
+   "lag_s": 84.1,
+   "live_ask": 154.0,
+   "ask_bar_end_minute_last": 157.1,
+   "ask_next_minute_last": 154.75
+  },
+  {
+   "id": 94,
+   "lag_s": 25.1,
+   "live_ask": 152.95,
+   "ask_bar_end_minute_last": 151.75,
+   "ask_next_minute_last": 153.9
+  },
+  {
+   "id": 161,
+   "lag_s": 52.7,
+   "live_ask": 279.65,
+   "ask_bar_end_minute_last": 279.15,
+   "ask_next_minute_last": 279.4
+  },
+  {
+   "id": 162,
+   "lag_s": 23.5,
+   "live_ask": 297.75,
+   "ask_bar_end_minute_last": 298.9,
+   "ask_next_minute_last": 307.3
+  }
+ ],
+ "replay_latency_minutes_after_bar_end_minute": {
+  "2022 +0 min": 23,
+  "2022 +1 min": 10,
+  "2022 +2+ min": 2,
+  "2023-2026 +0 min": 119,
+  "2023-2026 +1 min": 57,
+  "2023-2026 +2+ min": 12
+ },
+ "diagnostic_later_entries": {
+  "2022 later entry: N11 contract traded at the bar-end minute": 22,
+  "2023-2026 later entry: N11 contract traded at the bar-end minute": 134
+ },
+ "cells": {
+  "GOLD_30K 2022 @205": {
+   "gold": {
+    "net": -15281,
+    "by_year": {
+     "2022": -15281
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 53896,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -80.4,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -16661,
+    "by_year": {
+     "2022": -16661
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 55722,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -87.7,
+    "final_wallet": 30000
+   },
+   "diff_total": -1380,
+   "diff_by_year": {
+    "2022": -1380
+   },
+   "diff_ci90": [
+    -4238,
+    663
+   ],
+   "sessions": 190,
+   "sessions_changed": 9,
+   "most_affected_session": [
+    "2022-11-18",
+    -1650
+   ],
+   "diff_without_most_affected": 270,
+   "worst_day": [
+    -5992,
+    -5992
+   ],
+   "losing_day_sum": [
+    -53896,
+    -55722
+   ],
+   "worst_month": [
+    -9276,
+    -9276
+   ],
+   "refilled": [
+    53896,
+    55722
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     12022,
+     12022
+    ],
+    [
+     "2022-03-09",
+     7969,
+     8625
+    ],
+    [
+     "2022-12-30",
+     6194,
+     6194
+    ],
+    [
+     "2022-10-11",
+     4887,
+     4887
+    ],
+    [
+     "2022-03-21",
+     3887,
+     3887
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 4,
+   "adds_challenger": 5,
+   "moved": {
+    "moved_earlier": 9
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 9
+  },
+  "GOLD_30K 2022 @400": {
+   "gold": {
+    "net": -23511,
+    "by_year": {
+     "2022": -23511
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 59839,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -123.7,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -25086,
+    "by_year": {
+     "2022": -25086
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 61860,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -132.0,
+    "final_wallet": 30000
+   },
+   "diff_total": -1575,
+   "diff_by_year": {
+    "2022": -1575
+   },
+   "diff_ci90": [
+    -4823,
+    663
+   ],
+   "sessions": 190,
+   "sessions_changed": 9,
+   "most_affected_session": [
+    "2022-11-18",
+    -1845
+   ],
+   "diff_without_most_affected": 270,
+   "worst_day": [
+    -5994,
+    -5994
+   ],
+   "losing_day_sum": [
+    -59839,
+    -61860
+   ],
+   "worst_month": [
+    -9667,
+    -9667
+   ],
+   "refilled": [
+    59839,
+    61860
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     11632,
+     11632
+    ],
+    [
+     "2022-03-09",
+     7189,
+     7845
+    ],
+    [
+     "2022-12-30",
+     5999,
+     5999
+    ],
+    [
+     "2022-10-11",
+     4692,
+     4692
+    ],
+    [
+     "2022-03-21",
+     3692,
+     3692
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 4,
+   "adds_challenger": 5,
+   "moved": {
+    "moved_earlier": 9
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 9
+  },
+  "GOLD_30K 2023-2026 @205": {
+   "gold": {
+    "net": 850883,
+    "by_year": {
+     "2023": -12107,
+     "2024": 187476,
+     "2025": 292811,
+     "2026": 382702
+    },
+    "months_positive": 25,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 562130,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1146.7,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 866279,
+    "by_year": {
+     "2023": -13659,
+     "2024": 194856,
+     "2025": 293997,
+     "2026": 391085
+    },
+    "months_positive": 24,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 547608,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1167.5,
+    "final_wallet": 101250
+   },
+   "diff_total": 15397,
+   "diff_by_year": {
+    "2023": -1552,
+    "2024": 7380,
+    "2025": 1186,
+    "2026": 8383
+   },
+   "diff_ci90": [
+    -7153,
+    39860
+   ],
+   "sessions": 742,
+   "sessions_changed": 56,
+   "most_affected_session": [
+    "2024-01-03",
+    9113
+   ],
+   "diff_without_most_affected": 6283,
+   "worst_day": [
+    -21113,
+    -21113
+   ],
+   "losing_day_sum": [
+    -562130,
+    -547608
+   ],
+   "worst_month": [
+    -38531,
+    -38531
+   ],
+   "refilled": [
+    562130,
+    547608
+   ],
+   "gold_top5": [
+    [
+     "2025-01-21",
+     75503,
+     75503
+    ],
+    [
+     "2025-02-11",
+     73797,
+     73797
+    ],
+    [
+     "2026-10-21",
+     71732,
+     71732
+    ],
+    [
+     "2026-01-23",
+     69669,
+     68674
+    ],
+    [
+     "2025-01-06",
+     60273,
+     60526
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 62,
+   "adds_challenger": 60,
+   "moved": {
+    "moved_earlier": 56
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 56
+  },
+  "GOLD_30K 2023-2026 @400": {
+   "gold": {
+    "net": 495597,
+    "by_year": {
+     "2023": -20385,
+     "2024": 86356,
+     "2025": 92429,
+     "2026": 337198
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 494651,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 667.9,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 512772,
+    "by_year": {
+     "2023": -21724,
+     "2024": 87711,
+     "2025": 101204,
+     "2026": 345581
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 498301,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 691.1,
+    "final_wallet": 101250
+   },
+   "diff_total": 17175,
+   "diff_by_year": {
+    "2023": -1338,
+    "2024": 1355,
+    "2025": 8776,
+    "2026": 8383
+   },
+   "diff_ci90": [
+    -15114,
+    50802
+   ],
+   "sessions": 742,
+   "sessions_changed": 59,
+   "most_affected_session": [
+    "2025-01-21",
+    14637
+   ],
+   "diff_without_most_affected": 2538,
+   "worst_day": [
+    -20202,
+    -20202
+   ],
+   "losing_day_sum": [
+    -494651,
+    -498301
+   ],
+   "worst_month": [
+    -41913,
+    -41913
+   ],
+   "refilled": [
+    494651,
+    498301
+   ],
+   "gold_top5": [
+    [
+     "2026-10-21",
+     70562,
+     70562
+    ],
+    [
+     "2026-01-23",
+     67719,
+     66724
+    ],
+    [
+     "2026-10-08",
+     56691,
+     57023
+    ],
+    [
+     "2026-09-24",
+     55479,
+     62859
+    ],
+    [
+     "2026-03-19",
+     49517,
+     49517
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 54,
+   "adds_challenger": 53,
+   "moved": {
+    "moved_earlier": 56
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 56
+  },
+  "ONE_15K 2022 @205": {
+   "gold": {
+    "net": -9702,
+    "by_year": {
+     "2022": -9702
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -5335,
+    "worst_day": -2998,
+    "refilled": 35950,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -51.1,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -9647,
+    "by_year": {
+     "2022": -9647
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -5377,
+    "worst_day": -2998,
+    "refilled": 36034,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -50.8,
+    "final_wallet": 15000
+   },
+   "diff_total": 55,
+   "diff_by_year": {
+    "2022": 55
+   },
+   "diff_ci90": [
+    -520,
+    624
+   ],
+   "sessions": 190,
+   "sessions_changed": 9,
+   "most_affected_session": [
+    "2022-03-09",
+    328
+   ],
+   "diff_without_most_affected": -273,
+   "worst_day": [
+    -2998,
+    -2998
+   ],
+   "losing_day_sum": [
+    -35950,
+    -36034
+   ],
+   "worst_month": [
+    -5335,
+    -5377
+   ],
+   "refilled": [
+    35950,
+    36034
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     5988,
+     5988
+    ],
+    [
+     "2022-12-30",
+     5554,
+     5554
+    ],
+    [
+     "2022-10-11",
+     4109,
+     4109
+    ],
+    [
+     "2022-03-09",
+     3937,
+     4265
+    ],
+    [
+     "2022-03-21",
+     3729,
+     3729
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 0,
+   "adds_challenger": 0,
+   "moved": {
+    "moved_earlier": 9
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 9
+  },
+  "ONE_15K 2022 @400": {
+   "gold": {
+    "net": -15627,
+    "by_year": {
+     "2022": -15627
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -6384,
+    "worst_day": -2999,
+    "refilled": 40260,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -82.2,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -15617,
+    "by_year": {
+     "2022": -15617
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -6471,
+    "worst_day": -2999,
+    "refilled": 40390,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -82.2,
+    "final_wallet": 15000
+   },
+   "diff_total": 10,
+   "diff_by_year": {
+    "2022": 10
+   },
+   "diff_ci90": [
+    -611,
+    611
+   ],
+   "sessions": 190,
+   "sessions_changed": 9,
+   "most_affected_session": [
+    "2022-03-09",
+    328
+   ],
+   "diff_without_most_affected": -319,
+   "worst_day": [
+    -2999,
+    -2999
+   ],
+   "losing_day_sum": [
+    -40260,
+    -40390
+   ],
+   "worst_month": [
+    -6384,
+    -6471
+   ],
+   "refilled": [
+    40260,
+    40390
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     5793,
+     5793
+    ],
+    [
+     "2022-12-30",
+     5359,
+     5359
+    ],
+    [
+     "2022-10-11",
+     3914,
+     3914
+    ],
+    [
+     "2022-03-09",
+     3547,
+     3875
+    ],
+    [
+     "2022-03-21",
+     3534,
+     3534
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 0,
+   "adds_challenger": 0,
+   "moved": {
+    "moved_earlier": 9
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 9
+  },
+  "ONE_15K 2023-2026 @205": {
+   "gold": {
+    "net": 151155,
+    "by_year": {
+     "2023": 397,
+     "2024": 52158,
+     "2025": 48506,
+     "2026": 50094
+    },
+    "months_positive": 26,
+    "months": 46,
+    "worst_month": -6007,
+    "worst_day": -2998,
+    "refilled": 101145,
+    "trades": 140,
+    "sessions": 742,
+    "per_session": 203.7,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": 137816,
+    "by_year": {
+     "2023": -2439,
+     "2024": 55554,
+     "2025": 34029,
+     "2026": 50673
+    },
+    "months_positive": 26,
+    "months": 46,
+    "worst_month": -6075,
+    "worst_day": -2997,
+    "refilled": 102533,
+    "trades": 140,
+    "sessions": 742,
+    "per_session": 185.7,
+    "final_wallet": 15000
+   },
+   "diff_total": -13339,
+   "diff_by_year": {
+    "2023": -2836,
+    "2024": 3396,
+    "2025": -14477,
+    "2026": 579
+   },
+   "diff_ci90": [
+    -39206,
+    4254
+   ],
+   "sessions": 742,
+   "sessions_changed": 52,
+   "most_affected_session": [
+    "2025-01-06",
+    -12501
+   ],
+   "diff_without_most_affected": -838,
+   "worst_day": [
+    -2998,
+    -2997
+   ],
+   "losing_day_sum": [
+    -101145,
+    -102533
+   ],
+   "worst_month": [
+    -6007,
+    -6075
+   ],
+   "refilled": [
+    101145,
+    102533
+   ],
+   "gold_top5": [
+    [
+     "2024-11-12",
+     13162,
+     13162
+    ],
+    [
+     "2023-12-13",
+     12021,
+     8878
+    ],
+    [
+     "2026-10-21",
+     11916,
+     11916
+    ],
+    [
+     "2025-01-21",
+     11696,
+     11696
+    ],
+    [
+     "2024-01-10",
+     10130,
+     10130
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 9,
+   "adds_challenger": 9,
+   "moved": {
+    "moved_earlier": 58
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 53
+  },
+  "ONE_15K 2023-2026 @400": {
+   "gold": {
+    "net": 82725,
+    "by_year": {
+     "2023": -19682,
+     "2024": 46697,
+     "2025": 25398,
+     "2026": 30311
+    },
+    "months_positive": 24,
+    "months": 46,
+    "worst_month": -6787,
+    "worst_day": -3325,
+    "refilled": 124962,
+    "trades": 140,
+    "sessions": 742,
+    "per_session": 111.5,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": 74476,
+    "by_year": {
+     "2023": -19384,
+     "2024": 49704,
+     "2025": 13286,
+     "2026": 30871
+    },
+    "months_positive": 24,
+    "months": 46,
+    "worst_month": -6855,
+    "worst_day": -3231,
+    "refilled": 126198,
+    "trades": 140,
+    "sessions": 742,
+    "per_session": 100.4,
+    "final_wallet": 15000
+   },
+   "diff_total": -8249,
+   "diff_by_year": {
+    "2023": 297,
+    "2024": 3007,
+    "2025": -12113,
+    "2026": 559
+   },
+   "diff_ci90": [
+    -29150,
+    7046
+   ],
+   "sessions": 742,
+   "sessions_changed": 52,
+   "most_affected_session": [
+    "2025-09-26",
+    -10585
+   ],
+   "diff_without_most_affected": 2336,
+   "worst_day": [
+    -3325,
+    -3231
+   ],
+   "losing_day_sum": [
+    -124962,
+    -126198
+   ],
+   "worst_month": [
+    -6787,
+    -6855
+   ],
+   "refilled": [
+    124962,
+    126198
+   ],
+   "gold_top5": [
+    [
+     "2024-11-12",
+     12967,
+     12967
+    ],
+    [
+     "2026-10-21",
+     11721,
+     11721
+    ],
+    [
+     "2025-01-21",
+     11306,
+     11306
+    ],
+    [
+     "2024-01-10",
+     9545,
+     9545
+    ],
+    [
+     "2026-10-08",
+     9409,
+     9465
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 9,
+   "adds_challenger": 9,
+   "moved": {
+    "moved_earlier": 58
+   },
+   "missed": [],
+   "new": [],
+   "entry_minute_changed": 53
+  }
+ },
+ "verdict": {
+  "FAIL": {
+   "paired_positive_everywhere": false,
+   "missed_gold_winners": 0
+  }
+ }
+}

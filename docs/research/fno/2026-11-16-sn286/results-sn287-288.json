@@ -1,0 +1,102 @@
+{
+ "SN287": {
+  "sessions": 7,
+  "alert_sessions": 4,
+  "per_session": [
+   {
+    "day": "2026-10-27",
+    "alert": false
+   },
+   {
+    "day": "2026-10-28",
+    "alert": false
+   },
+   {
+    "day": "2026-10-29",
+    "alert": true,
+    "alert_minute": 74,
+    "change_after_alert_pct_of_value_at_alert": -382.8,
+    "share_from_open_inventory": -0.276,
+    "share_from_later_entries": 1.276,
+    "later_trips": 31,
+    "open_trips_at_alert": 3,
+    "close_all_vs_actual_sign": 1,
+    "no_new_vs_actual_sign": 1,
+    "close_all_better_than_random_clock_share": 0.915,
+    "no_new_better_than_random_clock_share": 1.0
+   },
+   {
+    "day": "2026-10-30",
+    "alert": false
+   },
+   {
+    "day": "2026-11-02",
+    "alert": true,
+    "alert_minute": 18,
+    "change_after_alert_pct_of_value_at_alert": 81.4,
+    "share_from_open_inventory": 3.215,
+    "share_from_later_entries": -2.215,
+    "later_trips": 40,
+    "open_trips_at_alert": 3,
+    "close_all_vs_actual_sign": -1,
+    "no_new_vs_actual_sign": 1,
+    "close_all_better_than_random_clock_share": 0.076,
+    "no_new_better_than_random_clock_share": 0.89
+   },
+   {
+    "day": "2026-11-03",
+    "alert": true,
+    "alert_minute": 25,
+    "change_after_alert_pct_of_value_at_alert": 198.5,
+    "share_from_open_inventory": -0.014,
+    "share_from_later_entries": 1.014,
+    "later_trips": 32,
+    "open_trips_at_alert": 1,
+    "close_all_vs_actual_sign": -1,
+    "no_new_vs_actual_sign": -1,
+    "close_all_better_than_random_clock_share": 0.09,
+    "no_new_better_than_random_clock_share": 0.128
+   },
+   {
+    "day": "2026-11-04",
+    "alert": true,
+    "alert_minute": 8,
+    "change_after_alert_pct_of_value_at_alert": -4773.8,
+    "share_from_open_inventory": -0.071,
+    "share_from_later_entries": 1.071,
+    "later_trips": 23,
+    "open_trips_at_alert": 2,
+    "close_all_vs_actual_sign": 1,
+    "no_new_vs_actual_sign": 1,
+    "close_all_better_than_random_clock_share": 0.835,
+    "no_new_better_than_random_clock_share": 0.955
+   }
+  ],
+  "pooled_shares_of_after_alert_change": {
+   "open_inventory": -0.453,
+   "later_entries": 1.453
+  },
+  "arms_vs_actual_sessions_better": {
+   "close_all_at_alert": 2,
+   "no_new_entries_after_alert": 3,
+   "of": 4
+  },
+  "arms_vs_random_clocks": {
+   "close_all: alert better than its random-clock mean in sessions": 2,
+   "no_new: alert better than its random-clock mean in sessions": 3
+  }
+ },
+ "SN288": {
+  "buy_events": 193,
+  "sessions": 6,
+  "partner_exec_lift_2min_pct": -0.22,
+  "control_exec_lift_2min_pct": 0.09,
+  "partner_exec_lift_1min_pct": 0.08,
+  "control_exec_lift_1min_pct": -0.08,
+  "partner_per_lot_2min_after_costs": -320,
+  "control_per_lot_2min_after_costs": -281,
+  "fill_vs_snapshot_ask_pct_median": 0.35,
+  "sessions_partner_beats_control": 2,
+  "sign_test_p_one_sided": 0.8906
+ }
+}

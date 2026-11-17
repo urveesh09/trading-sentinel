@@ -1,0 +1,53 @@
+{
+ "2022": {
+  "trades": 30,
+  "with_z": 30,
+  "agree": 13,
+  "disagree": 17,
+  "agree_minus_disagree_per_trade": -1181.4,
+  "mean_agree": -1178.8,
+  "mean_disagree": 2.6,
+  "ci90": [
+   -3413.9,
+   910.5
+  ]
+ },
+ "2023-26": {
+  "trades": 156,
+  "with_z": 155,
+  "agree": 74,
+  "disagree": 81,
+  "agree_minus_disagree_per_trade": 6125.3,
+  "mean_agree": 8350.0,
+  "mean_disagree": 2224.6,
+  "ci90": [
+   809.7,
+   11589.2
+  ]
+ },
+ "pooled": {
+  "trades": 186,
+  "with_z": 185,
+  "agree": 87,
+  "disagree": 98,
+  "agree_minus_disagree_per_trade": 5086.9,
+  "mean_agree": 6926.1,
+  "mean_disagree": 1839.2,
+  "ci90": [
+   484.5,
+   9799.0
+  ]
+ },
+ "placebo": {
+  "shifts": 200,
+  "p05": -4187.6,
+  "p95": 4593.6,
+  "share_beyond_observed": 0.03
+ },
+ "worth_forward_look": false,
+ "checks": {
+  "same_sign_both_periods": false,
+  "pooled_ci_excludes_0": true,
+  "beyond_placebo": true
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "slot": "SN466",
+ "verdict": "BLOCKED (as specified: no consistent venue aggregate of FII/FPI cash flows is publicly obtainable as static files before 10:00 IST without the NSE website API, whose automated access was refused in SN430 and is not worked around)",
+ "probe_nov17": [
+  {"url": "https://nsearchives.nseindia.com/content/fo/fii_stats_28-Oct-2026.xls", "http": 200, "what": "FII derivatives statistics (index futures / options buy-sell and OI): a positioning field, not cash"},
+  {"url": "https://nsearchives.nseindia.com/content/equities/fii_dii_28102026.csv", "http": 404, "what": "no static cash FII/DII file at this path"},
+  {"url": "https://www.fpi.nsdl.co.in/web/Reports/Latest.aspx", "http": 200, "what": "NSDL FPI daily trends (custodian-reported)"},
+  {"url": "https://www.fpi.nsdl.co.in/web/Reports/Archive.aspx", "http": 200, "what": "NSDL archive behind ASP.NET form postbacks"}
+ ],
+ "nsdl_substitute": "custodian-reported (not a venue aggregate), published about one session after the trade date, so at 10:00 the latest is two sessions stale; served through form postbacks; usable only if the owner approves it as a different series",
+ "nothing_joined_to_prices": true,
+ "positioning_family_note": "SN456 (futures positioning) closed with no forecast value, so the family's increment test has nothing to add to"
+}

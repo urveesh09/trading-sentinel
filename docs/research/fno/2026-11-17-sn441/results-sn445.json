@@ -1,0 +1,639 @@
+{
+ "A_paper_rounds": {
+  "rounds": 41,
+  "extra_complete_bar_per_lot": {
+   "mean": 96.5,
+   "median": 13.0,
+   "p90": 490.8,
+   "share_above_205": 0.244
+  },
+  "archive_entry": {
+   "n": 13,
+   "displacement_s_median": 41.1,
+   "paper_minus_walk_per_lot_mean": 103.5,
+   "paper_minus_walk_per_lot_median": 58.5,
+   "market_move_per_lot_mean": 84.3
+  },
+  "archive_exit": {
+   "n": 13,
+   "displacement_s_median": 29.4,
+   "paper_minus_walk_per_lot_mean": 290.0,
+   "paper_minus_walk_per_lot_median": 113.8,
+   "market_move_per_lot_mean": 235.2
+  },
+  "fees_per_lot_median": 66.5,
+  "rows": [
+   {
+    "day": "2026-07-16",
+    "lots": 1,
+    "hour": 11,
+    "extra_complete_bar_per_lot": 393.25,
+    "fees_per_lot": 68.74
+   },
+   {
+    "day": "2026-07-16",
+    "lots": 1,
+    "hour": 13,
+    "extra_complete_bar_per_lot": -97.5,
+    "fees_per_lot": 72.28
+   },
+   {
+    "day": "2026-07-20",
+    "lots": 2,
+    "hour": 12,
+    "extra_complete_bar_per_lot": 78.0,
+    "fees_per_lot": 36.26
+   },
+   {
+    "day": "2026-07-22",
+    "lots": 1,
+    "hour": 10,
+    "extra_complete_bar_per_lot": 620.75,
+    "fees_per_lot": 75.42
+   },
+   {
+    "day": "2026-07-23",
+    "lots": 1,
+    "hour": 12,
+    "extra_complete_bar_per_lot": -399.75,
+    "fees_per_lot": 73.32
+   },
+   {
+    "day": "2026-07-24",
+    "lots": 1,
+    "hour": 10,
+    "extra_complete_bar_per_lot": -139.75,
+    "fees_per_lot": 69.23
+   },
+   {
+    "day": "2026-07-24",
+    "lots": 1,
+    "hour": 10,
+    "extra_complete_bar_per_lot": 351.0,
+    "fees_per_lot": 68.17
+   },
+   {
+    "day": "2026-07-24",
+    "lots": 2,
+    "hour": 11,
+    "extra_complete_bar_per_lot": -409.5,
+    "fees_per_lot": 44.67
+   },
+   {
+    "day": "2026-07-27",
+    "lots": 2,
+    "hour": 13,
+    "extra_complete_bar_per_lot": 65.0,
+    "fees_per_lot": 34.49
+   },
+   {
+    "day": "2026-07-27",
+    "lots": 2,
+    "hour": 14,
+    "extra_complete_bar_per_lot": 494.0,
+    "fees_per_lot": 38.29
+   },
+   {
+    "day": "2026-07-29",
+    "lots": 2,
+    "hour": 11,
+    "extra_complete_bar_per_lot": -61.75,
+    "fees_per_lot": 42.16
+   },
+   {
+    "day": "2026-07-30",
+    "lots": 2,
+    "hour": 12,
+    "extra_complete_bar_per_lot": 630.5,
+    "fees_per_lot": 35.85
+   },
+   {
+    "day": "2026-07-31",
+    "lots": 2,
+    "hour": 12,
+    "extra_complete_bar_per_lot": -22.75,
+    "fees_per_lot": 34.01
+   },
+   {
+    "day": "2026-08-03",
+    "lots": 2,
+    "hour": 10,
+    "extra_complete_bar_per_lot": -13.0,
+    "fees_per_lot": 28.87
+   },
+   {
+    "day": "2026-08-03",
+    "lots": 2,
+    "hour": 12,
+    "extra_complete_bar_per_lot": -0.0,
+    "fees_per_lot": 27.92
+   },
+   {
+    "day": "2026-08-07",
+    "lots": 1,
+    "hour": 11,
+    "extra_complete_bar_per_lot": 26.0,
+    "fees_per_lot": 75.91
+   },
+   {
+    "day": "2026-08-14",
+    "lots": 2,
+    "hour": 13,
+    "extra_complete_bar_per_lot": -42.25,
+    "fees_per_lot": 34.47
+   },
+   {
+    "day": "2026-08-17",
+    "lots": 2,
+    "hour": 10,
+    "extra_complete_bar_per_lot": -182.0,
+    "fees_per_lot": 41.46
+   },
+   {
+    "day": "2026-08-19",
+    "lots": 1,
+    "hour": 12,
+    "extra_complete_bar_per_lot": 3.25,
+    "fees_per_lot": 69.32
+   },
+   {
+    "day": "2026-08-19",
+    "lots": 1,
+    "hour": 14,
+    "extra_complete_bar_per_lot": -370.5,
+    "fees_per_lot": 66.5
+   },
+   {
+    "day": "2026-08-19",
+    "lots": 1,
+    "hour": 14,
+    "extra_complete_bar_per_lot": -208.0,
+    "fees_per_lot": 68.11
+   },
+   {
+    "day": "2026-08-20",
+    "lots": 2,
+    "hour": 10,
+    "extra_complete_bar_per_lot": -68.25,
+    "fees_per_lot": 40.24
+   },
+   {
+    "day": "2026-08-20",
+    "lots": 2,
+    "hour": 11,
+    "extra_complete_bar_per_lot": 165.75,
+    "fees_per_lot": 40.65
+   },
+   {
+    "day": "2026-08-27",
+    "lots": 1,
+    "hour": 12,
+    "extra_complete_bar_per_lot": 13.0,
+    "fees_per_lot": 78.57
+   },
+   {
+    "day": "2026-08-28",
+    "lots": 1,
+    "hour": 12,
+    "extra_complete_bar_per_lot": -100.75,
+    "fees_per_lot": 74.69
+   },
+   {
+    "day": "2026-08-28",
+    "lots": 1,
+    "hour": 12,
+    "extra_complete_bar_per_lot": -87.75,
+    "fees_per_lot": 79.93
+   },
+   {
+    "day": "2026-09-04",
+    "lots": 2,
+    "hour": 12,
+    "extra_complete_bar_per_lot": -39.0,
+    "fees_per_lot": 32.79
+   },
+   {
+    "day": "2026-09-09",
+    "lots": 1,
+    "hour": 10,
+    "extra_complete_bar_per_lot": 29.25,
+    "fees_per_lot": 73.4
+   },
+   {
+    "day": "2026-09-17",
+    "lots": 2,
+    "hour": 12,
+    "extra_complete_bar_per_lot": -19.5,
+    "fees_per_lot": 42.98,
+    "entry_displacement_s": 7.9,
+    "entry_paper_minus_walk_per_lot": 58.5,
+    "entry_market_move_per_lot": 318.48,
+    "exit_displacement_s": 7.9,
+    "exit_paper_minus_walk_per_lot": -58.5,
+    "exit_market_move_per_lot": 70.77
+   },
+   {
+    "day": "2026-09-21",
+    "lots": 2,
+    "hour": 11,
+    "extra_complete_bar_per_lot": 81.25,
+    "fees_per_lot": 34.4,
+    "entry_displacement_s": 60.4,
+    "entry_paper_minus_walk_per_lot": -42.25,
+    "entry_market_move_per_lot": 204.69,
+    "exit_displacement_s": 29.4,
+    "exit_paper_minus_walk_per_lot": 48.75,
+    "exit_market_move_per_lot": -223.3
+   },
+   {
+    "day": "2026-09-23",
+    "lots": 1,
+    "hour": 11,
+    "extra_complete_bar_per_lot": 169.0,
+    "fees_per_lot": 69.4,
+    "entry_displacement_s": 5.8,
+    "entry_paper_minus_walk_per_lot": 13.0,
+    "entry_market_move_per_lot": 110.91,
+    "exit_displacement_s": 64.9,
+    "exit_paper_minus_walk_per_lot": 360.75,
+    "exit_market_move_per_lot": 480.62
+   },
+   {
+    "day": "2026-09-28",
+    "lots": 2,
+    "hour": 10,
+    "extra_complete_bar_per_lot": 52.0,
+    "fees_per_lot": 39.62,
+    "entry_displacement_s": 59.5,
+    "entry_paper_minus_walk_per_lot": 48.75,
+    "entry_market_move_per_lot": 120.31,
+    "exit_displacement_s": 58.5,
+    "exit_paper_minus_walk_per_lot": 22.75,
+    "exit_market_move_per_lot": 53.47
+   },
+   {
+    "day": "2026-09-28",
+    "lots": 2,
+    "hour": 11,
+    "extra_complete_bar_per_lot": -52.0,
+    "fees_per_lot": 39.84,
+    "entry_displacement_s": 59.5,
+    "entry_paper_minus_walk_per_lot": 110.5,
+    "entry_market_move_per_lot": 61.98,
+    "exit_displacement_s": 58.5,
+    "exit_paper_minus_walk_per_lot": -149.5,
+    "exit_market_move_per_lot": -213.5
+   },
+   {
+    "day": "2026-09-28",
+    "lots": 2,
+    "hour": 13,
+    "extra_complete_bar_per_lot": 315.25,
+    "fees_per_lot": 43.23,
+    "entry_displacement_s": 28.5,
+    "entry_paper_minus_walk_per_lot": 78.0,
+    "entry_market_move_per_lot": -55.23,
+    "exit_displacement_s": 118.5,
+    "exit_paper_minus_walk_per_lot": 536.25,
+    "exit_market_move_per_lot": 469.47
+   },
+   {
+    "day": "2026-09-30",
+    "lots": 1,
+    "hour": 11,
+    "extra_complete_bar_per_lot": -91.0,
+    "fees_per_lot": 77.0,
+    "entry_displacement_s": 40.1,
+    "entry_paper_minus_walk_per_lot": 273.0,
+    "entry_market_move_per_lot": -35.32,
+    "exit_displacement_s": 11.1,
+    "exit_paper_minus_walk_per_lot": 58.5,
+    "exit_market_move_per_lot": -31.79
+   },
+   {
+    "day": "2026-09-30",
+    "lots": 1,
+    "hour": 14,
+    "extra_complete_bar_per_lot": 490.75,
+    "fees_per_lot": 84.33,
+    "entry_displacement_s": 41.1,
+    "entry_paper_minus_walk_per_lot": -120.25,
+    "entry_market_move_per_lot": 146.89,
+    "exit_displacement_s": 12.1,
+    "exit_paper_minus_walk_per_lot": 113.75,
+    "exit_market_move_per_lot": 183.61
+   },
+   {
+    "day": "2026-10-01",
+    "lots": 1,
+    "hour": 12,
+    "extra_complete_bar_per_lot": 1209.0,
+    "fees_per_lot": 92.47,
+    "entry_displacement_s": 29.9,
+    "entry_paper_minus_walk_per_lot": -6.5,
+    "entry_market_move_per_lot": -252.89,
+    "exit_displacement_s": 25.8,
+    "exit_paper_minus_walk_per_lot": 1465.75,
+    "exit_market_move_per_lot": 1392.65
+   },
+   {
+    "day": "2026-10-07",
+    "lots": 1,
+    "hour": 13,
+    "extra_complete_bar_per_lot": 152.75,
+    "fees_per_lot": 73.91,
+    "entry_displacement_s": 45.5,
+    "entry_paper_minus_walk_per_lot": 461.5,
+    "entry_market_move_per_lot": -124.06,
+    "exit_displacement_s": 44.8,
+    "exit_paper_minus_walk_per_lot": 35.75,
+    "exit_market_move_per_lot": 0.0
+   },
+   {
+    "day": "2026-10-07",
+    "lots": 1,
+    "hour": 14,
+    "extra_complete_bar_per_lot": 474.5,
+    "fees_per_lot": 75.49,
+    "entry_displacement_s": 46.5,
+    "entry_paper_minus_walk_per_lot": 143.0,
+    "entry_market_move_per_lot": 143.67,
+    "exit_displacement_s": 45.9,
+    "exit_paper_minus_walk_per_lot": 715.0,
+    "exit_market_move_per_lot": 416.26
+   },
+   {
+    "day": "2026-10-09",
+    "lots": 1,
+    "hour": 9,
+    "extra_complete_bar_per_lot": 162.5,
+    "fees_per_lot": 65.0,
+    "entry_displacement_s": 55.0,
+    "entry_paper_minus_walk_per_lot": -55.25,
+    "entry_market_move_per_lot": 87.73,
+    "exit_displacement_s": 26.4,
+    "exit_paper_minus_walk_per_lot": 318.5,
+    "exit_market_move_per_lot": 459.73
+   },
+   {
+    "day": "2026-10-15",
+    "lots": 1,
+    "hour": 9,
+    "extra_complete_bar_per_lot": 386.75,
+    "fees_per_lot": 71.46,
+    "entry_displacement_s": 31.1,
+    "entry_paper_minus_walk_per_lot": 383.5,
+    "entry_market_move_per_lot": 368.77,
+    "exit_displacement_s": 7.7,
+    "exit_paper_minus_walk_per_lot": 302.25,
+    "exit_market_move_per_lot": -0.0
+   }
+  ]
+ },
+ "B_gold_trades": {
+  "trades_in_window": 10,
+  "states": {
+   "OK": 6,
+   "INSUFFICIENT": 4,
+   "UNRECORDED": 0
+  },
+  "1 lot": {
+   "n": 0,
+   "mean_real_minus_model_per_lot": null,
+   "entry_part": null,
+   "exit_part": null
+  },
+  "2-3 lots": {
+   "n": 0,
+   "mean_real_minus_model_per_lot": null,
+   "entry_part": null,
+   "exit_part": null
+  },
+  "4+ lots": {
+   "n": 6,
+   "mean_real_minus_model_per_lot": 119.9,
+   "entry_part": 49.8,
+   "exit_part": 70.1
+  },
+  "all": {
+   "n": 6,
+   "mean_real_minus_model_per_lot": 119.9,
+   "entry_part": 49.8,
+   "exit_part": 70.1
+  },
+  "rows": [
+   {
+    "day": "2026-09-24",
+    "i": 156,
+    "j": 288,
+    "lots": 6,
+    "strike": 23300,
+    "expiry": "2026-09-29",
+    "opt": "PE",
+    "ask0": 153.25,
+    "model_exit": 257.7,
+    "replay_net": 57234.2,
+    "adds": 3,
+    "real_ask_after": 153.95,
+    "real_ask_before": 156.0,
+    "real_exit_bid": 257.7,
+    "state": "OK",
+    "real_minus_model_per_lot": 45.5,
+    "entry_part_per_lot": 45.5,
+    "exit_part_per_lot": 0.0
+   },
+   {
+    "day": "2026-09-28",
+    "i": 40,
+    "j": 135,
+    "lots": 6,
+    "strike": 23000,
+    "expiry": "2026-09-29",
+    "opt": "PE",
+    "ask0": 144.25,
+    "model_exit": 163.85,
+    "replay_net": 6992.7,
+    "adds": 3,
+    "real_ask_after": 145.1,
+    "real_ask_before": 144.35,
+    "real_exit_bid": null,
+    "state": "INSUFFICIENT"
+   },
+   {
+    "day": "2026-09-28",
+    "i": 261,
+    "j": 332,
+    "lots": 6,
+    "strike": 22950,
+    "expiry": "2026-09-29",
+    "opt": "PE",
+    "ask0": 128.1,
+    "model_exit": 172.35,
+    "replay_net": 27905.9,
+    "adds": 5,
+    "real_ask_after": 126.35833333333333,
+    "real_ask_before": 127.1,
+    "real_exit_bid": 170.04166666666666,
+    "state": "OK",
+    "real_minus_model_per_lot": 36.8,
+    "entry_part_per_lot": -113.2,
+    "exit_part_per_lot": 150.0
+   },
+   {
+    "day": "2026-10-05",
+    "i": 60,
+    "j": 120,
+    "lots": 6,
+    "strike": 22750,
+    "expiry": "2026-10-06",
+    "opt": "PE",
+    "ask0": 215.7,
+    "model_exit": 255.9,
+    "replay_net": 14171.2,
+    "adds": 0,
+    "real_ask_after": 213.76666666666668,
+    "real_ask_before": 215.125,
+    "real_exit_bid": 268.325,
+    "state": "OK",
+    "real_minus_model_per_lot": -933.3,
+    "entry_part_per_lot": -125.7,
+    "exit_part_per_lot": -807.6
+   },
+   {
+    "day": "2026-10-07",
+    "i": 51,
+    "j": 62,
+    "lots": 6,
+    "strike": 22750,
+    "expiry": "2026-10-13",
+    "opt": "PE",
+    "ask0": 233.95,
+    "model_exit": 207.0,
+    "replay_net": -11983.8,
+    "adds": 0,
+    "real_ask_after": 237.83333333333334,
+    "real_ask_before": 227.45,
+    "real_exit_bid": 201.99166666666667,
+    "state": "OK",
+    "real_minus_model_per_lot": 578.0,
+    "entry_part_per_lot": 252.4,
+    "exit_part_per_lot": 325.5
+   },
+   {
+    "day": "2026-10-08",
+    "i": 81,
+    "j": 355,
+    "lots": 6,
+    "strike": 22600,
+    "expiry": "2026-10-13",
+    "opt": "PE",
+    "ask0": 219.15,
+    "model_exit": 371.6,
+    "replay_net": 57861.5,
+    "adds": 0,
+    "real_ask_after": 223.2,
+    "real_ask_before": 216.0,
+    "real_exit_bid": null,
+    "state": "INSUFFICIENT"
+   },
+   {
+    "day": "2026-10-09",
+    "i": 165,
+    "j": 195,
+    "lots": 6,
+    "strike": 22650,
+    "expiry": "2026-10-13",
+    "opt": "PE",
+    "ask0": 229.95,
+    "model_exit": 221.7,
+    "replay_net": -4701.1,
+    "adds": 0,
+    "real_ask_after": 232.7,
+    "real_ask_before": 225.66666666666666,
+    "real_exit_bid": 214.55,
+    "state": "OK",
+    "real_minus_model_per_lot": 643.5,
+    "entry_part_per_lot": 178.8,
+    "exit_part_per_lot": 464.8
+   },
+   {
+    "day": "2026-10-14",
+    "i": 280,
+    "j": 310,
+    "lots": 6,
+    "strike": 22600,
+    "expiry": "2026-10-19",
+    "opt": "CE",
+    "ask0": 177.05,
+    "model_exit": 152.25,
+    "replay_net": -11094.3,
+    "adds": 0,
+    "real_ask_after": null,
+    "real_ask_before": null,
+    "real_exit_bid": null,
+    "state": "INSUFFICIENT"
+   },
+   {
+    "day": "2026-10-21",
+    "i": 85,
+    "j": 355,
+    "lots": 6,
+    "strike": 23100,
+    "expiry": "2026-10-27",
+    "opt": "PE",
+    "ask0": 225.95,
+    "model_exit": 414.05,
+    "replay_net": 71732.0,
+    "adds": 0,
+    "real_ask_after": 223.85,
+    "real_ask_before": 229.175,
+    "real_exit_bid": null,
+    "state": "INSUFFICIENT"
+   },
+   {
+    "day": "2026-10-23",
+    "i": 280,
+    "j": 355,
+    "lots": 6,
+    "strike": 22700,
+    "expiry": "2026-10-27",
+    "opt": "PE",
+    "ask0": 193.95,
+    "model_exit": 222.3,
+    "replay_net": 9643.4,
+    "adds": 1,
+    "real_ask_after": 194.88333333333333,
+    "real_ask_before": 190.86666666666667,
+    "real_exit_bid": 217.86666666666667,
+    "state": "OK",
+    "real_minus_model_per_lot": 348.8,
+    "entry_part_per_lot": 60.7,
+    "exit_part_per_lot": 288.2
+   }
+  ]
+ },
+ "C_dated_stt": {
+  "@205": {
+   "replay_net": 850883,
+   "dated_stt_saving": 5199,
+   "by_year": {
+    "2023": 531,
+    "2024": 1067,
+    "2025": 2768,
+    "2026": 833
+   },
+   "share_of_net": 0.0061
+  },
+  "@400": {
+   "replay_net": 495597,
+   "dated_stt_saving": 3639,
+   "by_year": {
+    "2023": 519,
+    "2024": 596,
+    "2025": 1691,
+    "2026": 833
+   },
+   "share_of_net": 0.0073
+  }
+ }
+}

@@ -1,0 +1,91 @@
+{
+ "hashes": {
+  "hdfc_sec_ex99.htm": "e20d834540065236270a40c3813552697e8ec9122b3b81814e61c05419e5a878",
+  "nse_banking_ixbrl.html": "3773ef903573e1020b5333f34b451e0b5c3840ecd195ced8262bc3efb3c54078"
+ },
+ "nse": {
+  "issuer": "BANK OF INDIA",
+  "nse_symbol": null,
+  "scope": "Standalone",
+  "rounding": "Lakhs",
+  "reporting_quarter": "Second quarter",
+  "periods": [
+   [
+    "01-07-2026",
+    "01-04-2026"
+   ],
+   [
+    "30-09-2026",
+    "30-09-2026"
+   ],
+   [
+    "01-07-2026",
+    "01-04-2026"
+   ],
+   [
+    "30-09-2026",
+    "30-09-2026"
+   ]
+  ],
+  "board_meeting_end": "23-10-2026 16:47:00",
+  "dissemination_clock_from_file_name": "2026-10-23 20:13:32",
+  "interest_components_lakhs": {
+   "Interest or discount on advances or bills": [
+    1547040.0,
+    2982866.0
+   ],
+   "Income on investments": [
+    476047.0,
+    929263.0
+   ],
+   "Interest on balances with reserve bank of India and other inter bank funds": [
+    82535.0,
+    150440.0
+   ],
+   "Others": [
+    17265.0,
+    55251.0
+   ],
+   "Total interest earned": [
+    2122887.0,
+    4117820.0
+   ],
+   "Interest expenses": [
+    1422166.0,
+    2733844.0
+   ]
+  },
+  "components_sum_quarter_matches_total": true,
+  "nii_quarter_lakhs": 700721.0,
+  "nii_ytd_lakhs": 1383976.0,
+  "year_ago_column": false,
+  "nii_quarter_crore": 7007.21,
+  "nii_ytd_crore": 13839.76
+ },
+ "hdfc_fixture": {
+  "sentence_found": true,
+  "growth_pct": 6.4,
+  "now_bn": 326.2,
+  "ago_bn": 306.5,
+  "matches_32615": false,
+  "matches_30653": true,
+  "matches_growth": true,
+  "consolidated_41245_stated": false
+ },
+ "model_arm": {
+  "caveat": "This filing is not comparable year over year on its own: it reports only the quarter 01-07-2026 to 30-09-2026 and the year to date from 01-04-2026, standalone, in lakhs, with no year-ago column, and one interest component is an unspecified 'Others'. A reported NII change needs the prior-year filing or a stated comparative.",
+  "quotes": [
+   "Date of start of reporting period 01-07-2026 01-04-2026",
+   "Nature of report standalone or consolidated Standalone Standalone",
+   "Others 17,265.00 55,251.00 Total interest earned 21,22,887.00 41,17,820.00"
+  ],
+  "quotes_verbatim": [
+   true,
+   true,
+   true
+  ],
+  "citation_correct": true,
+  "latency": "not meaningful (in-session reader)"
+ },
+ "forecast_comparison": "INSUFFICIENT (SN447's 8 reaction sessions are development fixtures; no new session has accrued)"
+}

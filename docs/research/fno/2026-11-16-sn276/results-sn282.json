@@ -1,0 +1,47 @@
+{
+ "not_ported": "EXAM-S (comp_one is NIFTY-only)",
+ "2022 (DEV)": {
+  "hot_days_traded": 2,
+  "trades": 2,
+  "net": -2544,
+  "stress_400": -2934,
+  "late_1": -2325,
+  "by_year": {
+   "2022": -2544
+  }
+ },
+ "2023-26 (in-sample)": {
+  "hot_days_traded": 29,
+  "trades": 37,
+  "net": 4037,
+  "stress_400": -3130,
+  "late_1": 1388,
+  "by_year": {
+   "2023": -1209,
+   "2024": 4918,
+   "2025": -1694,
+   "2026": 2023
+  }
+ },
+ "TEST": {
+  "hot_days_traded": 1,
+  "trades": 1,
+  "net": -1714,
+  "stress_400": -1909,
+  "late_1": -1553,
+  "by_year": {
+   "2026": -1714
+  }
+ },
+ "EXAM-N": {
+  "hot_days_traded": 12,
+  "trades": 12,
+  "net": 132,
+  "stress_400": -2208,
+  "late_1": -2556,
+  "by_year": {
+   "2021": -3157,
+   "2022": 3291
+  }
+ }
+}

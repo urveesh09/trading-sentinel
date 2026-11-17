@@ -1,0 +1,6 @@
+{
+ "SN390": {
+  "verdict": "NOT TRIGGERED",
+  "why": "no candidate passed its own development gate as a trade: SN382 fragile (-7 without the best day, -137.5 at Rs 400), SN385 closed on coverage, SN384 / SN391 / SN393 no; the only survivors are forward tests (fw7a, fw9 the CHEAP-open arm, fw8 signed flow), which must pass on recorder sessions before any shared-wallet replay; sn352.Journal + SN389's deposit ledger are the harness for that replay"
+ }
+}

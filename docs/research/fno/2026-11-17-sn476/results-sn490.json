@@ -1,0 +1,2400 @@
+{
+ "cells": {
+  "SN480 failed add | ONE_15K 2020-21 @205": {
+   "gold": {
+    "net": -35767,
+    "by_year": {
+     "2020": -31576,
+     "2021": -4191
+    },
+    "months_positive": 6,
+    "months": 20,
+    "worst_month": -8802,
+    "worst_day": -2994,
+    "refilled": 73452,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -109.4,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -35953,
+    "by_year": {
+     "2020": -31761,
+     "2021": -4191
+    },
+    "months_positive": 6,
+    "months": 20,
+    "worst_month": -8802,
+    "worst_day": -2994,
+    "refilled": 73638,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -109.9,
+    "final_wallet": 15000
+   },
+   "diff_total": -185,
+   "diff_by_year": {
+    "2020": -185,
+    "2021": 0
+   },
+   "diff_ci90": [
+    -1037,
+    634
+   ],
+   "sessions": 327,
+   "sessions_changed": 4,
+   "most_affected_session": [
+    "2020-07-29",
+    -406
+   ],
+   "diff_without_most_affected": 221,
+   "worst_day": [
+    -2994,
+    -2994
+   ],
+   "losing_day_sum": [
+    -73452,
+    -73638
+   ],
+   "worst_month": [
+    -8802,
+    -8802
+   ],
+   "refilled": [
+    73452,
+    73638
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     10019,
+     10019
+    ],
+    [
+     "2021-02-22",
+     8438,
+     8438
+    ],
+    [
+     "2020-02-28",
+     4922,
+     4922
+    ],
+    [
+     "2020-06-30",
+     2273,
+     2273
+    ],
+    [
+     "2020-06-16",
+     1815,
+     1815
+    ]
+   ],
+   "failed_add_sales": 4,
+   "failed_add_matched": 4,
+   "failed_add_sale_net": -2693,
+   "same_add_pieces_net_in_gold": -2508,
+   "adds_gold": 7,
+   "adds_challenger": 7
+  },
+  "SN480 failed add | ONE_15K 2020-21 @400": {
+   "gold": {
+    "net": -52884,
+    "by_year": {
+     "2020": -42062,
+     "2021": -10822
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -9778,
+    "worst_day": -2995,
+    "refilled": 87038,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -161.7,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -52077,
+    "by_year": {
+     "2020": -41255,
+     "2021": -10822
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -9778,
+    "worst_day": -2995,
+    "refilled": 86230,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -159.3,
+    "final_wallet": 15000
+   },
+   "diff_total": 807,
+   "diff_by_year": {
+    "2020": 807,
+    "2021": 0
+   },
+   "diff_ci90": [
+    -1004,
+    3427
+   ],
+   "sessions": 327,
+   "sessions_changed": 4,
+   "most_affected_session": [
+    "2020-09-29",
+    1310
+   ],
+   "diff_without_most_affected": -502,
+   "worst_day": [
+    -2995,
+    -2995
+   ],
+   "losing_day_sum": [
+    -87038,
+    -86230
+   ],
+   "worst_month": [
+    -9778,
+    -9778
+   ],
+   "refilled": [
+    87038,
+    86230
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     9824,
+     9824
+    ],
+    [
+     "2021-02-22",
+     8243,
+     8243
+    ],
+    [
+     "2020-02-28",
+     4727,
+     4727
+    ],
+    [
+     "2020-06-30",
+     2078,
+     2078
+    ],
+    [
+     "2020-06-16",
+     1620,
+     1620
+    ]
+   ],
+   "failed_add_sales": 4,
+   "failed_add_matched": 4,
+   "failed_add_sale_net": -3473,
+   "same_add_pieces_net_in_gold": -3784,
+   "adds_gold": 7,
+   "adds_challenger": 7
+  },
+  "SN480 failed add | GOLD_30K 2020-21 @205": {
+   "gold": {
+    "net": -64783,
+    "by_year": {
+     "2020": -50837,
+     "2021": -13946
+    },
+    "months_positive": 5,
+    "months": 20,
+    "worst_month": -18870,
+    "worst_day": -5989,
+    "refilled": 136305,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -198.1,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -61897,
+    "by_year": {
+     "2020": -51399,
+     "2021": -10498
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -18870,
+    "worst_day": -5989,
+    "refilled": 122578,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -189.3,
+    "final_wallet": 30000
+   },
+   "diff_total": 2886,
+   "diff_by_year": {
+    "2020": -562,
+    "2021": 3448
+   },
+   "diff_ci90": [
+    -8017,
+    14069
+   ],
+   "sessions": 327,
+   "sessions_changed": 27,
+   "most_affected_session": [
+    "2021-06-18",
+    2046
+   ],
+   "diff_without_most_affected": 840,
+   "worst_day": [
+    -5989,
+    -5989
+   ],
+   "losing_day_sum": [
+    -136305,
+    -122578
+   ],
+   "worst_month": [
+    -18870,
+    -18870
+   ],
+   "refilled": [
+    136305,
+    122578
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     20085,
+     20085
+    ],
+    [
+     "2020-02-28",
+     9892,
+     9892
+    ],
+    [
+     "2021-02-22",
+     9832,
+     9832
+    ],
+    [
+     "2020-06-30",
+     5152,
+     2076
+    ],
+    [
+     "2020-06-16",
+     4765,
+     4765
+    ]
+   ],
+   "failed_add_sales": 27,
+   "failed_add_matched": 27,
+   "failed_add_sale_net": -23493,
+   "same_add_pieces_net_in_gold": -26378,
+   "adds_gold": 34,
+   "adds_challenger": 34
+  },
+  "SN480 failed add | GOLD_30K 2020-21 @400": {
+   "gold": {
+    "net": -93971,
+    "by_year": {
+     "2020": -68513,
+     "2021": -25458
+    },
+    "months_positive": 3,
+    "months": 20,
+    "worst_month": -20626,
+    "worst_day": -5990,
+    "refilled": 158441,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -287.4,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -88809,
+    "by_year": {
+     "2020": -67000,
+     "2021": -21809
+    },
+    "months_positive": 3,
+    "months": 20,
+    "worst_month": -20626,
+    "worst_day": -5990,
+    "refilled": 143398,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -271.6,
+    "final_wallet": 30000
+   },
+   "diff_total": 5163,
+   "diff_by_year": {
+    "2020": 1514,
+    "2021": 3649
+   },
+   "diff_ci90": [
+    -6870,
+    18095
+   ],
+   "sessions": 327,
+   "sessions_changed": 27,
+   "most_affected_session": [
+    "2020-09-29",
+    2734
+   ],
+   "diff_without_most_affected": 2429,
+   "worst_day": [
+    -5990,
+    -5990
+   ],
+   "losing_day_sum": [
+    -158441,
+    -143398
+   ],
+   "worst_month": [
+    -20626,
+    -20626
+   ],
+   "refilled": [
+    158441,
+    143398
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     19695,
+     19695
+    ],
+    [
+     "2021-02-22",
+     9637,
+     9637
+    ],
+    [
+     "2020-02-28",
+     9502,
+     9502
+    ],
+    [
+     "2020-06-30",
+     4762,
+     1686
+    ],
+    [
+     "2020-06-16",
+     4180,
+     4180
+    ]
+   ],
+   "failed_add_sales": 27,
+   "failed_add_matched": 27,
+   "failed_add_sale_net": -28953,
+   "same_add_pieces_net_in_gold": -32977,
+   "adds_gold": 34,
+   "adds_challenger": 34
+  },
+  "SN480 failed add | GOLD_30K 2022 @205": {
+   "gold": {
+    "net": -15281,
+    "by_year": {
+     "2022": -15281
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 53896,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -80.4,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -14266,
+    "by_year": {
+     "2022": -14266
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 52739,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -75.1,
+    "final_wallet": 30000
+   },
+   "diff_total": 1015,
+   "diff_by_year": {
+    "2022": 1015
+   },
+   "diff_ci90": [
+    -879,
+    2997
+   ],
+   "sessions": 190,
+   "sessions_changed": 4,
+   "most_affected_session": [
+    "2022-01-18",
+    943
+   ],
+   "diff_without_most_affected": 72,
+   "worst_day": [
+    -5992,
+    -5992
+   ],
+   "losing_day_sum": [
+    -53896,
+    -52739
+   ],
+   "worst_month": [
+    -9276,
+    -9276
+   ],
+   "refilled": [
+    53896,
+    52739
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     12022,
+     12022
+    ],
+    [
+     "2022-03-09",
+     7969,
+     7969
+    ],
+    [
+     "2022-12-30",
+     6194,
+     6194
+    ],
+    [
+     "2022-10-11",
+     4887,
+     4887
+    ],
+    [
+     "2022-03-21",
+     3887,
+     3887
+    ]
+   ],
+   "failed_add_sales": 4,
+   "failed_add_matched": 4,
+   "failed_add_sale_net": -3462,
+   "same_add_pieces_net_in_gold": -4477,
+   "adds_gold": 4,
+   "adds_challenger": 4
+  },
+  "SN480 failed add | GOLD_30K 2022 @400": {
+   "gold": {
+    "net": -23511,
+    "by_year": {
+     "2022": -23511
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 59839,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -123.7,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -22068,
+    "by_year": {
+     "2022": -22068
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 58396,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -116.1,
+    "final_wallet": 30000
+   },
+   "diff_total": 1443,
+   "diff_by_year": {
+    "2022": 1443
+   },
+   "diff_ci90": [
+    -669,
+    3859
+   ],
+   "sessions": 190,
+   "sessions_changed": 4,
+   "most_affected_session": [
+    "2022-01-18",
+    943
+   ],
+   "diff_without_most_affected": 500,
+   "worst_day": [
+    -5994,
+    -5994
+   ],
+   "losing_day_sum": [
+    -59839,
+    -58396
+   ],
+   "worst_month": [
+    -9667,
+    -9667
+   ],
+   "refilled": [
+    59839,
+    58396
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     11632,
+     11632
+    ],
+    [
+     "2022-03-09",
+     7189,
+     7189
+    ],
+    [
+     "2022-12-30",
+     5999,
+     5999
+    ],
+    [
+     "2022-10-11",
+     4692,
+     4692
+    ],
+    [
+     "2022-03-21",
+     3692,
+     3692
+    ]
+   ],
+   "failed_add_sales": 4,
+   "failed_add_matched": 4,
+   "failed_add_sale_net": -4242,
+   "same_add_pieces_net_in_gold": -5400,
+   "adds_gold": 4,
+   "adds_challenger": 4
+  },
+  "SN480 failed add | GOLD_30K 2023-2026 @205": {
+   "gold": {
+    "net": 850883,
+    "by_year": {
+     "2023": -12107,
+     "2024": 187476,
+     "2025": 292811,
+     "2026": 382702
+    },
+    "months_positive": 25,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 562130,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1146.7,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 694008,
+    "by_year": {
+     "2023": -9051,
+     "2024": 140286,
+     "2025": 230845,
+     "2026": 331928
+    },
+    "months_positive": 24,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 514871,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 935.3,
+    "final_wallet": 101250
+   },
+   "diff_total": -156875,
+   "diff_by_year": {
+    "2023": 3056,
+    "2024": -47190,
+    "2025": -61966,
+    "2026": -50774
+   },
+   "diff_ci90": [
+    -259785,
+    -62392
+   ],
+   "sessions": 742,
+   "sessions_changed": 45,
+   "most_affected_session": [
+    "2025-08-11",
+    -27232
+   ],
+   "diff_without_most_affected": -129643,
+   "worst_day": [
+    -21113,
+    -21113
+   ],
+   "losing_day_sum": [
+    -562130,
+    -514871
+   ],
+   "worst_month": [
+    -38531,
+    -38531
+   ],
+   "refilled": [
+    562130,
+    514871
+   ],
+   "gold_top5": [
+    [
+     "2025-01-21",
+     75503,
+     75503
+    ],
+    [
+     "2025-02-11",
+     73797,
+     54376
+    ],
+    [
+     "2026-10-21",
+     71732,
+     71732
+    ],
+    [
+     "2026-01-23",
+     69669,
+     69669
+    ],
+    [
+     "2025-01-06",
+     60273,
+     60273
+    ]
+   ],
+   "failed_add_sales": 34,
+   "failed_add_matched": 34,
+   "failed_add_sale_net": -61557,
+   "same_add_pieces_net_in_gold": 62398,
+   "adds_gold": 62,
+   "adds_challenger": 59
+  },
+  "SN480 failed add | GOLD_30K 2023-2026 @400": {
+   "gold": {
+    "net": 495597,
+    "by_year": {
+     "2023": -20385,
+     "2024": 86356,
+     "2025": 92429,
+     "2026": 337198
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 494651,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 667.9,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 483923,
+    "by_year": {
+     "2023": -18025,
+     "2024": 91647,
+     "2025": 123877,
+     "2026": 286424
+    },
+    "months_positive": 22,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 549526,
+    "trades": 155,
+    "sessions": 742,
+    "per_session": 652.2,
+    "final_wallet": 101250
+   },
+   "diff_total": -11674,
+   "diff_by_year": {
+    "2023": 2361,
+    "2024": 5291,
+    "2025": 31449,
+    "2026": -50774
+   },
+   "diff_ci90": [
+    -127532,
+    113834
+   ],
+   "sessions": 742,
+   "sessions_changed": 62,
+   "most_affected_session": [
+    "2026-09-24",
+    -21024
+   ],
+   "diff_without_most_affected": 9350,
+   "worst_day": [
+    -20202,
+    -20202
+   ],
+   "losing_day_sum": [
+    -494651,
+    -549526
+   ],
+   "worst_month": [
+    -41913,
+    -41913
+   ],
+   "refilled": [
+    494651,
+    549526
+   ],
+   "gold_top5": [
+    [
+     "2026-10-21",
+     70562,
+     70562
+    ],
+    [
+     "2026-01-23",
+     67719,
+     67719
+    ],
+    [
+     "2026-10-08",
+     56691,
+     56691
+    ],
+    [
+     "2026-09-24",
+     55479,
+     34456
+    ],
+    [
+     "2026-03-19",
+     49517,
+     49517
+    ]
+   ],
+   "failed_add_sales": 33,
+   "failed_add_matched": 30,
+   "failed_add_sale_net": -70877,
+   "same_add_pieces_net_in_gold": 27324,
+   "adds_gold": 54,
+   "adds_challenger": 58
+  },
+  "SN478 FAST | ONE_15K 2020-21 @205": {
+   "gold": {
+    "net": -35767,
+    "by_year": {
+     "2020": -31576,
+     "2021": -4191
+    },
+    "months_positive": 6,
+    "months": 20,
+    "worst_month": -8802,
+    "worst_day": -2994,
+    "refilled": 73452,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -109.4,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -36758,
+    "by_year": {
+     "2020": -31981,
+     "2021": -4777
+    },
+    "months_positive": 5,
+    "months": 20,
+    "worst_month": -8550,
+    "worst_day": -2994,
+    "refilled": 74465,
+    "trades": 77,
+    "sessions": 327,
+    "per_session": -112.4,
+    "final_wallet": 15000
+   },
+   "diff_total": -990,
+   "diff_by_year": {
+    "2020": -405,
+    "2021": -585
+   },
+   "diff_ci90": [
+    -1970,
+    -15
+   ],
+   "sessions": 327,
+   "sessions_changed": 23,
+   "most_affected_session": [
+    "2021-01-18",
+    -250
+   ],
+   "diff_without_most_affected": -740,
+   "worst_day": [
+    -2994,
+    -2994
+   ],
+   "losing_day_sum": [
+    -73452,
+    -74465
+   ],
+   "worst_month": [
+    -8802,
+    -8550
+   ],
+   "refilled": [
+    73452,
+    74465
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     10019,
+     10019
+    ],
+    [
+     "2021-02-22",
+     8438,
+     8438
+    ],
+    [
+     "2020-02-28",
+     4922,
+     4922
+    ],
+    [
+     "2020-06-30",
+     2273,
+     2273
+    ],
+    [
+     "2020-06-16",
+     1815,
+     1815
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 7,
+   "adds_challenger": 7
+  },
+  "SN478 FAST | ONE_15K 2020-21 @400": {
+   "gold": {
+    "net": -52884,
+    "by_year": {
+     "2020": -42062,
+     "2021": -10822
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -9778,
+    "worst_day": -2995,
+    "refilled": 87038,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -161.7,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -53588,
+    "by_year": {
+     "2020": -42181,
+     "2021": -11407
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -9331,
+    "worst_day": -2995,
+    "refilled": 88002,
+    "trades": 77,
+    "sessions": 327,
+    "per_session": -163.9,
+    "final_wallet": 15000
+   },
+   "diff_total": -704,
+   "diff_by_year": {
+    "2020": -119,
+    "2021": -585
+   },
+   "diff_ci90": [
+    -1828,
+    484
+   ],
+   "sessions": 327,
+   "sessions_changed": 23,
+   "most_affected_session": [
+    "2021-01-18",
+    -250
+   ],
+   "diff_without_most_affected": -454,
+   "worst_day": [
+    -2995,
+    -2995
+   ],
+   "losing_day_sum": [
+    -87038,
+    -88002
+   ],
+   "worst_month": [
+    -9778,
+    -9331
+   ],
+   "refilled": [
+    87038,
+    88002
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     9824,
+     9824
+    ],
+    [
+     "2021-02-22",
+     8243,
+     8243
+    ],
+    [
+     "2020-02-28",
+     4727,
+     4727
+    ],
+    [
+     "2020-06-30",
+     2078,
+     2078
+    ],
+    [
+     "2020-06-16",
+     1620,
+     1620
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 7,
+   "adds_challenger": 7
+  },
+  "SN478 FAST | GOLD_30K 2020-21 @205": {
+   "gold": {
+    "net": -64783,
+    "by_year": {
+     "2020": -50837,
+     "2021": -13946
+    },
+    "months_positive": 5,
+    "months": 20,
+    "worst_month": -18870,
+    "worst_day": -5989,
+    "refilled": 136305,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -198.1,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -63333,
+    "by_year": {
+     "2020": -50629,
+     "2021": -12704
+    },
+    "months_positive": 5,
+    "months": 20,
+    "worst_month": -19924,
+    "worst_day": -5989,
+    "refilled": 135458,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -193.7,
+    "final_wallet": 30000
+   },
+   "diff_total": 1449,
+   "diff_by_year": {
+    "2020": 208,
+    "2021": 1242
+   },
+   "diff_ci90": [
+    -3931,
+    7562
+   ],
+   "sessions": 327,
+   "sessions_changed": 24,
+   "most_affected_session": [
+    "2020-06-29",
+    2123
+   ],
+   "diff_without_most_affected": -673,
+   "worst_day": [
+    -5989,
+    -5989
+   ],
+   "losing_day_sum": [
+    -136305,
+    -135458
+   ],
+   "worst_month": [
+    -18870,
+    -19924
+   ],
+   "refilled": [
+    136305,
+    135458
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     20085,
+     20085
+    ],
+    [
+     "2020-02-28",
+     9892,
+     9892
+    ],
+    [
+     "2021-02-22",
+     9832,
+     9832
+    ],
+    [
+     "2020-06-30",
+     5152,
+     5152
+    ],
+    [
+     "2020-06-16",
+     4765,
+     4765
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 34,
+   "adds_challenger": 32
+  },
+  "SN478 FAST | GOLD_30K 2020-21 @400": {
+   "gold": {
+    "net": -93971,
+    "by_year": {
+     "2020": -68513,
+     "2021": -25458
+    },
+    "months_positive": 3,
+    "months": 20,
+    "worst_month": -20626,
+    "worst_day": -5990,
+    "refilled": 158441,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -287.4,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -92054,
+    "by_year": {
+     "2020": -67929,
+     "2021": -24125
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -21679,
+    "worst_day": -5990,
+    "refilled": 157279,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -281.5,
+    "final_wallet": 30000
+   },
+   "diff_total": 1917,
+   "diff_by_year": {
+    "2020": 584,
+    "2021": 1333
+   },
+   "diff_ci90": [
+    -3805,
+    8444
+   ],
+   "sessions": 327,
+   "sessions_changed": 24,
+   "most_affected_session": [
+    "2020-06-29",
+    2318
+   ],
+   "diff_without_most_affected": -401,
+   "worst_day": [
+    -5990,
+    -5990
+   ],
+   "losing_day_sum": [
+    -158441,
+    -157279
+   ],
+   "worst_month": [
+    -20626,
+    -21679
+   ],
+   "refilled": [
+    158441,
+    157279
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     19695,
+     19695
+    ],
+    [
+     "2021-02-22",
+     9637,
+     9637
+    ],
+    [
+     "2020-02-28",
+     9502,
+     9502
+    ],
+    [
+     "2020-06-30",
+     4762,
+     4762
+    ],
+    [
+     "2020-06-16",
+     4180,
+     4180
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 34,
+   "adds_challenger": 32
+  },
+  "SN478 FAST | GOLD_30K 2022 @205": {
+   "gold": {
+    "net": -15281,
+    "by_year": {
+     "2022": -15281
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 53896,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -80.4,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -16661,
+    "by_year": {
+     "2022": -16661
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 55722,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -87.7,
+    "final_wallet": 30000
+   },
+   "diff_total": -1380,
+   "diff_by_year": {
+    "2022": -1380
+   },
+   "diff_ci90": [
+    -4238,
+    663
+   ],
+   "sessions": 190,
+   "sessions_changed": 9,
+   "most_affected_session": [
+    "2022-11-18",
+    -1650
+   ],
+   "diff_without_most_affected": 270,
+   "worst_day": [
+    -5992,
+    -5992
+   ],
+   "losing_day_sum": [
+    -53896,
+    -55722
+   ],
+   "worst_month": [
+    -9276,
+    -9276
+   ],
+   "refilled": [
+    53896,
+    55722
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     12022,
+     12022
+    ],
+    [
+     "2022-03-09",
+     7969,
+     8625
+    ],
+    [
+     "2022-12-30",
+     6194,
+     6194
+    ],
+    [
+     "2022-10-11",
+     4887,
+     4887
+    ],
+    [
+     "2022-03-21",
+     3887,
+     3887
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 4,
+   "adds_challenger": 5
+  },
+  "SN478 FAST | GOLD_30K 2022 @400": {
+   "gold": {
+    "net": -23511,
+    "by_year": {
+     "2022": -23511
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 59839,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -123.7,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -25086,
+    "by_year": {
+     "2022": -25086
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 61860,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -132.0,
+    "final_wallet": 30000
+   },
+   "diff_total": -1575,
+   "diff_by_year": {
+    "2022": -1575
+   },
+   "diff_ci90": [
+    -4823,
+    663
+   ],
+   "sessions": 190,
+   "sessions_changed": 9,
+   "most_affected_session": [
+    "2022-11-18",
+    -1845
+   ],
+   "diff_without_most_affected": 270,
+   "worst_day": [
+    -5994,
+    -5994
+   ],
+   "losing_day_sum": [
+    -59839,
+    -61860
+   ],
+   "worst_month": [
+    -9667,
+    -9667
+   ],
+   "refilled": [
+    59839,
+    61860
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     11632,
+     11632
+    ],
+    [
+     "2022-03-09",
+     7189,
+     7845
+    ],
+    [
+     "2022-12-30",
+     5999,
+     5999
+    ],
+    [
+     "2022-10-11",
+     4692,
+     4692
+    ],
+    [
+     "2022-03-21",
+     3692,
+     3692
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 4,
+   "adds_challenger": 5
+  },
+  "SN478 FAST | GOLD_30K 2023-2026 @205": {
+   "gold": {
+    "net": 850883,
+    "by_year": {
+     "2023": -12107,
+     "2024": 187476,
+     "2025": 292811,
+     "2026": 382702
+    },
+    "months_positive": 25,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 562130,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1146.7,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 866279,
+    "by_year": {
+     "2023": -13659,
+     "2024": 194856,
+     "2025": 293997,
+     "2026": 391085
+    },
+    "months_positive": 24,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 547608,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1167.5,
+    "final_wallet": 101250
+   },
+   "diff_total": 15397,
+   "diff_by_year": {
+    "2023": -1552,
+    "2024": 7380,
+    "2025": 1186,
+    "2026": 8383
+   },
+   "diff_ci90": [
+    -7153,
+    39860
+   ],
+   "sessions": 742,
+   "sessions_changed": 56,
+   "most_affected_session": [
+    "2024-01-03",
+    9113
+   ],
+   "diff_without_most_affected": 6283,
+   "worst_day": [
+    -21113,
+    -21113
+   ],
+   "losing_day_sum": [
+    -562130,
+    -547608
+   ],
+   "worst_month": [
+    -38531,
+    -38531
+   ],
+   "refilled": [
+    562130,
+    547608
+   ],
+   "gold_top5": [
+    [
+     "2025-01-21",
+     75503,
+     75503
+    ],
+    [
+     "2025-02-11",
+     73797,
+     73797
+    ],
+    [
+     "2026-10-21",
+     71732,
+     71732
+    ],
+    [
+     "2026-01-23",
+     69669,
+     68674
+    ],
+    [
+     "2025-01-06",
+     60273,
+     60526
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 62,
+   "adds_challenger": 60
+  },
+  "SN478 FAST | GOLD_30K 2023-2026 @400": {
+   "gold": {
+    "net": 495597,
+    "by_year": {
+     "2023": -20385,
+     "2024": 86356,
+     "2025": 92429,
+     "2026": 337198
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 494651,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 667.9,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 512772,
+    "by_year": {
+     "2023": -21724,
+     "2024": 87711,
+     "2025": 101204,
+     "2026": 345581
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 498301,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 691.1,
+    "final_wallet": 101250
+   },
+   "diff_total": 17175,
+   "diff_by_year": {
+    "2023": -1338,
+    "2024": 1355,
+    "2025": 8776,
+    "2026": 8383
+   },
+   "diff_ci90": [
+    -15114,
+    50802
+   ],
+   "sessions": 742,
+   "sessions_changed": 59,
+   "most_affected_session": [
+    "2025-01-21",
+    14637
+   ],
+   "diff_without_most_affected": 2538,
+   "worst_day": [
+    -20202,
+    -20202
+   ],
+   "losing_day_sum": [
+    -494651,
+    -498301
+   ],
+   "worst_month": [
+    -41913,
+    -41913
+   ],
+   "refilled": [
+    494651,
+    498301
+   ],
+   "gold_top5": [
+    [
+     "2026-10-21",
+     70562,
+     70562
+    ],
+    [
+     "2026-01-23",
+     67719,
+     66724
+    ],
+    [
+     "2026-10-08",
+     56691,
+     57023
+    ],
+    [
+     "2026-09-24",
+     55479,
+     62859
+    ],
+    [
+     "2026-03-19",
+     49517,
+     49517
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 54,
+   "adds_challenger": 53
+  },
+  "SN489 adds only TPB / SHIPPED | ONE_15K 2020-21 @205": {
+   "gold": {
+    "net": -35767,
+    "by_year": {
+     "2020": -31576,
+     "2021": -4191
+    },
+    "months_positive": 6,
+    "months": 20,
+    "worst_month": -8802,
+    "worst_day": -2994,
+    "refilled": 73452,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -109.4,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -35052,
+    "by_year": {
+     "2020": -30931,
+     "2021": -4121
+    },
+    "months_positive": 6,
+    "months": 20,
+    "worst_month": -8802,
+    "worst_day": -2994,
+    "refilled": 72807,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -107.2,
+    "final_wallet": 15000
+   },
+   "diff_total": 716,
+   "diff_by_year": {
+    "2020": 646,
+    "2021": 70
+   },
+   "diff_ci90": [
+    0,
+    2007
+   ],
+   "sessions": 327,
+   "sessions_changed": 2,
+   "most_affected_session": [
+    "2020-07-29",
+    646
+   ],
+   "diff_without_most_affected": 70,
+   "worst_day": [
+    -2994,
+    -2994
+   ],
+   "losing_day_sum": [
+    -73452,
+    -72807
+   ],
+   "worst_month": [
+    -8802,
+    -8802
+   ],
+   "refilled": [
+    73452,
+    72807
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     10019,
+     10019
+    ],
+    [
+     "2021-02-22",
+     8438,
+     8438
+    ],
+    [
+     "2020-02-28",
+     4922,
+     4922
+    ],
+    [
+     "2020-06-30",
+     2273,
+     2273
+    ],
+    [
+     "2020-06-16",
+     1815,
+     1815
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 7,
+   "adds_challenger": 5
+  },
+  "SN489 adds only TPB / SHIPPED | ONE_15K 2020-21 @400": {
+   "gold": {
+    "net": -52884,
+    "by_year": {
+     "2020": -42062,
+     "2021": -10822
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -9778,
+    "worst_day": -2995,
+    "refilled": 87038,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -161.7,
+    "final_wallet": 15000
+   },
+   "challenger": {
+    "net": -51779,
+    "by_year": {
+     "2020": -41222,
+     "2021": -10557
+    },
+    "months_positive": 4,
+    "months": 20,
+    "worst_month": -9778,
+    "worst_day": -2995,
+    "refilled": 86197,
+    "trades": 78,
+    "sessions": 327,
+    "per_session": -158.3,
+    "final_wallet": 15000
+   },
+   "diff_total": 1106,
+   "diff_by_year": {
+    "2020": 841,
+    "2021": 265
+   },
+   "diff_ci90": [
+    0,
+    2787
+   ],
+   "sessions": 327,
+   "sessions_changed": 2,
+   "most_affected_session": [
+    "2020-07-29",
+    841
+   ],
+   "diff_without_most_affected": 265,
+   "worst_day": [
+    -2995,
+    -2995
+   ],
+   "losing_day_sum": [
+    -87038,
+    -86197
+   ],
+   "worst_month": [
+    -9778,
+    -9778
+   ],
+   "refilled": [
+    87038,
+    86197
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     9824,
+     9824
+    ],
+    [
+     "2021-02-22",
+     8243,
+     8243
+    ],
+    [
+     "2020-02-28",
+     4727,
+     4727
+    ],
+    [
+     "2020-06-30",
+     2078,
+     2078
+    ],
+    [
+     "2020-06-16",
+     1620,
+     1620
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 7,
+   "adds_challenger": 5
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K 2020-21 @205": {
+   "gold": {
+    "net": -64783,
+    "by_year": {
+     "2020": -50837,
+     "2021": -13946
+    },
+    "months_positive": 5,
+    "months": 20,
+    "worst_month": -18870,
+    "worst_day": -5989,
+    "refilled": 136305,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -198.1,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -64647,
+    "by_year": {
+     "2020": -49873,
+     "2021": -14774
+    },
+    "months_positive": 5,
+    "months": 20,
+    "worst_month": -18870,
+    "worst_day": -5989,
+    "refilled": 135405,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -197.7,
+    "final_wallet": 30000
+   },
+   "diff_total": 136,
+   "diff_by_year": {
+    "2020": 964,
+    "2021": -829
+   },
+   "diff_ci90": [
+    -1750,
+    2064
+   ],
+   "sessions": 327,
+   "sessions_changed": 4,
+   "most_affected_session": [
+    "2020-07-29",
+    842
+   ],
+   "diff_without_most_affected": -706,
+   "worst_day": [
+    -5989,
+    -5989
+   ],
+   "losing_day_sum": [
+    -136305,
+    -135405
+   ],
+   "worst_month": [
+    -18870,
+    -18870
+   ],
+   "refilled": [
+    136305,
+    135405
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     20085,
+     20085
+    ],
+    [
+     "2020-02-28",
+     9892,
+     9892
+    ],
+    [
+     "2021-02-22",
+     9832,
+     9832
+    ],
+    [
+     "2020-06-30",
+     5152,
+     5152
+    ],
+    [
+     "2020-06-16",
+     4765,
+     4765
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 34,
+   "adds_challenger": 30
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K 2020-21 @400": {
+   "gold": {
+    "net": -93971,
+    "by_year": {
+     "2020": -68513,
+     "2021": -25458
+    },
+    "months_positive": 3,
+    "months": 20,
+    "worst_month": -20626,
+    "worst_day": -5990,
+    "refilled": 158441,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -287.4,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -92861,
+    "by_year": {
+     "2020": -67159,
+     "2021": -25701
+    },
+    "months_positive": 3,
+    "months": 20,
+    "worst_month": -20626,
+    "worst_day": -5990,
+    "refilled": 157087,
+    "trades": 81,
+    "sessions": 327,
+    "per_session": -284.0,
+    "final_wallet": 30000
+   },
+   "diff_total": 1111,
+   "diff_by_year": {
+    "2020": 1354,
+    "2021": -244
+   },
+   "diff_ci90": [
+    -902,
+    3745
+   ],
+   "sessions": 327,
+   "sessions_changed": 4,
+   "most_affected_session": [
+    "2020-07-29",
+    1037
+   ],
+   "diff_without_most_affected": 74,
+   "worst_day": [
+    -5990,
+    -5990
+   ],
+   "losing_day_sum": [
+    -158441,
+    -157087
+   ],
+   "worst_month": [
+    -20626,
+    -20626
+   ],
+   "refilled": [
+    158441,
+    157087
+   ],
+   "gold_top5": [
+    [
+     "2021-03-12",
+     19695,
+     19695
+    ],
+    [
+     "2021-02-22",
+     9637,
+     9637
+    ],
+    [
+     "2020-02-28",
+     9502,
+     9502
+    ],
+    [
+     "2020-06-30",
+     4762,
+     4762
+    ],
+    [
+     "2020-06-16",
+     4180,
+     4180
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 34,
+   "adds_challenger": 30
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K 2022 @205": {
+   "gold": {
+    "net": -15281,
+    "by_year": {
+     "2022": -15281
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 53896,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -80.4,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -15281,
+    "by_year": {
+     "2022": -15281
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 53896,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -80.4,
+    "final_wallet": 30000
+   },
+   "diff_total": 0,
+   "diff_by_year": {
+    "2022": 0
+   },
+   "diff_ci90": [
+    0,
+    0
+   ],
+   "sessions": 190,
+   "sessions_changed": 0,
+   "most_affected_session": [
+    "2022-01-03",
+    0
+   ],
+   "diff_without_most_affected": 0,
+   "worst_day": [
+    -5992,
+    -5992
+   ],
+   "losing_day_sum": [
+    -53896,
+    -53896
+   ],
+   "worst_month": [
+    -9276,
+    -9276
+   ],
+   "refilled": [
+    53896,
+    53896
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     12022,
+     12022
+    ],
+    [
+     "2022-03-09",
+     7969,
+     7969
+    ],
+    [
+     "2022-12-30",
+     6194,
+     6194
+    ],
+    [
+     "2022-10-11",
+     4887,
+     4887
+    ],
+    [
+     "2022-03-21",
+     3887,
+     3887
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 4,
+   "adds_challenger": 4
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K 2022 @400": {
+   "gold": {
+    "net": -23511,
+    "by_year": {
+     "2022": -23511
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 59839,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -123.7,
+    "final_wallet": 30000
+   },
+   "challenger": {
+    "net": -23511,
+    "by_year": {
+     "2022": -23511
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 59839,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -123.7,
+    "final_wallet": 30000
+   },
+   "diff_total": 0,
+   "diff_by_year": {
+    "2022": 0
+   },
+   "diff_ci90": [
+    0,
+    0
+   ],
+   "sessions": 190,
+   "sessions_changed": 0,
+   "most_affected_session": [
+    "2022-01-03",
+    0
+   ],
+   "diff_without_most_affected": 0,
+   "worst_day": [
+    -5994,
+    -5994
+   ],
+   "losing_day_sum": [
+    -59839,
+    -59839
+   ],
+   "worst_month": [
+    -9667,
+    -9667
+   ],
+   "refilled": [
+    59839,
+    59839
+   ],
+   "gold_top5": [
+    [
+     "2022-03-08",
+     11632,
+     11632
+    ],
+    [
+     "2022-03-09",
+     7189,
+     7189
+    ],
+    [
+     "2022-12-30",
+     5999,
+     5999
+    ],
+    [
+     "2022-10-11",
+     4692,
+     4692
+    ],
+    [
+     "2022-03-21",
+     3692,
+     3692
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 4,
+   "adds_challenger": 4
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K 2023-2026 @205": {
+   "gold": {
+    "net": 850883,
+    "by_year": {
+     "2023": -12107,
+     "2024": 187476,
+     "2025": 292811,
+     "2026": 382702
+    },
+    "months_positive": 25,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 562130,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1146.7,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 825838,
+    "by_year": {
+     "2023": -8572,
+     "2024": 139347,
+     "2025": 313135,
+     "2026": 381928
+    },
+    "months_positive": 25,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 519358,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1113.0,
+    "final_wallet": 101250
+   },
+   "diff_total": -25045,
+   "diff_by_year": {
+    "2023": 3535,
+    "2024": -48129,
+    "2025": 20324,
+    "2026": -774
+   },
+   "diff_ci90": [
+    -86945,
+    26714
+   ],
+   "sessions": 742,
+   "sessions_changed": 24,
+   "most_affected_session": [
+    "2024-11-05",
+    -17259
+   ],
+   "diff_without_most_affected": -7785,
+   "worst_day": [
+    -21113,
+    -21113
+   ],
+   "losing_day_sum": [
+    -562130,
+    -519358
+   ],
+   "worst_month": [
+    -38531,
+    -38531
+   ],
+   "refilled": [
+    562130,
+    519358
+   ],
+   "gold_top5": [
+    [
+     "2025-01-21",
+     75503,
+     75503
+    ],
+    [
+     "2025-02-11",
+     73797,
+     73797
+    ],
+    [
+     "2026-10-21",
+     71732,
+     71732
+    ],
+    [
+     "2026-01-23",
+     69669,
+     69669
+    ],
+    [
+     "2025-01-06",
+     60273,
+     60273
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 62,
+   "adds_challenger": 46
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K 2023-2026 @400": {
+   "gold": {
+    "net": 495597,
+    "by_year": {
+     "2023": -20385,
+     "2024": 86356,
+     "2025": 92429,
+     "2026": 337198
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 494651,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 667.9,
+    "final_wallet": 101250
+   },
+   "challenger": {
+    "net": 640678,
+    "by_year": {
+     "2023": -16394,
+     "2024": 107824,
+     "2025": 212239,
+     "2026": 337009
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20236,
+    "refilled": 555409,
+    "trades": 155,
+    "sessions": 742,
+    "per_session": 863.4,
+    "final_wallet": 101250
+   },
+   "diff_total": 145081,
+   "diff_by_year": {
+    "2023": 3992,
+    "2024": 21468,
+    "2025": 119811,
+    "2026": -189
+   },
+   "diff_ci90": [
+    45789,
+    264205
+   ],
+   "sessions": 742,
+   "sessions_changed": 65,
+   "most_affected_session": [
+    "2025-01-06",
+    47881
+   ],
+   "diff_without_most_affected": 97200,
+   "worst_day": [
+    -20202,
+    -20236
+   ],
+   "losing_day_sum": [
+    -494651,
+    -555409
+   ],
+   "worst_month": [
+    -41913,
+    -41913
+   ],
+   "refilled": [
+    494651,
+    555409
+   ],
+   "gold_top5": [
+    [
+     "2026-10-21",
+     70562,
+     70562
+    ],
+    [
+     "2026-01-23",
+     67719,
+     67719
+    ],
+    [
+     "2026-10-08",
+     56691,
+     56691
+    ],
+    [
+     "2026-09-24",
+     55479,
+     55479
+    ],
+    [
+     "2026-03-19",
+     49517,
+     49517
+    ]
+   ],
+   "failed_add_sales": 0,
+   "failed_add_matched": 0,
+   "failed_add_sale_net": 0,
+   "same_add_pieces_net_in_gold": 0,
+   "adds_gold": 54,
+   "adds_challenger": 46
+  }
+ },
+ "survivors": {},
+ "strongest_survivor": null
+}

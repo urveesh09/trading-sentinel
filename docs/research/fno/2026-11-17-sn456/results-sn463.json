@@ -1,0 +1,823 @@
+{
+ "registry_rows": 350,
+ "registry_sns": 377,
+ "queries": {
+  "discount": {
+   "expected": [
+    443,
+    453
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     307,
+     309
+    ],
+    [
+     443,
+     453,
+     454
+    ],
+    [
+     339
+    ],
+    [
+     109
+    ],
+    [
+     111
+    ]
+   ],
+   "structured_top5": [
+    [
+     443,
+     453,
+     454
+    ],
+    [
+     11
+    ],
+    [
+     442
+    ],
+    [
+     57
+    ],
+    [
+     182
+    ]
+   ],
+   "query_classes": [
+    "entry_timing"
+   ],
+   "plain_found": [
+    443,
+    453
+   ],
+   "structured_found": [
+    443,
+    453
+   ],
+   "top1_cosine": 0.209
+  },
+  "confirm5": {
+   "expected": [
+    432,
+    444
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     430,
+     431,
+     432,
+     433,
+     435
+    ],
+    [
+     224
+    ],
+    [
+     403
+    ],
+    [
+     208
+    ],
+    [
+     57
+    ]
+   ],
+   "structured_top5": [
+    [
+     430,
+     431,
+     432,
+     433,
+     435
+    ],
+    [
+     208
+    ],
+    [
+     57
+    ],
+    [
+     347
+    ],
+    [
+     11
+    ]
+   ],
+   "query_classes": [
+    "entry_timing",
+    "fill_execution"
+   ],
+   "plain_found": [
+    432
+   ],
+   "structured_found": [
+    432
+   ],
+   "top1_cosine": 0.248
+  },
+  "passive": {
+   "expected": [
+    454
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     109
+    ],
+    [
+     443,
+     453,
+     454
+    ],
+    [
+     313
+    ],
+    [
+     216
+    ],
+    [
+     373
+    ]
+   ],
+   "structured_top5": [
+    [
+     109
+    ],
+    [
+     443,
+     453,
+     454
+    ],
+    [
+     373
+    ],
+    [
+     312
+    ],
+    [
+     290
+    ]
+   ],
+   "query_classes": [
+    "entry_timing",
+    "fill_execution"
+   ],
+   "plain_found": [
+    454
+   ],
+   "structured_found": [
+    454
+   ],
+   "top1_cosine": 0.203
+  },
+  "bank": {
+   "expected": [
+    447
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     447,
+     448
+    ],
+    [
+     427
+    ],
+    [
+     128
+    ],
+    [
+     105,
+     106,
+     108
+    ],
+    [
+     182
+    ]
+   ],
+   "structured_top5": [
+    [
+     447,
+     448
+    ],
+    [
+     120
+    ],
+    [
+     441,
+     455
+    ],
+    [
+     319,
+     322
+    ],
+    [
+     256,
+     263
+    ]
+   ],
+   "query_classes": [
+    "information_clock"
+   ],
+   "plain_found": [
+    447
+   ],
+   "structured_found": [
+    447
+   ],
+   "top1_cosine": 0.251
+  },
+  "london": {
+   "expected": [
+    448
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     447,
+     448
+    ],
+    [
+     220
+    ],
+    [
+     326
+    ],
+    [
+     389,
+     395
+    ],
+    [
+     441,
+     455
+    ]
+   ],
+   "structured_top5": [
+    [
+     447,
+     448
+    ],
+    [
+     441,
+     455
+    ],
+    [
+     130
+    ],
+    [
+     127
+    ],
+    [
+     93
+    ]
+   ],
+   "query_classes": [
+    "information_clock"
+   ],
+   "plain_found": [
+    448
+   ],
+   "structured_found": [
+    448
+   ],
+   "top1_cosine": 0.236
+  },
+  "pin": {
+   "expected": [
+    451
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     153
+    ],
+    [
+     57,
+     60
+    ],
+    [
+     213
+    ],
+    [
+     212
+    ],
+    [
+     161,
+     185,
+     186,
+     200,
+     201,
+     210,
+     211,
+     220,
+     221,
+     230,
+     231,
+     250
+    ]
+   ],
+   "structured_top5": [
+    [
+     153
+    ],
+    [
+     212
+    ],
+    [
+     441,
+     455
+    ],
+    [
+     217
+    ],
+    [
+     252
+    ]
+   ],
+   "query_classes": [
+    "expiry_flow"
+   ],
+   "plain_found": [],
+   "structured_found": [],
+   "top1_cosine": 0.2
+  },
+  "lstm": {
+   "expected": [
+    193
+   ],
+   "invalid_expected": [
+    193
+   ],
+   "plain_top5": [
+    [
+     399
+    ],
+    [
+     206
+    ],
+    [
+     371
+    ],
+    [
+     95,
+     171
+    ],
+    [
+     96
+    ]
+   ],
+   "structured_top5": [
+    [
+     399
+    ],
+    [
+     206
+    ],
+    [
+     95,
+     171
+    ],
+    [
+     96
+    ],
+    [
+     278
+    ]
+   ],
+   "query_classes": [
+    "learner"
+   ],
+   "plain_found": [],
+   "structured_found": [],
+   "top1_cosine": 0.259
+  },
+  "lgbm": {
+   "expected": [
+    131
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     251
+    ],
+    [
+     276,
+     285
+    ],
+    [
+     221
+    ],
+    [
+     277
+    ],
+    [
+     442
+    ]
+   ],
+   "structured_top5": [
+    [
+     277
+    ],
+    [
+     206
+    ],
+    [
+     154,
+     155
+    ],
+    [
+     166,
+     168
+    ],
+    [
+     143,
+     147
+    ]
+   ],
+   "query_classes": [
+    "learner"
+   ],
+   "plain_found": [],
+   "structured_found": [],
+   "top1_cosine": 0.174
+  },
+  "wkh": {
+   "expected": [
+    221
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     201,
+     220
+    ],
+    [
+     221,
+     230
+    ],
+    [
+     224
+    ],
+    [
+     201,
+     221,
+     230
+    ],
+    [
+     237,
+     241
+    ]
+   ],
+   "structured_top5": [
+    [
+     201,
+     220
+    ],
+    [
+     221,
+     230
+    ],
+    [
+     201,
+     221,
+     230
+    ],
+    [
+     237,
+     241
+    ],
+    [
+     226
+    ]
+   ],
+   "query_classes": [
+    "volatility_seller"
+   ],
+   "plain_found": [
+    221
+   ],
+   "structured_found": [
+    221
+   ],
+   "top1_cosine": 0.282
+  },
+  "opener": {
+   "expected": [
+    419
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     418,
+     419
+    ],
+    [
+     405
+    ],
+    [
+     110
+    ],
+    [
+     110
+    ],
+    [
+     286
+    ]
+   ],
+   "structured_top5": [
+    [
+     418,
+     419
+    ],
+    [
+     405
+    ],
+    [
+     110
+    ],
+    [
+     110
+    ],
+    [
+     286
+    ]
+   ],
+   "query_classes": [
+    "gold_wallet"
+   ],
+   "plain_found": [
+    419
+   ],
+   "structured_found": [
+    419
+   ],
+   "top1_cosine": 0.398
+  },
+  "bound": {
+   "expected": [
+    434,
+    446
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     446
+    ],
+    [
+     434
+    ],
+    [
+     421,
+     425
+    ],
+    [
+     62
+    ],
+    [
+     211
+    ]
+   ],
+   "structured_top5": [
+    [
+     446
+    ],
+    [
+     434
+    ],
+    [
+     421,
+     425
+    ],
+    [
+     201,
+     221,
+     230
+    ],
+    [
+     150
+    ]
+   ],
+   "query_classes": [
+    "gold_wallet"
+   ],
+   "plain_found": [
+    434,
+    446
+   ],
+   "structured_found": [
+    434,
+    446
+   ],
+   "top1_cosine": 0.664
+  },
+  "hindsight": {
+   "expected": [
+    428,
+    442
+   ],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     428
+    ],
+    [
+     442
+    ],
+    [
+     277
+    ],
+    [
+     208
+    ],
+    [
+     306
+    ]
+   ],
+   "structured_top5": [
+    [
+     428
+    ],
+    [
+     442
+    ],
+    [
+     306
+    ],
+    [
+     205
+    ],
+    [
+     429,
+     439
+    ]
+   ],
+   "query_classes": [
+    "entry_timing",
+    "hindsight"
+   ],
+   "plain_found": [
+    428,
+    442
+   ],
+   "structured_found": [
+    428,
+    442
+   ],
+   "top1_cosine": 0.21
+  },
+  "participants": {
+   "expected": [],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     61
+    ],
+    [
+     63,
+     64
+    ],
+    [
+     399
+    ],
+    [
+     161,
+     185,
+     186,
+     200,
+     201,
+     210,
+     211,
+     220,
+     221,
+     230,
+     231,
+     250
+    ],
+    [
+     307,
+     309
+    ]
+   ],
+   "structured_top5": [
+    [
+     202
+    ],
+    [
+     447,
+     448
+    ],
+    [
+     97
+    ],
+    [
+     331,
+     350
+    ],
+    [
+     217
+    ]
+   ],
+   "query_classes": [
+    "expiry_flow",
+    "information_clock"
+   ],
+   "plain_found": [],
+   "structured_found": [],
+   "top1_cosine": 0.125
+  },
+  "kronos": {
+   "expected": [],
+   "invalid_expected": [],
+   "plain_top5": [
+    [
+     399
+    ],
+    [
+     96
+    ],
+    [
+     20,
+     23
+    ],
+    [
+     10
+    ],
+    [
+     208
+    ]
+   ],
+   "structured_top5": [
+    [
+     399
+    ],
+    [
+     96
+    ],
+    [
+     95,
+     171
+    ],
+    [
+     440
+    ],
+    [
+     206
+    ]
+   ],
+   "query_classes": [
+    "learner"
+   ],
+   "plain_found": [],
+   "structured_found": [],
+   "top1_cosine": 0.212
+  }
+ },
+ "plain_recall_at_5": 0.708,
+ "plain_queries_fully_found": 8,
+ "plain_missed": {
+  "confirm5": [
+   444
+  ],
+  "pin": [
+   451
+  ],
+  "lstm": [
+   193
+  ],
+  "lgbm": [
+   131
+  ]
+ },
+ "structured_recall_at_5": 0.708,
+ "structured_queries_fully_found": 8,
+ "structured_missed": {
+  "confirm5": [
+   444
+  ],
+  "pin": [
+   451
+  ],
+  "lstm": [
+   193
+  ],
+  "lgbm": [
+   131
+  ]
+ },
+ "wrong_duplicate_threshold_cosine": 0.242,
+ "wrong_duplicates_on_new_queries": {
+  "participants": false,
+  "kronos": false
+ },
+ "invalid_citations": {
+  "lstm": [
+   193
+  ]
+ },
+ "llm_arm": "NOT RUN: the session model wrote the check set; no independent reader is available inside the scorer"
+}

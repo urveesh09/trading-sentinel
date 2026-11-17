@@ -1,0 +1,534 @@
+{
+ "BOUND-NORMAL | 2022 @205": {
+  "net": 0,
+  "by_year": {
+   "2022": 0
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 0,
+  "sessions": 190,
+  "per_session": 0.0,
+  "final_wallet": 30000,
+  "skipped": 35,
+  "lots_cut": 0
+ },
+ "BOUND-LADDER | 2022 @205": {
+  "net": -4071,
+  "by_year": {
+   "2022": -4071
+  },
+  "months_positive": 1,
+  "months": 12,
+  "worst_month": -2487,
+  "worst_day": -1318,
+  "refilled": 4094,
+  "trades": 5,
+  "sessions": 190,
+  "per_session": -21.4,
+  "final_wallet": 30000,
+  "skipped": 29,
+  "class_used": {
+   "OTM1": 4,
+   "SIGNAL": 1
+  },
+  "per_lot_by_class": {
+   "SIGNAL": 23,
+   "OTM1": -1023
+  },
+  "largest_debit": 5776,
+  "max_debit_over_room": 0.963,
+  "mean_lots": 1.0
+ },
+ "BOUND-LADDER-1 | 2022 @205": {
+  "net": -4071,
+  "by_year": {
+   "2022": -4071
+  },
+  "months_positive": 1,
+  "months": 12,
+  "worst_month": -2487,
+  "worst_day": -1318,
+  "refilled": 4094,
+  "trades": 5,
+  "sessions": 190,
+  "per_session": -21.4,
+  "final_wallet": 30000,
+  "skipped": 29,
+  "class_used": {
+   "OTM1": 4,
+   "SIGNAL": 1
+  },
+  "per_lot_by_class": {
+   "SIGNAL": 23,
+   "OTM1": -1023
+  },
+  "largest_debit": 5776,
+  "max_debit_over_room": 0.963,
+  "mean_lots": 1.0
+ },
+ "BOUND-SIGNAL | 2022 @205": {
+  "net": 23,
+  "by_year": {
+   "2022": 23
+  },
+  "months_positive": 1,
+  "months": 12,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 1,
+  "sessions": 190,
+  "per_session": 0.1,
+  "final_wallet": 30000,
+  "skipped": 33,
+  "class_used": {
+   "SIGNAL": 1
+  },
+  "per_lot_by_class": {
+   "SIGNAL": 23
+  },
+  "largest_debit": 5776,
+  "max_debit_over_room": 0.963,
+  "mean_lots": 1.0
+ },
+ "BOUND-OTM1 | 2022 @205": {
+  "net": -4129,
+  "by_year": {
+   "2022": -4129
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": -2487,
+  "worst_day": -1318,
+  "refilled": 4129,
+  "trades": 5,
+  "sessions": 190,
+  "per_session": -21.7,
+  "final_wallet": 30000,
+  "skipped": 29,
+  "class_used": {
+   "OTM1": 5
+  },
+  "per_lot_by_class": {
+   "OTM1": -826
+  },
+  "largest_debit": 5718,
+  "max_debit_over_room": 0.953,
+  "mean_lots": 1.0
+ },
+ "BOUND-NORMAL | 2022 @400": {
+  "net": 0,
+  "by_year": {
+   "2022": 0
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 0,
+  "sessions": 190,
+  "per_session": 0.0,
+  "final_wallet": 30000,
+  "skipped": 35,
+  "lots_cut": 0
+ },
+ "BOUND-LADDER | 2022 @400": {
+  "net": -3748,
+  "by_year": {
+   "2022": -3748
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": -2877,
+  "worst_day": -1513,
+  "refilled": 3748,
+  "trades": 4,
+  "sessions": 190,
+  "per_session": -19.7,
+  "final_wallet": 30000,
+  "skipped": 30,
+  "class_used": {
+   "OTM1": 4
+  },
+  "per_lot_by_class": {
+   "OTM1": -937
+  },
+  "largest_debit": 5159,
+  "max_debit_over_room": 0.86,
+  "mean_lots": 1.0
+ },
+ "BOUND-LADDER-1 | 2022 @400": {
+  "net": -3748,
+  "by_year": {
+   "2022": -3748
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": -2877,
+  "worst_day": -1513,
+  "refilled": 3748,
+  "trades": 4,
+  "sessions": 190,
+  "per_session": -19.7,
+  "final_wallet": 30000,
+  "skipped": 30,
+  "class_used": {
+   "OTM1": 4
+  },
+  "per_lot_by_class": {
+   "OTM1": -937
+  },
+  "largest_debit": 5159,
+  "max_debit_over_room": 0.86,
+  "mean_lots": 1.0
+ },
+ "BOUND-SIGNAL | 2022 @400": {
+  "net": 0,
+  "by_year": {
+   "2022": 0
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 0,
+  "sessions": 190,
+  "per_session": 0.0,
+  "final_wallet": 30000,
+  "skipped": 35,
+  "class_used": {},
+  "per_lot_by_class": {},
+  "largest_debit": 0,
+  "max_debit_over_room": 0.0,
+  "mean_lots": 0.0
+ },
+ "BOUND-OTM1 | 2022 @400": {
+  "net": -3748,
+  "by_year": {
+   "2022": -3748
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": -2877,
+  "worst_day": -1513,
+  "refilled": 3748,
+  "trades": 4,
+  "sessions": 190,
+  "per_session": -19.7,
+  "final_wallet": 30000,
+  "skipped": 30,
+  "class_used": {
+   "OTM1": 4
+  },
+  "per_lot_by_class": {
+   "OTM1": -937
+  },
+  "largest_debit": 5159,
+  "max_debit_over_room": 0.86,
+  "mean_lots": 1.0
+ },
+ "BOUND-NORMAL | 2023-2026 @205": {
+  "net": 11799,
+  "by_year": {
+   "2023": 4027,
+   "2024": 7771,
+   "2025": 0,
+   "2026": 0
+  },
+  "months_positive": 3,
+  "months": 46,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 4,
+  "sessions": 742,
+  "per_session": 15.9,
+  "final_wallet": 30000,
+  "skipped": 183,
+  "lots_cut": 3
+ },
+ "BOUND-LADDER | 2023-2026 @205": {
+  "net": 18204,
+  "by_year": {
+   "2023": 4211,
+   "2024": 4005,
+   "2025": 11090,
+   "2026": -1103
+  },
+  "months_positive": 11,
+  "months": 46,
+  "worst_month": -1863,
+  "worst_day": -1863,
+  "refilled": 18012,
+  "trades": 39,
+  "sessions": 742,
+  "per_session": 24.5,
+  "final_wallet": 30000,
+  "skipped": 142,
+  "class_used": {
+   "OTM1": 26,
+   "SIGNAL": 10,
+   "NORMAL": 3
+  },
+  "per_lot_by_class": {
+   "NORMAL": 2543,
+   "SIGNAL": -176,
+   "OTM1": 474
+  },
+  "largest_debit": 5685,
+  "max_debit_over_room": 0.954,
+  "mean_lots": 1.0
+ },
+ "BOUND-LADDER-1 | 2023-2026 @205": {
+  "net": 18204,
+  "by_year": {
+   "2023": 4211,
+   "2024": 4005,
+   "2025": 11090,
+   "2026": -1103
+  },
+  "months_positive": 11,
+  "months": 46,
+  "worst_month": -1863,
+  "worst_day": -1863,
+  "refilled": 18012,
+  "trades": 39,
+  "sessions": 742,
+  "per_session": 24.5,
+  "final_wallet": 30000,
+  "skipped": 142,
+  "class_used": {
+   "OTM1": 26,
+   "SIGNAL": 10,
+   "NORMAL": 3
+  },
+  "per_lot_by_class": {
+   "NORMAL": 2543,
+   "SIGNAL": -176,
+   "OTM1": 474
+  },
+  "largest_debit": 5685,
+  "max_debit_over_room": 0.954,
+  "mean_lots": 1.0
+ },
+ "BOUND-SIGNAL | 2023-2026 @205": {
+  "net": 8073,
+  "by_year": {
+   "2023": -2459,
+   "2024": 8611,
+   "2025": 1920,
+   "2026": 0
+  },
+  "months_positive": 2,
+  "months": 46,
+  "worst_month": -1686,
+  "worst_day": -1686,
+  "refilled": 6641,
+  "trades": 15,
+  "sessions": 742,
+  "per_session": 10.9,
+  "final_wallet": 30000,
+  "skipped": 169,
+  "class_used": {
+   "SIGNAL": 15
+  },
+  "per_lot_by_class": {
+   "SIGNAL": 505
+  },
+  "largest_debit": 5653,
+  "max_debit_over_room": 0.942,
+  "mean_lots": 1.07
+ },
+ "BOUND-OTM1 | 2023-2026 @205": {
+  "net": 13830,
+  "by_year": {
+   "2023": 1252,
+   "2024": 2794,
+   "2025": 10887,
+   "2026": -1103
+  },
+  "months_positive": 10,
+  "months": 46,
+  "worst_month": -1863,
+  "worst_day": -1863,
+  "refilled": 17722,
+  "trades": 39,
+  "sessions": 742,
+  "per_session": 18.6,
+  "final_wallet": 30000,
+  "skipped": 142,
+  "class_used": {
+   "OTM1": 39
+  },
+  "per_lot_by_class": {
+   "OTM1": 346
+  },
+  "largest_debit": 5685,
+  "max_debit_over_room": 0.948,
+  "mean_lots": 1.03
+ },
+ "BOUND-NORMAL | 2023-2026 @400": {
+  "net": 11019,
+  "by_year": {
+   "2023": 3832,
+   "2024": 7186,
+   "2025": 0,
+   "2026": 0
+  },
+  "months_positive": 2,
+  "months": 46,
+  "worst_month": -171,
+  "worst_day": -171,
+  "refilled": 171,
+  "trades": 4,
+  "sessions": 742,
+  "per_session": 14.8,
+  "final_wallet": 30000,
+  "skipped": 183,
+  "lots_cut": 3
+ },
+ "BOUND-LADDER | 2023-2026 @400": {
+  "net": 12994,
+  "by_year": {
+   "2023": 1576,
+   "2024": 3030,
+   "2025": 8568,
+   "2026": -180
+  },
+  "months_positive": 9,
+  "months": 46,
+  "worst_month": -2058,
+  "worst_day": -2058,
+  "refilled": 19879,
+  "trades": 38,
+  "sessions": 742,
+  "per_session": 17.5,
+  "final_wallet": 30000,
+  "skipped": 143,
+  "class_used": {
+   "OTM1": 27,
+   "SIGNAL": 8,
+   "NORMAL": 3
+  },
+  "per_lot_by_class": {
+   "NORMAL": 2348,
+   "SIGNAL": -13,
+   "OTM1": 224
+  },
+  "largest_debit": 5500,
+  "max_debit_over_room": 0.917,
+  "mean_lots": 1.0
+ },
+ "BOUND-LADDER-1 | 2023-2026 @400": {
+  "net": 12994,
+  "by_year": {
+   "2023": 1576,
+   "2024": 3030,
+   "2025": 8568,
+   "2026": -180
+  },
+  "months_positive": 9,
+  "months": 46,
+  "worst_month": -2058,
+  "worst_day": -2058,
+  "refilled": 19879,
+  "trades": 38,
+  "sessions": 742,
+  "per_session": 17.5,
+  "final_wallet": 30000,
+  "skipped": 143,
+  "class_used": {
+   "OTM1": 27,
+   "SIGNAL": 8,
+   "NORMAL": 3
+  },
+  "per_lot_by_class": {
+   "NORMAL": 2348,
+   "SIGNAL": -13,
+   "OTM1": 224
+  },
+  "largest_debit": 5500,
+  "max_debit_over_room": 0.917,
+  "mean_lots": 1.0
+ },
+ "BOUND-SIGNAL | 2023-2026 @400": {
+  "net": 6834,
+  "by_year": {
+   "2023": -3239,
+   "2024": 7831,
+   "2025": 2242,
+   "2026": 0
+  },
+  "months_positive": 2,
+  "months": 46,
+  "worst_month": -1728,
+  "worst_day": -1734,
+  "refilled": 6515,
+  "trades": 14,
+  "sessions": 742,
+  "per_session": 9.2,
+  "final_wallet": 30000,
+  "skipped": 170,
+  "class_used": {
+   "SIGNAL": 14
+  },
+  "per_lot_by_class": {
+   "SIGNAL": 456
+  },
+  "largest_debit": 5441,
+  "max_debit_over_room": 0.907,
+  "mean_lots": 1.07
+ },
+ "BOUND-OTM1 | 2023-2026 @400": {
+  "net": 7928,
+  "by_year": {
+   "2023": -1673,
+   "2024": 1624,
+   "2025": 8157,
+   "2026": -180
+  },
+  "months_positive": 9,
+  "months": 46,
+  "worst_month": -2058,
+  "worst_day": -2058,
+  "refilled": 20174,
+  "trades": 38,
+  "sessions": 742,
+  "per_session": 10.7,
+  "final_wallet": 30000,
+  "skipped": 143,
+  "class_used": {
+   "OTM1": 38
+  },
+  "per_lot_by_class": {
+   "OTM1": 203
+  },
+  "largest_debit": 5448,
+  "max_debit_over_room": 0.908,
+  "mean_lots": 1.03
+ },
+ "parity_vs_sn434": {
+  "2022 @205": [
+   0,
+   0
+  ],
+  "2022 @400": [
+   0,
+   0
+  ],
+  "2023-2026 @205": [
+   11799,
+   11799
+  ],
+  "2023-2026 @400": [
+   11019,
+   11019
+  ]
+ }
+}

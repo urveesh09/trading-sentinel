@@ -1,0 +1,85 @@
+{
+ "opener_days": 68,
+ "gold_trades_on_opener_days": 12,
+ "counts": {
+  "FILLED": 0,
+  "DELAYED": 0,
+  "MISSED": 0,
+  "no_overlap": 12
+ },
+ "sn419_forced_by_gold": 0,
+ "rows": [
+  {
+   "day": "2026-01-23",
+   "gold_i": 141,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-02-05",
+   "gold_i": 186,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-02-13",
+   "gold_i": 216,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-02-27",
+   "gold_i": 135,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-04-10",
+   "gold_i": 165,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-05-21",
+   "gold_i": 165,
+   "opener_exit_j": 18,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-06-12",
+   "gold_i": 175,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-06-19",
+   "gold_i": 160,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-08-27",
+   "gold_i": 270,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-09-24",
+   "gold_i": 156,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-10-08",
+   "gold_i": 81,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  },
+  {
+   "day": "2026-10-09",
+   "gold_i": 165,
+   "opener_exit_j": 60,
+   "state": "no_overlap"
+  }
+ ]
+}

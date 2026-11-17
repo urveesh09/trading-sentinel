@@ -1,0 +1,16 @@
+{
+ "2022": {
+  "all": -1181.4,
+  "without_best_5": 650.4,
+  "without_best_10": 499.2,
+  "agree_among_top10_winners": 3,
+  "agree_share_all": 0.433
+ },
+ "2023-26": {
+  "all": 6125.3,
+  "without_best_5": 3146.8,
+  "without_best_10": 3877.7,
+  "agree_among_top10_winners": 6,
+  "agree_share_all": 0.477
+ }
+}

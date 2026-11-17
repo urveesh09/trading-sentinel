@@ -1,0 +1,75 @@
+{
+ "fw9a_cheap_opener": {
+  "edge_per_session_0": {
+   "PASS": 0.198,
+   "FAIL": 0.738,
+   "INSUFFICIENT": 0.064
+  },
+  "edge_per_session_50": {
+   "PASS": 0.26,
+   "FAIL": 0.669,
+   "INSUFFICIENT": 0.071
+  },
+  "edge_per_session_154": {
+   "PASS": 0.453,
+   "FAIL": 0.484,
+   "INSUFFICIENT": 0.063
+  },
+  "edge_dev_claim_109": {
+   "PASS": 0.369,
+   "FAIL": 0.567,
+   "INSUFFICIENT": 0.064
+  },
+  "edge_dev_claim_x_minus_0.22": {
+   "PASS": 0.157,
+   "FAIL": 0.777,
+   "INSUFFICIENT": 0.066
+  }
+ },
+ "SN300a_packets": {
+  "edge_per_session_0": {
+   "PASS": 0.043,
+   "FAIL": 0.361,
+   "INSUFFICIENT": 0.596
+  },
+  "edge_per_session_50": {
+   "PASS": 0.06,
+   "FAIL": 0.348,
+   "INSUFFICIENT": 0.592
+  },
+  "edge_per_session_154": {
+   "PASS": 0.076,
+   "FAIL": 0.348,
+   "INSUFFICIENT": 0.576
+  }
+ },
+ "F1_banknifty": {
+  "edge_per_trade_0": {
+   "PASS": 0.035,
+   "FAIL": 0.966
+  },
+  "edge_per_trade_50": {
+   "PASS": 0.042,
+   "FAIL": 0.958
+  },
+  "edge_per_trade_154": {
+   "PASS": 0.065,
+   "FAIL": 0.935
+  }
+ },
+ "fx5": {
+  "decisions_in_pool": 240,
+  "edge_per_decision_0": {
+   "PASS": 0.112,
+   "FAIL": 0.888
+  },
+  "edge_per_decision_50": {
+   "PASS": 0.345,
+   "FAIL": 0.654
+  },
+  "edge_per_decision_154": {
+   "PASS": 0.931,
+   "FAIL": 0.069
+  }
+ }
+}

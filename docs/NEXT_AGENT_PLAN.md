@@ -1,10 +1,527 @@
+## November 17 (night) - EN01–EN05: E03.2 improvements per the Nov 17 audit. Honest expiry exits (EN01) and a 12:47 recording start, so live E03.2 decides from 13:00 like its lab (EN02), in Dev. The put gate, put size and put runner arms (EN03–EN05) fail their frozen rules, so E03.2 is unchanged and 3x puts become an arm of the prepared NIFTY 2023 exam (Dev only, not deployed)
+
+**Owner (Nov 17):**
+- Five SN-style slots, EN01 to EN05, each an improvement on the E03.2 baseline, tested on our data.
+- Audit of Production `0b645d77`: E03.2 opened 0 paper tickets in 4 live sessions (Nov 5, 9, 12, 17); its
+  efficiency gate gave 404 of 480 refusals. It also found two exit defects and a Dec 7 close question.
+- Plan frozen `08bc55b8`. Results: `docs/research/simulation/2026-11-17-expiry-en/README.md`. Plain
+  report: `docs/EXPIRY_RESEARCH_EN.md`.
+
+**EN01 (engine, Dev): honest exits.**
+- `expiry_e02.run_tick` makes one exit attempt per quote snapshot. FLAT_TIME waits a snapshot when a sale
+  or a latched exit already used this tick's bids; the old code could sell one displayed lot twice at
+  15:14.
+- Every sale is returned as a notice (the old code kept only the last).
+- A leg still open after its session is settled instead of returning `UNRESOLVED_PRIOR_DAY` on every
+  later tick (`settle()`, `booked()`, `SETTLED`):
+  - SETTLED_ASSUMED at intrinsic, less exercise STT, from our sampled post-auction index (before CAS 2.0);
+  - otherwise UNRESOLVED at its worst case;
+  - the value goes in `assumed_pnl` and is never a fill.
+- The cash journal, `day_results` and `summary_lines` include assumed values.
+- `expiry_e02.reconcile(db_path, variant, now)` settles a stuck leg the same evening. The hourly
+  `_run_expiry_paper_reconcile_safe` calls it for every variant and queues the main ticket's notice.
+- `expiry_paper.can_fill` / `last_flat` / `expiring_close` (via `market_calendar.expiring_index_close_time`):
+  - no paper fill at or after the expiring contracts' close (15:40, or 15:30 from 2026-12-07);
+  - every flat time capped two minutes before it, so A/B/C's FINAL_FLAT 15:38 becomes 15:28 from Dec 7;
+  - before Dec 7 nothing changes.
+- The settlement source for A/B/C from Dec 7 (official VWAP 15:00–15:30 against our sampled index) is
+  still open.
+
+**EN02 (engine, Dev): the 13:00 warm-up.**
+- `expiry_paper.TICK_START` is 12:47 (it was 12:59); `EXPECTED_SLOTS` is 1,038 (it was 966).
+- E03.2's signal needs 12 one-minute bars, so live it could not decide before about 13:11. The lab trades
+  from 13:00; 2 of its 39 tickets (+Rs 1,715) were decided at 13:00–13:10.
+- A, B and C act only inside their own 13:00+ windows.
+- Rollback: `TICK_START` 12:59.
+
+**EN03–EN05 (lab, in-sample NIFTY 2024 + 2025; `en_lab.py` reproduces E03.2 +21,517.55 day by day):**
+
+| Arm | Ordinary | Adverse | Severe | Verdict |
+|---|---:|---:|---:|---|
+| E03.2 (control) | +21,518 | +20,001 | −2,438 | — |
+| EN03 put gate 0.65 | +10,367 | +7,367 | −4,070 | Fails all checks |
+| EN04 puts 3x | +34,165 | +31,341 | −3,277 | Passes alone and passes `RISK_PLAN.md`. Neighbours fail: 2.5x on 2024 net without the best day (lot rounding); 3.5x on severe −4,232. Not adopted. |
+| EN05 put runner 1.2 | +18,351 | +17,166 | −3,046 | Both years lower; fails |
+
+- EN03's added put tickets lose in both years. At 0.60: 2024 had 16 tickets, 4 winners, −4,183; 2025 had
+  14 tickets, 3 winners, −7,221. The edge exists only in the strongest trends.
+- No candidate: E03.2 is unchanged.
+
+**Other checks and the 2023 exam:**
+- **SENSEX calibration (descriptive, on the forward-panel quote archive):** in-band strikes exist on
+  83–100% of 13:00–15:00 minutes, except puts on Sep 10 and Oct 1. No bug.
+- **Engine replay** on the 9 Production recordings with 5-level packets: identical to the Nov 5 receipt
+  (2 tickets, −822.96).
+- **Data census (row counts only):** the Breeze database has same-day-expiry afternoon option rows only
+  for NIFTY 2023 (protected), 2024 and 2025. NIFTY 2019–22, NIFTY 2026 and SENSEX 2024–26 have none.
+- **Exam:** `EXAM_EN_ADDENDUM.md` + `exam2023.py` add E03.2-stands (test 7) and 3x puts with neighbours
+  (test 8) to the frozen E03-family exam. The route is NIFTY 2023 from the sealed export.
+  `exam2023.py check` proves the loader against `data.load_year` on 2024.
+- **Scoring needs the owner's word** (`OWNER_WORD.md`, then `freeze`, commit, `score` once).
+
+**Next:**
+1. The owner's word on NIFTY 2023.
+2. A download, through the breeze-history-download skill only, of expiry-afternoon chains: NIFTY 2026,
+   SENSEX Oct 2024 – Nov 2026, NIFTY 2020–22.
+3. E03.2 forward tickets: 0 of 20.
+
+**Verification:**
+- `tests/test_expiry_en01.py` 8 passed; 6 of its first 7 fail on the old code.
+- `-k expiry` 231 passed; `test_expiry_en01` + `test_expiry_paper` 71 passed after EN02.
+- Full engine suite: 6,465 passed, 4 skipped, exit 0 (11 min 36 s). Commits: plan `08bc55b8`, implementation + results `0604fae0`.
+- Atlas regenerated.
+
+**State:** no `.env` or schema change; Dev only, not pushed or deployed until the owner says so. Docker
+Desktop was not running at 20:55 IST on Nov 17, so Production was down; it was not started from here.
+
+## November 17 (night) - SN476–SN490: Gold v5 unchanged loses on its never-run 2020–21 sample (−₹64,783 @205 from ₹30k), so Gold has lost in four of seven years and earned only in 2024–26; the live engine can take every trade the benchmark credits and matches its rules to the paisa; no challenger survives (failed-add exit, faster entry, expert adds, oil / rupee filter, next-week option, ETF trend); held-contract research pin in Dev (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's ten Gold slots (`docs/research/fno/2026-11-17-sn476/BRIEF.md`, byte-exact copy of `2026-11-17-gold-v5-next-ten/HANDOFF.md`) plus five own. Plan `bf895633` (amendments A1–A4). Results: `docs/research/fno/2026-11-17-sn476/README.md`.
+
+- **SN482 (2020–21, route of SN366: `sn482_build.py` / `sn482_exam.py` / `n08_shim2.py`, n08_lab.py untouched):** Gold v5 unchanged on NIFTY Jan 2020 – Aug 2021: ₹30k −64,783 @205 / −93,971 @400 (5 of 20 months positive, refills 1,36,305); one lot −35,767 / −52,884. Over 2020–26 the ₹30k book averages ₹612 a replay session @205 (₹300 @400), one lot ₹84 / ₹11.
+- **SN476:** Gold started Nov 13 with 0 eligible decisions (no NIFTY N11 signal Nov 13/16, Nov 17 expiry-day refusal); the paper record gated at 0.85 holds all 186 benchmark trades (+~2 a year more); lots, contract, charges and net match the replay to the paisa. Divergences (owner's call): the runtime stop omits the ₹205 reserve, growth/refill use unstressed nets, stops are sampled once a minute (worst day ~₹1,100 a lot worse), adds/trail use the future (replay: the index).
+- **SN477 (Dev, not deployed):** `python-engine/research_pins.py` pins each SN Gold entry's and N11 paper record's exact contract in the research collector's selected-leg store until 15:20 (`RESEARCH_PIN_PAPER_LEGS`, default on); SN464's two unpriced deep-ITM winners stay quoted; the tick recorder needed no change. Tests: `tests/test_research_pins.py` (9) + Gold / N11 / leg store / collector / recorder suites = 99 pass; full engine suite 6,458 passed, 4 skipped (exit 0; a first run stopped on a timing-sensitive kite_client rate-limiter test while other jobs ran, which then passed 3 of 3 alone). Atlas regenerated.
+- **Fails:** SN480 failed-add sale (2023–26 −1,56,875 @205; dipped adds recover), SN486 its neighbours, SN478 one-minute-faster entry, SN489 expert-specific adds, SN483 oil + rupee add filter, SN484 NIFTYBEES trend (CAGR 1.7% vs buy-and-hold 10.7% over 2020–26); SN481 next-week option INSUFFICIENT (no data; 5 archive pairs all favour the front contract); SN490 no survivor on 2020–21.
+- **Learned:** Gold's money is 79% first lots, mostly puts and TPB (SN487); without deposits ₹30k at ₹400 is bust by Dec 2023 (SN480b); a packet-triggered stop-limit recovers ~₹140–160 a lot per stop on the same touch (SN479, mechanism on Nov 16–17 packets).
+- **Forward:** SN485 / `fw10.py` - Gold v5 alone from 2026-11-18 for 585 market sessions (~2.4 years), scored once on read-only Production receipts.
+- **Release state:** Dev only (branch `codex/production-correction-hedge-p0`, not pushed). Production `0b645d77` only read (throwaway read-only container). No config migration; one new setting `RESEARCH_PIN_PAPER_LEGS` (default True) takes effect only on deploy.
+
+## November 17, 2026 - Ten NIFTY challenger slots complete
+
+- Plan and receipts in [the ten-slot report](research/fno/2026-11-17-ten-slots/README.md). Scored source `4acf76ba`. No challenger met the frozen admission criteria.
+- Keep the robust objective as a hypothesis. It improved by shrinking the trading set and its positive total disappeared without one trade. The archive overlap supplied zero R6 signals for a depth check.
+- Next measurement for this finding. Use the existing quote recorder to distinguish Gold's stop-trigger-to-bid market movement from order-path delay once fresh stop examples accrue. Keep the protected 2023 expiry-chain exam sealed.
+- Research-only release. No new runtime setting, migration, push or deployment.
+
+## November 17 (evening) - SN456–SN475: prior-session FII positioning adds nothing to a 10:00 NIFTY forecast (Clark–West p 0.62) and the popular FII long-ratio rule is wrong-signed; Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp); none of Gold's six-lot exits lacked bids (the gaps were recording gaps, including deep-ITM winners outside the archive's strike window); Gold leaves 77.5% of sessions clear at 10:00, so the gap is skill, not capacity: break-even needs a forecast correlated ~0.2 with the next hour; our forward verdicts mostly cannot tell an edge from none (only fx5 is informative); BANKNIFTY F1 cannot reach its verdict (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN456–SN470 (`docs/SN456_SN470_AI_RESEARCH_BRIEF.md`, `6f6d9d0f`) plus five own slots. Plan `83e1b444`. Results: `docs/research/fno/2026-11-17-sn456/README.md`.
+
+**Findings:**
+- **Positioning (SN456 / SN473 / SN471):**
+  - 1,508 out-of-sample days: Clark–West −1.34 (p 0.62), permutation p 0.82.
+  - No horizon shows the information (correlations with gap / open / 10–11 / afternoon all within ±0.03).
+  - The contrarian FII long-ratio rule is wrong-signed.
+  - On Gold's own trades: agreeing trades earn more in 2023–26 but the sign flips in 2022 (fails; post-hoc hypothesis only).
+- **Kronos (SN458):** Kronos-small zero-shot forecasts the next half hour worse than no change (MAE 37.8 against 13.2 bp).
+- **Gold's exits (SN464 / SN474):**
+  - 0 observed ZERO_BID / PARTIAL; 2 feed stops; 2 deep-ITM winners outside the 11-strike window.
+  - 15:10 books hold 6 lots 100% of the time.
+  - 15:05 looked better (+8%) but the clock curve zig-zags (sensitivity only).
+- **Capacity and skill (SN461 / SN475 / SN462):**
+  - Gold is clear at 10:00 on 98.8% of replay days.
+  - Break-even needs a correlation of 0.215 (0.104 on the top 30%).
+  - SN456's forecasts were uncalibrated (₹10.5 a session at ₹205).
+- **Verdict power (SN469 / SN472):**
+  - A wage-level edge clears zero in 10% of 60-session tests.
+  - fw9a passes a zero-edge book 19.8% of the time and its own claim 36.9%; SN300a / F1 barely pass at all.
+  - fx5 is informative (93% at ₹154 a decision).
+- **Plumbing:**
+  - BANKNIFTY F1 needs about 4 years for 30 triggers (SN467).
+  - `wallet_sm.py` + 8 fixtures (SN468).
+  - Exit depth INSUFFICIENT (SN460).
+  - The duplicate screen finds 71% (SN463).
+  - The filing parser works on NSE's rendered view (SN457).
+  - FII cash BLOCKED (SN466).
+
+**Runtime:** no change. Still awaiting "deploy": SN329 hours, the V8 shadow, the recorder's BANKNIFTY chains (`1bfed1d0`). The protected 2023 expiry exam is unspent.
+
+
+## November 17 (afternoon) - SN441–SN455: on Gold's empty days a one-hour ITM trade needs ~62% / 77% direction (₹205 / ₹400); timing headroom (~₹1,000 a decision in hindsight) cannot be captured by waits, discounts or resting bids, and Gold's entries must stay immediate; Gold's replay is future-blind and ₹205 covers its cost at 6 lots; bank results, the London clock and expiry-afternoon pinning give nothing usable; expiry momentum is real-looking but does not pay; a development number has predicted almost nothing (median unseen / development −0.22) (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN441–SN450 (`docs/SN441_SN450_RESEARCH_BRIEF.md` + `docs/research/fno/2026-11-17-sn441/nse-bank-filings-pilot.csv`, `6141c1df`) plus five own slots. Plan `f56f5807`. Results: `docs/research/fno/2026-11-17-sn441/README.md`.
+
+**Findings:**
+- **Direction hurdle (SN441):** on 98 common two-sided cells, break-even is 57.6% / 66.5%; on Gold-empty days 61.8% / 77.2%.
+- **Timing (SN442 / SN443 / SN453 / SN454):** the hindsight forward best price is worth ~₹1,000 a decision, but every observable patient entry loses. In Gold: delays −3 to −12%, a limit −74%.
+- **Gold's integrity and cost (SN452 / SN445):** all 186 decisions are identical with the future removed. Real depth at 6 lots costs +₹120 a lot over the model, inside ₹205.
+- **Information clocks (SN447 / SN448 / SN451):**
+  - bank results are INSUFFICIENT (8 sessions);
+  - there is no London clock;
+  - there is no expiry pin;
+  - expiry-afternoon momentum hits 57.7% against a 43.8% placebo, but makes +₹88 / −₹94 a trade.
+- **Loss bound (SN446):** a cheaper-strike ladder trades 39 times for ₹18k in four years.
+- **Program record (SN455):** 5 of 19 frozen development / unseen pairs kept their sign; only WK-H kept its rate.
+- **Baseline (SN450):** Gold 2023–26 at ₹205 makes ₹901 a market session, ₹750+ on 6.2% of sessions, its best 5 days are 41% of profit, and its longest stretch without a new high is 226 sessions.
+- **New frozen forward companion:** `fx5.py` (SN444; read once at 60 decisions).
+
+**Runtime:** no change. Still awaiting "deploy": SN329 hours, the V8 shadow, and the recorder's BANKNIFTY chains (`1bfed1d0`). The protected 2023 expiry exam is unspent (the owner's call).
+
+## November 17 (midday) - SN426–SN440: the hindsight money is mostly timing and direction (break-even needs ~56% / ~68% direction at ₹205 / ₹400); Gold's expiry mornings hold ~7 signals a year (insufficient); Gold's exit headroom exists, but every exit rule cuts its winners; ₹205 is the realistic cost (Gold ≈ ₹617 a real session); a hard loss bound stops Gold at ₹30k (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN426–SN435 (`docs/SN426_SN435_RESEARCH_BRIEF.md`) plus five own slots. Plan `123301ac`. Results: `docs/research/fno/2026-11-17-sn426/README.md`.
+
+**Findings:**
+- **Dates and signals (SN426):** of 1,195 sessions Gold's replay holds 932; 251 are expiries, 4 special and 8 data holes. Gold skips 66 signals because it already holds a position.
+- **Expiry mornings (SN427):** a hooked N11 rerun (parity with every saved evaluation) finds a morning candidate on 27 of ~200 expiry days; the 5 priced cases lose; insufficient.
+- **The hindsight money (SN428):** per decision, perfect side +₹1,269, perfect exit +₹1,240, perfect entry minute +₹2,126 (₹205).
+- **Exits (SN429 / SN439 / SN439b):** Gold leaves ₹2,085 a lot of exit headroom, but fixed checkpoints, no-progress cuts and breakeven locks all lose more than they save.
+- **Loss bound (SN434):** a full-loss bound leaves Gold 4 trades in four years; the current trigger stop keeps up to ₹1 lakh at risk.
+- **Feed, size, edge map (SN436–SN438):** no extra panel book, size-by-expert rule or time cutoff improves both 2022 and 2023–26.
+- **Real cost (SN440):** paper fills cost a median ₹6.5 a lot (mean ₹59) more than the model, so ₹205 stress is conservative.
+- **Blocked:** SN430 (NSE refused automated access), SN431 (recorder not deployed).
+- **Plumbing (SN432):** 5-second ask confirmation filled better on one morning; plumbing only.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow, the recorder's BANKNIFTY chains (`1bfed1d0`).
+
+## November 17 (late morning) - SN411–SN425: every day offered ₹750 (hindsight), so the gap is selection; Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205, not ₹791); Gold's signal settings are flat and its exposure settings are leverage; BANKNIFTY is the only other venue, mostly in its last week; recorder change for BANKNIFTY in Dev (NOT deployed)
+
+**Owner (Nov 17):** the auditor's SN411–SN420 (`docs/SN411_SN420_RESEARCH_BRIEF.md`) plus five own slots. Plan `e5cc95b7`. Results: `docs/research/fno/2026-11-17-sn411/README.md`.
+
+**Code (Dev only, `1bfed1d0`, awaiting the owner's "deploy"):**
+- **What it does:** `tick_recorder.py` records research chains for `TICK_RECORDER_EXTRA_UNDERLYINGS` (default BANKNIFTY): futures plus options on `TICK_RECORDER_EXTRA_EXPIRIES` = 2 expiries, `TICK_RECORDER_EXTRA_STRIKES` = 10 strikes either side. NIFTY / SENSEX keep their own limits.
+- **Scope:** only names with an `fno_underlyings` book are recorded (FINNIFTY is skipped).
+- **Budget:** about +15% bytes, against the 600 MiB day cap.
+- **Off switch:** `TICK_RECORDER_EXTRA_UNDERLYINGS=""`.
+- **Tests:** 2 new; `test_tick_recorder` 15 passed. Atlas regenerated.
+
+**Findings:**
+- **Hindsight ceiling (SN412):** one affordable lot offered a median ₹9,376 a day on all 42 real-quote days; 83–97% of fixed-clock windows held ₹750.
+- **Gold:**
+  - **Coverage (SN422):** its replay holds 932 of 1,195 sessions (no NIFTY expiry days); 730 have no signal; 0 signals go untaken.
+  - **Parameters (SN421):** the extension is flat; scale-in, ITM, day room, lots and growth each move the result 24–37%.
+  - **Size ladder (SN424):** 1 lot ₹2.14 lakh, deployed ₹8.51 lakh, cap 5 ₹15.5 lakh (2023–26), with the worst month scaling to −₹84k.
+  - **Tail (SN425):** 2 days lost more than 20% of the wallet; a no-bid exit could cost a full ₹1 lakh debit.
+  - **Stand-aside (SN418):** fires only in 2022–23; mildly positive at one lot; retained.
+  - **Live clock (SN411 B):** entries arrive 44–53 s after the bar end against the replay's 59 s.
+- **Other indices (SN413 A, public NSE end-of-day files):** BANKNIFTY front ATM is affordable on 30% of sessions (93% in its last week); FINNIFTY is equally affordable but thin (314 trades a day).
+- **The bank-sector residual (SN414):** it does not persist (−4.4 bp at 45 min); it reverses at 15–30 min in all 27 grid cells (post hoc).
+- **The one-ledger opener (SN419):** +₹22.8k / +₹12.2k over 10 months; all 12 of its stops slipped.
+- **Closed:** company results (SN415) and USDINR (SN416) at feasibility; SN417's partner protocol is frozen, not run.
+
+**Forward:**
+- fw7c / fw9b frozen (25 tests) beside fw7a / fw7b and fw9 / fw9a;
+- F1 (BANKNIFTY residual fade, `F1_SN420_SPEC.md`) is pre-registered for recorder data after the deploy.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow, and now the recorder's BANKNIFTY chains.
+
+## November 17 (morning) - SN396–SN410: on the real 09:16:00 clock the opening trade loses (the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected and pre-auction checks; N10 vs N11 inside Gold = the stand-aside alone; Gold is not a clock artefact; forward companions fw7b / fw9a / fw8a frozen (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN396–SN405 (`docs/SN396_SN405_RESEARCH_BRIEF.md`) plus five own slots. Plan `00693405`. Results: `docs/research/fno/2026-11-17-sn396/README.md`.
+
+**Opening trade:**
+- **The real clock (SN396).** gl labels a bar by its start and trades its close, so SN382's "09:16" was a 09:17:00 decision. On the HONEST clock (09:15 close = 09:16:00) the trade makes −₹81 / −₹235 a session (₹205 / ₹400). With 59 s of latency and a capped order it makes −₹253, because the cap fills mostly when the price falls.
+- **CHEAP survives the clock:** +₹335 / +₹182 a cheap session.
+- **But "cheap" is not proven:**
+  - it is mostly a direction effect, tangled with the calendar, and the continuous jump has no slope (SN397);
+  - the White reality check over the 24-rule family gives p 0.80 (studentized 0.90);
+  - the 720-cell map has no positive cell without the filter, and a stricter cut does worse (SN406);
+  - on 2022–2025 gap days it gives +₹19 / −₹147 (SN407).
+- **No affordable option breaks even on the opening move:** the hurdle is about 13 points against a forecast of 1.3 (SN399).
+- **Since Sep 7** the move is spent before 09:16:00 (SN410).
+
+**Gold:**
+- **SN403:** in 2022 the N10–N11 gap is entirely the stand-aside (N10's retry never fired). Over five years the stand-aside's blocked trades net −₹822; its in-sample lead is a compounding path effect. DEPLOYED still leads 2022–26.
+- **SN404 / SN408:** option richness at entry predicts nothing.
+- **SN409:** one minute of latency costs 7.7% (₹8.51L → ₹7.86L); Gold is intact.
+- **SN405:** ₹791 a session at ₹205, ₹409 at ₹400; Gold trades on 17% of sessions.
+
+**Coverage, all closed:**
+- roll days (the next-week lot affordable on 3 of 7);
+- SENSEX on NIFTY's skip days (−₹547 a session on NIFTY expiry days);
+- RBI days (3 events, all stopped);
+- Kite flow can't be trade-signed (about 198 trades per packet).
+
+**Forward queue:**
+- fw7a / fw7b / fw7 / fw5 together after SN300a;
+- fw9 + fw9a at 15 cheap fills or 60 sessions;
+- fw8 + fw8a at 20 sessions;
+- fw6 from Dec 7.
+NSE's 2027 holiday list must go into `fw9a.HOLIDAYS` before any 2027 session is scored.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow.
+
+## November 16 (late night) - SN381–SN395: the opening trade made honest (fragile; the ITM-vs-ATM edge is the robust part), Gold's 2022 exam closed (N10 sheet D yes; N10 retry is the sheets' lead), the wage needs capital; forward scorers fw7a / fw8 / fw9 frozen (research only, nothing deployed)
+
+**Owner (Nov 16):** the auditor's SN381–SN390 (`docs/SN381_SN390_RESEARCH_BRIEF.md`) plus five own slots. Plan `c6e99cee`. Results: `docs/research/fno/2026-11-16-sn381/README.md`.
+
+**The auditor's three flaws** (one-strike fallback over the cash room, a fallback signal that could arrive after 09:16, controls compared on a different subset) are confirmed and fixed in `sn381/fw7a.py`, with 9 synthetic tests. fw5 / fw7 are kept as frozen.
+
+**Opening trade:**
+- **Under honest rules** it is +₹46 a session at ₹205 (−₹7 without the best day, −₹137 at ₹400), and −₹447 after NSE's Sep 7 auction change (SN382).
+- **The robust part is the expression:** ITM beats ATM by +₹122 a trade on the same days, mostly from a larger delta (SN382 / SN383).
+- **The only promising split is cheap overnight opens** (+₹396 / +₹199 per session, 73 sessions, permutation p 0.031, the best of ~10 splits), frozen forward as `sn381/fw9.py` (SN394).
+- **Closed:** the 09:36 exit, cash agreement (coverage), auction size, indicative drift (too few).
+
+**Gold:**
+- **SN387, N10 sheet D yes:** one account 2022–26, N10 with WATCH ₹4,41,853 against CUSHION ₹4,15,120. N10's sheet passes A–D and N11's fails A and B.
+- **SN392, Gold v5 on 2022:** −₹15,281 with N11 signals against +₹4,681 with N10 / NO_STAND. Over 2022–26 the deployed signals still lead, on in-sample years. No change.
+
+**Wage (SN389 / SN395):**
+- From ₹30k + ₹30k, profit-only pays about ₹525 a session on a 2022-type start, with up to a 21-month dry spell.
+- A fixed ₹750 a session needs ₹2–5 lakh of outside money in the first years.
+
+**Forward queue (after SN300a):** fw5 / fw7 / fw7a (20 sessions), fw9 (15 cheap fills or 60 sessions), fw8 (signed flow, 20 sessions), fw6 (from Dec 7, needs the recorder to 15:46).
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow.
+
+## November 16 (night) - SN366–SN380: Gold's unseen 2022 exam run (Gold v5 −₹15,281 from ₹30k, same profile as 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option; forward fw7 frozen (research only, nothing deployed)
+
+**Owner (Nov 16):** the auditor's SN366–SN375 (`docs/SN366_SN375_RESEARCH_BRIEF.md`) plus five own slots. Plan `3740b461`, amendments B1–B4. Results: `docs/research/fno/2026-11-16-sn366/README.md`.
+
+**SN366 (Gold / N11 on unseen 2022):**
+- **Gates:** wiring W (TEST2025 trade for trade) and evidence W2 (with a negative control) passed; 2022 data built from this PC.
+- **First opening:** a wiring fault. N09's volatility reading used fixed daily files with a 21-month hole. It was corrected (`SOURCE_CORRECTION_2022.md`, both receipts kept) and replayed once more.
+- **Nets:** N10 retry −₹3,803, N08 −₹6,874, N11 −₹14,079; random-entry median −₹76,062.
+- **N11 sheet:** A no, B no (the stand-aside cost ₹5,449).
+- **N10 sheet:** A–C yes; D not run.
+- **Gold v5 from ₹30k:** −₹15,281 at ₹205, 4 of 12 months positive, ₹53,896 refilled. Like 2023 (−₹12,107).
+- **`n08_lab.py`** is unchanged; the 2022 points live in `sn366/n08_shim.py`.
+
+**Gap-day ideas:**
+- **The opening direction is gone at 10:15** (SN371). An ITM leg keeps ₹55–110 more of it at 09:16 (SN376: +₹67 at ₹205 on 171 auction sessions, 2026 only).
+- **Opening richness scales with the overnight IV jump** (SN377).
+- **Closed or blocked:**
+  - wings (SN368: the two-tenor test is not computable on the archive; the front tenor points the other way);
+  - synthetic-forward lead (SN378);
+  - signed flow (SN379, 15 events);
+  - expiry pressure (SN372, 9 events);
+  - Hong Kong reopen (SN370);
+  - NIFTYBEES (SN369, no data).
+- **SN367:** a visible ₹750 is lost on the 58% of positions that time out at −₹851.
+- **SN373:** a resting limit loses the winners.
+- **SN374:** never pay spare cash down to the day-stop cover.
+
+**Frozen forward:** `sn366/fw7.py` (SN380, AUCTION ITM arm), scored with fw5 after SN300a's 20th session. fw6 amendment B1: expiry-day rows are research only.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow.
+
+## November 16 (evening) - SN351–SN365: the wage corrected (₹785 a session, not ₹881), the auction's direction is priced, opening premium is rich, no state has room; forward scorers fw5 (auction queue pressure) and fw6 (CAS 2.0 closing window) frozen (research only, nothing deployed)
+
+**Owner (Nov 16):** the auditor's SN351–SN360 (`docs/SN351_SN360_RESEARCH_BRIEF.md`) plus five own slots, "one strategy essence, slot, then give it time". Plan `cbdbc54c` with amendments A1–A6, each committed before that slot's numbers. Results: `docs/research/fno/2026-11-16-sn351/README.md`.
+
+**The wage (SN352 / SN363):**
+- **The auditor's ledger finding is right:** SN342 counted ₹71,250 of growth cash twice.
+- **The cash-funded journal** (daily identity on every session; Gold's day nets unchanged) pays **₹785 a session at ₹205** (₹318 at ₹400), with 2023 paying nothing.
+- **Never-failing salaries:** ₹500 a month with the owner's ₹60k; ₹4,500 with ₹1.2 lakh. ₹750 a session every month needs ₹3.7 lakh at ₹205 and is impossible at ₹400.
+
+**Signals:**
+- **SN353 auction:**
+  - the packet fields are now known (`open` = indicative price, `volume` = indicative matched quantity, buy / sell = total queued quantities; NSE order entry 09:00–09:10);
+  - the gap's direction is information (+₹183 gross a trade, ₹326 above a coin flip) but −₹30 at ₹205;
+  - the queue-pressure arm is frozen forward in `sn351/fw5.py`.
+- **SN361:** an option bought at 09:16 loses ₹80–130 a leg to volatility normalization by 10:15 beyond midday's rate, in every year.
+- **SN351:** no entry state has room at ₹205 (the hindsight ceiling is about ₹1,050 a lot; the realized payoff is −₹295 at 20 minutes).
+- **SN362:** Gold via SENSEX options fails.
+- **SN365:** the auction tells nothing about Gold's trades.
+- **SN359:** V8's order lifecycle on real 5-level depth keeps Gold's modelled return (₹205 stress conservative at Gold's sizes).
+- **Blocked or not triggered:** SN354 / SN356 blocked (no GIFT or bank data; BANKNIFTY lot 30 mostly unaffordable); SN355 untestable here; SN357 / SN360 not triggered.
+- **Frozen forward:** SN364 in `sn351/fw6.py`, which needs the recorder to 15:46 (SN329, not deployed).
+- **Not run:** SN358 (Gold 2022) is the next round's first slot.
+
+**Runtime:** no change. Dev-only items still awaiting "deploy": SN329, V8 shadow.
+
+## November 16 (late afternoon) - SN331–SN350: no short-horizon option edge at any clock; Gold V8 = Gold v5; the wage comes from Gold's capital; V8 shadow keeps its own inventory (research + Dev runtime, not deployed)
+
+**Owner (Nov 16):** the auditor's SN331–SN340 (`docs/SN331_SN340_RESEARCH_BRIEF.md`) plus ten own slots. Plan `95287d3f`; results in `docs/research/fno/2026-11-16-sn331/README.md`.
+
+**Gap-day ideas:**
+- **Failed-break reversals have no room (SN331 / SN345):** 0.5–2.1 index points in 5 minutes; −₹70–89 a trade even at zero stress; −₹131 to −₹169 gross at real archive prices.
+- **The minute reversal fails below every random book (SN344, 2019 included):** any entry right after a fast move costs about ₹95 a lot more than a random one.
+- **Closed:** rebalance days (SN335).
+- **Not triggered:** SENSEX (SN334).
+- **Already answered by SN264:** the expiry book (SN343).
+- **Frozen for the forward window** (scored once after Dec 23, `sn331/fw4.py`): the packet versions SN332 / SN333 / SN349, the one-wallet score SN340 and V8 fill realism SN346.
+
+**Gold V8:**
+- **Lot ceiling:** 12 lots on real depth (SN341).
+- **Reserve:** a fixed ₹30k spare reserve stalls Gold once the wallet grows, so keep one wallet of spare cash (SN339).
+- **The wage (SN342):** reserve = one wallet pays ₹881 a session at ₹205 stress (₹414 at ₹400), in lumps (14 of 45 months).
+- **Rejected:** NO_STAND half-size gap fill (SN347), 8.51 → 6.98 lakh.
+- **More growth steps (SN348):** 4 / 5 steps make +37% / +82% net with deeper bad months. They fail the frozen rule, so this is the owner's risk choice.
+- **V8 configuration (SN350):** Gold v5. The N11 2022 exam (SN336) needs its own round; the route is recorded.
+
+**Runtime (Dev only, NOT deployed):**
+- **SN337:** the V8 shadow keeps its own inventory (`sn_gold_v8_positions`): adds on V8's holdings and cash, exits sell what V8 holds. The auditor's 130-vs-65 case is a test.
+- **SN338:** `python-engine/sn_gold_v8_orders.py`, the order-lifecycle state machine for the future live module (no broker), with 8 adverse-case tests.
+- **SN329 follow-up:** `market_calendar` is imported at module level (an import inside the timed quote-collection tick broke its 0.05 s deadline test).
+
+## November 16 (afternoon) - Gold V8 shadow built in Dev (runtime, flag off, not deployed)
+
+**Owner (Nov 16):** "Gold V8 … should be something that we are focusing to develop in real life."
+
+**What changed:** commit `5d335190`.
+- **New `python-engine/sn_gold_v8.py`:** beside every SN Gold paper entry, scale-in and exit, it records the exact real order Gold V8 would send, in the new table `sn_gold_v8_intents`. Gate 3 of `docs/research/fno/2026-11-16-sn316/GOLD_V8.md`. The order contract:
+  - entry: BUY limit at the ask + 2 ticks;
+  - a stop-loss order for the whole position;
+  - scale-in: cash actually paid against the wallet (SN311's G1 rule);
+  - exits: limit at the bid − 2 ticks, market on the day stop and at the 15:15 failsafe.
+- **Hooks in `sn_gold.py`:** guarded by `_v8_record`, so a failure never changes the paper step.
+- **No broker call:** a test enforces it.
+
+**Flag:** `SN_GOLD_V8_SHADOW_ENABLED` (default false).
+
+**Verification:**
+- `tests/test_sn_gold_v8.py` (8) and `test_sn_gold.py` pass;
+- full suite 6,437 passed, 4 skipped;
+- atlas regenerated.
+
+**Rollout:**
+- Deploy with SN329 (`52a77adf`) on the owner's word, then set the flag true for the shadow weeks.
+- The tick recorder's packets show whether each recorded order would have filled.
+
+## November 16 (afternoon) - SN316–SN330: the partner's chart sequence fails, Gold's losses have no early signature, WK-H survives the 2020 crash, Dec 7 hours fixed in Dev, Gold V8 defined (research + one Dev runtime change)
+
+**Owner (Nov 16):** the auditor's SN316–SN325 (`docs/SN316_SN325_RESEARCH_BRIEF.md`) plus five own slots toward a real-money **Gold V8** (v6 / v7 need about ₹5 lakh of margin).
+
+**Results (`docs/research/fno/2026-11-16-sn316/README.md`; plan `657b74b9`):**
+- **SN316 seal:**
+  - NIFTY Jul–Dec 2019: 122 sessions;
+  - Jan–Sep 2020: all 39 weekly expiries, with legs and hedge marks;
+  - Jan 16 – Apr 2 2026: 52 one-second days.
+- **SN317, the frozen WK-H crash exam (Jan–Sep 2020): PASS.**
+  - Gold v7's leg +₹42,570 per lot; Mar 2020 −₹23,171 (bar −₹34,163). Unhedged straddle March −₹69,274.
+  - WK-H stays margin-funded paper.
+- **SN318, a one-minute break-and-hold on unseen 2019: FAIL.** −₹2.1 / −₹2.3 lakh a quarter, below every random book: short breaks snap back.
+- **SN319–SN322, the partner's 1-minute / 30-second / 5-second chart sequence on one-second data: FAIL** (test Jan–Apr 2026).
+  - The five-second pullback entry lost −₹357 a trade against −₹337 for entering on the break.
+  - Only 12–20% of breaks ever offered ₹750 even in hindsight.
+  - SN78's old picks lost again on their reserved window and are retired.
+- **SN323–SN324, Gold's entry failures:**
+  - 0 of 86 losers broke N11's setup level in the first minute; a bad first minute is as common among winners.
+  - Cancelling failing TPB entries avoids ₹15.7k but misses ₹36.1k. Not adopted.
+  - Entering TPB a minute late costs ₹29k, so the live module must be fast.
+- **SN327, Gold's real-money risk:** no month's refills ever exceeded the wallet (most 63%; 20-session most 96%). Hold about one extra wallet for refills.
+- **SN326, Gold v5 on unseen 2022:** blocked (the N08 → N11 replay stack); a step plan is in the README.
+- **SN328, Gold V8** (`GOLD_V8.md`): Gold v5's rules (nothing else passed), plus a real-money execution contract and paper-to-real gates. The live module is the next slice, on the owner's word.
+- **SN325:** the packet version of the chart sequence (`fw3.py`) is frozen and scored with SN300a after Dec 23.
+
+**Runtime (Dev only, commit `52a77adf`, NOT deployed): SN329, NSE CAS 2.0 hours from Dec 7.**
+- Derivatives close at 15:45; expiring index contracts stop at 15:30; the cash auction is 15:30–15:45.
+- Implemented as date-aware `market_calendar` helpers plus the classifier, expiry cutoffs, partner windows, F&O tick gates, quote collector and tick recorder.
+- Full suite 6,428 passed.
+- Not changed: the expiry paper book's clocks, and the watchdog windows.
+- Needs the owner's word to deploy before Dec 7.
+
+**SN330:** the Windows task `SentinelTickCollect` (weekdays 16:05) runs `sn301/fwd2.py collect` (read-only on Production). Remove it with `schtasks /Delete /TN SentinelTickCollect /F`.
+
+## November 16 (midday) - SN301–SN315: the forward test protected, Gold v5's own losses audited, the Dec 7 clock change found (research only, Dev)
+
+**Owner (Nov 16):** use SN301–SN315 on the auditor's review (`docs/SN301_SN315_RESEARCH_AUDIT.md`): improve, agree or disagree; marginal learning in every slot; cut losses.
+
+**The forward test (fixed before the first eligible session, Nov 18):**
+- `docs/research/fno/2026-11-16-sn301/fw2.py` / `fwd2.py` replace the original collector and verdict (`sn286/fwd.py`, kept frozen and still reported as superseded):
+  - a verified archive (manifest bytes + SHA-256, closed sessions only);
+  - executable fills, exits and stops (depth for one lot, finite exit windows, unresolved = premium lost, slipped stops);
+  - Gold day labels from day-close rows (GOLD / FLAT / UNKNOWN);
+  - matched paired controls and one-wallet affordability;
+  - an amended verdict SN300a that cannot pass on missing evidence (12 synthetic tests pass);
+  - SN315: a pass opens a second block before anything is built.
+- **Window:** session 20 is **Dec 23** (expiry days and Nov 24 skipped). Run `python fwd2.py collect` in that folder any evening and at least once by Dec 23 (35-day retention), then `python fwd2.py verdict` once.
+
+**Gold v5's own losses (replay parity exact, 156 trades, ₹8,50,882):**
+- losses are trades whose entry signal failed, capped at the 20% day room (stop overshoot ₹988 in all, no exits at untraded minutes);
+- adds are worth +₹1.77 lakh, and the 3-ATR extension is neutral (+₹232 over 16 trades);
+- the scale-in cash test never commits more than the wallet, and a "true cash" variant fails its frozen rule, so Gold v5 is unchanged;
+- the real in-the-money costs at Gold's sizes match the model (−₹3.8 a lot), with ample depth.
+
+**Other:**
+- **Delay:** a one-minute delay costs at the entry on puts (−₹50–56 a lot); a late exit costs about ₹0.
+- **Partner, order by order:** new trades after the give-back alert lost in 3 of 4 sessions; "no new trades after the alert" was better in 3 of 4. The coaching wording is the owner's call.
+- **SN314:** from **Dec 7** F&O closes at **15:45** and expiring index contracts stop at **15:30**. About 15 engine files assume 15:40 (partner companion windows, F&O tick, quote collector, expiry cutoffs, tick recorder). See `SN314_CLOCKS.md`. A runtime slice is needed before Dec 7, on the owner's word.
+
+**Where:** `docs/research/fno/2026-11-16-sn301/README.md`. Plan `94c772cd`, forward code `aefc40cb`, results `5aa1d546`.
+
+**Runtime:** none changed; Production unchanged (read-only `docker exec`/`docker cp` of the tick folder and the SN Gold tables).
+
+## November 16 (morning) - SN286–SN300: the auditor's brief tested; two packet candidates frozen for a forward verdict (research only, Dev)
+
+**Owner (Nov 16):** test the auditor's SN286–SN300 brief (`docs/SN286_SN300_RESEARCH_BRIEF.md`), agree or improve.
+
+**Scored on seen data:**
+- **SN286, corrected holiday calls** (weekday full sessions before a weekday market holiday; executable 15:10 exit): positive on all four samples, but without the best day +4.2k / −3.0k / −5.1k / −14.4k. In Gold's wallet +₹18,016 over 33 calls, −₹741 without the best. A forward ledger only (SN298, next date Dec 24).
+- **SN287:** the partner's green days were lost to entries added after the give-back alert (145% of the post-alert change). "No new entries after the alert" was better in 3 of 4 alert sessions.
+- **SN288:** the partner's first-minute edge does not survive executable prices (−0.22% vs +0.09% for random entries; fills 0.35% above the ask). Shares only.
+- **SN290:** a real one-lot ATM round trip costs ₹90–100 (straddle ₹190); the model is ₹4–9 conservative; a one-minute delay is ±₹310–410 noise.
+
+**Frozen for the forward window** (tick recorder, the first 20 qualified NIFTY sessions from Nov 17, verdict once): SN291 (futures pressure), SN293 (lagging strike), SN294–SN296 diagnostics and exit challenger, SN298 holiday shadow.
+- Run `python fwd.py collect` in `docs/research/fno/2026-11-16-sn286` before ~Dec 20 (the recorder keeps 35 days).
+- Then `python fwd.py verdict` once.
+
+**Where:** `docs/research/fno/2026-11-16-sn286/README.md`. Plan `d5cfb8f1`, scorers `d5168b0f`.
+
+**Runtime:** none changed; Production unchanged (read-only reads of the tick folder, E03.2 and paper DBs).
+
+## November 16 (morning) - SN276–SN285: every earlier gap-day signal combined, on all the data (research only, Dev)
+
+**Owner (Nov 16):** "10 slots more … other perspective … same wallet … learn from the good points of strategies."
+
+**Result: nothing passed.**
+- On 1,465 pooled sessions (NIFTY Oct 2020 – Oct 2026 + SENSEX Oct 2024 – Apr 2026):
+  - the walk-forward LightGBM learners lost ₹1.3–1.8 lakh (2–4 of 10 half-years positive);
+  - a vote of seven frozen signals lost after costs (−₹973 pooled, −₹53.9k at ₹400);
+  - SN126-L was about zero on EXAM-N.
+- **Calls on the session before a weekday market holiday** (ITM, 09:20 → 15:10) were positive on all four samples: +₹46.7k over 73 trades. They are post-hoc and fail the null.
+- Inside Gold v5's wallet (in-sample, 2023 – Oct 2026) the calls added +₹14,970 (38 calls). Positive months went from 25 to 28 and the worst month from −₹38.5k to −₹20.5k.
+- A forward paper watch, only on the owner's word.
+
+**WK-H facts for the owner (Gold v7 band 0.8, per option lot, 368 weeks over 5 samples):**
+- 57.6% of weeks won (avg win +₹4,331, avg loss −₹3,202);
+- about 41% of position days green;
+- longest losing run 6 weeks; worst week −₹18.9k.
+- Not suitable for the partner: about ₹5 lakh margin, option selling, a futures hedge every 15 minutes, no forward record yet.
+
+**Where:** `docs/research/fno/2026-11-16-sn276/README.md`. Plan `c300be88`, amendment `d53009ee`.
+
+**Runtime:** none changed; Production unchanged.
+
+## November 16 (morning) - SN251–SN275: Gold's gap days from Gold's own wallet, without margin (research only, Dev)
+
+**Owner (Nov 16):**
+- "use the same wallet that the Gold V5 is using … to trade on the Gold gap days … I don't want to use margin because there is potential of unlimited loss … the amount we can refill [is] by max the wallet's full amount";
+- also asked why WK-H is not hedged with options only ("much less risk … the deposit needed will be also much less").
+
+**Result: no gap-day strategy passed.**
+- **Options-only WK-H** (wings instead of futures, SN251) lost on 4–5 of the 5 samples in every structure: −₹2.1 to −₹2.7 lakh per lot, against +₹3.9–4.2 lakh for WK-H with futures. The wings fix the risk (iron fly 1.0: at most ~₹4,200 per lot) and cost about as much as the weekly edge.
+- **Two new unseen buyer exams** (NIFTY Oct 2020 – Mar 2022, SENSEX Oct 2024 – Apr 2026): the old hot-day watches failed both (SN95-L −₹17,654 / −₹8,541).
+- **Buying an option every session** loses ₹150–660 per lot per day on every sample (SN255).
+- **Thirteen new studies** failed their frozen rule:
+  - weekend and overnight holds; multi-session swing; calendar and events;
+  - opening gaps; the cheap weekly straddle; a LightGBM move-size model; gap-day afternoons;
+  - an overnight index ETF; pre-holiday calls (positive on all four samples, but it failed the null and was a post-hoc pick).
+- **Daily wage (SN269):** Gold v5 alone averages about ₹900 a session (2023 – Oct 2026). A wage pot pays ₹500–750 every session over years, but the owner advances ₹0.5–3.1 lakh first, depending on the start month.
+
+**Where:** `docs/research/fno/2026-11-16-sn251/README.md`. Plan `fb7e7523` (amendment `c22d0b0f`), results through `4f91377e`.
+
+**Runtime:**
+- No runtime file changed.
+- Production `c6cbceb1` (PR #140) carries SN251–SN257's research files only.
+- Gold v7 (Gold v5 + WK-H) stays on Production paper, placing no orders.
+
+**Next:**
+- Mon Nov 16 15:15: the first WK-H paper entry ("🥇 Gold v7 · WK-H (paper): sold …", a `gold_v6_wkh_weeks` row).
+- The 2020 crash test after the download.
+- Pre-holiday calls: a forward paper watch only on the owner's word.
+
+## November 16 (morning) - Deployed: Production `c6cbceb1` (PR #140: N16-RV partner review timeout fix)
+
+**Authority:** the owner, Nov 16 ~08:00: "Both quick unblock and real fix do both and do it quick and then through dev usual path, deploy right now."
+
+**Release:** PR #140 (`codex/production-correction-hedge-p0` at `b90d9f19` → `evolve/smart-strategies`), merged as `c6cbceb1` at 08:22 IST.
+- Runtime: `partner_coach.py`, `partner_insights.py` and `partner_trade_paths.py` (engine), plus `routes/partner-kite.js` and `routes/proxy.js` (gateway), with tests.
+- The other commits in the PR are docs and research only (SN251–SN257 under `docs/research`, the Gold v7 deploy record).
+- No backup, by the owner's rule (code only; no schema, data or `.env` change).
+
+**Deploy (runbook), Monday 08:23–08:26 IST, before the open:**
+- Fast-forward to `c6cbceb1`.
+- Built python-engine (27 s), node-gateway (40 s) and agent (59 s) one at a time, with `SENTINEL_RELEASE_SHA` and `SENTINEL_BUILD_UTC=2026-11-16T02:52:46Z`.
+- Stopped autoheal, force-recreated all three, restarted nginx, started autoheal.
+- All services healthy at 08:25:40. `verify_deployment.py` exited 0. Receipt: `sentinel-operations\release-receipts\c6cbceb1….json`.
+
+**After (live):**
+- Inside the engine, `_dt_text` and `_bar_time` are present.
+- `/partner/review?days=30`: 200 in 1.11–1.35 s (was 5.63–5.84 s). `/partner/review/days`: 1.12 s. `/partner/coach?days=30`: 1.31 s (was 5.86 s).
+- The gateway's `/api/partner-kite/review` is live (401 without a session) with the 20 s wait.
+- No engine or gateway errors since the restart. The Kite token was re-armed at the second try. The gateway's startup holiday fetch raced the engine again (harmless fallback).
+
+**Next:** the partner reopens the review from the Telegram button and gets the page. If it is ever slow again, the page now says "taking longer than usual" instead of "unreachable", and the gateway log shows `proxy_error … aborted`.
+
 ## November 16, 2026 - Partner give-back alert presentation
 
 - The positive give-back alert uses `partner_profit_protection.giveback_stop_text`, `partner_watch._deliver` and `partner_bot.send_partner_result` to send the bundled STOP sticker, the standalone headline, then the full alert.
 - The text uses a Telegram rich heading and falls back to a bold entity on HTTP 400 or 404. Lead-ins are attempted once, paced just over one second apart. The existing outbox can retry the full alert without starting the sequence again. The rule and its deduplication continue to use one advisory event.
 - Verification on the standalone Dev release branch. `python -m pytest -q tests/test_partner*.py tests/test_oct15_audit_fixes.py tests/test_oct13_audit_fixes.py` passed 771 tests with six dependency deprecation warnings (the shell expanded the wildcard into file paths). The Telegram tests use a mock transport. Live presentation remains to be observed after the normal deployment.
 - Rollback. Revert this release through the same GitHub workflow to restore the previous presentation. No new settings or migration.
-
 ## November 16 (morning) - N16-RV: partner review page timed out (fix in Dev, deploy on the owner's word before the open)
 
 **Problem:** since at least Nov 16 07:52 IST, the partner's review page and the owner's Partner Coach page (30 days) failed on every open. The gateway waited 5 s; the engine needed 5.6–5.9 s. The cause is CPU: about 1.15 million repeated timestamp parses, quadratic in trades. No data or engine fault. Trading, the trade watch, Telegram and the schedulers were unaffected.

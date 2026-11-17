@@ -1,0 +1,633 @@
+{
+ "A_live_join": {
+  "receipt": "prod-gold-20261117T113959Z.json",
+  "receipt_sha256": "60e487f9f4b3ae4fffeedcd46d0d1222f710cda6332d0e5d39197fb5723f44a9",
+  "gold_started": "2026-11-13",
+  "paper_rows_total": 8,
+  "paper_rows_before_start": 8,
+  "eligible": 0,
+  "joined": [],
+  "divergences": 0,
+  "nifty_evaluations_since_start": {
+   "2026-11-13": {
+    "ENGINE|0|n11_high:no_or_break": 53,
+    "ENGINE|0|n11_high:not_fresh_break": 4,
+    "ENGINE|0|n11_high:ema_trend_disagreement": 2,
+    "ENGINE|0|n11_high:inside_opening_range_window": 1
+   },
+   "2026-11-16": {
+    "ENGINE|0|n11_high:no_or_break": 56,
+    "ENGINE|0|n11_high:inside_opening_range_window": 1,
+    "ENGINE|0|stretched:SHIPPED": 1,
+    "ENGINE|0|n11_high:ema_trend_disagreement": 1,
+    "ENGINE|0|n11_high:not_fresh_break": 1
+   },
+   "2026-11-17": {
+    "ENGINE|0|n11_high:not_fresh_break": 50,
+    "FNO_PAPER|0|expiry_day_block": 12,
+    "ENGINE|0|n11_high:no_or_break": 3,
+    "ENGINE|0|n11_high:rvol_below_min": 2,
+    "ENGINE|0|n11_high:inside_opening_range_window": 1
+   }
+  },
+  "wallet": {
+   "banked": 0.0,
+   "id": 1,
+   "progress": 0.0,
+   "refilled": 0.0,
+   "started": "2026-11-13",
+   "steps": 0,
+   "wallet": 30000.0
+  },
+  "day_rows": [
+   {
+    "day": "2026-11-13",
+    "trades_row": 0,
+    "trades_positions": 0,
+    "net_row": 0.0,
+    "net_positions": 0,
+    "refill_row": 0.0,
+    "refill_expected": 0.0,
+    "ok": true
+   },
+   {
+    "day": "2026-11-16",
+    "trades_row": 0,
+    "trades_positions": 0,
+    "net_row": 0.0,
+    "net_positions": 0,
+    "refill_row": 0.0,
+    "refill_expected": 0.0,
+    "ok": true
+   },
+   {
+    "day": "2026-11-17",
+    "trades_row": 0,
+    "trades_positions": 0,
+    "net_row": 0.0,
+    "net_positions": 0,
+    "refill_row": 0.0,
+    "refill_expected": 0.0,
+    "ok": true
+   }
+  ]
+ },
+ "B_pre_start_shadow": [
+  {
+   "id": 23,
+   "day": "2026-11-02",
+   "bar_ts": "2026-11-02 11:45:00",
+   "n11_symbol": "NIFTY26N0323400PE",
+   "n11_ask": 161.9,
+   "paper_net_1lot": -2885.13,
+   "expiry": "2026-11-03",
+   "vol_day": true,
+   "lots_wanted": 2,
+   "quotes_seen": 13,
+   "runtime": "ENTRY",
+   "strike": 23450.0,
+   "depth_itm": 1,
+   "ask": 195.5,
+   "lots": 2,
+   "stop": 150.2,
+   "premium": 25415.0
+  },
+  {
+   "id": 24,
+   "day": "2026-11-02",
+   "bar_ts": "2026-11-02 12:00:00",
+   "n11_symbol": "NIFTY26N0323350CE",
+   "n11_ask": 57.65,
+   "paper_net_1lot": -773.6,
+   "runtime": "position_open"
+  },
+  {
+   "id": 25,
+   "day": "2026-11-02",
+   "bar_ts": "2026-11-02 12:05:00",
+   "n11_symbol": "NIFTY26N0323400CE",
+   "n11_ask": 60.0,
+   "paper_net_1lot": -1468.12,
+   "expiry": "2026-11-03",
+   "vol_day": true,
+   "lots_wanted": 2,
+   "quotes_seen": 13,
+   "runtime": "ENTRY",
+   "strike": 23350.0,
+   "depth_itm": 1,
+   "ask": 85.95,
+   "lots": 2,
+   "stop": 40.4,
+   "premium": 11173.5
+  },
+  {
+   "id": 92,
+   "day": "2026-11-05",
+   "bar_ts": "2026-11-05 09:40:00",
+   "n11_symbol": "NIFTY26N0924400CE",
+   "n11_ask": 141.75,
+   "paper_net_1lot": -660.05,
+   "expiry": "2026-11-09",
+   "vol_day": true,
+   "lots_wanted": 2,
+   "quotes_seen": 12,
+   "runtime": "ENTRY",
+   "strike": 24350.0,
+   "depth_itm": 1,
+   "ask": 164.75,
+   "lots": 2,
+   "stop": 119.35,
+   "premium": 21417.5
+  },
+  {
+   "id": 93,
+   "day": "2026-11-05",
+   "bar_ts": "2026-11-05 10:45:00",
+   "n11_symbol": "NIFTY26N0924350CE",
+   "n11_ask": 154.0,
+   "paper_net_1lot": 6094.81,
+   "runtime": "position_open"
+  },
+  {
+   "id": 94,
+   "day": "2026-11-05",
+   "bar_ts": "2026-11-05 11:25:00",
+   "n11_symbol": "NIFTY26N0924400CE",
+   "n11_ask": 152.95,
+   "paper_net_1lot": 3960.58,
+   "expiry": "2026-11-09",
+   "vol_day": true,
+   "lots_wanted": 2,
+   "quotes_seen": 13,
+   "runtime": "ENTRY",
+   "strike": 24350.0,
+   "depth_itm": 1,
+   "ask": 168.15,
+   "lots": 2,
+   "stop": 122.8,
+   "premium": 21859.5
+  },
+  {
+   "id": 161,
+   "day": "2026-11-11",
+   "bar_ts": "2026-11-11 10:05:00",
+   "n11_symbol": "NIFTY26N1725450PE",
+   "n11_ask": 279.65,
+   "paper_net_1lot": -1090.02,
+   "expiry": "2026-11-17",
+   "vol_day": true,
+   "lots_wanted": 2,
+   "quotes_seen": 13,
+   "runtime": "ENTRY",
+   "strike": 25450.0,
+   "depth_itm": 0,
+   "ask": 281.6,
+   "lots": 1,
+   "stop": 190.7,
+   "premium": 18304.0
+  },
+  {
+   "id": 162,
+   "day": "2026-11-11",
+   "bar_ts": "2026-11-11 14:10:00",
+   "n11_symbol": "NIFTY26N1725400PE",
+   "n11_ask": 297.75,
+   "paper_net_1lot": 4577.28,
+   "expiry": "2026-11-17",
+   "vol_day": true,
+   "lots_wanted": 2,
+   "quotes_seen": 16,
+   "runtime": "ENTRY",
+   "strike": 25400.0,
+   "depth_itm": 0,
+   "ask": 297.3,
+   "lots": 1,
+   "stop": 206.45,
+   "premium": 19324.5
+  }
+ ],
+ "C_signal_sets": {
+  "2022": {
+   "keys_by_year": {
+    "2022": {
+     "deployed": 35,
+     "runtime": 37,
+     "both": 35,
+     "deployed_only": 0,
+     "runtime_only": 2,
+     "runtime_stood_aside_0.85": 20
+    }
+   },
+   "@205": {
+    "DEPLOYED": {
+     "net": -15281,
+     "by_year": {
+      "2022": -15281
+     },
+     "months_positive": 4,
+     "months": 12,
+     "worst_month": -9276,
+     "worst_day": -5992,
+     "refilled": 53896,
+     "trades": 30,
+     "sessions": 190,
+     "per_session": -80.4,
+     "final_wallet": 30000
+    },
+    "RUNTIME": {
+     "net": -20591,
+     "by_year": {
+      "2022": -20591
+     },
+     "months_positive": 3,
+     "months": 12,
+     "worst_month": -10966,
+     "worst_day": -5992,
+     "refilled": 59206,
+     "trades": 32,
+     "sessions": 190,
+     "per_session": -108.4,
+     "final_wallet": 30000
+    },
+    "diff_net": -5310,
+    "gold_trades_both": 30,
+    "gold_trades_deployed_only": 0,
+    "gold_trades_runtime_only": 2,
+    "net_deployed_only_trades": 0,
+    "net_runtime_only_trades": -5309
+   },
+   "@400": {
+    "DEPLOYED": {
+     "net": -23511,
+     "by_year": {
+      "2022": -23511
+     },
+     "months_positive": 3,
+     "months": 12,
+     "worst_month": -9667,
+     "worst_day": -5994,
+     "refilled": 59839,
+     "trades": 30,
+     "sessions": 190,
+     "per_session": -123.7,
+     "final_wallet": 30000
+    },
+    "RUNTIME": {
+     "net": -28627,
+     "by_year": {
+      "2022": -28627
+     },
+     "months_positive": 3,
+     "months": 12,
+     "worst_month": -11981,
+     "worst_day": -5994,
+     "refilled": 64955,
+     "trades": 32,
+     "sessions": 190,
+     "per_session": -150.7,
+     "final_wallet": 30000
+    },
+    "diff_net": -5116,
+    "gold_trades_both": 30,
+    "gold_trades_deployed_only": 0,
+    "gold_trades_runtime_only": 2,
+    "net_deployed_only_trades": 0,
+    "net_runtime_only_trades": -5116
+   }
+  },
+  "2023-2026": {
+   "keys_by_year": {
+    "2023": {
+     "deployed": 33,
+     "runtime": 38,
+     "both": 33,
+     "deployed_only": 0,
+     "runtime_only": 5,
+     "runtime_stood_aside_0.85": 47
+    },
+    "2024": {
+     "deployed": 29,
+     "runtime": 29,
+     "both": 29,
+     "deployed_only": 0,
+     "runtime_only": 0,
+     "runtime_stood_aside_0.85": 0
+    },
+    "2025": {
+     "deployed": 76,
+     "runtime": 79,
+     "both": 75,
+     "deployed_only": 1,
+     "runtime_only": 4,
+     "runtime_stood_aside_0.85": 0
+    },
+    "2026": {
+     "deployed": 50,
+     "runtime": 50,
+     "both": 50,
+     "deployed_only": 0,
+     "runtime_only": 0,
+     "runtime_stood_aside_0.85": 0
+    }
+   },
+   "@205": {
+    "DEPLOYED": {
+     "net": 850883,
+     "by_year": {
+      "2023": -12107,
+      "2024": 187476,
+      "2025": 292811,
+      "2026": 382702
+     },
+     "months_positive": 25,
+     "months": 46,
+     "worst_month": -38531,
+     "worst_day": -21113,
+     "refilled": 562130,
+     "trades": 156,
+     "sessions": 742,
+     "per_session": 1146.7,
+     "final_wallet": 101250
+    },
+    "RUNTIME": {
+     "net": 831958,
+     "by_year": {
+      "2023": -10831,
+      "2024": 187476,
+      "2025": 272611,
+      "2026": 382702
+     },
+     "months_positive": 24,
+     "months": 46,
+     "worst_month": -38531,
+     "worst_day": -21113,
+     "refilled": 586364,
+     "trades": 163,
+     "sessions": 742,
+     "per_session": 1121.2,
+     "final_wallet": 101250
+    },
+    "diff_net": -18925,
+    "gold_trades_both": 156,
+    "gold_trades_deployed_only": 0,
+    "gold_trades_runtime_only": 7,
+    "net_deployed_only_trades": 0,
+    "net_runtime_only_trades": -18925
+   },
+   "@400": {
+    "DEPLOYED": {
+     "net": 495597,
+     "by_year": {
+      "2023": -20385,
+      "2024": 86356,
+      "2025": 92429,
+      "2026": 337198
+     },
+     "months_positive": 23,
+     "months": 46,
+     "worst_month": -41913,
+     "worst_day": -20202,
+     "refilled": 494651,
+     "trades": 154,
+     "sessions": 742,
+     "per_session": 667.9,
+     "final_wallet": 101250
+    },
+    "RUNTIME": {
+     "net": 473030,
+     "by_year": {
+      "2023": -20085,
+      "2024": 86356,
+      "2025": 69561,
+      "2026": 337198
+     },
+     "months_positive": 22,
+     "months": 46,
+     "worst_month": -41913,
+     "worst_day": -20202,
+     "refilled": 512540,
+     "trades": 161,
+     "sessions": 742,
+     "per_session": 637.5,
+     "final_wallet": 101250
+    },
+    "diff_net": -22567,
+    "gold_trades_both": 154,
+    "gold_trades_deployed_only": 0,
+    "gold_trades_runtime_only": 7,
+    "net_deployed_only_trades": 0,
+    "net_runtime_only_trades": -13165
+   }
+  }
+ },
+ "D_runtime_faithful_stops": {
+  "2022 @205": {
+   "bar_low_fill (Gold)": {
+    "net": -15281,
+    "by_year": {
+     "2022": -15281
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9276,
+    "worst_day": -5992,
+    "refilled": 53896,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -80.4,
+    "final_wallet": 30000
+   },
+   "close_bid (runtime-like)": {
+    "net": -15943,
+    "by_year": {
+     "2022": -15943
+    },
+    "months_positive": 4,
+    "months": 12,
+    "worst_month": -9938,
+    "worst_day": -6654,
+    "refilled": 54558,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -83.9,
+    "final_wallet": 30000
+   },
+   "diff_net": -662,
+   "stops_gold": 1,
+   "stops_close_rule": 1
+  },
+  "2022 @400": {
+   "bar_low_fill (Gold)": {
+    "net": -23511,
+    "by_year": {
+     "2022": -23511
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -9667,
+    "worst_day": -5994,
+    "refilled": 59839,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -123.7,
+    "final_wallet": 30000
+   },
+   "close_bid (runtime-like)": {
+    "net": -24523,
+    "by_year": {
+     "2022": -24523
+    },
+    "months_positive": 3,
+    "months": 12,
+    "worst_month": -11108,
+    "worst_day": -7434,
+    "refilled": 60851,
+    "trades": 30,
+    "sessions": 190,
+    "per_session": -129.1,
+    "final_wallet": 30000
+   },
+   "diff_net": -1012,
+   "stops_gold": 2,
+   "stops_close_rule": 1
+  },
+  "2023-2026 @205": {
+   "bar_low_fill (Gold)": {
+    "net": 850883,
+    "by_year": {
+     "2023": -12107,
+     "2024": 187476,
+     "2025": 292811,
+     "2026": 382702
+    },
+    "months_positive": 25,
+    "months": 46,
+    "worst_month": -38531,
+    "worst_day": -21113,
+    "refilled": 562130,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1146.7,
+    "final_wallet": 101250
+   },
+   "close_bid (runtime-like)": {
+    "net": 845942,
+    "by_year": {
+     "2023": -12721,
+     "2024": 182491,
+     "2025": 285912,
+     "2026": 390260
+    },
+    "months_positive": 25,
+    "months": 46,
+    "worst_month": -35215,
+    "worst_day": -26908,
+    "refilled": 557205,
+    "trades": 156,
+    "sessions": 742,
+    "per_session": 1140.1,
+    "final_wallet": 101250
+   },
+   "diff_net": -4941,
+   "stops_gold": 8,
+   "stops_close_rule": 6
+  },
+  "2023-2026 @400": {
+   "bar_low_fill (Gold)": {
+    "net": 495597,
+    "by_year": {
+     "2023": -20385,
+     "2024": 86356,
+     "2025": 92429,
+     "2026": 337198
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -41913,
+    "worst_day": -20202,
+    "refilled": 494651,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 667.9,
+    "final_wallet": 101250
+   },
+   "close_bid (runtime-like)": {
+    "net": 672903,
+    "by_year": {
+     "2023": -20827,
+     "2024": 144676,
+     "2025": 204752,
+     "2026": 344302
+    },
+    "months_positive": 23,
+    "months": 46,
+    "worst_month": -37884,
+    "worst_day": -28078,
+    "refilled": 600753,
+    "trades": 154,
+    "sessions": 742,
+    "per_session": 906.9,
+    "final_wallet": 101250
+   },
+   "diff_net": 177306,
+   "stops_gold": 11,
+   "stops_close_rule": 8
+  }
+ },
+ "E_pure_rule_parity": {
+  "2022": {
+   "net_check": -15281,
+   "trades": 30,
+   "counts": {
+    "lots_rule_same": 30,
+    "pick_same": 30,
+    "stop0_minus_runtime_ticks>8": 30,
+    "add_stop_minus_runtime_ticks>8": 4,
+    "net_same_paise": 30,
+    "charges_check_calc_fno_costs": 30
+   },
+   "examples": {},
+   "growth_step_dates": {
+    "stressed": [],
+    "unstressed": []
+   }
+  },
+  "2023-2026": {
+   "net_check": 850883,
+   "trades": 156,
+   "counts": {
+    "lots_rule_same": 156,
+    "pick_same": 156,
+    "stop0_minus_runtime_ticks>8": 156,
+    "net_same_paise": 156,
+    "charges_check_calc_fno_costs": 156,
+    "add_stop_minus_runtime_ticks>8": 62
+   },
+   "examples": {},
+   "growth_step_dates": {
+    "stressed": [
+     "2024-01-10",
+     "2024-02-12",
+     "2024-11-12"
+    ],
+    "unstressed": [
+     "2024-01-09",
+     "2024-01-30",
+     "2024-11-05"
+    ]
+   }
+  }
+ },
+ "E_structural_differences": [
+  "add trigger and extension trail: replay = NIFTY INDEX minute close and index 1-minute ATR (sn01_sim.features); runtime = live NIFTY FUTURE price sampled at management ticks and the future's 1-minute ATR from Kite candles",
+  "stop: replay = the minute's bid low touches the stop, filled at min(stop, open bid); runtime = the bid sampled about once a minute at or below the stop, booked at that bid (D)",
+  "stop formula: replay's room reserves the Rs 205 stress per lot; runtime's day_stop / scale_in_stop use shipped charges only (E: stop0 - runtime ticks)",
+  "wallet growth and refill: replay grows on stressed day nets; runtime close_day grows / refills on unstressed nets (E: growth_step_dates)",
+  "entry clock: replay = the first minute close after the 5-minute bar (+59 s) or later; live paper rows entered a median ~31 s after the bar (SN478)",
+  "quotes: replay = a modeled bid/ask from the minute's trade print, a strike counts only on a traded minute; runtime = live best bid/ask, any strike with bid and ask > 0",
+  "signal set: runtime = every N11 paper-record signal gated at 0.85; replay = the N11 and R0.85 books' trades (C)",
+  "expiry filter: replay skips a signal whose contract is not the session's front expiry; runtime has no such filter",
+  "lot loop: runtime removes lots while the stop is at or above the ask and skips when one lot cannot fit; the replay has neither",
+  "N11 exit: replay sells at N11's exit minute's bid; runtime sells at the next management tick (<= 55 s) after the paper row closes"
+ ]
+}

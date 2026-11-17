@@ -1,0 +1,51 @@
+{
+ "CUSHION 2023": {
+  "equal": true,
+  "trades": 61,
+  "net": -32684.05,
+  "stored_net": -32684.05
+ },
+ "R2_THIRD_CW 2023": {
+  "equal": true,
+  "trades": 61,
+  "net": -32898.3,
+  "stored_net": -32898.3
+ },
+ "CUSHION 2024": {
+  "equal": true,
+  "trades": 17,
+  "net": 23723.28,
+  "stored_net": 23723.28
+ },
+ "R2_THIRD_CW 2024": {
+  "equal": true,
+  "trades": 20,
+  "net": 29978.4,
+  "stored_net": 29978.4
+ },
+ "CUSHION 2025": {
+  "equal": true,
+  "trades": 73,
+  "net": 49769.89,
+  "stored_net": 49769.89
+ },
+ "R2_THIRD_CW 2025": {
+  "equal": true,
+  "trades": 74,
+  "net": 46737.81,
+  "stored_net": 46737.81
+ },
+ "CUSHION 2026": {
+  "equal": true,
+  "trades": 51,
+  "net": 93500.84,
+  "stored_net": 93500.84
+ },
+ "R2_THIRD_CW 2026": {
+  "equal": true,
+  "trades": 51,
+  "net": 133622.5,
+  "stored_net": 133622.5
+ },
+ "pass": true
+}

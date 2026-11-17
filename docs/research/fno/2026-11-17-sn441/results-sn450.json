@@ -1,0 +1,121 @@
+{
+ "candidate_ledger": "NOT_TRIGGERED (no survivor this round)",
+ "GOLD-ONLY | 2022 @205": {
+  "market_sessions": 243,
+  "gold_replay_sessions": 190,
+  "net": -15281,
+  "per_market_session": -62.9,
+  "net_without_best5": -50239,
+  "best5": [
+   12022,
+   7969,
+   6194,
+   4887,
+   3887
+  ],
+  "payout_months": 4,
+  "months": 12,
+  "days_ge_750": 6,
+  "share_days_ge_750": 0.025,
+  "trading_days": 28,
+  "longest_no_new_high_sessions": 197,
+  "longest_nonpositive_run_sessions": 80,
+  "refilled": 53896,
+  "worst_day": -5992,
+  "final_wallet": 30000,
+  "gold_sessions_missing_from_calendar": []
+ },
+ "GOLD-ONLY | 2022 @400": {
+  "market_sessions": 243,
+  "gold_replay_sessions": 190,
+  "net": -23511,
+  "per_market_session": -96.8,
+  "net_without_best5": -56714,
+  "best5": [
+   11632,
+   7189,
+   5999,
+   4692,
+   3692
+  ],
+  "payout_months": 3,
+  "months": 12,
+  "days_ge_750": 6,
+  "share_days_ge_750": 0.025,
+  "trading_days": 28,
+  "longest_no_new_high_sessions": 197,
+  "longest_nonpositive_run_sessions": 80,
+  "refilled": 59839,
+  "worst_day": -5994,
+  "final_wallet": 30000,
+  "gold_sessions_missing_from_calendar": []
+ },
+ "GOLD-ONLY | 2023-2026 @205": {
+  "market_sessions": 944,
+  "gold_replay_sessions": 742,
+  "net": 850883,
+  "per_market_session": 901.4,
+  "net_without_best5": 499909,
+  "best5": [
+   75503,
+   73797,
+   71732,
+   69669,
+   60273
+  ],
+  "payout_months": 25,
+  "months": 46,
+  "days_ge_750": 59,
+  "share_days_ge_750": 0.062,
+  "trading_days": 133,
+  "longest_no_new_high_sessions": 226,
+  "longest_nonpositive_run_sessions": 151,
+  "refilled": 562130,
+  "worst_day": -21113,
+  "final_wallet": 101250,
+  "gold_sessions_missing_from_calendar": [
+   "2024-03-02",
+   "2024-05-18",
+   "2026-10-15",
+   "2026-10-16",
+   "2026-10-22",
+   "2026-10-23",
+   "2026-10-26",
+   "2026-10-28"
+  ]
+ },
+ "GOLD-ONLY | 2023-2026 @400": {
+  "market_sessions": 944,
+  "gold_replay_sessions": 742,
+  "net": 495597,
+  "per_market_session": 525.0,
+  "net_without_best5": 195627,
+  "best5": [
+   70562,
+   67719,
+   56691,
+   55479,
+   49517
+  ],
+  "payout_months": 23,
+  "months": 46,
+  "days_ge_750": 53,
+  "share_days_ge_750": 0.056,
+  "trading_days": 133,
+  "longest_no_new_high_sessions": 244,
+  "longest_nonpositive_run_sessions": 151,
+  "refilled": 494651,
+  "worst_day": -20202,
+  "final_wallet": 101250,
+  "gold_sessions_missing_from_calendar": [
+   "2024-03-02",
+   "2024-05-18",
+   "2026-10-15",
+   "2026-10-16",
+   "2026-10-22",
+   "2026-10-23",
+   "2026-10-26",
+   "2026-10-28"
+  ]
+ }
+}

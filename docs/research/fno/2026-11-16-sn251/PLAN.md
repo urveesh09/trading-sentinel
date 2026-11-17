@@ -154,6 +154,40 @@ For a leg's single pick in a slot:
 - Each is written into this file as a dated amendment, with its variants and the same pass rule, **before** it runs.
 - Unused slots are reported as unused, not filled.
 
+### Amendment, Nov 16 2026 ~08:30 IST (after SN251–SN264; written before SN271–SN272 run)
+
+**Why:** every Tier A and Tier B leg failed. The one real effect seen is SN257's overnight drift: NIFTY's weekday close-to-open return was positive in most years (t up to 6). Options could not collect it because of decay. A **cash index ETF** (NIFTYBEES-type, bought for delivery and sold the next morning) has no margin, no decay and no leverage. Its largest loss is the overnight move on the money held, and it uses Gold's idle cash while Gold is flat (Gold is intraday only).
+
+**Disclosure:** SN257 printed the close-to-open drift for DEV and both exams before this amendment. The exams are therefore partly seen for this idea; SN271's exam results are reported as such.
+
+- **SN271: the overnight index ETF.**
+  - Entry: buy at 15:20 at the index level. Exit: sell on the next trading day at 09:16, 09:20 or 09:30.
+  - Nights:
+    - (A) weekday nights;
+    - (B) every night, weekends and holidays included;
+    - (C) weekday nights after a down day (15:20 below the previous close);
+    - (D) weekday nights after an up day.
+  - 12 variants. The index is the ETF's proxy (SENSEX on EXAM-S).
+  - Money: ₹30,000 a night (Gold's starting wallet); ₹1,01,250 is also reported.
+  - Costs (Zerodha's ETF delivery / BTST schedule, read Nov 16 on zerodha.com / support.zerodha.com):
+    - brokerage 0;
+    - STT 0.001% on the sale;
+    - stamp 0.015% on the buy;
+    - exchange 0.00307% a side, SEBI 0.0001% a side, GST 18% on exchange + SEBI;
+    - DP ₹15.34 a sale;
+    - plus a 0.005% half-spread and a 0.01% delay stress a side.
+  - Pessimistic bound: STT 0.1% on both sides (the share rate).
+  - Null: (A)/(B) trade every eligible night (G2 n/a); (C)/(D) "day" null (as many random weekday nights).
+  - G4: double the half-spread and stress, and one minute late on both ends.
+- **SN272: calls before a weekday holiday, chosen after the fact.**
+  - This is SN259's variant (b), DEV +₹13,331 on 45 trades, which SN259's max-min rule did not pick.
+  - It runs through the slot runner as a single variant (DEV, null, G4) with one exam run.
+  - It is disclosed as a post-hoc pick, so its G2 is weaker than a pre-registered pick's.
+- **SN273: only if SN271 passes.** The ETF night inside Gold's one-wallet account (Jan 2023 – Oct 2026):
+  - the ETF is bought with the whole wallet when Gold is flat at 15:20 and sold at the chosen exit before Gold's first signal;
+  - the night's result is booked on the exit day, inside that day's 20% room.
+- SN274–SN275: unused unless SN271–SN273 suggest a test. Unused slots are reported as unused.
+
 ## 5. Not repeated (documented failures on the same data)
 
 The 13 approaches of `docs/SN_PROBLEM_STATEMENT_EMPTY_DAYS.md` section 3, and everything in sections 9–14 of it:

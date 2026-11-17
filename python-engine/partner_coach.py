@@ -485,8 +485,8 @@ def _worked(actual: Optional[float]) -> str:
 
 
 def _day_close(day: str) -> datetime:
-    from partner_broker_sync import CLOSE_MIN
-    return IST.localize(datetime.fromisoformat(day) + timedelta(minutes=CLOSE_MIN))
+    from partner_broker_sync import close_min
+    return IST.localize(datetime.fromisoformat(day) + timedelta(minutes=close_min(day)))
 
 
 def _first_under(series: list, after: datetime, level: float):

@@ -1,0 +1,314 @@
+{
+ "pre-holiday | ATM": {
+  "DEV": {
+   "trades": 45,
+   "net": 13331,
+   "per_trade": 296.2,
+   "win_pct": 37.8,
+   "worst": -3301,
+   "by_year": {
+    "2022": 13443,
+    "2023": 2067,
+    "2024": -8390,
+    "2025": -3326,
+    "2026": 9537
+   }
+  },
+  "TEST": {
+   "trades": 2,
+   "net": 4643,
+   "per_trade": 2321.4,
+   "win_pct": 50.0,
+   "worst": -3071,
+   "by_year": {
+    "2026": 4643
+   }
+  },
+  "EXAMN": {
+   "trades": 9,
+   "net": 25327,
+   "per_trade": 2814.1,
+   "win_pct": 44.4,
+   "worst": -3180,
+   "by_year": {
+    "2020": 42,
+    "2021": -2287,
+    "2022": 27572
+   }
+  },
+  "EXAMS": {
+   "trades": 17,
+   "net": 8884,
+   "per_trade": 522.6,
+   "win_pct": 29.4,
+   "worst": -3294,
+   "by_year": {
+    "2024": -6808,
+    "2025": 12780,
+    "2026": 2912
+   }
+  },
+  "all_four_positive": true,
+  "total": 52185
+ },
+ "pre-holiday | ITM": {
+  "DEV": {
+   "trades": 45,
+   "net": 20266,
+   "per_trade": 450.4,
+   "win_pct": 40.0,
+   "worst": -3324,
+   "by_year": {
+    "2022": 16181,
+    "2023": 3953,
+    "2024": -7351,
+    "2025": -2324,
+    "2026": 9807
+   }
+  },
+  "TEST": {
+   "trades": 2,
+   "net": 5464,
+   "per_trade": 2732.2,
+   "win_pct": 50.0,
+   "worst": -3030,
+   "by_year": {
+    "2026": 5464
+   }
+  },
+  "EXAMN": {
+   "trades": 9,
+   "net": 10050,
+   "per_trade": 1116.7,
+   "win_pct": 44.4,
+   "worst": -3556,
+   "by_year": {
+    "2020": 487,
+    "2021": -2436,
+    "2022": 11999
+   }
+  },
+  "EXAMS": {
+   "trades": 17,
+   "net": 10894,
+   "per_trade": 640.8,
+   "win_pct": 29.4,
+   "worst": -3323,
+   "by_year": {
+    "2024": -7075,
+    "2025": 14486,
+    "2026": 3482
+   }
+  },
+  "all_four_positive": true,
+  "total": 46674
+ },
+ "pre-holiday | debit spread": {
+  "DEV": {
+   "trades": 45,
+   "net": -23434,
+   "per_trade": -520.8,
+   "win_pct": 20.0,
+   "worst": -2735,
+   "by_year": {
+    "2022": -694,
+    "2023": -3749,
+    "2024": -8485,
+    "2025": -5154,
+    "2026": -5353
+   }
+  },
+  "TEST": {
+   "trades": 2,
+   "net": -591,
+   "per_trade": -295.5,
+   "win_pct": 50.0,
+   "worst": -1816,
+   "by_year": {
+    "2026": -591
+   }
+  },
+  "EXAMN": {
+   "trades": 9,
+   "net": -3337,
+   "per_trade": -370.8,
+   "win_pct": 44.4,
+   "worst": -2729,
+   "by_year": {
+    "2020": -443,
+    "2021": -5632,
+    "2022": 2738
+   }
+  },
+  "EXAMS": {
+   "trades": 17,
+   "net": -13798,
+   "per_trade": -811.6,
+   "win_pct": 5.9,
+   "worst": -1730,
+   "by_year": {
+    "2024": -2747,
+    "2025": -6090,
+    "2026": -4961
+   }
+  },
+  "all_four_positive": false,
+  "total": -41160
+ },
+ "10-day breakout swing | ATM": {
+  "DEV": {
+   "trades": 143,
+   "net": -67058,
+   "per_trade": -468.9,
+   "win_pct": 35.0,
+   "worst": -14450,
+   "by_year": {
+    "2022": 4815,
+    "2023": 25383,
+    "2024": -74671,
+    "2025": -17458,
+    "2026": -5127
+   }
+  },
+  "TEST": {
+   "trades": 1,
+   "net": -4081,
+   "per_trade": -4080.5,
+   "win_pct": 0.0,
+   "worst": -4081,
+   "by_year": {
+    "2026": -4081
+   }
+  },
+  "EXAMN": {
+   "trades": 54,
+   "net": 16972,
+   "per_trade": 314.3,
+   "win_pct": 38.9,
+   "worst": -4624,
+   "by_year": {
+    "2020": 20899,
+    "2021": -30660,
+    "2022": 26734
+   }
+  },
+  "EXAMS": {
+   "trades": 45,
+   "net": 1920,
+   "per_trade": 42.7,
+   "win_pct": 35.6,
+   "worst": -12694,
+   "by_year": {
+    "2024": -6596,
+    "2025": 30959,
+    "2026": -22442
+   }
+  },
+  "all_four_positive": false,
+  "total": -52247
+ },
+ "10-day breakout swing | ITM": {
+  "DEV": {
+   "trades": 143,
+   "net": -62445,
+   "per_trade": -436.7,
+   "win_pct": 35.0,
+   "worst": -15070,
+   "by_year": {
+    "2022": 10703,
+    "2023": 31871,
+    "2024": -76280,
+    "2025": -24444,
+    "2026": -4295
+   }
+  },
+  "TEST": {
+   "trades": 1,
+   "net": -4571,
+   "per_trade": -4570.8,
+   "win_pct": 0.0,
+   "worst": -4571,
+   "by_year": {
+    "2026": -4571
+   }
+  },
+  "EXAMN": {
+   "trades": 54,
+   "net": 30054,
+   "per_trade": 556.6,
+   "win_pct": 42.6,
+   "worst": -5027,
+   "by_year": {
+    "2020": 26511,
+    "2021": -26886,
+    "2022": 30429
+   }
+  },
+  "EXAMS": {
+   "trades": 45,
+   "net": 6907,
+   "per_trade": 153.5,
+   "win_pct": 35.6,
+   "worst": -13082,
+   "by_year": {
+    "2024": -5931,
+    "2025": 35198,
+    "2026": -22361
+   }
+  },
+  "all_four_positive": false,
+  "total": -30055
+ },
+ "10-day breakout swing | debit spread": {
+  "DEV": {
+   "trades": 143,
+   "net": -76350,
+   "per_trade": -533.9,
+   "win_pct": 35.7,
+   "worst": -3026,
+   "by_year": {
+    "2022": -8104,
+    "2023": 6093,
+    "2024": -31955,
+    "2025": -29774,
+    "2026": -12611
+   }
+  },
+  "TEST": {
+   "trades": 1,
+   "net": -873,
+   "per_trade": -873.4,
+   "win_pct": 0.0,
+   "worst": -873,
+   "by_year": {
+    "2026": -873
+   }
+  },
+  "EXAMN": {
+   "trades": 54,
+   "net": -18438,
+   "per_trade": -341.4,
+   "win_pct": 40.7,
+   "worst": -2772,
+   "by_year": {
+    "2020": 4668,
+    "2021": -19720,
+    "2022": -3386
+   }
+  },
+  "EXAMS": {
+   "trades": 45,
+   "net": -22630,
+   "per_trade": -502.9,
+   "win_pct": 31.1,
+   "worst": -1941,
+   "by_year": {
+    "2024": -5167,
+    "2025": -8000,
+    "2026": -9463
+   }
+  },
+  "all_four_positive": false,
+  "total": -118291
+ }
+}

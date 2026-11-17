@@ -1,0 +1,40 @@
+{
+ "@205": {
+  "trades": 186,
+  "stops": 9,
+  "stop_share": 0.048,
+  "stops_beyond_room": 2,
+  "beyond_room_median": 486.8,
+  "beyond_room_worst": 863.1,
+  "price_overshoot_median": 0.0,
+  "price_overshoot_worst": 877.5,
+  "price_overshoot_total": 988,
+  "days_loss_over_20pct_wallet": 2,
+  "worst_day": -21113,
+  "worst_day_share_of_wallet": -0.209,
+  "worst_trade": -20203,
+  "no_bid_bound_worst": -100127,
+  "worst_trade_share_of_its_debit": -0.483,
+  "extension_trades": 18,
+  "extension_contribution": -6
+ },
+ "@400": {
+  "trades": 184,
+  "stops": 13,
+  "stop_share": 0.071,
+  "stops_beyond_room": 1,
+  "beyond_room_median": 290.8,
+  "beyond_room_worst": 290.8,
+  "price_overshoot_median": 0.0,
+  "price_overshoot_worst": 292.5,
+  "price_overshoot_total": 292,
+  "days_loss_over_20pct_wallet": 1,
+  "worst_day": -20202,
+  "worst_day_share_of_wallet": -0.206,
+  "worst_trade": -20202,
+  "no_bid_bound_worst": -99591,
+  "worst_trade_share_of_its_debit": -0.814,
+  "extension_trades": 16,
+  "extension_contribution": 3185
+ }
+}

@@ -1,0 +1,182 @@
+{
+ "depth": {
+  "days": 33,
+  "15:00": {
+   "contracts": 116,
+   "share_65": 1.0,
+   "share_390": 1.0,
+   "median_bid_units": 5102.5,
+   "median_spread": 0.3
+  },
+  "15:05": {
+   "contracts": 116,
+   "share_65": 1.0,
+   "share_390": 1.0,
+   "median_bid_units": 5135.0,
+   "median_spread": 0.3
+  },
+  "15:10": {
+   "contracts": 116,
+   "share_65": 1.0,
+   "share_390": 1.0,
+   "median_bid_units": 4875.0,
+   "median_spread": 0.25
+  },
+  "15:15": {
+   "contracts": 116,
+   "share_65": 1.0,
+   "share_390": 1.0,
+   "median_bid_units": 4420.0,
+   "median_spread": 0.3
+  },
+  "15:20": {
+   "contracts": 120,
+   "share_65": 1.0,
+   "share_390": 1.0,
+   "median_bid_units": 3770.0,
+   "median_spread": 0.3
+  }
+ },
+ "replay": {
+  "E345 2022 @205": {
+   "net": -17111,
+   "trades": 30,
+   "months_positive": 4,
+   "months": 12,
+   "worst_day": -5992,
+   "per_session": -90.1
+  },
+  "E345 2022 @400": {
+   "net": -25340,
+   "trades": 30,
+   "months_positive": 3,
+   "months": 12,
+   "worst_day": -5994,
+   "per_session": -133.4
+  },
+  "E345 2023-26 @205": {
+   "net": 870611,
+   "trades": 156,
+   "months_positive": 23,
+   "months": 46,
+   "worst_day": -21113,
+   "per_session": 1173.3
+  },
+  "E345 2023-26 @400": {
+   "net": 468570,
+   "trades": 154,
+   "months_positive": 23,
+   "months": 46,
+   "worst_day": -20202,
+   "per_session": 631.5
+  },
+  "E350 2022 @205": {
+   "net": -13020,
+   "trades": 30,
+   "months_positive": 4,
+   "months": 12,
+   "worst_day": -5992,
+   "per_session": -68.5
+  },
+  "E350 2022 @400": {
+   "net": -21250,
+   "trades": 30,
+   "months_positive": 3,
+   "months": 12,
+   "worst_day": -5994,
+   "per_session": -111.8
+  },
+  "E350 2023-26 @205": {
+   "net": 920615,
+   "trades": 156,
+   "months_positive": 24,
+   "months": 46,
+   "worst_day": -21113,
+   "per_session": 1240.7
+  },
+  "E350 2023-26 @400": {
+   "net": 523364,
+   "trades": 154,
+   "months_positive": 23,
+   "months": 46,
+   "worst_day": -20202,
+   "per_session": 705.3
+  },
+  "DEPLOYED 2022 @205": {
+   "net": -15281,
+   "trades": 30,
+   "months_positive": 4,
+   "months": 12,
+   "worst_day": -5992,
+   "per_session": -80.4
+  },
+  "DEPLOYED 2022 @400": {
+   "net": -23511,
+   "trades": 30,
+   "months_positive": 3,
+   "months": 12,
+   "worst_day": -5994,
+   "per_session": -123.7
+  },
+  "DEPLOYED 2023-26 @205": {
+   "net": 850883,
+   "trades": 156,
+   "months_positive": 25,
+   "months": 46,
+   "worst_day": -21113,
+   "per_session": 1146.7
+  },
+  "DEPLOYED 2023-26 @400": {
+   "net": 495597,
+   "trades": 154,
+   "months_positive": 23,
+   "months": 46,
+   "worst_day": -20202,
+   "per_session": 667.9
+  },
+  "EXT360 2022 @205": {
+   "net": -13643,
+   "trades": 30,
+   "months_positive": 4,
+   "months": 12,
+   "worst_day": -5992,
+   "per_session": -71.8
+  },
+  "EXT360 2022 @400": {
+   "net": -21873,
+   "trades": 30,
+   "months_positive": 3,
+   "months": 12,
+   "worst_day": -5994,
+   "per_session": -115.1
+  },
+  "EXT360 2023-26 @205": {
+   "net": 818576,
+   "trades": 156,
+   "months_positive": 24,
+   "months": 46,
+   "worst_day": -21113,
+   "per_session": 1103.2
+  },
+  "EXT360 2023-26 @400": {
+   "net": 470895,
+   "trades": 154,
+   "months_positive": 23,
+   "months": 46,
+   "worst_day": -20202,
+   "per_session": 634.6
+  }
+ },
+ "decision": {
+  "E345": {
+   "cost_ok": false,
+   "depth_ok": false,
+   "propose": false
+  },
+  "E350": {
+   "cost_ok": true,
+   "depth_ok": false,
+   "propose": false
+  }
+ }
+}

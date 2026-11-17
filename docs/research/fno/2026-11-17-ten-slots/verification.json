@@ -1,0 +1,73 @@
+{
+  "run_exit_code": 0,
+  "scored_source_commit": "4acf76ba21e349a8eaa116e628901a7c128290ab",
+  "artifacts_sha256": {
+    "freeze.json": "89bfaa449160926d712ff3fd06465b45a6478025215b969d7e7eeaf51330c3e3",
+    "results.json": "95e26d208848ab42b55554c9552193bdadbc210523577ba9225803505c3d2aeb",
+    "daily-receipts.json": "8b47a3271143721908306a3c49f5b659152968f80b116dcf5b6d4df28e7ceec5",
+    "run.log": "862a47a16e00c67bad40a1ad48ee0efeb8ecbdce9ca11a28bbab1fb152275a1e",
+    "run-v2.log": "91e17dbff5020b817a64f0213b75b15d80cf5b029f57ba6ec65fed9f36cc0050"
+  },
+  "paired_arm_summaries_reconciled": 32,
+  "modeled_fill_records_reconciled_including_controls": 2050,
+  "sn456_ledger_state_and_net_checks": 76,
+  "execution_self_test": "passed",
+  "decomposition": {
+    "205": {
+      "r6_best_session": "2025-04-01",
+      "r6_best_session_net": 11702.68,
+      "r5_r6_decision_groups": {
+        "only_r5": {
+          "decisions": 56,
+          "r5_net": -32622.03,
+          "r6_net": 0.0
+        },
+        "only_r6": {
+          "decisions": 0,
+          "r5_net": 0,
+          "r6_net": 0
+        },
+        "both_same_side": {
+          "decisions": 34,
+          "r5_net": 4111.6,
+          "r6_net": 4111.6
+        },
+        "both_different_side": {
+          "decisions": 0,
+          "r5_net": 0,
+          "r6_net": 0
+        }
+      },
+      "r8_different_filled_strike_or_fill_outcome_dates": 20,
+      "r8_different_route_delta": -12725.02
+    },
+    "400": {
+      "r6_best_session": "2025-04-01",
+      "r6_best_session_net": 11507.68,
+      "r5_r6_decision_groups": {
+        "only_r5": {
+          "decisions": 56,
+          "r5_net": -38185.58,
+          "r6_net": 0.0
+        },
+        "only_r6": {
+          "decisions": 0,
+          "r5_net": 0,
+          "r6_net": 0
+        },
+        "both_same_side": {
+          "decisions": 34,
+          "r5_net": 610.2,
+          "r6_net": 610.2
+        },
+        "both_different_side": {
+          "decisions": 0,
+          "r5_net": 0,
+          "r6_net": 0
+        }
+      },
+      "r8_different_filled_strike_or_fill_outcome_dates": 20,
+      "r8_different_route_delta": -17405.77
+    }
+  }
+}

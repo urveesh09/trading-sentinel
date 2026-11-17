@@ -1,0 +1,908 @@
+{
+ "2022 @205": {
+  "summary": {
+   "net": -15281,
+   "by_year": {
+    "2022": -15281
+   },
+   "months_positive": 4,
+   "months": 12,
+   "worst_month": -9276,
+   "worst_day": -5992,
+   "refilled": 53896,
+   "trades": 30,
+   "sessions": 190,
+   "per_session": -80.4,
+   "final_wallet": 30000
+  },
+  "parts": {
+   "all": {
+    "trades": 30.0,
+    "net": -15281.0,
+    "first_lot_pieces": -10804.0,
+    "added_pieces": -4477.0,
+    "extension_contribution": -892.0,
+    "charges": 3024.0,
+    "stress": 9020.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 2.0
+   },
+   "expert EFF": {
+    "trades": 1.0,
+    "net": 12022.0,
+    "first_lot_pieces": 12022.0,
+    "added_pieces": 0.0,
+    "extension_contribution": 0.0,
+    "charges": 139.0,
+    "stress": 410.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 0.0
+   },
+   "expert OR20": {
+    "trades": 1.0,
+    "net": -2830.0,
+    "first_lot_pieces": -2830.0,
+    "added_pieces": 0.0,
+    "extension_contribution": 0.0,
+    "charges": 80.0,
+    "stress": 205.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 0.0
+   },
+   "expert SHIPPED": {
+    "trades": 1.0,
+    "net": -323.0,
+    "first_lot_pieces": -323.0,
+    "added_pieces": 0.0,
+    "extension_contribution": 0.0,
+    "charges": 95.0,
+    "stress": 410.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 0.0
+   },
+   "expert TPB": {
+    "trades": 27.0,
+    "net": -24151.0,
+    "first_lot_pieces": -19674.0,
+    "added_pieces": -4477.0,
+    "extension_contribution": -892.0,
+    "charges": 2710.0,
+    "stress": 7995.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 2.0
+   },
+   "side CE": {
+    "trades": 4.0,
+    "net": 17161.0,
+    "first_lot_pieces": 17161.0,
+    "added_pieces": 0.0,
+    "extension_contribution": -973.0,
+    "charges": 426.0,
+    "stress": 1435.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 1.0
+   },
+   "side PE": {
+    "trades": 26.0,
+    "net": -32442.0,
+    "first_lot_pieces": -27965.0,
+    "added_pieces": -4477.0,
+    "extension_contribution": 81.0,
+    "charges": 2598.0,
+    "stress": 7585.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 1.0
+   },
+   "year 2022": {
+    "trades": 30.0,
+    "net": -15281.0,
+    "first_lot_pieces": -10804.0,
+    "added_pieces": -4477.0,
+    "extension_contribution": -892.0,
+    "charges": 3024.0,
+    "stress": 9020.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 2.0
+   }
+  },
+  "top5": [
+   {
+    "day": "2022-03-08",
+    "net": 12022,
+    "trades": [
+     {
+      "i": 285,
+      "expert": "EFF",
+      "opt": "CE",
+      "lots0": 2,
+      "first": 12022,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2022-03-09",
+    "net": 7969,
+    "trades": [
+     {
+      "i": 55,
+      "expert": "SHIPPED",
+      "opt": "CE",
+      "lots0": 2,
+      "first": -323,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     },
+     {
+      "i": 141,
+      "expert": "TPB",
+      "opt": "CE",
+      "lots0": 2,
+      "first": 8291,
+      "adds": 0,
+      "ext": -973,
+      "reason": "ext_trail"
+     }
+    ]
+   },
+   {
+    "day": "2022-12-30",
+    "net": 6194,
+    "trades": [
+     {
+      "i": 225,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 1,
+      "first": 6194,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2022-10-11",
+    "net": 4887,
+    "trades": [
+     {
+      "i": 240,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 1,
+      "first": 4887,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2022-03-21",
+    "net": 3887,
+    "trades": [
+     {
+      "i": 145,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 1,
+      "first": 3887,
+      "adds": 0,
+      "ext": 81,
+      "reason": "ext_trail"
+     }
+    ]
+   }
+  ]
+ },
+ "2022 @400": {
+  "summary": {
+   "net": -23511,
+   "by_year": {
+    "2022": -23511
+   },
+   "months_positive": 3,
+   "months": 12,
+   "worst_month": -9667,
+   "worst_day": -5994,
+   "refilled": 59839,
+   "trades": 30,
+   "sessions": 190,
+   "per_session": -123.7,
+   "final_wallet": 30000
+  },
+  "parts": {
+   "all": {
+    "trades": 30.0,
+    "net": -23511.0,
+    "first_lot_pieces": -18111.0,
+    "added_pieces": -5400.0,
+    "extension_contribution": -892.0,
+    "charges": 3025.0,
+    "stress": 17600.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 2.0
+   },
+   "expert EFF": {
+    "trades": 1.0,
+    "net": 11632.0,
+    "first_lot_pieces": 11632.0,
+    "added_pieces": 0.0,
+    "extension_contribution": 0.0,
+    "charges": 139.0,
+    "stress": 800.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 0.0
+   },
+   "expert OR20": {
+    "trades": 1.0,
+    "net": -3025.0,
+    "first_lot_pieces": -3025.0,
+    "added_pieces": 0.0,
+    "extension_contribution": 0.0,
+    "charges": 80.0,
+    "stress": 400.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 0.0
+   },
+   "expert SHIPPED": {
+    "trades": 1.0,
+    "net": -713.0,
+    "first_lot_pieces": -713.0,
+    "added_pieces": 0.0,
+    "extension_contribution": 0.0,
+    "charges": 95.0,
+    "stress": 800.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 0.0
+   },
+   "expert TPB": {
+    "trades": 27.0,
+    "net": -31405.0,
+    "first_lot_pieces": -26006.0,
+    "added_pieces": -5400.0,
+    "extension_contribution": -892.0,
+    "charges": 2711.0,
+    "stress": 15600.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 2.0
+   },
+   "side CE": {
+    "trades": 4.0,
+    "net": 15796.0,
+    "first_lot_pieces": 15796.0,
+    "added_pieces": 0.0,
+    "extension_contribution": -973.0,
+    "charges": 426.0,
+    "stress": 2800.0,
+    "adds": 0.0,
+    "adds_won": 0.0,
+    "extended": 1.0
+   },
+   "side PE": {
+    "trades": 26.0,
+    "net": -39307.0,
+    "first_lot_pieces": -33907.0,
+    "added_pieces": -5400.0,
+    "extension_contribution": 81.0,
+    "charges": 2598.0,
+    "stress": 14800.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 1.0
+   },
+   "year 2022": {
+    "trades": 30.0,
+    "net": -23511.0,
+    "first_lot_pieces": -18111.0,
+    "added_pieces": -5400.0,
+    "extension_contribution": -892.0,
+    "charges": 3025.0,
+    "stress": 17600.0,
+    "adds": 4.0,
+    "adds_won": 0.0,
+    "extended": 2.0
+   }
+  },
+  "top5": [
+   {
+    "day": "2022-03-08",
+    "net": 11632,
+    "trades": [
+     {
+      "i": 285,
+      "expert": "EFF",
+      "opt": "CE",
+      "lots0": 2,
+      "first": 11632,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2022-03-09",
+    "net": 7189,
+    "trades": [
+     {
+      "i": 55,
+      "expert": "SHIPPED",
+      "opt": "CE",
+      "lots0": 2,
+      "first": -713,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     },
+     {
+      "i": 141,
+      "expert": "TPB",
+      "opt": "CE",
+      "lots0": 2,
+      "first": 7901,
+      "adds": 0,
+      "ext": -973,
+      "reason": "ext_trail"
+     }
+    ]
+   },
+   {
+    "day": "2022-12-30",
+    "net": 5999,
+    "trades": [
+     {
+      "i": 225,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 1,
+      "first": 5999,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2022-10-11",
+    "net": 4692,
+    "trades": [
+     {
+      "i": 240,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 1,
+      "first": 4692,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2022-03-21",
+    "net": 3692,
+    "trades": [
+     {
+      "i": 145,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 1,
+      "first": 3692,
+      "adds": 0,
+      "ext": 81,
+      "reason": "ext_trail"
+     }
+    ]
+   }
+  ]
+ },
+ "2023-2026 @205": {
+  "summary": {
+   "net": 850883,
+   "by_year": {
+    "2023": -12107,
+    "2024": 187476,
+    "2025": 292811,
+    "2026": 382702
+   },
+   "months_positive": 25,
+   "months": 46,
+   "worst_month": -38531,
+   "worst_day": -21113,
+   "refilled": 562130,
+   "trades": 156,
+   "sessions": 742,
+   "per_session": 1146.7,
+   "final_wallet": 101250
+  },
+  "parts": {
+   "all": {
+    "trades": 156.0,
+    "net": 850883.0,
+    "first_lot_pieces": 673629.0,
+    "added_pieces": 177254.0,
+    "extension_contribution": 230.0,
+    "charges": 37784.0,
+    "stress": 159900.0,
+    "adds": 62.0,
+    "adds_won": 30.0,
+    "extended": 16.0
+   },
+   "expert EFF": {
+    "trades": 27.0,
+    "net": 78715.0,
+    "first_lot_pieces": 42082.0,
+    "added_pieces": 36633.0,
+    "extension_contribution": 4110.0,
+    "charges": 6095.0,
+    "stress": 28700.0,
+    "adds": 9.0,
+    "adds_won": 5.0,
+    "extended": 3.0
+   },
+   "expert OR20": {
+    "trades": 16.0,
+    "net": 137467.0,
+    "first_lot_pieces": 156829.0,
+    "added_pieces": -19361.0,
+    "extension_contribution": 3095.0,
+    "charges": 4067.0,
+    "stress": 18245.0,
+    "adds": 5.0,
+    "adds_won": 2.0,
+    "extended": 1.0
+   },
+   "expert SHIPPED": {
+    "trades": 16.0,
+    "net": 77181.0,
+    "first_lot_pieces": 63263.0,
+    "added_pieces": 13917.0,
+    "extension_contribution": -3717.0,
+    "charges": 3715.0,
+    "stress": 16400.0,
+    "adds": 4.0,
+    "adds_won": 2.0,
+    "extended": 3.0
+   },
+   "expert TPB": {
+    "trades": 97.0,
+    "net": 557520.0,
+    "first_lot_pieces": 411455.0,
+    "added_pieces": 146065.0,
+    "extension_contribution": -3257.0,
+    "charges": 23907.0,
+    "stress": 96555.0,
+    "adds": 44.0,
+    "adds_won": 21.0,
+    "extended": 9.0
+   },
+   "side CE": {
+    "trades": 35.0,
+    "net": 69551.0,
+    "first_lot_pieces": 26643.0,
+    "added_pieces": 42908.0,
+    "extension_contribution": -2488.0,
+    "charges": 7817.0,
+    "stress": 38745.0,
+    "adds": 19.0,
+    "adds_won": 8.0,
+    "extended": 2.0
+   },
+   "side PE": {
+    "trades": 121.0,
+    "net": 781332.0,
+    "first_lot_pieces": 646986.0,
+    "added_pieces": 134346.0,
+    "extension_contribution": 2718.0,
+    "charges": 29967.0,
+    "stress": 121155.0,
+    "adds": 43.0,
+    "adds_won": 22.0,
+    "extended": 14.0
+   },
+   "year 2023": {
+    "trades": 28.0,
+    "net": -12107.0,
+    "first_lot_pieces": -14139.0,
+    "added_pieces": 2032.0,
+    "extension_contribution": 0.0,
+    "charges": 3230.0,
+    "stress": 11275.0,
+    "adds": 10.0,
+    "adds_won": 1.0,
+    "extended": 0.0
+   },
+   "year 2024": {
+    "trades": 27.0,
+    "net": 187476.0,
+    "first_lot_pieces": 150740.0,
+    "added_pieces": 36736.0,
+    "extension_contribution": -2027.0,
+    "charges": 5140.0,
+    "stress": 22755.0,
+    "adds": 9.0,
+    "adds_won": 6.0,
+    "extended": 6.0
+   },
+   "year 2025": {
+    "trades": 59.0,
+    "net": 292811.0,
+    "first_lot_pieces": 210530.0,
+    "added_pieces": 82281.0,
+    "extension_contribution": -10101.0,
+    "charges": 17200.0,
+    "stress": 71955.0,
+    "adds": 31.0,
+    "adds_won": 16.0,
+    "extended": 5.0
+   },
+   "year 2026": {
+    "trades": 42.0,
+    "net": 382702.0,
+    "first_lot_pieces": 326497.0,
+    "added_pieces": 56205.0,
+    "extension_contribution": 12359.0,
+    "charges": 12214.0,
+    "stress": 53915.0,
+    "adds": 12.0,
+    "adds_won": 7.0,
+    "extended": 5.0
+   }
+  },
+  "top5": [
+   {
+    "day": "2025-01-21",
+    "net": 75503,
+    "trades": [
+     {
+      "i": 175,
+      "expert": "SHIPPED",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 34026,
+      "adds": 0,
+      "ext": 389,
+      "reason": "ext_trail"
+     },
+     {
+      "i": 280,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 41477,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2025-02-11",
+    "net": 73797,
+    "trades": [
+     {
+      "i": 135,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 55420,
+      "adds": 18377,
+      "ext": -13286,
+      "reason": "ext_trail"
+     }
+    ]
+   },
+   {
+    "day": "2026-10-21",
+    "net": 71732,
+    "trades": [
+     {
+      "i": 85,
+      "expert": "OR20",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 71732,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2026-01-23",
+    "net": 69669,
+    "trades": [
+     {
+      "i": 141,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 43200,
+      "adds": 26469,
+      "ext": 11613,
+      "reason": "ext_trail"
+     }
+    ]
+   },
+   {
+    "day": "2025-01-06",
+    "net": 60273,
+    "trades": [
+     {
+      "i": 55,
+      "expert": "EFF",
+      "opt": "CE",
+      "lots0": 6,
+      "first": -15110,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     },
+     {
+      "i": 81,
+      "expert": "OR20",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 75382,
+      "adds": 0,
+      "ext": 3095,
+      "reason": "ext_trail"
+     }
+    ]
+   }
+  ]
+ },
+ "2023-2026 @400": {
+  "summary": {
+   "net": 495597,
+   "by_year": {
+    "2023": -20385,
+    "2024": 86356,
+    "2025": 92429,
+    "2026": 337198
+   },
+   "months_positive": 23,
+   "months": 46,
+   "worst_month": -41913,
+   "worst_day": -20202,
+   "refilled": 494651,
+   "trades": 154,
+   "sessions": 742,
+   "per_session": 667.9,
+   "final_wallet": 101250
+  },
+  "parts": {
+   "all": {
+    "trades": 154.0,
+    "net": 495597.0,
+    "first_lot_pieces": 394687.0,
+    "added_pieces": 100910.0,
+    "extension_contribution": 5907.0,
+    "charges": 30505.0,
+    "stress": 236800.0,
+    "adds": 54.0,
+    "adds_won": 22.0,
+    "extended": 14.0
+   },
+   "expert EFF": {
+    "trades": 26.0,
+    "net": 8445.0,
+    "first_lot_pieces": 5858.0,
+    "added_pieces": 2587.0,
+    "extension_contribution": 5060.0,
+    "charges": 4663.0,
+    "stress": 40400.0,
+    "adds": 7.0,
+    "adds_won": 1.0,
+    "extended": 2.0
+   },
+   "expert OR20": {
+    "trades": 15.0,
+    "net": 64342.0,
+    "first_lot_pieces": 79449.0,
+    "added_pieces": -15107.0,
+    "extension_contribution": 0.0,
+    "charges": 3145.0,
+    "stress": 26000.0,
+    "adds": 5.0,
+    "adds_won": 2.0,
+    "extended": 0.0
+   },
+   "expert SHIPPED": {
+    "trades": 16.0,
+    "net": 29964.0,
+    "first_lot_pieces": 19221.0,
+    "added_pieces": 10743.0,
+    "extension_contribution": -1032.0,
+    "charges": 3060.0,
+    "stress": 25200.0,
+    "adds": 4.0,
+    "adds_won": 2.0,
+    "extended": 3.0
+   },
+   "expert TPB": {
+    "trades": 97.0,
+    "net": 392847.0,
+    "first_lot_pieces": 290159.0,
+    "added_pieces": 102688.0,
+    "extension_contribution": 1878.0,
+    "charges": 19637.0,
+    "stress": 145200.0,
+    "adds": 38.0,
+    "adds_won": 17.0,
+    "extended": 9.0
+   },
+   "side CE": {
+    "trades": 33.0,
+    "net": -19134.0,
+    "first_lot_pieces": -20808.0,
+    "added_pieces": 1674.0,
+    "extension_contribution": -2011.0,
+    "charges": 6290.0,
+    "stress": 56800.0,
+    "adds": 18.0,
+    "adds_won": 5.0,
+    "extended": 1.0
+   },
+   "side PE": {
+    "trades": 121.0,
+    "net": 514731.0,
+    "first_lot_pieces": 415495.0,
+    "added_pieces": 99236.0,
+    "extension_contribution": 7918.0,
+    "charges": 24215.0,
+    "stress": 180000.0,
+    "adds": 36.0,
+    "adds_won": 17.0,
+    "extended": 13.0
+   },
+   "year 2023": {
+    "trades": 27.0,
+    "net": -20385.0,
+    "first_lot_pieces": -20035.0,
+    "added_pieces": -351.0,
+    "extension_contribution": 0.0,
+    "charges": 3150.0,
+    "stress": 21200.0,
+    "adds": 10.0,
+    "adds_won": 1.0,
+    "extended": 0.0
+   },
+   "year 2024": {
+    "trades": 27.0,
+    "net": 86356.0,
+    "first_lot_pieces": 79883.0,
+    "added_pieces": 6473.0,
+    "extension_contribution": 1658.0,
+    "charges": 3334.0,
+    "stress": 26400.0,
+    "adds": 4.0,
+    "adds_won": 1.0,
+    "extended": 5.0
+   },
+   "year 2025": {
+    "trades": 59.0,
+    "net": 92429.0,
+    "first_lot_pieces": 48190.0,
+    "added_pieces": 44238.0,
+    "extension_contribution": -8109.0,
+    "charges": 12041.0,
+    "stress": 86400.0,
+    "adds": 28.0,
+    "adds_won": 14.0,
+    "extended": 4.0
+   },
+   "year 2026": {
+    "trades": 41.0,
+    "net": 337198.0,
+    "first_lot_pieces": 286648.0,
+    "added_pieces": 50549.0,
+    "extension_contribution": 12359.0,
+    "charges": 11980.0,
+    "stress": 102800.0,
+    "adds": 12.0,
+    "adds_won": 6.0,
+    "extended": 5.0
+   }
+  },
+  "top5": [
+   {
+    "day": "2026-10-21",
+    "net": 70562,
+    "trades": [
+     {
+      "i": 85,
+      "expert": "OR20",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 70562,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2026-01-23",
+    "net": 67719,
+    "trades": [
+     {
+      "i": 141,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 42030,
+      "adds": 25689,
+      "ext": 11613,
+      "reason": "ext_trail"
+     }
+    ]
+   },
+   {
+    "day": "2026-10-08",
+    "net": 56691,
+    "trades": [
+     {
+      "i": 81,
+      "expert": "OR20",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 56691,
+      "adds": 0,
+      "ext": 0,
+      "reason": "n11"
+     }
+    ]
+   },
+   {
+    "day": "2026-09-24",
+    "net": 55479,
+    "trades": [
+     {
+      "i": 156,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 6,
+      "first": 38068,
+      "adds": 17411,
+      "ext": 905,
+      "reason": "ext_trail"
+     }
+    ]
+   },
+   {
+    "day": "2026-03-19",
+    "net": 49517,
+    "trades": [
+     {
+      "i": 190,
+      "expert": "TPB",
+      "opt": "PE",
+      "lots0": 5,
+      "first": 49517,
+      "adds": 0,
+      "ext": -1638,
+      "reason": "ext_end"
+     }
+    ]
+   }
+  ]
+ }
+}

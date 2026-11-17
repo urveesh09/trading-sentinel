@@ -1,0 +1,65 @@
+{
+ "contestants": "Gold v5 alone (SN490: no survivor)",
+ "start": "2026-11-18",
+ "prior": {
+  "ONE_15K @205": {
+   "sessions": 1259,
+   "mean_per_replay_session": 83.9,
+   "sigma_LR": 1658.6,
+   "by_path_mean": {
+    "2020-21": -109.4,
+    "2022": -51.1,
+    "2023-2026": 203.7
+   },
+   "n_star_replay": 1056,
+   "n_star_market_sessions": 1340,
+   "n_star_years": 5.4
+  },
+  "ONE_15K @400": {
+   "sessions": 1259,
+   "mean_per_replay_session": 11.3,
+   "sigma_LR": 1505.4,
+   "by_path_mean": {
+    "2020-21": -161.7,
+    "2022": -82.2,
+    "2023-2026": 111.5
+   },
+   "n_star_replay": 48113,
+   "n_star_market_sessions": 61010,
+   "n_star_years": 248.0
+  },
+  "GOLD_30K @205": {
+   "sessions": 1259,
+   "mean_per_replay_session": 612.2,
+   "sigma_LR": 7994.2,
+   "by_path_mean": {
+    "2020-21": -198.1,
+    "2022": -80.4,
+    "2023-2026": 1146.7
+   },
+   "n_star_replay": 461,
+   "n_star_market_sessions": 585,
+   "n_star_years": 2.4
+  },
+  "GOLD_30K @400": {
+   "sessions": 1259,
+   "mean_per_replay_session": 300.3,
+   "sigma_LR": 6174.8,
+   "by_path_mean": {
+    "2020-21": -287.4,
+    "2022": -123.7,
+    "2023-2026": 667.9
+   },
+   "n_star_replay": 1144,
+   "n_star_market_sessions": 1450,
+   "n_star_years": 5.9
+  }
+ },
+ "contest_market_sessions": 585,
+ "verdict_rule": {
+  "EDGE_CONFIRMED": "90% CI of the mean day net above 0 at Rs 205 and Rs 400",
+  "EDGE_REJECTED": "90% CI below 0 at Rs 205",
+  "else": "INCONCLUSIVE",
+  "scorer": "fw10.py"
+ }
+}

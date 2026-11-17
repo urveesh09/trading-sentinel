@@ -1,0 +1,296 @@
+{
+ "all (deployed) | 2022 @205": {
+  "net": -15281,
+  "by_year": {
+   "2022": -15281
+  },
+  "months_positive": 4,
+  "worst_month": -9276,
+  "trades": 30
+ },
+ "all (deployed) | 2022 @400": {
+  "net": -23511,
+  "by_year": {
+   "2022": -23511
+  },
+  "months_positive": 3,
+  "worst_month": -9667,
+  "trades": 30
+ },
+ "all (deployed) | 2023-2026 @205": {
+  "net": 850883,
+  "by_year": {
+   "2023": -12107,
+   "2024": 187476,
+   "2025": 292811,
+   "2026": 382702
+  },
+  "months_positive": 25,
+  "worst_month": -38531,
+  "trades": 156
+ },
+ "all (deployed) | 2023-2026 @400": {
+  "net": 495597,
+  "by_year": {
+   "2023": -20385,
+   "2024": 86356,
+   "2025": 92429,
+   "2026": 337198
+  },
+  "months_positive": 23,
+  "worst_month": -41913,
+  "trades": 154
+ },
+ "without EFF | 2022 @205": {
+  "net": -27303,
+  "by_year": {
+   "2022": -27303
+  },
+  "months_positive": 4,
+  "worst_month": -9276,
+  "trades": 29
+ },
+ "without EFF | 2022 @400": {
+  "net": -35143,
+  "by_year": {
+   "2022": -35143
+  },
+  "months_positive": 3,
+  "worst_month": -9667,
+  "trades": 29
+ },
+ "without EFF | 2023-2026 @205": {
+  "net": 570083,
+  "by_year": {
+   "2023": -24231,
+   "2024": 49889,
+   "2025": 145223,
+   "2026": 399202
+  },
+  "months_positive": 23,
+  "worst_month": -21879,
+  "trades": 135
+ },
+ "without EFF | 2023-2026 @400": {
+  "net": 403609,
+  "by_year": {
+   "2023": -30560,
+   "2024": 42868,
+   "2025": 76081,
+   "2026": 315220
+  },
+  "months_positive": 23,
+  "worst_month": -25229,
+  "trades": 134
+ },
+ "without OR20 | 2022 @205": {
+  "net": -12451,
+  "by_year": {
+   "2022": -12451
+  },
+  "months_positive": 4,
+  "worst_month": -9276,
+  "trades": 29
+ },
+ "without OR20 | 2022 @400": {
+  "net": -20486,
+  "by_year": {
+   "2022": -20486
+  },
+  "months_positive": 3,
+  "worst_month": -9667,
+  "trades": 29
+ },
+ "without OR20 | 2023-2026 @205": {
+  "net": 808549,
+  "by_year": {
+   "2023": -2165,
+   "2024": 215415,
+   "2025": 250810,
+   "2026": 344489
+  },
+  "months_positive": 26,
+  "worst_month": -14815,
+  "trades": 141
+ },
+ "without OR20 | 2023-2026 @400": {
+  "net": 520900,
+  "by_year": {
+   "2023": -10183,
+   "2024": 80934,
+   "2025": 150321,
+   "2026": 299829
+  },
+  "months_positive": 25,
+  "worst_month": -13695,
+  "trades": 141
+ },
+ "without SHIPPED | 2022 @205": {
+  "net": -14958,
+  "by_year": {
+   "2022": -14958
+  },
+  "months_positive": 4,
+  "worst_month": -9276,
+  "trades": 29
+ },
+ "without SHIPPED | 2022 @400": {
+  "net": -22798,
+  "by_year": {
+   "2022": -22798
+  },
+  "months_positive": 3,
+  "worst_month": -9667,
+  "trades": 29
+ },
+ "without SHIPPED | 2023-2026 @205": {
+  "net": 786893,
+  "by_year": {
+   "2023": -10685,
+   "2024": 173014,
+   "2025": 263291,
+   "2026": 361273
+  },
+  "months_positive": 25,
+  "worst_month": -42203,
+  "trades": 141
+ },
+ "without SHIPPED | 2023-2026 @400": {
+  "net": 542546,
+  "by_year": {
+   "2023": -18748,
+   "2024": 83136,
+   "2025": 157125,
+   "2026": 321033
+  },
+  "months_positive": 23,
+  "worst_month": -44415,
+  "trades": 139
+ },
+ "TPB only | 2022 @205": {
+  "net": -24151,
+  "by_year": {
+   "2022": -24151
+  },
+  "months_positive": 4,
+  "worst_month": -9276,
+  "trades": 27
+ },
+ "TPB only | 2022 @400": {
+  "net": -31405,
+  "by_year": {
+   "2022": -31405
+  },
+  "months_positive": 3,
+  "worst_month": -9667,
+  "trades": 27
+ },
+ "TPB only | 2023-2026 @205": {
+  "net": 446212,
+  "by_year": {
+   "2023": -12868,
+   "2024": 49666,
+   "2025": 137048,
+   "2026": 272365
+  },
+  "months_positive": 23,
+  "worst_month": -12330,
+  "trades": 103
+ },
+ "TPB only | 2023-2026 @400": {
+  "net": 325605,
+  "by_year": {
+   "2023": -18719,
+   "2024": 45070,
+   "2025": 83876,
+   "2026": 215379
+  },
+  "months_positive": 23,
+  "worst_month": -12192,
+  "trades": 103
+ },
+ "puts only | 2022 @205": {
+  "net": -32442,
+  "by_year": {
+   "2022": -32442
+  },
+  "months_positive": 3,
+  "worst_month": -9276,
+  "trades": 26
+ },
+ "puts only | 2022 @400": {
+  "net": -39307,
+  "by_year": {
+   "2022": -39307
+  },
+  "months_positive": 2,
+  "worst_month": -9667,
+  "trades": 26
+ },
+ "puts only | 2023-2026 @205": {
+  "net": 617882,
+  "by_year": {
+   "2023": -1843,
+   "2024": 47748,
+   "2025": 153337,
+   "2026": 418641
+  },
+  "months_positive": 22,
+  "worst_month": -20586,
+  "trades": 124
+ },
+ "puts only | 2023-2026 @400": {
+  "net": 520114,
+  "by_year": {
+   "2023": -8083,
+   "2024": 39947,
+   "2025": 110595,
+   "2026": 377656
+  },
+  "months_positive": 22,
+  "worst_month": -22568,
+  "trades": 124
+ },
+ "calls only | 2022 @205": {
+  "net": 17161,
+  "by_year": {
+   "2022": 17161
+  },
+  "months_positive": 1,
+  "worst_month": 0,
+  "trades": 4
+ },
+ "calls only | 2022 @400": {
+  "net": 15796,
+  "by_year": {
+   "2022": 15796
+  },
+  "months_positive": 1,
+  "worst_month": 0,
+  "trades": 4
+ },
+ "calls only | 2023-2026 @205": {
+  "net": 92390,
+  "by_year": {
+   "2023": -8946,
+   "2024": 71845,
+   "2025": 9087,
+   "2026": 20405
+  },
+  "months_positive": 6,
+  "worst_month": -5774,
+  "trades": 38
+ },
+ "calls only | 2023-2026 @400": {
+  "net": 4577,
+  "by_year": {
+   "2023": -11960,
+   "2024": 30634,
+   "2025": 1585,
+   "2026": -15682
+  },
+  "months_positive": 5,
+  "worst_month": -10388,
+  "trades": 37
+ }
+}

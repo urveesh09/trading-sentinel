@@ -1,0 +1,54 @@
+{
+  "as_of_ist": "2026-11-17",
+  "status": "FROZEN_BEFORE_ANY_SCORE",
+  "module": "NIFTY F&O ten-slot challenger research",
+  "python": "3.11.9",
+  "numpy": "1.26.4",
+  "test_years": [
+    "2024",
+    "2025",
+    "2026"
+  ],
+  "expiry_chain_holdout_protected": true,
+  "effect_on_production": "NONE",
+  "effective_nfo_costs": {
+    "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01",
+    "effective_date": "2026-04-01",
+    "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+    "rates": {
+      "brokerage_flat_per_order": 20.0,
+      "stt_sell_pct": 0.0015,
+      "exchange_pct": 0.0003553,
+      "sebi_pct": 1e-06,
+      "stamp_duty_buy_pct": 3e-05,
+      "ipft_pct": 1e-09,
+      "gst_pct": 0.18
+    }
+  },
+  "quote_export": "C:/Users/Urveesh/sentinel-operations/fno-forward-panel-20261028/docs/research/fno/2026-10-28-forward-panel/_local/exports/20261117T103003Z",
+  "sha256": {
+    "docs/research/fno/2026-11-17-ten-slots/PLAN.md": "38f6fee0858354da70a12dc2e4eca0057eb5c813b791f4e7bf10b3574715b655",
+    "docs/research/fno/2026-11-17-ten-slots/run.py": "2b26df1cd2e66bfc3dfbad453d43743cae7863789da6cfae02357266e90c9271",
+    "python-engine/config.py": "ea3f12a305d851fd09052445d51a9c8982e7208f93f32927ee73a2f3edb05b9d",
+    "python-engine/cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd",
+    "python-engine/fno_costs.py": "c148d3deadec3982b90ff617d0c9b3aec3e1794c69c48f69cc4aaaf9cb391e8a",
+    "docs/research/fno/2026-11-17-sn456/_local/fut.npz": "d61db7570c1ce4337411c8269c9afd57749faca1cc19159907c874d3d0d24845",
+    "docs/research/fno/2026-11-16-sn251/_local/gl-devall.pkl": "99f4676223da0eb7a469d80e113279881fea8695dd145d111fd1244d13ef2f85",
+    "docs/research/fno/2026-11-17-sn456/_local/ledger10.json": "391ea5f383bf7f4462efe15f4196215c30b18f1627d4294f8e195180ad3f0bb5",
+    "docs/research/fno/2026-11-16-sn251/gl.py": "040fd66c5a5b23c6cc4c17fba5b713f40f0e66303a2ed2e7d13d40c401c52a22",
+    "docs/research/fno/2026-11-14-sn201/wk.py": "ed50e06de656da39d688bb7f9b31badb7604071cafdc3363d1cf630ed21c2141",
+    "docs/research/fno/2026-11-12-sn01/sn01_data.py": "47efd08e0f52adbb45a2f2f69434e93f6f0bdb13046ce370e3fa69ec3ec5d564",
+    "docs/research/fno/2026-11-17-sn456/ledger10.py": "af7601442a4c471a3a771aa38fe66b3a906a1bd8ec4034afff3998c6c6d6efde",
+    "docs/research/fno/2026-11-17-sn396/op.py": "23b2e9f8f4d93bd95b672d502ff3ed5250a6d8eb431eb572e4a3017f1d11eb0c",
+    "docs/research/fno/2026-11-17-sn396/sn403.py": "d0102f2e91314b4296364141a525b3ab91040d488182894a6313eab7596227a8",
+    "docs/research/fno/2026-11-17-sn411/gold.py": "700fd6c4967048dd0a17169a51316817a42dc52085867afd856420949f895ba5",
+    "docs/research/fno/2026-11-17-sn411/sn412.py": "e357da8485bc2b39a9b53420f81b42663237702f0ad87eb0f0dc5046e5ee6efb",
+    "docs/research/fno/2026-11-17-sn426/sn428.py": "e74b04e3704758a8421492a1b2199b8dc0b51f160be7fd8a47bcc74ded33ff33",
+    "docs/research/fno/2026-11-17-sn441/sn441.py": "42c0b7cf801197add06cb8d0585ad378eb515d3f02891ceb037685c862ca8702",
+    "docs/research/fno/2026-11-13-sn101/qa.py": "fe3adf86bced4db2d750b4c6aed6def9c6ba81ca42911582937bf695eee3f664"
+  },
+  "external_sha256": {
+    "C:/Users/Urveesh/sentinel-operations/fno-forward-panel-20261028/docs/research/fno/2026-10-28-forward-panel/_local/exports/20261117T103003Z/manifest.json": "cdfcad61fee76d805116332db2d185fc92721bc396ef88e1a6ed4371ec0c90e2"
+  },
+  "amendment": "Import asdict to write trade receipts. First invocation stopped at that missing import before printing or writing results. Neither policies nor gates changed."
+}

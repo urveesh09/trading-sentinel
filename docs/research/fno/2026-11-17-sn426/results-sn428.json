@@ -1,0 +1,3610 @@
+{
+ "days": 42,
+ "cells": 126,
+ "labels": {
+  "EXPIRY": 9,
+  "GOLD": 9,
+  "EMPTY": 15,
+  "NO_REPLAY": 9
+ },
+ "10:00 @205": {
+  "BASE": {
+   "priced": 40,
+   "unpriced": 2,
+   "mean": -218,
+   "median": -150,
+   "share_ge_750": 0.3,
+   "share_ge_750_of_all_cells": 0.286,
+   "mean_capture_of_ceiling": -0.028
+  },
+  "SIDE": {
+   "priced": 41,
+   "unpriced": 1,
+   "mean": 952,
+   "median": 812,
+   "share_ge_750": 0.512,
+   "share_ge_750_of_all_cells": 0.5,
+   "mean_capture_of_ceiling": 0.085
+  },
+  "CONTRACT": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 605,
+   "median": 9,
+   "share_ge_750": 0.333,
+   "share_ge_750_of_all_cells": 0.333,
+   "mean_capture_of_ceiling": 0.059
+  },
+  "EXIT": {
+   "priced": 40,
+   "unpriced": 2,
+   "mean": 1251,
+   "median": 1043,
+   "share_ge_750": 0.6,
+   "share_ge_750_of_all_cells": 0.571,
+   "mean_capture_of_ceiling": 0.14
+  },
+  "TIMING": {
+   "priced": 41,
+   "unpriced": 1,
+   "mean": 2684,
+   "median": 1977,
+   "share_ge_750": 0.707,
+   "share_ge_750_of_all_cells": 0.69,
+   "mean_capture_of_ceiling": 0.288
+  },
+  "SIDE+EXIT": {
+   "priced": 41,
+   "unpriced": 1,
+   "mean": 2042,
+   "median": 1573,
+   "share_ge_750": 0.829,
+   "share_ge_750_of_all_cells": 0.81,
+   "mean_capture_of_ceiling": 0.22
+  },
+  "CEILING": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 9919,
+   "median": 9376,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "11:00 @205": {
+  "BASE": {
+   "priced": 32,
+   "unpriced": 10,
+   "mean": 148,
+   "median": -246,
+   "share_ge_750": 0.406,
+   "share_ge_750_of_all_cells": 0.31,
+   "mean_capture_of_ceiling": -0.003
+  },
+  "SIDE": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": 1366,
+   "median": 1015,
+   "share_ge_750": 0.606,
+   "share_ge_750_of_all_cells": 0.476,
+   "mean_capture_of_ceiling": 0.129
+  },
+  "CONTRACT": {
+   "priced": 35,
+   "unpriced": 7,
+   "mean": 959,
+   "median": 47,
+   "share_ge_750": 0.429,
+   "share_ge_750_of_all_cells": 0.357,
+   "mean_capture_of_ceiling": 0.082
+  },
+  "EXIT": {
+   "priced": 32,
+   "unpriced": 10,
+   "mean": 1421,
+   "median": 1097,
+   "share_ge_750": 0.562,
+   "share_ge_750_of_all_cells": 0.429,
+   "mean_capture_of_ceiling": 0.126
+  },
+  "TIMING": {
+   "priced": 39,
+   "unpriced": 3,
+   "mean": 2123,
+   "median": 1488,
+   "share_ge_750": 0.667,
+   "share_ge_750_of_all_cells": 0.619,
+   "mean_capture_of_ceiling": 0.214
+  },
+  "SIDE+EXIT": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": 2418,
+   "median": 1723,
+   "share_ge_750": 0.879,
+   "share_ge_750_of_all_cells": 0.69,
+   "mean_capture_of_ceiling": 0.231
+  },
+  "CEILING": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 9919,
+   "median": 9376,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "13:00 @205": {
+  "BASE": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": -419,
+   "median": -596,
+   "share_ge_750": 0.242,
+   "share_ge_750_of_all_cells": 0.19,
+   "mean_capture_of_ceiling": -0.069
+  },
+  "SIDE": {
+   "priced": 34,
+   "unpriced": 8,
+   "mean": 1556,
+   "median": 1534,
+   "share_ge_750": 0.618,
+   "share_ge_750_of_all_cells": 0.5,
+   "mean_capture_of_ceiling": 0.142
+  },
+  "CONTRACT": {
+   "priced": 35,
+   "unpriced": 7,
+   "mean": 713,
+   "median": -185,
+   "share_ge_750": 0.314,
+   "share_ge_750_of_all_cells": 0.262,
+   "mean_capture_of_ceiling": 0.055
+  },
+  "EXIT": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": 1050,
+   "median": 447,
+   "share_ge_750": 0.303,
+   "share_ge_750_of_all_cells": 0.238,
+   "mean_capture_of_ceiling": 0.089
+  },
+  "TIMING": {
+   "priced": 37,
+   "unpriced": 5,
+   "mean": 1511,
+   "median": 854,
+   "share_ge_750": 0.514,
+   "share_ge_750_of_all_cells": 0.452,
+   "mean_capture_of_ceiling": 0.136
+  },
+  "SIDE+EXIT": {
+   "priced": 34,
+   "unpriced": 8,
+   "mean": 2319,
+   "median": 1973,
+   "share_ge_750": 0.647,
+   "share_ge_750_of_all_cells": 0.524,
+   "mean_capture_of_ceiling": 0.218
+  },
+  "CEILING": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 9919,
+   "median": 9376,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "all @205": {
+  "BASE": {
+   "priced": 105,
+   "unpriced": 21,
+   "mean": -169,
+   "median": -304,
+   "share_ge_750": 0.314,
+   "share_ge_750_of_all_cells": 0.262,
+   "mean_capture_of_ceiling": -0.033
+  },
+  "SIDE": {
+   "priced": 108,
+   "unpriced": 18,
+   "mean": 1269,
+   "median": 1019,
+   "share_ge_750": 0.574,
+   "share_ge_750_of_all_cells": 0.492,
+   "mean_capture_of_ceiling": 0.116
+  },
+  "CONTRACT": {
+   "priced": 112,
+   "unpriced": 14,
+   "mean": 750,
+   "median": 7,
+   "share_ge_750": 0.357,
+   "share_ge_750_of_all_cells": 0.317,
+   "mean_capture_of_ceiling": 0.065
+  },
+  "EXIT": {
+   "priced": 105,
+   "unpriced": 21,
+   "mean": 1240,
+   "median": 739,
+   "share_ge_750": 0.495,
+   "share_ge_750_of_all_cells": 0.413,
+   "mean_capture_of_ceiling": 0.119
+  },
+  "TIMING": {
+   "priced": 117,
+   "unpriced": 9,
+   "mean": 2126,
+   "median": 1488,
+   "share_ge_750": 0.632,
+   "share_ge_750_of_all_cells": 0.587,
+   "mean_capture_of_ceiling": 0.215
+  },
+  "SIDE+EXIT": {
+   "priced": 108,
+   "unpriced": 18,
+   "mean": 2244,
+   "median": 1644,
+   "share_ge_750": 0.787,
+   "share_ge_750_of_all_cells": 0.675,
+   "mean_capture_of_ceiling": 0.223
+  },
+  "CEILING": {
+   "priced": 126,
+   "unpriced": 0,
+   "mean": 9919,
+   "median": 9376,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "label EXPIRY @205": {
+  "BASE": -487,
+  "SIDE": 1336,
+  "CONTRACT": 753,
+  "EXIT": 1078,
+  "TIMING": 1915,
+  "SIDE+EXIT": 2507,
+  "CEILING": 10545
+ },
+ "label GOLD @205": {
+  "BASE": 138,
+  "SIDE": 1917,
+  "CONTRACT": 946,
+  "EXIT": 1588,
+  "TIMING": 1866,
+  "SIDE+EXIT": 2861,
+  "CEILING": 10592
+ },
+ "label EMPTY @205": {
+  "BASE": -374,
+  "SIDE": 946,
+  "CONTRACT": 493,
+  "EXIT": 970,
+  "TIMING": 2363,
+  "SIDE+EXIT": 1734,
+  "CEILING": 9307
+ },
+ "10:00 @400": {
+  "BASE": {
+   "priced": 40,
+   "unpriced": 2,
+   "mean": -513,
+   "median": -438,
+   "share_ge_750": 0.225,
+   "share_ge_750_of_all_cells": 0.214,
+   "mean_capture_of_ceiling": -0.057
+  },
+  "SIDE": {
+   "priced": 41,
+   "unpriced": 1,
+   "mean": 653,
+   "median": 516,
+   "share_ge_750": 0.415,
+   "share_ge_750_of_all_cells": 0.405,
+   "mean_capture_of_ceiling": 0.058
+  },
+  "CONTRACT": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 409,
+   "median": -186,
+   "share_ge_750": 0.31,
+   "share_ge_750_of_all_cells": 0.31,
+   "mean_capture_of_ceiling": 0.037
+  },
+  "EXIT": {
+   "priced": 40,
+   "unpriced": 2,
+   "mean": 1020,
+   "median": 745,
+   "share_ge_750": 0.5,
+   "share_ge_750_of_all_cells": 0.476,
+   "mean_capture_of_ceiling": 0.118
+  },
+  "TIMING": {
+   "priced": 41,
+   "unpriced": 1,
+   "mean": 2489,
+   "median": 1782,
+   "share_ge_750": 0.683,
+   "share_ge_750_of_all_cells": 0.667,
+   "mean_capture_of_ceiling": 0.272
+  },
+  "SIDE+EXIT": {
+   "priced": 41,
+   "unpriced": 1,
+   "mean": 1836,
+   "median": 1378,
+   "share_ge_750": 0.756,
+   "share_ge_750_of_all_cells": 0.738,
+   "mean_capture_of_ceiling": 0.201
+  },
+  "CEILING": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 9724,
+   "median": 9181,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "11:00 @400": {
+  "BASE": {
+   "priced": 32,
+   "unpriced": 10,
+   "mean": -224,
+   "median": -538,
+   "share_ge_750": 0.344,
+   "share_ge_750_of_all_cells": 0.262,
+   "mean_capture_of_ceiling": -0.046
+  },
+  "SIDE": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": 981,
+   "median": 811,
+   "share_ge_750": 0.515,
+   "share_ge_750_of_all_cells": 0.405,
+   "mean_capture_of_ceiling": 0.088
+  },
+  "CONTRACT": {
+   "priced": 35,
+   "unpriced": 7,
+   "mean": 747,
+   "median": -188,
+   "share_ge_750": 0.429,
+   "share_ge_750_of_all_cells": 0.357,
+   "mean_capture_of_ceiling": 0.06
+  },
+  "EXIT": {
+   "priced": 32,
+   "unpriced": 10,
+   "mean": 1074,
+   "median": 810,
+   "share_ge_750": 0.5,
+   "share_ge_750_of_all_cells": 0.381,
+   "mean_capture_of_ceiling": 0.089
+  },
+  "TIMING": {
+   "priced": 39,
+   "unpriced": 3,
+   "mean": 1928,
+   "median": 1293,
+   "share_ge_750": 0.615,
+   "share_ge_750_of_all_cells": 0.571,
+   "mean_capture_of_ceiling": 0.196
+  },
+  "SIDE+EXIT": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": 2159,
+   "median": 1528,
+   "share_ge_750": 0.788,
+   "share_ge_750_of_all_cells": 0.619,
+   "mean_capture_of_ceiling": 0.207
+  },
+  "CEILING": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 9724,
+   "median": 9181,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "13:00 @400": {
+  "BASE": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": -787,
+   "median": -941,
+   "share_ge_750": 0.212,
+   "share_ge_750_of_all_cells": 0.167,
+   "mean_capture_of_ceiling": -0.102
+  },
+  "SIDE": {
+   "priced": 34,
+   "unpriced": 8,
+   "mean": 1193,
+   "median": 1326,
+   "share_ge_750": 0.588,
+   "share_ge_750_of_all_cells": 0.476,
+   "mean_capture_of_ceiling": 0.113
+  },
+  "CONTRACT": {
+   "priced": 35,
+   "unpriced": 7,
+   "mean": 504,
+   "median": -380,
+   "share_ge_750": 0.286,
+   "share_ge_750_of_all_cells": 0.238,
+   "mean_capture_of_ceiling": 0.033
+  },
+  "EXIT": {
+   "priced": 33,
+   "unpriced": 9,
+   "mean": 707,
+   "median": 168,
+   "share_ge_750": 0.242,
+   "share_ge_750_of_all_cells": 0.19,
+   "mean_capture_of_ceiling": 0.06
+  },
+  "TIMING": {
+   "priced": 37,
+   "unpriced": 5,
+   "mean": 1306,
+   "median": 659,
+   "share_ge_750": 0.486,
+   "share_ge_750_of_all_cells": 0.429,
+   "mean_capture_of_ceiling": 0.115
+  },
+  "SIDE+EXIT": {
+   "priced": 34,
+   "unpriced": 8,
+   "mean": 2064,
+   "median": 1525,
+   "share_ge_750": 0.618,
+   "share_ge_750_of_all_cells": 0.5,
+   "mean_capture_of_ceiling": 0.198
+  },
+  "CEILING": {
+   "priced": 42,
+   "unpriced": 0,
+   "mean": 9724,
+   "median": 9181,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "all @400": {
+  "BASE": {
+   "priced": 105,
+   "unpriced": 21,
+   "mean": -511,
+   "median": -590,
+   "share_ge_750": 0.257,
+   "share_ge_750_of_all_cells": 0.214,
+   "mean_capture_of_ceiling": -0.068
+  },
+  "SIDE": {
+   "priced": 108,
+   "unpriced": 18,
+   "mean": 923,
+   "median": 731,
+   "share_ge_750": 0.5,
+   "share_ge_750_of_all_cells": 0.429,
+   "mean_capture_of_ceiling": 0.084
+  },
+  "CONTRACT": {
+   "priced": 112,
+   "unpriced": 14,
+   "mean": 544,
+   "median": -209,
+   "share_ge_750": 0.339,
+   "share_ge_750_of_all_cells": 0.302,
+   "mean_capture_of_ceiling": 0.043
+  },
+  "EXIT": {
+   "priced": 105,
+   "unpriced": 21,
+   "mean": 938,
+   "median": 496,
+   "share_ge_750": 0.419,
+   "share_ge_750_of_all_cells": 0.349,
+   "mean_capture_of_ceiling": 0.091
+  },
+  "TIMING": {
+   "priced": 117,
+   "unpriced": 9,
+   "mean": 1928,
+   "median": 1293,
+   "share_ge_750": 0.598,
+   "share_ge_750_of_all_cells": 0.556,
+   "mean_capture_of_ceiling": 0.197
+  },
+  "SIDE+EXIT": {
+   "priced": 108,
+   "unpriced": 18,
+   "mean": 2007,
+   "median": 1379,
+   "share_ge_750": 0.722,
+   "share_ge_750_of_all_cells": 0.619,
+   "mean_capture_of_ceiling": 0.202
+  },
+  "CEILING": {
+   "priced": 126,
+   "unpriced": 0,
+   "mean": 9724,
+   "median": 9181,
+   "share_ge_750": 1.0,
+   "share_ge_750_of_all_cells": 1.0,
+   "mean_capture_of_ceiling": 1.0
+  }
+ },
+ "label EXPIRY @400": {
+  "BASE": -636,
+  "SIDE": 1141,
+  "CONTRACT": 538,
+  "EXIT": 883,
+  "TIMING": 1720,
+  "SIDE+EXIT": 2312,
+  "CEILING": 10350
+ },
+ "label GOLD @400": {
+  "BASE": -42,
+  "SIDE": 1722,
+  "CONTRACT": 751,
+  "EXIT": 1393,
+  "TIMING": 1671,
+  "SIDE+EXIT": 2666,
+  "CEILING": 10397
+ },
+ "label EMPTY @400": {
+  "BASE": -889,
+  "SIDE": 443,
+  "CONTRACT": 282,
+  "EXIT": 518,
+  "TIMING": 2168,
+  "SIDE+EXIT": 1433,
+  "CEILING": 9112
+ },
+ "cells_rows": [
+  {
+   "day": "2026-09-10",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -164.0576922537811,
+    "SIDE": -164.0576922537811,
+    "CONTRACT": -131.28125672005535,
+    "EXIT": 432.79388750858004,
+    "TIMING": 989.0176713912938,
+    "SIDE+EXIT": 432.79388750858004,
+    "CEILING": 4651
+   },
+   "@400": {
+    "BASE": -359.0576922537811,
+    "SIDE": -359.0576922537811,
+    "CONTRACT": -326.28125672005535,
+    "EXIT": 237.79388750858004,
+    "TIMING": 794.0176713912938,
+    "SIDE+EXIT": 237.79388750858004,
+    "CEILING": 4456
+   }
+  },
+  {
+   "day": "2026-09-10",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -1586.549576828321,
+    "SIDE": 802.8294911450448,
+    "CONTRACT": -488.5555425881648,
+    "EXIT": -188.48962640670538,
+    "TIMING": 622.6809950852403,
+    "SIDE+EXIT": 802.8294911450448,
+    "CEILING": 4651
+   },
+   "@400": {
+    "BASE": -1781.549576828321,
+    "SIDE": 607.8294911450448,
+    "CONTRACT": -683.5555425881648,
+    "EXIT": -383.4896264067054,
+    "TIMING": 427.6809950852403,
+    "SIDE+EXIT": 607.8294911450448,
+    "CEILING": 4456
+   }
+  },
+  {
+   "day": "2026-09-10",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -294.45491371985077,
+    "SIDE": -294.45491371985077,
+    "CONTRACT": -184.96903034213426,
+    "EXIT": 305.6404246281743,
+    "TIMING": 1450.1399422479456,
+    "SIDE+EXIT": 305.6404246281743,
+    "CEILING": 4651
+   },
+   "@400": {
+    "BASE": -489.45491371985077,
+    "SIDE": -489.45491371985077,
+    "CONTRACT": -379.96903034213426,
+    "EXIT": 110.64042462817429,
+    "TIMING": 1255.1399422479456,
+    "SIDE+EXIT": 110.64042462817429,
+    "CEILING": 4456
+   }
+  },
+  {
+   "day": "2026-09-11",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 1138.469985873871,
+    "SIDE": 1138.469985873871,
+    "CONTRACT": 1535.0629008853439,
+    "EXIT": 1962.3846666327804,
+    "TIMING": 3017.9315235051454,
+    "SIDE+EXIT": 1962.3846666327804,
+    "CEILING": 9365
+   },
+   "@400": {
+    "BASE": 943.4699858738711,
+    "SIDE": 943.4699858738711,
+    "CONTRACT": 1340.0629008853439,
+    "EXIT": 1767.3846666327804,
+    "TIMING": 2822.9315235051454,
+    "SIDE+EXIT": 1767.3846666327804,
+    "CEILING": 9170
+   }
+  },
+  {
+   "day": "2026-09-11",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 2294.157271153669,
+    "SIDE": 2294.157271153669,
+    "CONTRACT": 3184.417917479824,
+    "EXIT": 2887.7650923303645,
+    "TIMING": 2768.570494828451,
+    "SIDE+EXIT": 2887.7650923303645,
+    "CEILING": 9365
+   },
+   "@400": {
+    "BASE": 2099.157271153669,
+    "SIDE": 2099.157271153669,
+    "CONTRACT": 2989.417917479824,
+    "EXIT": 2692.7650923303645,
+    "TIMING": 2573.570494828451,
+    "SIDE+EXIT": 2692.7650923303645,
+    "CEILING": 9170
+   }
+  },
+  {
+   "day": "2026-09-11",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2371.40045864319,
+    "SIDE": 1927.3659804560853,
+    "CONTRACT": -611.3874247911299,
+    "EXIT": 739.3640250095453,
+    "TIMING": 736.5748808154096,
+    "SIDE+EXIT": 1927.3659804560853,
+    "CEILING": 9365
+   },
+   "@400": {
+    "BASE": -2566.40045864319,
+    "SIDE": 1732.3659804560853,
+    "CONTRACT": -806.3874247911299,
+    "EXIT": 544.3640250095453,
+    "TIMING": 541.5748808154096,
+    "SIDE+EXIT": 1732.3659804560853,
+    "CEILING": 9170
+   }
+  },
+  {
+   "day": "2026-09-15",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1818.26558763512,
+    "SIDE": 1994.190230754084,
+    "CONTRACT": -207.8587900546297,
+    "EXIT": 72.84566780757535,
+    "TIMING": -1558.53374092182,
+    "SIDE+EXIT": 2458.0477085041794,
+    "CEILING": 12970
+   },
+   "@400": {
+    "BASE": -2013.26558763512,
+    "SIDE": 1799.190230754084,
+    "CONTRACT": -402.8587900546297,
+    "EXIT": -122.15433219242465,
+    "TIMING": -1753.53374092182,
+    "SIDE+EXIT": 2263.0477085041794,
+    "CEILING": 12775
+   }
+  },
+  {
+   "day": "2026-09-15",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 22.293778169780353,
+    "SIDE+EXIT": null,
+    "CEILING": 12970
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": -172.70622183021965,
+    "SIDE+EXIT": null,
+    "CEILING": 12775
+   }
+  },
+  {
+   "day": "2026-09-15",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 2147.463649119361,
+    "SIDE+EXIT": null,
+    "CEILING": 12970
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 1952.463649119361,
+    "SIDE+EXIT": null,
+    "CEILING": 12775
+   }
+  },
+  {
+   "day": "2026-09-16",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 6.898531487120351,
+    "SIDE": 6.898531487120351,
+    "CONTRACT": 6.898531487120351,
+    "EXIT": 762.6942819470656,
+    "TIMING": 3715.8936639497397,
+    "SIDE+EXIT": 1252.9329572191893,
+    "CEILING": 4750
+   },
+   "@400": {
+    "BASE": -188.10146851287965,
+    "SIDE": -188.10146851287965,
+    "CONTRACT": -188.10146851287965,
+    "EXIT": 567.6942819470656,
+    "TIMING": 3520.8936639497397,
+    "SIDE+EXIT": 1057.9329572191893,
+    "CEILING": 4555
+   }
+  },
+  {
+   "day": "2026-09-16",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 2650.422713319225,
+    "SIDE+EXIT": null,
+    "CEILING": 4750
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 2455.422713319225,
+    "SIDE+EXIT": null,
+    "CEILING": 4555
+   }
+  },
+  {
+   "day": "2026-09-16",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 2275.472033913324,
+    "SIDE+EXIT": null,
+    "CEILING": 4750
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 2080.472033913324,
+    "SIDE+EXIT": null,
+    "CEILING": 4555
+   }
+  },
+  {
+   "day": "2026-09-17",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -94.66719793985925,
+    "SIDE": -94.66719793985925,
+    "CONTRACT": 35.560321511064274,
+    "EXIT": 122.66462729969533,
+    "TIMING": 4339.111584930005,
+    "SIDE+EXIT": 1501.6627032981605,
+    "CEILING": 6656
+   },
+   "@400": {
+    "BASE": -289.66719793985925,
+    "SIDE": -289.66719793985925,
+    "CONTRACT": -159.43967848893573,
+    "EXIT": -72.33537270030467,
+    "TIMING": 4144.111584930005,
+    "SIDE+EXIT": 1306.6627032981605,
+    "CEILING": 6461
+   }
+  },
+  {
+   "day": "2026-09-17",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 1511.679076215944,
+    "SIDE+EXIT": null,
+    "CEILING": 6656
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 1316.679076215944,
+    "SIDE+EXIT": null,
+    "CEILING": 6461
+   }
+  },
+  {
+   "day": "2026-09-17",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": -231.4442467602846,
+    "SIDE+EXIT": null,
+    "CEILING": 6656
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": -426.4442467602846,
+    "SIDE+EXIT": null,
+    "CEILING": 6461
+   }
+  },
+  {
+   "day": "2026-09-21",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2.2234689517303536,
+    "SIDE": -2.2234689517303536,
+    "CONTRACT": 213.55095597445927,
+    "EXIT": 880.0788663491494,
+    "TIMING": 1000.4909057809257,
+    "SIDE+EXIT": 880.0788663491494,
+    "CEILING": 5302
+   },
+   "@400": {
+    "BASE": -197.22346895173035,
+    "SIDE": -197.22346895173035,
+    "CONTRACT": 18.55095597445927,
+    "EXIT": 685.0788663491494,
+    "TIMING": 805.4909057809257,
+    "SIDE+EXIT": 685.0788663491494,
+    "CEILING": 5107
+   }
+  },
+  {
+   "day": "2026-09-21",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -1864.8035553890604,
+    "SIDE": 1223.0082324309851,
+    "CONTRACT": -445.63907930912495,
+    "EXIT": -401.86843325414486,
+    "TIMING": -935.5552394835398,
+    "SIDE+EXIT": 1265.1770940446295,
+    "CEILING": 5302
+   },
+   "@400": {
+    "BASE": -2059.8035553890604,
+    "SIDE": 1028.0082324309851,
+    "CONTRACT": -640.639079309125,
+    "EXIT": -596.8684332541449,
+    "TIMING": -1130.55523948354,
+    "SIDE+EXIT": 1070.1770940446295,
+    "CEILING": 5107
+   }
+  },
+  {
+   "day": "2026-09-21",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2024.2483876657905,
+    "SIDE": 2019.154386938456,
+    "CONTRACT": -478.29241436853493,
+    "EXIT": 58.24462433114002,
+    "TIMING": -555.5348233815894,
+    "SIDE+EXIT": 2019.154386938456,
+    "CEILING": 5302
+   },
+   "@400": {
+    "BASE": -2219.2483876657907,
+    "SIDE": 1824.154386938456,
+    "CONTRACT": -673.292414368535,
+    "EXIT": -136.75537566885998,
+    "TIMING": -750.5348233815894,
+    "SIDE+EXIT": 1824.154386938456,
+    "CEILING": 5107
+   }
+  },
+  {
+   "day": "2026-09-22",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 3756.168123416996,
+    "SIDE": 3756.168123416996,
+    "CONTRACT": 4615.59352268105,
+    "EXIT": 4521.695149633935,
+    "TIMING": 4349.54478473359,
+    "SIDE+EXIT": 4521.695149633935,
+    "CEILING": 8556
+   },
+   "@400": {
+    "BASE": 3561.168123416996,
+    "SIDE": 3561.168123416996,
+    "CONTRACT": 4420.59352268105,
+    "EXIT": 4326.695149633935,
+    "TIMING": 4154.54478473359,
+    "SIDE+EXIT": 4326.695149633935,
+    "CEILING": 8361
+   }
+  },
+  {
+   "day": "2026-09-22",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1015.022416514925,
+    "SIDE": 1015.022416514925,
+    "CONTRACT": 1500.6604562178438,
+    "EXIT": 1530.7800316356602,
+    "TIMING": 2319.4525716864446,
+    "SIDE+EXIT": 1530.7800316356602,
+    "CEILING": 8556
+   },
+   "@400": {
+    "BASE": 820.022416514925,
+    "SIDE": 820.022416514925,
+    "CONTRACT": 1305.6604562178438,
+    "EXIT": 1335.7800316356602,
+    "TIMING": 2124.4525716864446,
+    "SIDE+EXIT": 1335.7800316356602,
+    "CEILING": 8361
+   }
+  },
+  {
+   "day": "2026-09-22",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -745.8453544662895,
+    "SIDE": 219.82420221826987,
+    "CONTRACT": 2270.3173538174988,
+    "EXIT": -220.35646358855982,
+    "TIMING": 853.9438697757507,
+    "SIDE+EXIT": 330.11199413088013,
+    "CEILING": 8556
+   },
+   "@400": {
+    "BASE": -940.8453544662895,
+    "SIDE": 24.824202218269875,
+    "CONTRACT": 2075.3173538174988,
+    "EXIT": -415.3564635885598,
+    "TIMING": 658.9438697757507,
+    "SIDE+EXIT": 135.11199413088013,
+    "CEILING": 8361
+   }
+  },
+  {
+   "day": "2026-09-23",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 710.5246428573812,
+    "SIDE": 710.5246428573812,
+    "CONTRACT": 969.4699916931263,
+    "EXIT": 983.0003640532404,
+    "TIMING": 1977.470591462209,
+    "SIDE+EXIT": 983.0003640532404,
+    "CEILING": 4394
+   },
+   "@400": {
+    "BASE": 515.5246428573812,
+    "SIDE": 515.5246428573812,
+    "CONTRACT": 774.4699916931263,
+    "EXIT": 788.0003640532404,
+    "TIMING": 1782.470591462209,
+    "SIDE+EXIT": 788.0003640532404,
+    "CEILING": 4199
+   }
+  },
+  {
+   "day": "2026-09-23",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 80.32643323971428,
+    "SIDE": 80.32643323971428,
+    "CONTRACT": 135.13844570999618,
+    "EXIT": 502.01504937616437,
+    "TIMING": 1488.2948819777355,
+    "SIDE+EXIT": 502.01504937616437,
+    "CEILING": 4394
+   },
+   "@400": {
+    "BASE": -114.67356676028572,
+    "SIDE": -114.67356676028572,
+    "CONTRACT": -59.861554290003824,
+    "EXIT": 307.01504937616437,
+    "TIMING": 1293.2948819777355,
+    "SIDE+EXIT": 307.01504937616437,
+    "CEILING": 4199
+   }
+  },
+  {
+   "day": "2026-09-23",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 152.60605623607574,
+    "SIDE": 152.60605623607574,
+    "CONTRACT": 481.95844841696464,
+    "EXIT": 619.707292571835,
+    "TIMING": 613.2043647431653,
+    "SIDE+EXIT": 619.707292571835,
+    "CEILING": 4394
+   },
+   "@400": {
+    "BASE": -42.393943763924256,
+    "SIDE": -42.393943763924256,
+    "CONTRACT": 286.95844841696464,
+    "EXIT": 424.70729257183496,
+    "TIMING": 418.20436474316534,
+    "SIDE+EXIT": 424.70729257183496,
+    "CEILING": 4199
+   }
+  },
+  {
+   "day": "2026-09-24",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": 24.67398559118965,
+    "SIDE": 24.67398559118965,
+    "CONTRACT": 219.044670531765,
+    "EXIT": 63.59908861917114,
+    "TIMING": 653.6932799223447,
+    "SIDE+EXIT": 701.5947212820656,
+    "CEILING": 10378
+   },
+   "@400": {
+    "BASE": -170.32601440881035,
+    "SIDE": -170.32601440881035,
+    "CONTRACT": 24.044670531765007,
+    "EXIT": -131.40091138082886,
+    "TIMING": 458.6932799223447,
+    "SIDE+EXIT": 506.5947212820656,
+    "CEILING": 10183
+   }
+  },
+  {
+   "day": "2026-09-24",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": 1819.5660857818605,
+    "EXIT": null,
+    "TIMING": 1641.2369712102,
+    "SIDE+EXIT": null,
+    "CEILING": 10378
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": 1624.5660857818605,
+    "EXIT": null,
+    "TIMING": 1446.2369712102,
+    "SIDE+EXIT": null,
+    "CEILING": 10183
+   }
+  },
+  {
+   "day": "2026-09-24",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": -858.51446250674,
+    "SIDE+EXIT": null,
+    "CEILING": 10378
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": -1053.51446250674,
+    "SIDE+EXIT": null,
+    "CEILING": 10183
+   }
+  },
+  {
+   "day": "2026-09-25",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -964.7494363233353,
+    "SIDE": -137.9069154542304,
+    "CONTRACT": -634.4322149990498,
+    "EXIT": -88.93461819378538,
+    "TIMING": 297.08806415769067,
+    "SIDE+EXIT": 1295.8343794096993,
+    "CEILING": 7917
+   },
+   "@400": {
+    "BASE": -1159.7494363233354,
+    "SIDE": -332.9069154542304,
+    "CONTRACT": -829.4322149990498,
+    "EXIT": -283.93461819378535,
+    "TIMING": 102.08806415769067,
+    "SIDE+EXIT": 1100.8343794096993,
+    "CEILING": 7722
+   }
+  },
+  {
+   "day": "2026-09-25",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -817.1930022623903,
+    "SIDE": -397.7851634122604,
+    "CONTRACT": -520.0222570323954,
+    "EXIT": -583.6423840945107,
+    "TIMING": 734.9800625651256,
+    "SIDE+EXIT": 760.2366516701461,
+    "CEILING": 7917
+   },
+   "@400": {
+    "BASE": -1012.1930022623903,
+    "SIDE": -592.7851634122603,
+    "CONTRACT": -715.0222570323954,
+    "EXIT": -778.6423840945107,
+    "TIMING": 539.9800625651256,
+    "SIDE+EXIT": 565.2366516701461,
+    "CEILING": 7722
+   }
+  },
+  {
+   "day": "2026-09-25",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2498.99331004219,
+    "SIDE": 1512.31109795129,
+    "CONTRACT": -675.8998917037252,
+    "EXIT": 280.90779787271566,
+    "TIMING": 1539.8484643426305,
+    "SIDE+EXIT": 1512.31109795129,
+    "CEILING": 7917
+   },
+   "@400": {
+    "BASE": -2693.99331004219,
+    "SIDE": 1317.31109795129,
+    "CONTRACT": -870.8998917037252,
+    "EXIT": 85.90779787271566,
+    "TIMING": 1344.8484643426305,
+    "SIDE+EXIT": 1317.31109795129,
+    "CEILING": 7722
+   }
+  },
+  {
+   "day": "2026-09-28",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1121.8119892113552,
+    "SIDE": 1121.8119892113552,
+    "CONTRACT": 1790.09468189435,
+    "EXIT": 1572.6944326187895,
+    "TIMING": 2324.40654366804,
+    "SIDE+EXIT": 1572.6944326187895,
+    "CEILING": 9743
+   },
+   "@400": {
+    "BASE": 926.8119892113552,
+    "SIDE": 926.8119892113552,
+    "CONTRACT": 1595.09468189435,
+    "EXIT": 1377.6944326187895,
+    "TIMING": 2129.40654366804,
+    "SIDE+EXIT": 1377.6944326187895,
+    "CEILING": 9548
+   }
+  },
+  {
+   "day": "2026-09-28",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": -304.1087666213348,
+    "SIDE": -304.1087666213348,
+    "CONTRACT": 6.697823372890014,
+    "EXIT": 150.01743537176515,
+    "TIMING": 642.6755838462697,
+    "SIDE+EXIT": 651.936834554395,
+    "CEILING": 9743
+   },
+   "@400": {
+    "BASE": -499.1087666213348,
+    "SIDE": -499.1087666213348,
+    "CONTRACT": -188.30217662711,
+    "EXIT": -44.982564628234854,
+    "TIMING": 447.67558384626966,
+    "SIDE+EXIT": 456.936834554395,
+    "CEILING": 9548
+   }
+  },
+  {
+   "day": "2026-09-28",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": -160.11200962152463,
+    "SIDE": -160.11200962152463,
+    "CONTRACT": 15.111672711719677,
+    "EXIT": 251.84533075793001,
+    "TIMING": -42.96684476142573,
+    "SIDE+EXIT": 412.2762603200157,
+    "CEILING": 9743
+   },
+   "@400": {
+    "BASE": -355.11200962152463,
+    "SIDE": -355.11200962152463,
+    "CONTRACT": -179.88832728828032,
+    "EXIT": 56.845330757930014,
+    "TIMING": -237.96684476142573,
+    "SIDE+EXIT": 217.2762603200157,
+    "CEILING": 9548
+   }
+  },
+  {
+   "day": "2026-09-29",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -596.0316286738448,
+    "SIDE": -596.0316286738448,
+    "CONTRACT": -371.6277899904689,
+    "EXIT": 114.35150158678942,
+    "TIMING": 6194.64992488498,
+    "SIDE+EXIT": 639.8097559342452,
+    "CEILING": 9344
+   },
+   "@400": {
+    "BASE": -791.0316286738448,
+    "SIDE": -791.0316286738448,
+    "CONTRACT": -566.627789990469,
+    "EXIT": -80.64849841321058,
+    "TIMING": 5999.64992488498,
+    "SIDE+EXIT": 444.80975593424523,
+    "CEILING": 9149
+   }
+  },
+  {
+   "day": "2026-09-29",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3134.453520003845,
+    "SIDE": 6502.051868313495,
+    "CONTRACT": -285.34647609429,
+    "EXIT": 375.2932696856856,
+    "TIMING": 2329.684509022585,
+    "SIDE+EXIT": 6508.539385484824,
+    "CEILING": 9344
+   },
+   "@400": {
+    "BASE": -3164.0218321349294,
+    "SIDE": 6307.051868313495,
+    "CONTRACT": -480.34647609429,
+    "EXIT": 180.29326968568557,
+    "TIMING": 2134.684509022585,
+    "SIDE+EXIT": 6313.539385484824,
+    "CEILING": 9149
+   }
+  },
+  {
+   "day": "2026-09-29",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1107.4195439622254,
+    "SIDE": 1107.4195439622254,
+    "CONTRACT": 1500.17520529604,
+    "EXIT": 1389.62654091508,
+    "TIMING": 1572.3788837121297,
+    "SIDE+EXIT": 1389.62654091508,
+    "CEILING": 9344
+   },
+   "@400": {
+    "BASE": 912.4195439622254,
+    "SIDE": 912.4195439622254,
+    "CONTRACT": 1305.17520529604,
+    "EXIT": 1194.62654091508,
+    "TIMING": 1377.3788837121297,
+    "SIDE+EXIT": 1194.62654091508,
+    "CEILING": 9149
+   }
+  },
+  {
+   "day": "2026-09-30",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 891.8586508259355,
+    "SIDE": 891.8586508259355,
+    "CONTRACT": 891.8586508259355,
+    "EXIT": 1576.2917124012492,
+    "TIMING": 4241.513175846049,
+    "SIDE+EXIT": 1576.2917124012492,
+    "CEILING": 10358
+   },
+   "@400": {
+    "BASE": 696.8586508259355,
+    "SIDE": 696.8586508259355,
+    "CONTRACT": 696.8586508259355,
+    "EXIT": 1381.2917124012492,
+    "TIMING": 4046.5131758460493,
+    "SIDE+EXIT": 1381.2917124012492,
+    "CEILING": 10163
+   }
+  },
+  {
+   "day": "2026-09-30",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2031.9850920036843,
+    "SIDE": 576.2747570563097,
+    "CONTRACT": -772.8508683949947,
+    "EXIT": 1069.0481158920545,
+    "TIMING": 1406.6147580039756,
+    "SIDE+EXIT": 1069.0481158920545,
+    "CEILING": 10358
+   },
+   "@400": {
+    "BASE": -2226.9850920036843,
+    "SIDE": 381.2747570563097,
+    "CONTRACT": -967.8508683949947,
+    "EXIT": 874.0481158920545,
+    "TIMING": 1211.6147580039756,
+    "SIDE+EXIT": 874.0481158920545,
+    "CEILING": 10163
+   }
+  },
+  {
+   "day": "2026-09-30",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -2494.146843093165,
+    "SIDE": 2961.25352800589,
+    "CONTRACT": -597.533428626875,
+    "EXIT": -337.04738362594,
+    "TIMING": 459.6612598744407,
+    "SIDE+EXIT": 3000.1786310338694,
+    "CEILING": 10358
+   },
+   "@400": {
+    "BASE": -2689.146843093165,
+    "SIDE": 2766.25352800589,
+    "CONTRACT": -792.533428626875,
+    "EXIT": -532.04738362594,
+    "TIMING": 264.6612598744407,
+    "SIDE+EXIT": 2805.1786310338694,
+    "CEILING": 10163
+   }
+  },
+  {
+   "day": "2026-10-01",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 227.31963917013036,
+    "SIDE": 227.31963917013036,
+    "CONTRACT": 227.31963917013036,
+    "EXIT": 1103.1344572996804,
+    "TIMING": 1805.651001341459,
+    "SIDE+EXIT": 1103.1344572996804,
+    "CEILING": 17191
+   },
+   "@400": {
+    "BASE": 32.31963917013036,
+    "SIDE": 32.31963917013036,
+    "CONTRACT": 32.31963917013036,
+    "EXIT": 908.1344572996804,
+    "TIMING": 1610.651001341459,
+    "SIDE+EXIT": 908.1344572996804,
+    "CEILING": 16996
+   }
+  },
+  {
+   "day": "2026-10-01",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -881.513944664665,
+    "SIDE": -121.74187504219019,
+    "CONTRACT": -527.0031000230101,
+    "EXIT": 941.4783804790645,
+    "TIMING": 4405.196123675687,
+    "SIDE+EXIT": 941.4783804790645,
+    "CEILING": 17191
+   },
+   "@400": {
+    "BASE": -1076.513944664665,
+    "SIDE": -316.7418750421902,
+    "CONTRACT": -722.0031000230101,
+    "EXIT": 746.4783804790645,
+    "TIMING": 4210.196123675687,
+    "SIDE+EXIT": 746.4783804790645,
+    "CEILING": 16996
+   }
+  },
+  {
+   "day": "2026-10-01",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 2986.7952142716986,
+    "SIDE": 2986.7952142716986,
+    "CONTRACT": 2986.7952142716986,
+    "EXIT": 2986.7952142716986,
+    "TIMING": 7826.783531902011,
+    "SIDE+EXIT": 2986.7952142716986,
+    "CEILING": 17191
+   },
+   "@400": {
+    "BASE": -3089.139101538945,
+    "SIDE": -3050.383146172896,
+    "CONTRACT": 2507.569790776114,
+    "EXIT": -2103.036491496786,
+    "TIMING": 7631.783531902011,
+    "SIDE+EXIT": 748.0581576408188,
+    "CEILING": 16996
+   }
+  },
+  {
+   "day": "2026-10-05",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1640.9530220946854,
+    "SIDE": 3520.1123495093398,
+    "CONTRACT": -246.70647022710003,
+    "EXIT": -346.69334641435074,
+    "TIMING": -765.546586384645,
+    "SIDE+EXIT": 5540.973948378637,
+    "CEILING": 11213
+   },
+   "@400": {
+    "BASE": -1835.9530220946854,
+    "SIDE": 3325.1123495093398,
+    "CONTRACT": -441.7064702271,
+    "EXIT": -541.6933464143508,
+    "TIMING": -960.546586384645,
+    "SIDE+EXIT": 5345.973948378637,
+    "CEILING": 11018
+   }
+  },
+  {
+   "day": "2026-10-05",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 3104.4491156084237,
+    "SIDE": 3104.4491156084237,
+    "CONTRACT": 3384.136285301786,
+    "EXIT": 3104.4491156084237,
+    "TIMING": 4258.564513839546,
+    "SIDE+EXIT": 3104.4491156084237,
+    "CEILING": 11213
+   },
+   "@400": {
+    "BASE": 2909.4491156084237,
+    "SIDE": 2909.4491156084237,
+    "CONTRACT": 3189.136285301786,
+    "EXIT": 2909.4491156084237,
+    "TIMING": 4063.5645138395457,
+    "SIDE+EXIT": 2909.4491156084237,
+    "CEILING": 11018
+   }
+  },
+  {
+   "day": "2026-10-05",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": 2693.4017431496504,
+    "SIDE": 2693.4017431496504,
+    "CONTRACT": 3823.1615213769232,
+    "EXIT": 4185.530692555551,
+    "TIMING": 3748.1934778123546,
+    "SIDE+EXIT": 4185.530692555551,
+    "CEILING": 11213
+   },
+   "@400": {
+    "BASE": 2498.4017431496504,
+    "SIDE": 2498.4017431496504,
+    "CONTRACT": 3628.1615213769232,
+    "EXIT": 3990.5306925555506,
+    "TIMING": 3553.1934778123546,
+    "SIDE+EXIT": 3990.5306925555506,
+    "CEILING": 11018
+   }
+  },
+  {
+   "day": "2026-10-06",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -135.9037147844346,
+    "SIDE": -135.9037147844346,
+    "CONTRACT": -64.76485000004536,
+    "EXIT": 2511.003291118206,
+    "TIMING": 373.38949915098,
+    "SIDE+EXIT": 2511.003291118206,
+    "CEILING": 6483
+   },
+   "@400": {
+    "BASE": -330.9037147844346,
+    "SIDE": -330.9037147844346,
+    "CONTRACT": -259.7648500000454,
+    "EXIT": 2316.003291118206,
+    "TIMING": 178.38949915098,
+    "SIDE+EXIT": 2316.003291118206,
+    "CEILING": 6288
+   }
+  },
+  {
+   "day": "2026-10-06",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -1741.9494811221095,
+    "SIDE": -92.12351555673517,
+    "CONTRACT": -529.930570564395,
+    "EXIT": -593.6589417966985,
+    "TIMING": 76.99791603868033,
+    "SIDE+EXIT": 647.4534419748852,
+    "CEILING": 6483
+   },
+   "@400": {
+    "BASE": -1936.9494811221095,
+    "SIDE": -287.1235155567352,
+    "CONTRACT": -724.930570564395,
+    "EXIT": -788.6589417966985,
+    "TIMING": -118.00208396131967,
+    "SIDE+EXIT": 452.4534419748852,
+    "CEILING": 6288
+   }
+  },
+  {
+   "day": "2026-10-06",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -596.493209256425,
+    "SIDE": 114.30490004595998,
+    "CONTRACT": -265.27520361537,
+    "EXIT": -158.58580019164998,
+    "TIMING": -177.05436430721005,
+    "SIDE+EXIT": 441.9245171981256,
+    "CEILING": 6483
+   },
+   "@400": {
+    "BASE": -791.493209256425,
+    "SIDE": -80.69509995404002,
+    "CONTRACT": -460.27520361537,
+    "EXIT": -353.58580019165,
+    "TIMING": -372.05436430721005,
+    "SIDE+EXIT": 246.9245171981256,
+    "CEILING": 6288
+   }
+  },
+  {
+   "day": "2026-10-07",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3261.0459721665807,
+    "SIDE": 2888.719998732229,
+    "CONTRACT": -560.5508075613552,
+    "EXIT": 1134.2469114094945,
+    "TIMING": -478.97214635114,
+    "SIDE+EXIT": 3164.4394785137542,
+    "CEILING": 7798
+   },
+   "@400": {
+    "BASE": -3037.6011146157957,
+    "SIDE": 2693.719998732229,
+    "CONTRACT": -755.5508075613552,
+    "EXIT": 939.2469114094945,
+    "TIMING": -673.97214635114,
+    "SIDE+EXIT": 2969.4394785137542,
+    "CEILING": 7603
+   }
+  },
+  {
+   "day": "2026-10-07",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 9.379277750049994,
+    "SIDE": 9.379277750049994,
+    "CONTRACT": 46.86329953233533,
+    "EXIT": 1316.6139877730454,
+    "TIMING": 1419.844068192745,
+    "SIDE+EXIT": 1316.6139877730454,
+    "CEILING": 7798
+   },
+   "@400": {
+    "BASE": -185.62072224995,
+    "SIDE": -185.62072224995,
+    "CONTRACT": -148.13670046766467,
+    "EXIT": 1121.6139877730454,
+    "TIMING": 1224.844068192745,
+    "SIDE+EXIT": 1121.6139877730454,
+    "CEILING": 7603
+   }
+  },
+  {
+   "day": "2026-10-07",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 2157.8647341174296,
+    "SIDE": 2157.8647341174296,
+    "CONTRACT": 2357.6214437983367,
+    "EXIT": 2517.9219371262457,
+    "TIMING": 3062.6574455308014,
+    "SIDE+EXIT": 2517.9219371262457,
+    "CEILING": 7798
+   },
+   "@400": {
+    "BASE": 1962.8647341174296,
+    "SIDE": 1962.8647341174296,
+    "CONTRACT": 2162.6214437983367,
+    "EXIT": 2322.9219371262457,
+    "TIMING": 2867.6574455308014,
+    "SIDE+EXIT": 2322.9219371262457,
+    "CEILING": 7603
+   }
+  },
+  {
+   "day": "2026-10-08",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1227.1755217506188,
+    "SIDE": 1227.1755217506188,
+    "CONTRACT": 1227.1755217506188,
+    "EXIT": 1243.3943146789438,
+    "TIMING": 6759.7489539047,
+    "SIDE+EXIT": 1243.3943146789438,
+    "CEILING": 13772
+   },
+   "@400": {
+    "BASE": 1032.1755217506188,
+    "SIDE": 1032.1755217506188,
+    "CONTRACT": 1032.1755217506188,
+    "EXIT": 1048.3943146789438,
+    "TIMING": 6564.7489539047,
+    "SIDE+EXIT": 1048.3943146789438,
+    "CEILING": 13577
+   }
+  },
+  {
+   "day": "2026-10-08",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 3703.611924402976,
+    "SIDE": 3703.611924402976,
+    "CONTRACT": 3703.611924402976,
+    "EXIT": 5173.03456370922,
+    "TIMING": 5811.16907707258,
+    "SIDE+EXIT": 5173.03456370922,
+    "CEILING": 13772
+   },
+   "@400": {
+    "BASE": 3508.611924402976,
+    "SIDE": 3508.611924402976,
+    "CONTRACT": 3508.611924402976,
+    "EXIT": 4978.03456370922,
+    "TIMING": 5616.16907707258,
+    "SIDE+EXIT": 4978.03456370922,
+    "CEILING": 13577
+   }
+  },
+  {
+   "day": "2026-10-08",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 210.3611346894853,
+    "SIDE": 210.3611346894853,
+    "CONTRACT": 231.20312481981034,
+    "EXIT": 362.81778821573994,
+    "TIMING": 1913.7660753535347,
+    "SIDE+EXIT": 505.14322803178004,
+    "CEILING": 13772
+   },
+   "@400": {
+    "BASE": 15.361134689485311,
+    "SIDE": 15.361134689485311,
+    "CONTRACT": 36.20312481981034,
+    "EXIT": 167.81778821573994,
+    "TIMING": 1718.7660753535347,
+    "SIDE+EXIT": 310.14322803178004,
+    "CEILING": 13577
+   }
+  },
+  {
+   "day": "2026-10-09",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2504.063601091455,
+    "SIDE": 955.3169659859805,
+    "CONTRACT": -813.68670814873,
+    "EXIT": 253.13119672379503,
+    "TIMING": -103.95945474706889,
+    "SIDE+EXIT": 1000.7295861852895,
+    "CEILING": 9652
+   },
+   "@400": {
+    "BASE": -2699.063601091455,
+    "SIDE": 760.3169659859805,
+    "CONTRACT": -1008.68670814873,
+    "EXIT": 58.13119672379503,
+    "TIMING": -298.9594547470689,
+    "SIDE+EXIT": 805.7295861852895,
+    "CEILING": 9457
+   }
+  },
+  {
+   "day": "2026-10-09",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1966.1537203976845,
+    "SIDE": 2005.408080591175,
+    "CONTRACT": -381.81953762361496,
+    "EXIT": 304.47728956781555,
+    "TIMING": 172.86996193174468,
+    "SIDE+EXIT": 2381.684076528316,
+    "CEILING": 9652
+   },
+   "@400": {
+    "BASE": -2161.1537203976845,
+    "SIDE": 1810.408080591175,
+    "CONTRACT": -576.8195376236149,
+    "EXIT": 109.47728956781555,
+    "TIMING": -22.130038068255317,
+    "SIDE+EXIT": 2186.684076528316,
+    "CEILING": 9457
+   }
+  },
+  {
+   "day": "2026-10-09",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": 467.4280463893947,
+    "SIDE": 467.4280463893947,
+    "CONTRACT": 884.70095484472,
+    "EXIT": 691.2473888002797,
+    "TIMING": 2790.490676619359,
+    "SIDE+EXIT": 691.2473888002797,
+    "CEILING": 9652
+   },
+   "@400": {
+    "BASE": 272.4280463893947,
+    "SIDE": 272.4280463893947,
+    "CONTRACT": 689.70095484472,
+    "EXIT": 496.24738880027974,
+    "TIMING": 2595.490676619359,
+    "SIDE+EXIT": 496.24738880027974,
+    "CEILING": 9457
+   }
+  },
+  {
+   "day": "2026-10-12",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 4576.584215390915,
+    "SIDE": 4576.584215390915,
+    "CONTRACT": 5519.531127396454,
+    "EXIT": 4576.584215390915,
+    "TIMING": 6431.25111406856,
+    "SIDE+EXIT": 4576.584215390915,
+    "CEILING": 16515
+   },
+   "@400": {
+    "BASE": 4381.584215390915,
+    "SIDE": 4381.584215390915,
+    "CONTRACT": 5324.531127396454,
+    "EXIT": 4381.584215390915,
+    "TIMING": 6236.25111406856,
+    "SIDE+EXIT": 4381.584215390915,
+    "CEILING": 16320
+   }
+  },
+  {
+   "day": "2026-10-12",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1971.392974324475,
+    "SIDE": 2311.8859389325044,
+    "CONTRACT": -446.024345742625,
+    "EXIT": 0.8122457598453252,
+    "TIMING": -164.3264548352052,
+    "SIDE+EXIT": 2548.68031568605,
+    "CEILING": 16515
+   },
+   "@400": {
+    "BASE": -2166.3929743244753,
+    "SIDE": 2116.8859389325044,
+    "CONTRACT": -641.024345742625,
+    "EXIT": -194.18775424015467,
+    "TIMING": -359.3264548352052,
+    "SIDE+EXIT": 2353.68031568605,
+    "CEILING": 16320
+   }
+  },
+  {
+   "day": "2026-10-12",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -582.0778328056895,
+    "SIDE": -445.92546996075146,
+    "CONTRACT": -285.36373459568,
+    "EXIT": 738.1319115599653,
+    "TIMING": 251.53711761113,
+    "SIDE+EXIT": 738.1319115599653,
+    "CEILING": 16515
+   },
+   "@400": {
+    "BASE": -777.0778328056895,
+    "SIDE": -640.9254699607515,
+    "CONTRACT": -480.36373459568,
+    "EXIT": 543.1319115599653,
+    "TIMING": 56.537117611129986,
+    "SIDE+EXIT": 543.1319115599653,
+    "CEILING": 16320
+   }
+  },
+  {
+   "day": "2026-10-13",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -320.9511368187152,
+    "SIDE": -228.30836277600073,
+    "CONTRACT": -258.91867703143,
+    "EXIT": -181.46951763512027,
+    "TIMING": 2954.081530073765,
+    "SIDE+EXIT": 170.67394326079466,
+    "CEILING": 12609
+   },
+   "@400": {
+    "BASE": -515.9511368187152,
+    "SIDE": -423.30836277600076,
+    "CONTRACT": -453.91867703143,
+    "EXIT": -376.46951763512027,
+    "TIMING": 2759.081530073765,
+    "SIDE+EXIT": -24.32605673920534,
+    "CEILING": 12414
+   }
+  },
+  {
+   "day": "2026-10-13",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 12609
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 12414
+   }
+  },
+  {
+   "day": "2026-10-13",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 158.74701840166057,
+    "SIDE": 158.74701840166057,
+    "CONTRACT": 296.6637167276243,
+    "EXIT": 447.44153252584476,
+    "TIMING": 1660.1216230739408,
+    "SIDE+EXIT": 482.10651272133987,
+    "CEILING": 12609
+   },
+   "@400": {
+    "BASE": -36.25298159833943,
+    "SIDE": -36.25298159833943,
+    "CONTRACT": 101.66371672762432,
+    "EXIT": 252.44153252584476,
+    "TIMING": 1465.1216230739408,
+    "SIDE+EXIT": 287.10651272133987,
+    "CEILING": 12414
+   }
+  },
+  {
+   "day": "2026-10-14",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": -579.4051924636296,
+    "SIDE": -481.9689648505554,
+    "CONTRACT": -383.89374931108574,
+    "EXIT": 1473.8939922623156,
+    "TIMING": 1053.3147586699395,
+    "SIDE+EXIT": 1473.8939922623156,
+    "CEILING": 3489
+   },
+   "@400": {
+    "BASE": -774.4051924636296,
+    "SIDE": -676.9689648505554,
+    "CONTRACT": -578.8937493110857,
+    "EXIT": 1278.8939922623156,
+    "TIMING": 858.3147586699395,
+    "SIDE+EXIT": 1278.8939922623156,
+    "CEILING": 3294
+   }
+  },
+  {
+   "day": "2026-10-14",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 83.89344606070966,
+    "SIDE+EXIT": null,
+    "CEILING": 3489
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": -111.10655393929034,
+    "SIDE+EXIT": null,
+    "CEILING": 3294
+   }
+  },
+  {
+   "day": "2026-10-14",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 3489
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 3294
+   }
+  },
+  {
+   "day": "2026-10-15",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3033.921043756264,
+    "SIDE": 2282.6767010041804,
+    "CONTRACT": -666.970154912815,
+    "EXIT": 8.724509597506142,
+    "TIMING": -299.9332176198146,
+    "SIDE+EXIT": 3190.9291049903804,
+    "CEILING": 13730
+   },
+   "@400": {
+    "BASE": -3228.921043756264,
+    "SIDE": 2087.6767010041804,
+    "CONTRACT": -861.970154912815,
+    "EXIT": -186.27549040249386,
+    "TIMING": -494.9332176198146,
+    "SIDE+EXIT": 2995.9291049903804,
+    "CEILING": 13535
+   }
+  },
+  {
+   "day": "2026-10-15",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 1145.9742368608304,
+    "SIDE": 1145.9742368608304,
+    "CONTRACT": 1314.3177998293854,
+    "EXIT": 1921.2325388347645,
+    "TIMING": 2874.088503509926,
+    "SIDE+EXIT": 1921.2325388347645,
+    "CEILING": 13730
+   },
+   "@400": {
+    "BASE": 950.9742368608304,
+    "SIDE": 950.9742368608304,
+    "CONTRACT": 1119.3177998293854,
+    "EXIT": 1726.2325388347645,
+    "TIMING": 2679.088503509926,
+    "SIDE+EXIT": 1726.2325388347645,
+    "CEILING": 13535
+   }
+  },
+  {
+   "day": "2026-10-15",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 352.95626100897357,
+    "SIDE": 352.95626100897357,
+    "CONTRACT": 589.9118953113743,
+    "EXIT": 1163.8959074252236,
+    "TIMING": 2555.7457325076293,
+    "SIDE+EXIT": 1163.8959074252236,
+    "CEILING": 13730
+   },
+   "@400": {
+    "BASE": 157.95626100897357,
+    "SIDE": 157.95626100897357,
+    "CONTRACT": 394.91189531137434,
+    "EXIT": 968.8959074252236,
+    "TIMING": 2360.7457325076293,
+    "SIDE+EXIT": 968.8959074252236,
+    "CEILING": 13535
+   }
+  },
+  {
+   "day": "2026-10-16",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 897.5226217515999,
+    "SIDE": 897.5226217515999,
+    "CONTRACT": 1242.508201881894,
+    "EXIT": 897.5226217515999,
+    "TIMING": 6477.365103961244,
+    "SIDE+EXIT": 897.5226217515999,
+    "CEILING": 7118
+   },
+   "@400": {
+    "BASE": 702.5226217515999,
+    "SIDE": 702.5226217515999,
+    "CONTRACT": 1047.508201881894,
+    "EXIT": 702.5226217515999,
+    "TIMING": 6282.365103961244,
+    "SIDE+EXIT": 702.5226217515999,
+    "CEILING": 6923
+   }
+  },
+  {
+   "day": "2026-10-16",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 7118
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 6923
+   }
+  },
+  {
+   "day": "2026-10-16",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 7118
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 6923
+   }
+  },
+  {
+   "day": "2026-10-19",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -656.94644623517,
+    "SIDE": -656.94644623517,
+    "CONTRACT": 10.296027077375754,
+    "EXIT": 1710.9973213002809,
+    "TIMING": 4764.345021823466,
+    "SIDE+EXIT": 1710.9973213002809,
+    "CEILING": 15244
+   },
+   "@400": {
+    "BASE": -851.94644623517,
+    "SIDE": -851.94644623517,
+    "CONTRACT": -184.70397292262425,
+    "EXIT": 1515.9973213002809,
+    "TIMING": 4569.345021823466,
+    "SIDE+EXIT": 1515.9973213002809,
+    "CEILING": 15049
+   }
+  },
+  {
+   "day": "2026-10-19",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 3422.8236318474255,
+    "SIDE": 3422.8236318474255,
+    "CONTRACT": 4728.2158443962635,
+    "EXIT": 4022.918970195451,
+    "TIMING": 8769.41600370732,
+    "SIDE+EXIT": 4022.918970195451,
+    "CEILING": 15244
+   },
+   "@400": {
+    "BASE": 3227.8236318474255,
+    "SIDE": 3227.8236318474255,
+    "CONTRACT": 4533.2158443962635,
+    "EXIT": 3827.918970195451,
+    "TIMING": 8574.41600370732,
+    "SIDE+EXIT": 3827.918970195451,
+    "CEILING": 15049
+   }
+  },
+  {
+   "day": "2026-10-19",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 2741.5185641433204,
+    "SIDE": 2741.5185641433204,
+    "CONTRACT": 3091.22732596392,
+    "EXIT": 2871.2689075699204,
+    "TIMING": 4808.87134444132,
+    "SIDE+EXIT": 2871.2689075699204,
+    "CEILING": 15244
+   },
+   "@400": {
+    "BASE": 2546.5185641433204,
+    "SIDE": 2546.5185641433204,
+    "CONTRACT": 2896.22732596392,
+    "EXIT": 2676.2689075699204,
+    "TIMING": 4613.87134444132,
+    "SIDE+EXIT": 2676.2689075699204,
+    "CEILING": 15049
+   }
+  },
+  {
+   "day": "2026-10-21",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1251.0068098360955,
+    "SIDE": 1251.0068098360955,
+    "CONTRACT": 1251.0068098360955,
+    "EXIT": 3336.7435804186907,
+    "TIMING": 5645.690972447242,
+    "SIDE+EXIT": 3336.7435804186907,
+    "CEILING": 15676
+   },
+   "@400": {
+    "BASE": 1056.0068098360955,
+    "SIDE": 1056.0068098360955,
+    "CONTRACT": 1056.0068098360955,
+    "EXIT": 3141.7435804186907,
+    "TIMING": 5450.690972447242,
+    "SIDE+EXIT": 3141.7435804186907,
+    "CEILING": 15481
+   }
+  },
+  {
+   "day": "2026-10-21",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": 7320.949825755021,
+    "SIDE": 7320.949825755021,
+    "CONTRACT": 7793.189961960454,
+    "EXIT": 7337.168618683346,
+    "TIMING": 9021.781186643291,
+    "SIDE+EXIT": 7337.168618683346,
+    "CEILING": 15676
+   },
+   "@400": {
+    "BASE": 7125.949825755021,
+    "SIDE": 7125.949825755021,
+    "CONTRACT": 7598.189961960454,
+    "EXIT": 7142.168618683346,
+    "TIMING": 8826.781186643291,
+    "SIDE+EXIT": 7142.168618683346,
+    "CEILING": 15481
+   }
+  },
+  {
+   "day": "2026-10-21",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": -2532.486895495439,
+    "SIDE": 1537.1200388558295,
+    "CONTRACT": -1469.0185911815047,
+    "EXIT": -797.0760521646644,
+    "TIMING": -725.3513976169507,
+    "SIDE+EXIT": 2772.992059994194,
+    "CEILING": 15676
+   },
+   "@400": {
+    "BASE": -3165.394304560214,
+    "SIDE": 1342.1200388558295,
+    "CONTRACT": -1664.0185911815047,
+    "EXIT": -992.0760521646644,
+    "TIMING": -920.3513976169507,
+    "SIDE+EXIT": 2577.992059994194,
+    "CEILING": 15481
+   }
+  },
+  {
+   "day": "2026-10-22",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 2737.603702825744,
+    "SIDE": 2737.603702825744,
+    "CONTRACT": 3031.4371168196053,
+    "EXIT": 4524.914683527159,
+    "TIMING": 7964.492925491505,
+    "SIDE+EXIT": 4524.914683527159,
+    "CEILING": 8913
+   },
+   "@400": {
+    "BASE": 2542.603702825744,
+    "SIDE": 2542.603702825744,
+    "CONTRACT": 2836.4371168196053,
+    "EXIT": 4329.914683527159,
+    "TIMING": 7769.492925491505,
+    "SIDE+EXIT": 4329.914683527159,
+    "CEILING": 8718
+   }
+  },
+  {
+   "day": "2026-10-22",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 3455.1909458240198,
+    "SIDE": 3455.1909458240198,
+    "CONTRACT": 3455.1909458240198,
+    "EXIT": 4178.549110427313,
+    "TIMING": 7698.89017268488,
+    "SIDE+EXIT": 4178.549110427313,
+    "CEILING": 8913
+   },
+   "@400": {
+    "BASE": -3016.4819174377553,
+    "SIDE": -3016.4819174377553,
+    "CONTRACT": 2910.5972095802554,
+    "EXIT": -885.3325266558508,
+    "TIMING": 7503.89017268488,
+    "SIDE+EXIT": 1886.2627913060105,
+    "CEILING": 8718
+   }
+  },
+  {
+   "day": "2026-10-22",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -3298.553109934876,
+    "SIDE": 1698.44534089685,
+    "CONTRACT": -312.7917481103998,
+    "EXIT": 3.5931302720946405,
+    "TIMING": 572.9689862724736,
+    "SIDE+EXIT": 4264.2583821578655,
+    "CEILING": 8913
+   },
+   "@400": {
+    "BASE": -3493.553109934876,
+    "SIDE": 1503.44534089685,
+    "CONTRACT": -507.7917481103998,
+    "EXIT": -191.40686972790536,
+    "TIMING": 377.96898627247356,
+    "SIDE+EXIT": 4069.2583821578655,
+    "CEILING": 8718
+   }
+  },
+  {
+   "day": "2026-10-23",
+   "clock": "10:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": -3199.58389148528,
+    "SIDE": 6576.619050002821,
+    "CONTRACT": -653.7177287380348,
+    "EXIT": -247.76357853013,
+    "TIMING": 1475.9742462188096,
+    "SIDE+EXIT": 6576.619050002821,
+    "CEILING": 13609
+   },
+   "@400": {
+    "BASE": -3018.307895548139,
+    "SIDE": 6381.619050002821,
+    "CONTRACT": -848.7177287380348,
+    "EXIT": -442.76357853012996,
+    "TIMING": 1280.9742462188096,
+    "SIDE+EXIT": 6381.619050002821,
+    "CEILING": 13414
+   }
+  },
+  {
+   "day": "2026-10-23",
+   "clock": "11:00",
+   "label": "GOLD",
+   "coin": "CE",
+   "@205": {
+    "BASE": -551.7676567995811,
+    "SIDE": -551.7676567995811,
+    "CONTRACT": -459.9021970305107,
+    "EXIT": 2679.0158945227595,
+    "TIMING": -551.7676567995811,
+    "SIDE+EXIT": 2679.0158945227595,
+    "CEILING": 13609
+   },
+   "@400": {
+    "BASE": -746.7676567995811,
+    "SIDE": -746.7676567995811,
+    "CONTRACT": -654.9021970305107,
+    "EXIT": 2484.0158945227595,
+    "TIMING": -746.7676567995811,
+    "SIDE+EXIT": 2484.0158945227595,
+    "CEILING": 13414
+   }
+  },
+  {
+   "day": "2026-10-23",
+   "clock": "13:00",
+   "label": "GOLD",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3423.2876539661142,
+    "SIDE": 4805.534752342805,
+    "CONTRACT": -881.1892121540952,
+    "EXIT": 774.135955884395,
+    "TIMING": -445.53268298298576,
+    "SIDE+EXIT": 7458.9292754167745,
+    "CEILING": 13609
+   },
+   "@400": {
+    "BASE": -3618.2876539661142,
+    "SIDE": 4610.534752342805,
+    "CONTRACT": -1076.1892121540952,
+    "EXIT": 579.135955884395,
+    "TIMING": -640.5326829829858,
+    "SIDE+EXIT": 7263.9292754167745,
+    "CEILING": 13414
+   }
+  },
+  {
+   "day": "2026-10-26",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -2366.376769134754,
+    "SIDE": 1460.749625473319,
+    "CONTRACT": -240.51286425166,
+    "EXIT": 1636.4213255758561,
+    "TIMING": 9719.605555093853,
+    "SIDE+EXIT": 1765.66293252583,
+    "CEILING": 13355
+   },
+   "@400": {
+    "BASE": -2561.376769134754,
+    "SIDE": 1265.749625473319,
+    "CONTRACT": -435.51286425166,
+    "EXIT": 1441.4213255758561,
+    "TIMING": 9524.605555093853,
+    "SIDE+EXIT": 1570.66293252583,
+    "CEILING": 13160
+   }
+  },
+  {
+   "day": "2026-10-26",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -3384.231190781935,
+    "SIDE": -277.5505313243,
+    "CONTRACT": -305.371701385595,
+    "EXIT": -143.7163637026,
+    "TIMING": 930.2836466279857,
+    "SIDE+EXIT": 3430.0655320907954,
+    "CEILING": 13355
+   },
+   "@400": {
+    "BASE": -3579.231190781935,
+    "SIDE": -472.5505313243,
+    "CONTRACT": -500.371701385595,
+    "EXIT": -338.7163637026,
+    "TIMING": 735.2836466279857,
+    "SIDE+EXIT": 3235.0655320907954,
+    "CEILING": 13160
+   }
+  },
+  {
+   "day": "2026-10-26",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3079.025081239965,
+    "SIDE": 1530.4560382627108,
+    "CONTRACT": -526.8796299798851,
+    "EXIT": -153.15483697013536,
+    "TIMING": -1104.8320711431907,
+    "SIDE+EXIT": 2983.659884640631,
+    "CEILING": 13355
+   },
+   "@400": {
+    "BASE": -3274.025081239965,
+    "SIDE": 1335.4560382627108,
+    "CONTRACT": -721.8796299798851,
+    "EXIT": -348.15483697013536,
+    "TIMING": -1299.8320711431907,
+    "SIDE+EXIT": 2788.659884640631,
+    "CEILING": 13160
+   }
+  },
+  {
+   "day": "2026-10-27",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -3247.8467441548705,
+    "SIDE": -866.126403310675,
+    "CONTRACT": -597.87998363262,
+    "EXIT": 1238.271379819825,
+    "TIMING": 796.3652747441305,
+    "SIDE+EXIT": 2880.4147631324,
+    "CEILING": 9430
+   },
+   "@400": {
+    "BASE": -3160.639747202015,
+    "SIDE": -1061.126403310675,
+    "CONTRACT": -792.87998363262,
+    "EXIT": 1043.271379819825,
+    "TIMING": 601.3652747441305,
+    "SIDE+EXIT": 2685.4147631324,
+    "CEILING": 9235
+   }
+  },
+  {
+   "day": "2026-10-27",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -381.897330047935,
+    "SIDE": -381.897330047935,
+    "CONTRACT": 167.29882451893036,
+    "EXIT": -268.36577954966003,
+    "TIMING": 1057.4222532042652,
+    "SIDE+EXIT": 1402.6632178870993,
+    "CEILING": 9430
+   },
+   "@400": {
+    "BASE": -576.8973300479349,
+    "SIDE": -576.8973300479349,
+    "CONTRACT": -278.4801694174485,
+    "EXIT": -463.36577954966003,
+    "TIMING": 862.4222532042652,
+    "SIDE+EXIT": 1207.6632178870993,
+    "CEILING": 9235
+   }
+  },
+  {
+   "day": "2026-10-27",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -3064.46990016674,
+    "SIDE": 6263.886127841095,
+    "CONTRACT": -346.792961333845,
+    "EXIT": -910.61419928518,
+    "TIMING": -686.9027314756748,
+    "SIDE+EXIT": 6263.886127841095,
+    "CEILING": 9430
+   },
+   "@400": {
+    "BASE": -3019.43176482753,
+    "SIDE": 6068.886127841095,
+    "CONTRACT": -541.792961333845,
+    "EXIT": -1105.61419928518,
+    "TIMING": -881.9027314756748,
+    "SIDE+EXIT": 6068.886127841095,
+    "CEILING": 9235
+   }
+  },
+  {
+   "day": "2026-10-28",
+   "clock": "10:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -927.3349472834843,
+    "SIDE": -927.3349472834843,
+    "CONTRACT": -640.3422020889398,
+    "EXIT": -495.9150553900407,
+    "TIMING": 2532.1144133987646,
+    "SIDE+EXIT": -495.9150553900407,
+    "CEILING": 9387
+   },
+   "@400": {
+    "BASE": -1122.3349472834843,
+    "SIDE": -1122.3349472834843,
+    "CONTRACT": -835.3422020889398,
+    "EXIT": -690.9150553900407,
+    "TIMING": 2337.1144133987646,
+    "SIDE+EXIT": -690.9150553900407,
+    "CEILING": 9192
+   }
+  },
+  {
+   "day": "2026-10-28",
+   "clock": "11:00",
+   "label": "EMPTY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 877.6588387935547,
+    "SIDE": 877.6588387935547,
+    "CONTRACT": 993.7173675267811,
+    "EXIT": 1370.7101438146342,
+    "TIMING": 2635.043986000334,
+    "SIDE+EXIT": 1370.7101438146342,
+    "CEILING": 9387
+   },
+   "@400": {
+    "BASE": 682.6588387935547,
+    "SIDE": 682.6588387935547,
+    "CONTRACT": 798.7173675267811,
+    "EXIT": 1175.7101438146342,
+    "TIMING": 2440.043986000334,
+    "SIDE+EXIT": 1175.7101438146342,
+    "CEILING": 9192
+   }
+  },
+  {
+   "day": "2026-10-28",
+   "clock": "13:00",
+   "label": "EMPTY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": -3092.8865979484845,
+    "CONTRACT": 1923.142721207304,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": -1023.3686202942143,
+    "CEILING": 9387
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": -3151.648737350555,
+    "CONTRACT": 1728.142721207304,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": -1218.3686202942145,
+    "CEILING": 9192
+   }
+  },
+  {
+   "day": "2026-10-29",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 2405.6775460846693,
+    "SIDE": 2405.6775460846693,
+    "CONTRACT": 3196.984384618571,
+    "EXIT": 4128.1133550727845,
+    "TIMING": 5778.292657050551,
+    "SIDE+EXIT": 4128.1133550727845,
+    "CEILING": 8882
+   },
+   "@400": {
+    "BASE": 2210.6775460846693,
+    "SIDE": 2210.6775460846693,
+    "CONTRACT": 3001.984384618571,
+    "EXIT": 3933.1133550727845,
+    "TIMING": 5583.292657050551,
+    "SIDE+EXIT": 3933.1133550727845,
+    "CEILING": 8687
+   }
+  },
+  {
+   "day": "2026-10-29",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -188.23535056059535,
+    "SIDE": -188.23535056059535,
+    "CONTRACT": -122.55167369016,
+    "EXIT": 330.76602314580464,
+    "TIMING": 1428.736017477925,
+    "SIDE+EXIT": 734.5248938203811,
+    "CEILING": 8882
+   },
+   "@400": {
+    "BASE": -383.23535056059535,
+    "SIDE": -383.23535056059535,
+    "CONTRACT": -317.55167369016,
+    "EXIT": 135.76602314580464,
+    "TIMING": 1233.736017477925,
+    "SIDE+EXIT": 539.5248938203811,
+    "CEILING": 8687
+   }
+  },
+  {
+   "day": "2026-10-29",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3095.9302027731346,
+    "SIDE": 2253.182365915064,
+    "CONTRACT": -536.2645355155402,
+    "EXIT": -322.51661202955967,
+    "TIMING": -315.5515492650961,
+    "SIDE+EXIT": 2253.182365915064,
+    "CEILING": 8882
+   },
+   "@400": {
+    "BASE": -3119.010997732889,
+    "SIDE": 2058.182365915064,
+    "CONTRACT": -731.2645355155402,
+    "EXIT": -517.5166120295596,
+    "TIMING": -510.5515492650961,
+    "SIDE+EXIT": 2058.182365915064,
+    "CEILING": 8687
+   }
+  },
+  {
+   "day": "2026-10-30",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1990.1778264843142,
+    "SIDE": 811.7511530384763,
+    "CONTRACT": -265.7300027913049,
+    "EXIT": 248.01559762453564,
+    "TIMING": 548.4524782885853,
+    "SIDE+EXIT": 2323.3426539583656,
+    "CEILING": 4670
+   },
+   "@400": {
+    "BASE": -2185.177826484314,
+    "SIDE": 616.7511530384763,
+    "CONTRACT": -460.7300027913049,
+    "EXIT": 53.015597624535644,
+    "TIMING": 353.4524782885853,
+    "SIDE+EXIT": 2128.3426539583656,
+    "CEILING": 4475
+   }
+  },
+  {
+   "day": "2026-10-30",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 346.7918132885711,
+    "SIDE+EXIT": null,
+    "CEILING": 4670
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": 151.79181328857112,
+    "SIDE+EXIT": null,
+    "CEILING": 4475
+   }
+  },
+  {
+   "day": "2026-10-30",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 4670
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": null,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 4475
+   }
+  },
+  {
+   "day": "2026-11-02",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -1678.8621304446538,
+    "SIDE": -65.21065035647428,
+    "CONTRACT": -820.0823157292352,
+    "EXIT": 400.38712296661004,
+    "TIMING": 562.8911555097343,
+    "SIDE+EXIT": 583.5410667765257,
+    "CEILING": 9124
+   },
+   "@400": {
+    "BASE": -1873.8621304446538,
+    "SIDE": -260.2106503564743,
+    "CONTRACT": -1015.0823157292352,
+    "EXIT": 205.38712296661004,
+    "TIMING": 367.8911555097343,
+    "SIDE+EXIT": 388.54106677652567,
+    "CEILING": 8929
+   }
+  },
+  {
+   "day": "2026-11-02",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1110.2017613041548,
+    "SIDE": 1023.2505988280539,
+    "CONTRACT": -324.50273898237,
+    "EXIT": 18.626226507265557,
+    "TIMING": 900.8129818780951,
+    "SIDE+EXIT": 2171.541138153465,
+    "CEILING": 9124
+   },
+   "@400": {
+    "BASE": -1305.2017613041548,
+    "SIDE": 828.2505988280539,
+    "CONTRACT": -519.5027389823699,
+    "EXIT": -176.37377349273444,
+    "TIMING": 705.8129818780951,
+    "SIDE+EXIT": 1976.541138153465,
+    "CEILING": 8929
+   }
+  },
+  {
+   "day": "2026-11-02",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1434.0074255490752,
+    "SIDE": 1823.1182422987304,
+    "CONTRACT": -282.60356387217496,
+    "EXIT": -301.9356791519906,
+    "TIMING": 1803.4946180202896,
+    "SIDE+EXIT": 4028.8740805509296,
+    "CEILING": 9124
+   },
+   "@400": {
+    "BASE": -1629.0074255490752,
+    "SIDE": 1628.1182422987304,
+    "CONTRACT": -477.60356387217496,
+    "EXIT": -496.9356791519906,
+    "TIMING": 1608.4946180202896,
+    "SIDE+EXIT": 3833.8740805509296,
+    "CEILING": 8929
+   }
+  },
+  {
+   "day": "2026-11-03",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -1120.8963879293053,
+    "SIDE": -21.231221289784997,
+    "CONTRACT": -285.91667041587004,
+    "EXIT": 1428.6978604033845,
+    "TIMING": 369.46015109809036,
+    "SIDE+EXIT": 1428.6978604033845,
+    "CEILING": 8938
+   },
+   "@400": {
+    "BASE": -1315.8963879293053,
+    "SIDE": -216.231221289785,
+    "CONTRACT": -480.91667041587004,
+    "EXIT": 1233.6978604033845,
+    "TIMING": 174.46015109809036,
+    "SIDE+EXIT": 1233.6978604033845,
+    "CEILING": 8743
+   }
+  },
+  {
+   "day": "2026-11-03",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 1124.4475811853044,
+    "SIDE": 1124.4475811853044,
+    "CONTRACT": 2288.886641558986,
+    "EXIT": 1124.4475811853044,
+    "TIMING": 2487.4655446598094,
+    "SIDE+EXIT": 1269.429881117256,
+    "CEILING": 8938
+   },
+   "@400": {
+    "BASE": 929.4475811853044,
+    "SIDE": 929.4475811853044,
+    "CONTRACT": 2093.886641558986,
+    "EXIT": 929.4475811853044,
+    "TIMING": 2292.4655446598094,
+    "SIDE+EXIT": 1074.429881117256,
+    "CEILING": 8743
+   }
+  },
+  {
+   "day": "2026-11-03",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2792.3954104149348,
+    "SIDE": 1049.694917254685,
+    "CONTRACT": -402.31441839498,
+    "EXIT": -80.6132327989939,
+    "TIMING": -282.265268548315,
+    "SIDE+EXIT": 1124.3013647249802,
+    "CEILING": 8938
+   },
+   "@400": {
+    "BASE": -2987.3954104149348,
+    "SIDE": 854.6949172546849,
+    "CONTRACT": -597.3144183949801,
+    "EXIT": -275.6132327989939,
+    "TIMING": -477.265268548315,
+    "SIDE+EXIT": 929.3013647249802,
+    "CEILING": 8743
+   }
+  },
+  {
+   "day": "2026-11-04",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": -3070.1109398908,
+    "CONTRACT": 3636.078414298526,
+    "EXIT": null,
+    "TIMING": 4876.619495042102,
+    "SIDE+EXIT": 339.07933364311566,
+    "CEILING": 8936
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": -3265.1109398908,
+    "CONTRACT": 3441.078414298526,
+    "EXIT": null,
+    "TIMING": 4681.619495042102,
+    "SIDE+EXIT": 144.07933364311566,
+    "CEILING": 8741
+   }
+  },
+  {
+   "day": "2026-11-04",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": -2229.2916919519357,
+    "CONTRACT": 1271.3629946914,
+    "EXIT": null,
+    "TIMING": 3885.370095017191,
+    "SIDE+EXIT": 1150.7047543109938,
+    "CEILING": 8936
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": -2424.2916919519357,
+    "CONTRACT": 1076.3629946914,
+    "EXIT": null,
+    "TIMING": 3690.370095017191,
+    "SIDE+EXIT": 955.7047543109938,
+    "CEILING": 8741
+   }
+  },
+  {
+   "day": "2026-11-04",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3087.994268596249,
+    "SIDE": 1759.3986851015243,
+    "CONTRACT": -686.86438961673,
+    "EXIT": 259.5645918100303,
+    "TIMING": -2339.0635964124654,
+    "SIDE+EXIT": 3290.452737535404,
+    "CEILING": 8936
+   },
+   "@400": {
+    "BASE": -3085.1249948706854,
+    "SIDE": 1564.3986851015243,
+    "CONTRACT": -881.86438961673,
+    "EXIT": 64.56459181003032,
+    "TIMING": -2916.4649590734443,
+    "SIDE+EXIT": 3095.452737535404,
+    "CEILING": 8741
+   }
+  },
+  {
+   "day": "2026-11-05",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 539.5988708623493,
+    "SIDE": 539.5988708623493,
+    "CONTRACT": 539.5988708623493,
+    "EXIT": 1386.219861720915,
+    "TIMING": 2212.515489038856,
+    "SIDE+EXIT": 1386.219861720915,
+    "CEILING": 11912
+   },
+   "@400": {
+    "BASE": 344.59887086234926,
+    "SIDE": 344.59887086234926,
+    "CONTRACT": 344.59887086234926,
+    "EXIT": 1191.219861720915,
+    "TIMING": 2017.5154890388558,
+    "SIDE+EXIT": 1191.219861720915,
+    "CEILING": 11717
+   }
+  },
+  {
+   "day": "2026-11-05",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -2043.0646154935237,
+    "SIDE": 605.0754277807197,
+    "CONTRACT": -461.76651699984035,
+    "EXIT": 19.96584498941536,
+    "TIMING": -1296.4301312534014,
+    "SIDE+EXIT": 1276.5334550133744,
+    "CEILING": 11912
+   },
+   "@400": {
+    "BASE": -2238.064615493524,
+    "SIDE": 410.0754277807197,
+    "CONTRACT": -656.7665169998404,
+    "EXIT": -175.03415501058464,
+    "TIMING": -1491.4301312534014,
+    "SIDE+EXIT": 1081.5334550133744,
+    "CEILING": 11717
+   }
+  },
+  {
+   "day": "2026-11-05",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 4595.1760647651945,
+    "SIDE": 4595.1760647651945,
+    "CONTRACT": 5049.848790740651,
+    "EXIT": 6551.162491921189,
+    "TIMING": 7269.736016989225,
+    "SIDE+EXIT": 6551.162491921189,
+    "CEILING": 11912
+   },
+   "@400": {
+    "BASE": 4400.1760647651945,
+    "SIDE": 4400.1760647651945,
+    "CONTRACT": 4854.848790740651,
+    "EXIT": 6356.162491921189,
+    "TIMING": 7074.736016989225,
+    "SIDE+EXIT": 6356.162491921189,
+    "CEILING": 11717
+   }
+  },
+  {
+   "day": "2026-11-06",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 2199.232056764991,
+    "SIDE": 2199.232056764991,
+    "CONTRACT": 2199.232056764991,
+    "EXIT": 2199.232056764991,
+    "TIMING": 2950.4203902490844,
+    "SIDE+EXIT": 2199.232056764991,
+    "CEILING": 18604
+   },
+   "@400": {
+    "BASE": -3104.687715657384,
+    "SIDE": -2235.9379447806054,
+    "CONTRACT": 1937.1304146348707,
+    "EXIT": 554.2719689727344,
+    "TIMING": 2755.4203902490844,
+    "SIDE+EXIT": 1575.4783933757694,
+    "CEILING": 18409
+   }
+  },
+  {
+   "day": "2026-11-06",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 1436.6794721990743,
+    "SIDE": 1436.6794721990743,
+    "CONTRACT": 1737.6399456438737,
+    "EXIT": 1764.29908935124,
+    "TIMING": 2758.1374798092693,
+    "SIDE+EXIT": 1764.29908935124,
+    "CEILING": 18604
+   },
+   "@400": {
+    "BASE": 1241.6794721990743,
+    "SIDE": 1241.6794721990743,
+    "CONTRACT": 1542.6399456438737,
+    "EXIT": 1569.29908935124,
+    "TIMING": 2563.1374798092693,
+    "SIDE+EXIT": 1569.29908935124,
+    "CEILING": 18409
+   }
+  },
+  {
+   "day": "2026-11-06",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": 6293.318081163229,
+    "SIDE": 6293.318081163229,
+    "CONTRACT": 6798.226963085417,
+    "EXIT": 6494.43111347446,
+    "TIMING": 7945.739633783963,
+    "SIDE+EXIT": 6494.43111347446,
+    "CEILING": 18604
+   },
+   "@400": {
+    "BASE": 6098.318081163229,
+    "SIDE": 6098.318081163229,
+    "CONTRACT": 6603.226963085417,
+    "EXIT": 6299.43111347446,
+    "TIMING": 7750.739633783963,
+    "SIDE+EXIT": 6299.43111347446,
+    "CEILING": 18409
+   }
+  },
+  {
+   "day": "2026-11-09",
+   "clock": "10:00",
+   "label": "EXPIRY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -3158.354340831755,
+    "SIDE": 1220.5115211575,
+    "CONTRACT": -728.49332387026,
+    "EXIT": 536.2866882406803,
+    "TIMING": 714.9478710827697,
+    "SIDE+EXIT": 3721.449390705216,
+    "CEILING": 11333
+   },
+   "@400": {
+    "BASE": -3353.354340831755,
+    "SIDE": 1025.5115211575,
+    "CONTRACT": -923.49332387026,
+    "EXIT": 341.2866882406803,
+    "TIMING": 519.9478710827697,
+    "SIDE+EXIT": 3526.449390705216,
+    "CEILING": 11138
+   }
+  },
+  {
+   "day": "2026-11-09",
+   "clock": "11:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -3367.303322831565,
+    "SIDE": 2500.8410713089056,
+    "CONTRACT": -464.862765634345,
+    "EXIT": 1303.709040526035,
+    "TIMING": -662.5788567085349,
+    "SIDE+EXIT": 8754.807624471025,
+    "CEILING": 11333
+   },
+   "@400": {
+    "BASE": -3130.8834309381195,
+    "SIDE": 2305.8410713089056,
+    "CONTRACT": -659.862765634345,
+    "EXIT": 1108.709040526035,
+    "TIMING": -857.5788567085349,
+    "SIDE+EXIT": 8559.807624471025,
+    "CEILING": 11138
+   }
+  },
+  {
+   "day": "2026-11-09",
+   "clock": "13:00",
+   "label": "EXPIRY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1862.5678620294852,
+    "SIDE": 1862.5678620294852,
+    "CONTRACT": 2401.5704211191546,
+    "EXIT": 3088.708607410856,
+    "TIMING": 4544.871115213649,
+    "SIDE+EXIT": 3088.708607410856,
+    "CEILING": 11333
+   },
+   "@400": {
+    "BASE": 1667.5678620294852,
+    "SIDE": 1667.5678620294852,
+    "CONTRACT": 1999.062705149444,
+    "EXIT": 2893.708607410856,
+    "TIMING": 4349.871115213649,
+    "SIDE+EXIT": 2893.708607410856,
+    "CEILING": 11138
+   }
+  },
+  {
+   "day": "2026-11-11",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": 383.8905686373547,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 10818
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": 188.8905686373547,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 10623
+   }
+  },
+  {
+   "day": "2026-11-11",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": -512.1415536470357,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 10818
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": -707.1415536470357,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 10623
+   }
+  },
+  {
+   "day": "2026-11-11",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": -511.6093316155902,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 10818
+   },
+   "@400": {
+    "BASE": null,
+    "SIDE": null,
+    "CONTRACT": -706.6093316155902,
+    "EXIT": null,
+    "TIMING": null,
+    "SIDE+EXIT": null,
+    "CEILING": 10623
+   }
+  },
+  {
+   "day": "2026-11-12",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1441.3866888788236,
+    "SIDE": 1441.3866888788236,
+    "CONTRACT": 1441.3866888788236,
+    "EXIT": 1827.3939605729577,
+    "TIMING": 1954.663372952224,
+    "SIDE+EXIT": 1827.3939605729577,
+    "CEILING": 6674
+   },
+   "@400": {
+    "BASE": 1246.3866888788236,
+    "SIDE": 1246.3866888788236,
+    "CONTRACT": 1246.3866888788236,
+    "EXIT": 1632.3939605729577,
+    "TIMING": 1759.663372952224,
+    "SIDE+EXIT": 1632.3939605729577,
+    "CEILING": 6479
+   }
+  },
+  {
+   "day": "2026-11-12",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 2074.0197823562103,
+    "SIDE": 2074.0197823562103,
+    "CONTRACT": 2074.0197823562103,
+    "EXIT": 2511.9271914209853,
+    "TIMING": 3601.868602847776,
+    "SIDE+EXIT": 2511.9271914209853,
+    "CEILING": 6674
+   },
+   "@400": {
+    "BASE": 1879.0197823562103,
+    "SIDE": 1879.0197823562103,
+    "CONTRACT": 1879.0197823562103,
+    "EXIT": 2316.9271914209853,
+    "TIMING": 3406.868602847776,
+    "SIDE+EXIT": 2316.9271914209853,
+    "CEILING": 6479
+   }
+  },
+  {
+   "day": "2026-11-12",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -999.1139087007,
+    "SIDE": -198.48343769169537,
+    "CONTRACT": -34.06059352533501,
+    "EXIT": 561.1339710041657,
+    "TIMING": 1361.9110280423045,
+    "SIDE+EXIT": 561.1339710041657,
+    "CEILING": 6674
+   },
+   "@400": {
+    "BASE": -1194.1139087007,
+    "SIDE": -393.48343769169537,
+    "CONTRACT": -229.060593525335,
+    "EXIT": 366.1339710041657,
+    "TIMING": 1166.9110280423045,
+    "SIDE+EXIT": 366.1339710041657,
+    "CEILING": 6479
+   }
+  },
+  {
+   "day": "2026-11-13",
+   "clock": "10:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": -395.2354387601093,
+    "SIDE": -395.2354387601093,
+    "CONTRACT": -182.6878834870039,
+    "EXIT": 525.99199956875,
+    "TIMING": 1422.5099271281606,
+    "SIDE+EXIT": 817.3912688405104,
+    "CEILING": 7159
+   },
+   "@400": {
+    "BASE": -590.2354387601092,
+    "SIDE": -590.2354387601092,
+    "CONTRACT": -377.6878834870039,
+    "EXIT": 330.99199956875,
+    "TIMING": 1227.5099271281606,
+    "SIDE+EXIT": 622.3912688405104,
+    "CEILING": 6964
+   }
+  },
+  {
+   "day": "2026-11-13",
+   "clock": "11:00",
+   "label": "NO_REPLAY",
+   "coin": "PE",
+   "@205": {
+    "BASE": 1006.2609034639204,
+    "SIDE": 1006.2609034639204,
+    "CONTRACT": 1006.2609034639204,
+    "EXIT": 1723.1315508958844,
+    "TIMING": 3640.262407766334,
+    "SIDE+EXIT": 1723.1315508958844,
+    "CEILING": 7159
+   },
+   "@400": {
+    "BASE": 811.2609034639204,
+    "SIDE": 811.2609034639204,
+    "CONTRACT": 811.2609034639204,
+    "EXIT": 1528.1315508958844,
+    "TIMING": 3445.262407766334,
+    "SIDE+EXIT": 1528.1315508958844,
+    "CEILING": 6964
+   }
+  },
+  {
+   "day": "2026-11-13",
+   "clock": "13:00",
+   "label": "NO_REPLAY",
+   "coin": "CE",
+   "@205": {
+    "BASE": -1025.8031345851257,
+    "SIDE": -160.79852301077352,
+    "CONTRACT": -652.8246497499347,
+    "EXIT": 586.3448824903788,
+    "TIMING": -79.37304445193425,
+    "SIDE+EXIT": 633.9223304771515,
+    "CEILING": 7159
+   },
+   "@400": {
+    "BASE": -1220.8031345851257,
+    "SIDE": -355.7985230107735,
+    "CONTRACT": -847.8246497499347,
+    "EXIT": 391.34488249037884,
+    "TIMING": -274.3730444519342,
+    "SIDE+EXIT": 438.9223304771515,
+    "CEILING": 6964
+   }
+  }
+ ]
+}

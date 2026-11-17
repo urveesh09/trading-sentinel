@@ -1,0 +1,83 @@
+{
+ "DEV @205": {
+  "sessions": 850,
+  "trades": 10030,
+  "net": -3025335,
+  "per_session": -3559.2,
+  "worst_day": -16296,
+  "quiet_sessions": 660,
+  "quiet_net": -2301864,
+  "random_median": -2049882,
+  "rule_percentile_vs_random": 0.0
+ },
+ "DEV @400": {
+  "sessions": 850,
+  "trades": 10030,
+  "net": -4980769,
+  "per_session": -5859.7,
+  "worst_day": -18441,
+  "quiet_sessions": 660,
+  "quiet_net": -3815918
+ },
+ "TEST @205": {
+  "sessions": 37,
+  "trades": 425,
+  "net": -120515,
+  "per_session": -3257.2,
+  "worst_day": -12823,
+  "quiet_sessions": 25,
+  "quiet_net": -68993,
+  "random_median": -78889,
+  "rule_percentile_vs_random": 0.005
+ },
+ "TEST @400": {
+  "sessions": 37,
+  "trades": 425,
+  "net": -202200,
+  "per_session": -5464.9,
+  "worst_day": -14158,
+  "quiet_sessions": 25,
+  "quiet_net": -122792
+ },
+ "2019Q3 @205": {
+  "sessions": 48,
+  "trades": 586,
+  "net": -177864,
+  "per_session": -3705.5,
+  "worst_day": -8725,
+  "quiet_sessions": 15,
+  "quiet_net": -61329,
+  "random_median": -108655,
+  "rule_percentile_vs_random": 0.0
+ },
+ "2019Q3 @400": {
+  "sessions": 48,
+  "trades": 586,
+  "net": -292134,
+  "per_session": -6086.1,
+  "worst_day": -10870,
+  "quiet_sessions": 15,
+  "quiet_net": -96234
+ },
+ "2019Q4 @205": {
+  "sessions": 46,
+  "trades": 575,
+  "net": -155406,
+  "per_session": -3378.4,
+  "worst_day": -6252,
+  "quiet_sessions": 41,
+  "quiet_net": -139337,
+  "random_median": -98478,
+  "rule_percentile_vs_random": 0.0
+ },
+ "2019Q4 @400": {
+  "sessions": 46,
+  "trades": 575,
+  "net": -267531,
+  "per_session": -5815.9,
+  "worst_day": -9177,
+  "quiet_sessions": 41,
+  "quiet_net": -239567
+ },
+ "verdict_2019": "FAIL"
+}

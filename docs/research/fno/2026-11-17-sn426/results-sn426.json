@@ -1,0 +1,275 @@
+{
+ "per_calendar_session@205": 616.65,
+ "per_calendar_session@400": 319.08,
+ "date_labels": {
+  "GOLD_SESSION": 932,
+  "EXPIRY": 251,
+  "DATA_HOLE": 5,
+  "SPECIAL": 7
+ },
+ "date_labels_by_year": {
+  "2022": {
+   "GOLD_SESSION": 190,
+   "EXPIRY": 51,
+   "DATA_HOLE": 2,
+   "SPECIAL": 5
+  },
+  "2023": {
+   "GOLD_SESSION": 192,
+   "EXPIRY": 52,
+   "DATA_HOLE": 1,
+   "SPECIAL": 1
+  },
+  "2024": {
+   "GOLD_SESSION": 196,
+   "EXPIRY": 52,
+   "SPECIAL": 1
+  },
+  "2025": {
+   "GOLD_SESSION": 194,
+   "EXPIRY": 53,
+   "DATA_HOLE": 2
+  },
+  "2026": {
+   "GOLD_SESSION": 160,
+   "EXPIRY": 43
+  }
+ },
+ "twelve": {
+  "2022-01-12": {
+   "label": "DATA_HOLE",
+   "weekday": "Wed",
+   "index_first": "2022-01-12 09:07:00",
+   "index_last": "2022-01-12 15:29:00",
+   "index_minutes": 376,
+   "regular_0915_0920": 5,
+   "option_keys_covering": [
+    "option|NIFTY|2022-01-13|17900|CE|2022-01-11|2022-01-12",
+    "option|NIFTY|2022-01-13|17900|PE|2022-01-11|2022-01-12",
+    "option|NIFTY|2022-01-13|17950|CE|2022-01-11|2022-01-12"
+   ],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2022-03-29": {
+   "label": "SPECIAL",
+   "weekday": "Tue",
+   "index_first": null,
+   "index_last": null,
+   "index_minutes": 0,
+   "regular_0915_0920": 0,
+   "option_keys_covering": [],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2022-03-30": {
+   "label": "SPECIAL",
+   "weekday": "Wed",
+   "index_first": null,
+   "index_last": null,
+   "index_minutes": 0,
+   "regular_0915_0920": 0,
+   "option_keys_covering": [],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2022-03-31": {
+   "label": "SPECIAL",
+   "weekday": "Thu",
+   "index_first": null,
+   "index_last": null,
+   "index_minutes": 0,
+   "regular_0915_0920": 0,
+   "option_keys_covering": [],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2022-05-31": {
+   "label": "DATA_HOLE",
+   "weekday": "Tue",
+   "index_first": "2022-05-31 09:15:00",
+   "index_last": "2022-05-31 15:31:00",
+   "index_minutes": 376,
+   "regular_0915_0920": 5,
+   "option_keys_covering": [
+    "option|NIFTY|2022-06-02|16300|CE|2022-05-31|2022-06-01",
+    "option|NIFTY|2022-06-02|16300|PE|2022-05-31|2022-06-01",
+    "option|NIFTY|2022-06-02|16350|CE|2022-05-31|2022-06-01"
+   ],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2022-06-14": {
+   "label": "SPECIAL",
+   "weekday": "Tue",
+   "index_first": null,
+   "index_last": null,
+   "index_minutes": 0,
+   "regular_0915_0920": 0,
+   "option_keys_covering": [
+    "option|NIFTY|2022-06-16|15450|CE|2022-06-13|2022-06-15",
+    "option|NIFTY|2022-06-16|15450|PE|2022-06-13|2022-06-15",
+    "option|NIFTY|2022-06-16|15500|CE|2022-06-13|2022-06-15"
+   ],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2022-10-24": {
+   "label": "SPECIAL",
+   "weekday": "Mon",
+   "index_first": null,
+   "index_last": null,
+   "index_minutes": 0,
+   "regular_0915_0920": 0,
+   "option_keys_covering": [
+    "option|NIFTY|2022-10-27|17400|CE|2022-10-21|2022-10-25",
+    "option|NIFTY|2022-10-27|17400|PE|2022-10-21|2022-10-25",
+    "option|NIFTY|2022-10-27|17450|CE|2022-10-21|2022-10-25"
+   ],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2023-03-01": {
+   "label": "DATA_HOLE",
+   "weekday": "Wed",
+   "index_first": "2023-03-01 09:15:00",
+   "index_last": "2023-03-01 15:39:00",
+   "index_minutes": 385,
+   "regular_0915_0920": 5,
+   "option_keys_covering": [
+    "option|NIFTY|2023-03-02|17200|CE|2023-02-28|2023-03-01",
+    "option|NIFTY|2023-03-02|17200|PE|2023-02-28|2023-03-01",
+    "option|NIFTY|2023-03-02|17250|CE|2023-02-28|2023-03-01"
+   ],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2023-11-12": {
+   "label": "SPECIAL",
+   "weekday": "Sun",
+   "index_first": "2023-11-12 18:09:00",
+   "index_last": "2023-11-12 19:54:00",
+   "index_minutes": 106,
+   "regular_0915_0920": 0,
+   "option_keys_covering": [
+    "option|NIFTY|2023-11-16|19200|CE|2023-11-10|2023-11-13",
+    "option|NIFTY|2023-11-16|19200|PE|2023-11-10|2023-11-13",
+    "option|NIFTY|2023-11-16|19250|CE|2023-11-10|2023-11-13"
+   ],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2024-11-01": {
+   "label": "SPECIAL",
+   "weekday": "Fri",
+   "index_first": "2024-11-01 11:06:00",
+   "index_last": "2024-11-01 19:03:00",
+   "index_minutes": 381,
+   "regular_0915_0920": 0,
+   "option_keys_covering": [],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2025-10-21": {
+   "label": "DATA_HOLE",
+   "weekday": "Tue",
+   "index_first": "2025-10-21 09:09:00",
+   "index_last": "2025-10-21 15:30:00",
+   "index_minutes": 377,
+   "regular_0915_0920": 5,
+   "option_keys_covering": [],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  },
+  "2025-12-31": {
+   "label": "DATA_HOLE",
+   "weekday": "Wed",
+   "index_first": "2025-12-31 09:15:00",
+   "index_last": "2025-12-31 15:39:00",
+   "index_minutes": 385,
+   "regular_0915_0920": 5,
+   "option_keys_covering": [],
+   "in_expiry_keys": false,
+   "in_gold_front_expiries": false
+  }
+ },
+ "non_gold_dates": {
+  "2022-01-12": "DATA_HOLE",
+  "2022-03-29": "SPECIAL",
+  "2022-03-30": "SPECIAL",
+  "2022-03-31": "SPECIAL",
+  "2022-05-31": "DATA_HOLE",
+  "2022-06-14": "SPECIAL",
+  "2022-10-24": "SPECIAL",
+  "2023-03-01": "DATA_HOLE",
+  "2023-11-12": "SPECIAL",
+  "2024-11-01": "SPECIAL",
+  "2025-10-21": "DATA_HOLE",
+  "2025-12-31": "DATA_HOLE"
+ },
+ "signals": 434,
+ "signal_classes": {
+  "TAKEN": 364,
+  "BUSY": 66,
+  "DAY_STOP": 2,
+  "OTHER": 2
+ },
+ "signal_classes_by_year": {
+  "2022": {
+   "TAKEN": 56,
+   "BUSY": 9
+  },
+  "2023": {
+   "TAKEN": 53,
+   "BUSY": 8
+  },
+  "2024": {
+   "TAKEN": 54,
+   "BUSY": 4
+  },
+  "2025": {
+   "TAKEN": 117,
+   "DAY_STOP": 2,
+   "BUSY": 29,
+   "OTHER": 2
+  },
+  "2026": {
+   "TAKEN": 84,
+   "BUSY": 16
+  }
+ },
+ "signal_classes_by_book": {
+  "N11": {
+   "TAKEN": 179,
+   "BUSY": 32,
+   "DAY_STOP": 1,
+   "OTHER": 1
+  },
+  "R0.85": {
+   "TAKEN": 185,
+   "BUSY": 34,
+   "DAY_STOP": 1,
+   "OTHER": 1
+  }
+ },
+ "untaken_on_traded_days": 70,
+ "other_examples": [
+  {
+   "day": "2025-08-19",
+   "i": 306,
+   "book": "N11",
+   "expert": "TPB",
+   "class": "OTHER"
+  },
+  {
+   "day": "2025-08-19",
+   "i": 306,
+   "book": "R0.85",
+   "expert": "TPB",
+   "class": "OTHER"
+  }
+ ],
+ "calendar_sessions": 1195,
+ "gold_sessions": 932,
+ "gold_trades": 186
+}

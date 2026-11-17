@@ -936,7 +936,7 @@ class Settings(BaseSettings):
     EDGE_OVERNIGHT_PAPER_BANKROLL:   float = 25000.0
     # [EXPIRY-PAPER 2026-10-05] Broker-free expiry-day paper book
     # (docs/2026-10-05-expiry-day-paper-book.md): plays A/B/C on the weekly
-    # NIFTY (Tue) and SENSEX (Thu) expiry, 12:59-15:40 IST. The budget is the
+    # NIFTY (Tue) and SENSEX (Thu) expiry, 12:47-15:40 IST (12:59 before EN02). The budget is the
     # most each play may lose per expiry day (owner chose Rs 2,500). Separate
     # store; the live F&O book keeps FNO_EXPIRY_DAY_ENTRIES=False.
     EXPIRY_PAPER_ENABLED:            bool  = True
@@ -1291,6 +1291,10 @@ class Settings(BaseSettings):
     # winners kept past N11's exit. Research docs/research/fno/sn-gold/SN_GOLD_V5.json. It never places an order.
     # Off: SN_GOLD_ENABLED=false (its tables stay; nothing else reads them).
     SN_GOLD_ENABLED: bool = True
+    # [Gold V8 shadow 2026-11-16] Record, beside each SN Gold paper action, the exact real order the real-money Gold V8
+    # would send (sn_gold_v8.py, table sn_gold_v8_intents; docs/research/fno/2026-11-16-sn316/GOLD_V8.md, gate 3).
+    # It never places an order. Off by default; the owner switches it on with the deploy.
+    SN_GOLD_V8_SHADOW_ENABLED: bool = False
     # Owner, Nov 13: "if you think 30,000 starting amount is better than I am fine with that". SN70/SN71: from Rs 30k the
     # account survived every one of 15 start quarters without a refill; from Rs 15k it ran dry 3 times.
     SN_GOLD_START_WALLET: float = 30000.0      # the starting wallet; profits banked, losing days refilled
@@ -1449,6 +1453,9 @@ class Settings(BaseSettings):
     # existing persistent /data volume, so it survives a container restart.
     RESEARCH_ARCHIVE_ENABLED: bool = True
     RESEARCH_ARCHIVE_PATH: str = "/data/research"
+    # [SN477] the paper books (SN Gold, N11's paper record) pin the exact contract they hold in the research collector's
+    # selected-leg store until 15:20 IST, so the minute archive keeps quoting it however far the market moves. Research only.
+    RESEARCH_PIN_PAPER_LEGS: bool = True
     RESEARCH_ARCHIVE_UNDERLYINGS: str = "NIFTY,SENSEX"
     # A failed archive must be conspicuous before the short-retention cache is
     # purged.  It does not silently delete unpreserved research input.
@@ -1493,6 +1500,9 @@ class Settings(BaseSettings):
     TICK_RECORDER_PATH: str = "/data/research/ticks"
     TICK_RECORDER_EXPIRIES: int = 3              # nearest option expiries per index
     TICK_RECORDER_STRIKES: int = 20              # strikes either side of the front future
+    TICK_RECORDER_EXTRA_UNDERLYINGS: str = "BANKNIFTY"   # [SN413] research-only extra chains (instrument books only)
+    TICK_RECORDER_EXTRA_EXPIRIES: int = 2        # [SN413] nearest expiries for each extra chain
+    TICK_RECORDER_EXTRA_STRIKES: int = 10        # [SN413] strikes either side for each extra chain
     TICK_RECORDER_CHUNK_SEC: float = 60.0
     TICK_RECORDER_DAY_MAX_BYTES: int = 629_145_600       # 600 MiB a day (compressed)
     TICK_RECORDER_TOTAL_MAX_BYTES: int = 12_884_901_888  # 12 GiB in all

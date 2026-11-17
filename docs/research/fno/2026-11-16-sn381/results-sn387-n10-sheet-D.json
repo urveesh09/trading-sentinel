@@ -1,0 +1,27 @@
+{
+ "CUSHION": {
+  "end_equity": 415120,
+  "best_closed_equity": 415120,
+  "lowest_vs_best": 0.8687,
+  "per_year": {
+   "2022": -4363,
+   "2023": -23746,
+   "2024": 23662,
+   "2025": 51328,
+   "2026": 118239
+  }
+ },
+ "R2_THIRD_CW": {
+  "end_equity": 441853,
+  "best_closed_equity": 441853,
+  "lowest_vs_best": 0.869,
+  "per_year": {
+   "2022": -3803,
+   "2023": -23746,
+   "2024": 35032,
+   "2025": 53074,
+   "2026": 131296
+  }
+ },
+ "D_watch_keeps_its_promise": true
+}
