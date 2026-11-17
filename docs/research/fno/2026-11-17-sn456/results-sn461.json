@@ -1,0 +1,235 @@
+{
+ "sessions": 1184,
+ "replay_days": 929,
+ "by_clock": {
+  "10:00": {
+   "2022": {
+    "CLEAR": 188,
+    "CLEAR_NONE": 161,
+    "hindsight_gap_day": 161,
+    "OUTSIDE_expiry": 51,
+    "OUTSIDE_other": 2,
+    "CLEAR_AFTER_ONLY": 26,
+    "CLEAR_DURING": 1,
+    "OPEN": 1
+   },
+   "2023": {
+    "CLEAR": 190,
+    "CLEAR_NONE": 167,
+    "CLEAR_ledger10_priced": 190,
+    "hindsight_gap_day": 167,
+    "OUTSIDE_expiry": 52,
+    "CLEAR_AFTER_ONLY": 21,
+    "OPEN": 2,
+    "CLEAR_DURING": 2,
+    "OUTSIDE_other": 1
+   },
+   "2024": {
+    "CLEAR": 193,
+    "CLEAR_AFTER_ONLY": 23,
+    "CLEAR_ledger10_priced": 189,
+    "CLEAR_DURING": 1,
+    "OUTSIDE_expiry": 52,
+    "CLEAR_NONE": 169,
+    "hindsight_gap_day": 169,
+    "OPEN": 1
+   },
+   "2025": {
+    "CLEAR": 189,
+    "CLEAR_DURING": 3,
+    "CLEAR_ledger10_priced": 186,
+    "OUTSIDE_expiry": 53,
+    "OPEN": 4,
+    "PENDING": 1,
+    "CLEAR_NONE": 146,
+    "hindsight_gap_day": 146,
+    "CLEAR_AFTER_ONLY": 39,
+    "CLEAR_BEFORE_ONLY": 1,
+    "OUTSIDE_other": 1
+   },
+   "2026": {
+    "CLEAR": 158,
+    "CLEAR_NONE": 125,
+    "CLEAR_ledger10_priced": 147,
+    "hindsight_gap_day": 125,
+    "OUTSIDE_expiry": 43,
+    "CLEAR_AFTER_ONLY": 28,
+    "OPEN": 2,
+    "CLEAR_DURING": 5
+   },
+   "ALL": {
+    "CLEAR": 918,
+    "CLEAR_NONE": 768,
+    "hindsight_gap_day": 768,
+    "OUTSIDE_expiry": 251,
+    "OUTSIDE_other": 4,
+    "CLEAR_AFTER_ONLY": 137,
+    "CLEAR_DURING": 12,
+    "OPEN": 10,
+    "CLEAR_ledger10_priced": 712,
+    "PENDING": 1,
+    "CLEAR_BEFORE_ONLY": 1
+   },
+   "summary": {
+    "clear_share_of_replay_days": 0.9882,
+    "clear_share_of_all_sessions": 0.7753,
+    "collision_rate_during_given_clear": 0.0131,
+    "clear_and_gold_never_enters": 768,
+    "hindsight_gap_days": 768,
+    "outside_expiry": 251,
+    "outside_other": 4
+   }
+  },
+  "11:00": {
+   "2022": {
+    "CLEAR": 189,
+    "CLEAR_NONE": 161,
+    "hindsight_gap_day": 161,
+    "OUTSIDE_expiry": 51,
+    "OUTSIDE_other": 2,
+    "CLEAR_DURING": 16,
+    "CLEAR_AFTER_ONLY": 11,
+    "CLEAR_BEFORE_ONLY": 1
+   },
+   "2023": {
+    "CLEAR": 189,
+    "CLEAR_NONE": 167,
+    "hindsight_gap_day": 167,
+    "OUTSIDE_expiry": 52,
+    "CLEAR_AFTER_ONLY": 10,
+    "OPEN": 3,
+    "CLEAR_DURING": 12,
+    "OUTSIDE_other": 1
+   },
+   "2024": {
+    "CLEAR": 193,
+    "CLEAR_AFTER_ONLY": 14,
+    "CLEAR_BEFORE_ONLY": 1,
+    "OUTSIDE_expiry": 52,
+    "CLEAR_NONE": 169,
+    "hindsight_gap_day": 169,
+    "CLEAR_DURING": 9,
+    "OPEN": 1
+   },
+   "2025": {
+    "CLEAR": 191,
+    "CLEAR_BEFORE_ONLY": 6,
+    "OUTSIDE_expiry": 53,
+    "OPEN": 3,
+    "CLEAR_NONE": 146,
+    "hindsight_gap_day": 146,
+    "CLEAR_DURING": 16,
+    "CLEAR_AFTER_ONLY": 23,
+    "OUTSIDE_other": 1
+   },
+   "2026": {
+    "CLEAR": 155,
+    "CLEAR_NONE": 125,
+    "hindsight_gap_day": 125,
+    "OUTSIDE_expiry": 43,
+    "CLEAR_AFTER_ONLY": 20,
+    "CLEAR_DURING": 8,
+    "CLEAR_BEFORE_ONLY": 2,
+    "OPEN": 5
+   },
+   "ALL": {
+    "CLEAR": 917,
+    "CLEAR_NONE": 768,
+    "hindsight_gap_day": 768,
+    "OUTSIDE_expiry": 251,
+    "OUTSIDE_other": 4,
+    "CLEAR_DURING": 61,
+    "CLEAR_AFTER_ONLY": 78,
+    "CLEAR_BEFORE_ONLY": 10,
+    "OPEN": 12
+   },
+   "summary": {
+    "clear_share_of_replay_days": 0.9871,
+    "clear_share_of_all_sessions": 0.7745,
+    "collision_rate_during_given_clear": 0.0665,
+    "clear_and_gold_never_enters": 768,
+    "hindsight_gap_days": 768,
+    "outside_expiry": 251,
+    "outside_other": 4
+   }
+  },
+  "13:00": {
+   "2022": {
+    "CLEAR": 178,
+    "CLEAR_NONE": 161,
+    "hindsight_gap_day": 161,
+    "OUTSIDE_expiry": 51,
+    "OUTSIDE_other": 2,
+    "CLEAR_BEFORE_ONLY": 13,
+    "CLEAR_DURING": 3,
+    "CLEAR_AFTER_ONLY": 1,
+    "OPEN": 10,
+    "PENDING": 1
+   },
+   "2023": {
+    "CLEAR": 179,
+    "CLEAR_NONE": 167,
+    "hindsight_gap_day": 167,
+    "OUTSIDE_expiry": 52,
+    "OPEN": 13,
+    "CLEAR_BEFORE_ONLY": 9,
+    "OUTSIDE_other": 1,
+    "CLEAR_DURING": 3
+   },
+   "2024": {
+    "OPEN": 12,
+    "CLEAR": 181,
+    "CLEAR_BEFORE_ONLY": 6,
+    "OUTSIDE_expiry": 52,
+    "CLEAR_NONE": 169,
+    "hindsight_gap_day": 169,
+    "CLEAR_AFTER_ONLY": 2,
+    "CLEAR_DURING": 4,
+    "PENDING": 1
+   },
+   "2025": {
+    "CLEAR": 172,
+    "CLEAR_BEFORE_ONLY": 12,
+    "OUTSIDE_expiry": 53,
+    "CLEAR_NONE": 146,
+    "hindsight_gap_day": 146,
+    "CLEAR_DURING": 13,
+    "OPEN": 20,
+    "CLEAR_AFTER_ONLY": 1,
+    "PENDING": 2,
+    "OUTSIDE_other": 1
+   },
+   "2026": {
+    "CLEAR": 138,
+    "CLEAR_NONE": 125,
+    "hindsight_gap_day": 125,
+    "OUTSIDE_expiry": 43,
+    "CLEAR_BEFORE_ONLY": 8,
+    "OPEN": 22,
+    "CLEAR_AFTER_ONLY": 1,
+    "CLEAR_DURING": 4
+   },
+   "ALL": {
+    "CLEAR": 848,
+    "CLEAR_NONE": 768,
+    "hindsight_gap_day": 768,
+    "OUTSIDE_expiry": 251,
+    "OUTSIDE_other": 4,
+    "CLEAR_BEFORE_ONLY": 48,
+    "CLEAR_DURING": 27,
+    "CLEAR_AFTER_ONLY": 5,
+    "OPEN": 77,
+    "PENDING": 4
+   },
+   "summary": {
+    "clear_share_of_replay_days": 0.9128,
+    "clear_share_of_all_sessions": 0.7162,
+    "collision_rate_during_given_clear": 0.0318,
+    "clear_and_gold_never_enters": 768,
+    "hindsight_gap_days": 768,
+    "outside_expiry": 251,
+    "outside_other": 4
+   }
+  }
+ }
+}
