@@ -1,0 +1,1453 @@
+{
+ "cheap_sessions": 72,
+ "@205": {
+  "gold_alone": {
+   "net": 850883,
+   "by_year": {
+    "2023": -12107,
+    "2024": 187476,
+    "2025": 292811,
+    "2026": 382702
+   },
+   "months_positive": 25,
+   "worst_month": -38531,
+   "refilled": 562130
+  },
+  "never_leg_parity": 850883,
+  "shared_ledger": {
+   "net": 873732,
+   "by_year": {
+    "2023": -12107,
+    "2024": 187476,
+    "2025": 289315,
+    "2026": 409048
+   },
+   "months_positive": 26,
+   "worst_month": -43771,
+   "refilled": 610444
+  },
+  "increment_total": 22849,
+  "opener_window_sessions": 172,
+  "opener_trades": 68,
+  "opener_net": 24082,
+  "opener_winners": 34,
+  "forced_by_gold": 0,
+  "stops": 12,
+  "stop_overshoots": 12,
+  "worst_overshoot": 311.51,
+  "worst_opener_loss": -3311.51,
+  "worst_no_bid_bound": -14922.65,
+  "gold_net_change_on_opener_days": -1233,
+  "gold_net_change_elsewhere": 0,
+  "days_total_loss_over_20pct": 2,
+  "days_total_loss_over_20pct_gold_alone": 2,
+  "per_market_session_increment_window": 132.8,
+  "opener_log": [
+   {
+    "day": "2025-12-11",
+    "net": -3299.01,
+    "why": "stop",
+    "j": 25,
+    "stop": 3000.0,
+    "debit": 14122.79,
+    "no_bid_bound": -14122.79,
+    "overshoot": 299.01
+   },
+   {
+    "day": "2025-12-12",
+    "net": 641.09,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10468.14,
+    "no_bid_bound": -10468.14,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2025-12-18",
+    "net": -1278.79,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 8917.19,
+    "no_bid_bound": -8917.19,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2025-12-19",
+    "net": 687.85,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11268.0,
+    "no_bid_bound": -11268.0,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2025-12-26",
+    "net": -247.02,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 8813.15,
+    "no_bid_bound": -8813.15,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-02",
+    "net": 4216.26,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11602.9,
+    "no_bid_bound": -11602.9,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-08",
+    "net": 1033.03,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9333.38,
+    "no_bid_bound": -9333.38,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-09",
+    "net": -3253.96,
+    "why": "stop",
+    "j": 18,
+    "stop": 3000.0,
+    "debit": 11541.12,
+    "no_bid_bound": -11541.12,
+    "overshoot": 253.96
+   },
+   {
+    "day": "2026-01-16",
+    "net": 4467.77,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13609.06,
+    "no_bid_bound": -13609.06,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-22",
+    "net": 3153.24,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12581.59,
+    "no_bid_bound": -12581.59,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-23",
+    "net": -75.12,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10188.52,
+    "no_bid_bound": -10188.52,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-29",
+    "net": 1661.51,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13781.38,
+    "no_bid_bound": -13781.38,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-05",
+    "net": 1298.25,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12393.01,
+    "no_bid_bound": -12393.01,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-06",
+    "net": 1836.94,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12298.72,
+    "no_bid_bound": -12298.72,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-12",
+    "net": -111.08,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10305.57,
+    "no_bid_bound": -10305.57,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-13",
+    "net": 2232.63,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9583.74,
+    "no_bid_bound": -9583.74,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-19",
+    "net": -3111.49,
+    "why": "stop",
+    "j": 58,
+    "stop": 3000.0,
+    "debit": 11645.17,
+    "no_bid_bound": -11645.17,
+    "overshoot": 111.49
+   },
+   {
+    "day": "2026-02-20",
+    "net": -848.2,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10637.22,
+    "no_bid_bound": -10637.22,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-26",
+    "net": -3020.24,
+    "why": "stop",
+    "j": 9,
+    "stop": 3000.0,
+    "debit": 14204.07,
+    "no_bid_bound": -14204.07,
+    "overshoot": 20.24
+   },
+   {
+    "day": "2026-02-27",
+    "net": 3816.7,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10477.9,
+    "no_bid_bound": -10477.9,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-04-09",
+    "net": -3208.85,
+    "why": "stop",
+    "j": 6,
+    "stop": 3000.0,
+    "debit": 14402.41,
+    "no_bid_bound": -14402.41,
+    "overshoot": 208.85
+   },
+   {
+    "day": "2026-04-10",
+    "net": 3287.18,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14919.4,
+    "no_bid_bound": -14919.4,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-04-16",
+    "net": -2076.07,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14106.53,
+    "no_bid_bound": -14106.53,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-04-17",
+    "net": -3193.86,
+    "why": "stop",
+    "j": 41,
+    "stop": 3000.0,
+    "debit": 14922.65,
+    "no_bid_bound": -14922.65,
+    "overshoot": 193.86
+   },
+   {
+    "day": "2026-04-24",
+    "net": -3311.51,
+    "why": "stop",
+    "j": 10,
+    "stop": 3000.0,
+    "debit": 13924.45,
+    "no_bid_bound": -13924.45,
+    "overshoot": 311.51
+   },
+   {
+    "day": "2026-04-30",
+    "net": 6558.81,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14106.53,
+    "no_bid_bound": -14106.53,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-07",
+    "net": 2029.5,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13170.11,
+    "no_bid_bound": -13170.11,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-08",
+    "net": -686.75,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13687.09,
+    "no_bid_bound": -13687.09,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-14",
+    "net": -3044.21,
+    "why": "stop",
+    "j": 43,
+    "stop": 3000.0,
+    "debit": 14737.31,
+    "no_bid_bound": -14737.31,
+    "overshoot": 44.21
+   },
+   {
+    "day": "2026-05-15",
+    "net": 3219.21,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13485.5,
+    "no_bid_bound": -13485.5,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-21",
+    "net": -3189.14,
+    "why": "stop",
+    "j": 18,
+    "stop": 3000.0,
+    "debit": 14301.62,
+    "no_bid_bound": -14301.62,
+    "overshoot": 189.14
+   },
+   {
+    "day": "2026-05-22",
+    "net": 3330.6,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14389.41,
+    "no_bid_bound": -14389.41,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-04",
+    "net": -3250.69,
+    "why": "stop",
+    "j": 21,
+    "stop": 3000.0,
+    "debit": 14265.85,
+    "no_bid_bound": -14265.85,
+    "overshoot": 250.69
+   },
+   {
+    "day": "2026-06-05",
+    "net": -1191.54,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14535.72,
+    "no_bid_bound": -14535.72,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-11",
+    "net": -2464.45,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13739.11,
+    "no_bid_bound": -13739.11,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-12",
+    "net": -2079.47,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11433.83,
+    "no_bid_bound": -11433.83,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-18",
+    "net": 537.67,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11674.43,
+    "no_bid_bound": -11674.43,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-19",
+    "net": -504.98,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9528.47,
+    "no_bid_bound": -9528.47,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-25",
+    "net": 1793.92,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11287.51,
+    "no_bid_bound": -11287.51,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-02",
+    "net": -1213.84,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12994.53,
+    "no_bid_bound": -12994.53,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-03",
+    "net": 189.9,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11967.07,
+    "no_bid_bound": -11967.07,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-09",
+    "net": 2762.54,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14561.73,
+    "no_bid_bound": -14561.73,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-10",
+    "net": 1720.47,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12171.91,
+    "no_bid_bound": -12171.91,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-16",
+    "net": -394.14,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12035.35,
+    "no_bid_bound": -12035.35,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-23",
+    "net": -3001.32,
+    "why": "stop",
+    "j": 44,
+    "stop": 3000.0,
+    "debit": 13066.06,
+    "no_bid_bound": -13066.06,
+    "overshoot": 1.32
+   },
+   {
+    "day": "2026-07-24",
+    "net": 3270.57,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10978.62,
+    "no_bid_bound": -10978.62,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-30",
+    "net": -1070.64,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12792.94,
+    "no_bid_bound": -12792.94,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-31",
+    "net": -2235.63,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11625.66,
+    "no_bid_bound": -11625.66,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-06",
+    "net": 766.96,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12103.63,
+    "no_bid_bound": -12103.63,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-07",
+    "net": 234.03,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11137.94,
+    "no_bid_bound": -11137.94,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-13",
+    "net": -309.98,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9372.4,
+    "no_bid_bound": -9372.4,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-14",
+    "net": -603.87,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 8826.15,
+    "no_bid_bound": -8826.15,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-20",
+    "net": 1109.61,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12607.61,
+    "no_bid_bound": -12607.61,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-21",
+    "net": -1673.58,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12627.11,
+    "no_bid_bound": -12627.11,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-27",
+    "net": 3793.94,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9135.04,
+    "no_bid_bound": -9135.04,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-28",
+    "net": 3529.23,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14070.76,
+    "no_bid_bound": -14070.76,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-03",
+    "net": 166.34,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12327.98,
+    "no_bid_bound": -12327.98,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-04",
+    "net": 749.06,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12815.7,
+    "no_bid_bound": -12815.7,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-10",
+    "net": 413.47,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9333.38,
+    "no_bid_bound": -9333.38,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-11",
+    "net": -1771.64,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10204.77,
+    "no_bid_bound": -10204.77,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-17",
+    "net": -3115.8,
+    "why": "stop",
+    "j": 50,
+    "stop": 3000.0,
+    "debit": 10728.26,
+    "no_bid_bound": -10728.26,
+    "overshoot": 115.8
+   },
+   {
+    "day": "2026-09-18",
+    "net": -650.26,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10607.95,
+    "no_bid_bound": -10607.95,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-24",
+    "net": 2616.63,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9060.26,
+    "no_bid_bound": -9060.26,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-25",
+    "net": -540.82,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9596.75,
+    "no_bid_bound": -9596.75,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-01",
+    "net": -861.76,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10884.33,
+    "no_bid_bound": -10884.33,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-08",
+    "net": 1010.46,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13381.45,
+    "no_bid_bound": -13381.45,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-09",
+    "net": 6208.72,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12640.12,
+    "no_bid_bound": -12640.12,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-15",
+    "net": 10627.81,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12178.41,
+    "no_bid_bound": -12178.41,
+    "overshoot": 0.0
+   }
+  ]
+ },
+ "@400": {
+  "gold_alone": {
+   "net": 495597,
+   "by_year": {
+    "2023": -20385,
+    "2024": 86356,
+    "2025": 92429,
+    "2026": 337198
+   },
+   "months_positive": 23,
+   "worst_month": -41913,
+   "refilled": 494651
+  },
+  "never_leg_parity": 495597,
+  "shared_ledger": {
+   "net": 507837,
+   "by_year": {
+    "2023": -20385,
+    "2024": 86356,
+    "2025": 87958,
+    "2026": 353908
+   },
+   "months_positive": 23,
+   "worst_month": -47006,
+   "refilled": 545384
+  },
+  "increment_total": 12240,
+  "opener_window_sessions": 172,
+  "opener_trades": 68,
+  "opener_net": 13070,
+  "opener_winners": 32,
+  "forced_by_gold": 0,
+  "stops": 12,
+  "stop_overshoots": 12,
+  "worst_overshoot": 494.01,
+  "worst_opener_loss": -3494.01,
+  "worst_no_bid_bound": -14922.65,
+  "gold_net_change_on_opener_days": -830,
+  "gold_net_change_elsewhere": 0,
+  "days_total_loss_over_20pct": 1,
+  "days_total_loss_over_20pct_gold_alone": 1,
+  "per_market_session_increment_window": 71.2,
+  "opener_log": [
+   {
+    "day": "2025-12-11",
+    "net": -3494.01,
+    "why": "stop",
+    "j": 25,
+    "stop": 3000.0,
+    "debit": 14122.79,
+    "no_bid_bound": -14122.79,
+    "overshoot": 494.01
+   },
+   {
+    "day": "2025-12-12",
+    "net": 446.09,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10468.14,
+    "no_bid_bound": -10468.14,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2025-12-18",
+    "net": -1473.79,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 8917.19,
+    "no_bid_bound": -8917.19,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2025-12-19",
+    "net": 492.85,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11268.0,
+    "no_bid_bound": -11268.0,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2025-12-26",
+    "net": -442.02,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 8813.15,
+    "no_bid_bound": -8813.15,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-02",
+    "net": 4021.26,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11602.9,
+    "no_bid_bound": -11602.9,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-08",
+    "net": 838.03,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9333.38,
+    "no_bid_bound": -9333.38,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-09",
+    "net": -3448.96,
+    "why": "stop",
+    "j": 18,
+    "stop": 3000.0,
+    "debit": 11541.12,
+    "no_bid_bound": -11541.12,
+    "overshoot": 448.96
+   },
+   {
+    "day": "2026-01-16",
+    "net": 4272.77,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13609.06,
+    "no_bid_bound": -13609.06,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-22",
+    "net": 2958.24,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12581.59,
+    "no_bid_bound": -12581.59,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-23",
+    "net": -270.12,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10188.52,
+    "no_bid_bound": -10188.52,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-01-29",
+    "net": 1466.51,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13781.38,
+    "no_bid_bound": -13781.38,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-05",
+    "net": 1103.25,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12393.01,
+    "no_bid_bound": -12393.01,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-06",
+    "net": 1641.94,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12298.72,
+    "no_bid_bound": -12298.72,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-12",
+    "net": -306.08,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10305.57,
+    "no_bid_bound": -10305.57,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-13",
+    "net": 2037.63,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9583.74,
+    "no_bid_bound": -9583.74,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-19",
+    "net": -3004.82,
+    "why": "stop",
+    "j": 43,
+    "stop": 3000.0,
+    "debit": 11645.17,
+    "no_bid_bound": -11645.17,
+    "overshoot": 4.82
+   },
+   {
+    "day": "2026-02-20",
+    "net": -1043.2,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10637.22,
+    "no_bid_bound": -10637.22,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-02-26",
+    "net": -3215.24,
+    "why": "stop",
+    "j": 9,
+    "stop": 3000.0,
+    "debit": 14204.07,
+    "no_bid_bound": -14204.07,
+    "overshoot": 215.24
+   },
+   {
+    "day": "2026-02-27",
+    "net": 3621.7,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10477.9,
+    "no_bid_bound": -10477.9,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-04-09",
+    "net": -3137.86,
+    "why": "stop",
+    "j": 5,
+    "stop": 3000.0,
+    "debit": 14402.41,
+    "no_bid_bound": -14402.41,
+    "overshoot": 137.86
+   },
+   {
+    "day": "2026-04-10",
+    "net": 3092.18,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14919.4,
+    "no_bid_bound": -14919.4,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-04-16",
+    "net": -2271.07,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14106.53,
+    "no_bid_bound": -14106.53,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-04-17",
+    "net": -3038.53,
+    "why": "stop",
+    "j": 14,
+    "stop": 3000.0,
+    "debit": 14922.65,
+    "no_bid_bound": -14922.65,
+    "overshoot": 38.53
+   },
+   {
+    "day": "2026-04-24",
+    "net": -3013.46,
+    "why": "stop",
+    "j": 6,
+    "stop": 3000.0,
+    "debit": 13924.45,
+    "no_bid_bound": -13924.45,
+    "overshoot": 13.46
+   },
+   {
+    "day": "2026-04-30",
+    "net": 6363.81,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14106.53,
+    "no_bid_bound": -14106.53,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-07",
+    "net": 1834.5,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13170.11,
+    "no_bid_bound": -13170.11,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-08",
+    "net": -881.75,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13687.09,
+    "no_bid_bound": -13687.09,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-14",
+    "net": -3239.21,
+    "why": "stop",
+    "j": 43,
+    "stop": 3000.0,
+    "debit": 14737.31,
+    "no_bid_bound": -14737.31,
+    "overshoot": 239.21
+   },
+   {
+    "day": "2026-05-15",
+    "net": 3024.21,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13485.5,
+    "no_bid_bound": -13485.5,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-05-21",
+    "net": -3127.89,
+    "why": "stop",
+    "j": 17,
+    "stop": 3000.0,
+    "debit": 14301.62,
+    "no_bid_bound": -14301.62,
+    "overshoot": 127.89
+   },
+   {
+    "day": "2026-05-22",
+    "net": 3135.6,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14389.41,
+    "no_bid_bound": -14389.41,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-04",
+    "net": -3017.51,
+    "why": "stop",
+    "j": 13,
+    "stop": 3000.0,
+    "debit": 14265.85,
+    "no_bid_bound": -14265.85,
+    "overshoot": 17.51
+   },
+   {
+    "day": "2026-06-05",
+    "net": -1386.54,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14535.72,
+    "no_bid_bound": -14535.72,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-11",
+    "net": -2659.45,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13739.11,
+    "no_bid_bound": -13739.11,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-12",
+    "net": -2274.47,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11433.83,
+    "no_bid_bound": -11433.83,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-18",
+    "net": 342.67,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11674.43,
+    "no_bid_bound": -11674.43,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-19",
+    "net": -699.98,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9528.47,
+    "no_bid_bound": -9528.47,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-06-25",
+    "net": 1598.92,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11287.51,
+    "no_bid_bound": -11287.51,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-02",
+    "net": -1408.84,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12994.53,
+    "no_bid_bound": -12994.53,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-03",
+    "net": -5.1,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11967.07,
+    "no_bid_bound": -11967.07,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-09",
+    "net": 2567.54,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14561.73,
+    "no_bid_bound": -14561.73,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-10",
+    "net": 1525.47,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12171.91,
+    "no_bid_bound": -12171.91,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-16",
+    "net": -589.14,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12035.35,
+    "no_bid_bound": -12035.35,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-23",
+    "net": -3196.32,
+    "why": "stop",
+    "j": 44,
+    "stop": 3000.0,
+    "debit": 13066.06,
+    "no_bid_bound": -13066.06,
+    "overshoot": 196.32
+   },
+   {
+    "day": "2026-07-24",
+    "net": 3075.57,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10978.62,
+    "no_bid_bound": -10978.62,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-30",
+    "net": -1265.64,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12792.94,
+    "no_bid_bound": -12792.94,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-07-31",
+    "net": -2430.63,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11625.66,
+    "no_bid_bound": -11625.66,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-06",
+    "net": 571.96,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12103.63,
+    "no_bid_bound": -12103.63,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-07",
+    "net": 39.03,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 11137.94,
+    "no_bid_bound": -11137.94,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-13",
+    "net": -504.98,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9372.4,
+    "no_bid_bound": -9372.4,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-14",
+    "net": -798.87,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 8826.15,
+    "no_bid_bound": -8826.15,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-20",
+    "net": 914.61,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12607.61,
+    "no_bid_bound": -12607.61,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-21",
+    "net": -1868.58,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12627.11,
+    "no_bid_bound": -12627.11,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-27",
+    "net": 3598.94,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9135.04,
+    "no_bid_bound": -9135.04,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-08-28",
+    "net": 3334.23,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 14070.76,
+    "no_bid_bound": -14070.76,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-03",
+    "net": -28.66,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12327.98,
+    "no_bid_bound": -12327.98,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-04",
+    "net": 554.06,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12815.7,
+    "no_bid_bound": -12815.7,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-10",
+    "net": 218.47,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9333.38,
+    "no_bid_bound": -9333.38,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-11",
+    "net": -1966.64,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10204.77,
+    "no_bid_bound": -10204.77,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-17",
+    "net": -3158.34,
+    "why": "stop",
+    "j": 20,
+    "stop": 3000.0,
+    "debit": 10728.26,
+    "no_bid_bound": -10728.26,
+    "overshoot": 158.34
+   },
+   {
+    "day": "2026-09-18",
+    "net": -845.26,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10607.95,
+    "no_bid_bound": -10607.95,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-24",
+    "net": 2421.63,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9060.26,
+    "no_bid_bound": -9060.26,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-09-25",
+    "net": -735.82,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 9596.75,
+    "no_bid_bound": -9596.75,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-01",
+    "net": -1056.76,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 10884.33,
+    "no_bid_bound": -10884.33,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-08",
+    "net": 815.46,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 13381.45,
+    "no_bid_bound": -13381.45,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-09",
+    "net": 6013.72,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12640.12,
+    "no_bid_bound": -12640.12,
+    "overshoot": 0.0
+   },
+   {
+    "day": "2026-10-15",
+    "net": 10432.81,
+    "why": "time",
+    "j": 60,
+    "stop": 3000.0,
+    "debit": 12178.41,
+    "no_bid_bound": -12178.41,
+    "overshoot": 0.0
+   }
+  ]
+ }
+}
