@@ -290,3 +290,22 @@ BLOCKED as specified (no consistent venue aggregate is publicly obtainable befor
 SN464 → SN469 / SN472 → SN456 (with SN473 / SN471) → ledger10 → SN475 / SN462 → SN458 → SN461 → SN467 → SN468 → SN460 → SN463 → SN457 → SN466 / SN465 / SN459 → SN470.
 
 ## 5. Amendments (added after freezing; disclosed)
+
+### A1. Details fixed in the scripts before their runs (each script committed before it ran)
+- **SN464:** the raw-record minute states; the HELD quantity at the exit (Gold's entry pieces), with SN445's initial-lots result recomputed beside it. An unused helper was removed before the first run.
+- **SN469:** the 98 common cells are rebuilt and asserted (98 on 37 dates). "Truth" is the label-based scheduled-exit net plus the injected drift. Because days carry different numbers of cells, the realised truth differs slightly from the nominal μ (reported beside it). The bootstrap uses 300 resamples per replication.
+- **SN472:** COIN is the only modelled control (ATM, the two other F1 controls and F1's reversal t are not modelled), so the pass rates are upper bounds. SN300a's FLAT test uses the archive's EMPTY label; fx5 uses SN444's one-morning rows.
+- **SN456:** the scorer re-parses titles tolerantly and strips thousands separators. One title remained invalid.
+- **SN458:** 8 draws a date (CPU: about 1 s a path), one date per call so each date has its own seed. A bar needs all five 1-minute bars. A junk line was removed before the first run.
+- **SN473:** two junk lines were removed before the first run.
+- **SN463:** the table-row SN parser was simplified before the first run. The LLM arm was not run, because the same model wrote the check set.
+- **SN474:** the 15:15 arm moves only the extension's end (N11's own 15:10 time exits are unchanged). Depth uses non-expiry archive days only.
+- **SN457:** the handoff's "iXBRL" example is NSE's rendered web view, so the parser reads its rows. The SEC request used a generic placeholder client with no personal details.
+- **SN460:** the trigger time is the position's exit_time (no separate trigger clock is stored). The labels sit on the archive's one-a-minute raw records.
+- **SN466:** recorded from the pre-plan probe; no script.
+
+### A2. Disclosures
+- **SN471 post-hoc:** `sn471_posthoc.py` (the split without the largest trades) was added after SN471's verdict. It cannot change that verdict.
+- **SN474 commit message:** the message for `results-sn474.json` says "38 archive days". The depth sample is **33** non-expiry days (116–120 contract snapshots per clock). The result file is correct.
+- **SN457:** `matches_32615 = false` is an artefact of Python's float rounding (round(326.15, 1) = 326.1). Half-up rounding gives the exhibit's 326.2, so the fixture matches. Not rerun.
+- **Stray command:** a stray `python -` in an exploratory shell command waited on stdin and was stopped. No file was touched.
