@@ -41,10 +41,11 @@ def main():
         for r in rows:
             if r["day"] not in ("2026-10-08", "2026-10-21"):
                 continue
-            sym = r["contract"]
-            strike, opt = float(sym[-7:-2]) if sym[-7:-2].isdigit() else float(r.get("strike", 0)), sym[-2:]
+            _und, expiry, strike, opt = r["contract"]          # SN464's receipt: [underlying, expiry, strike, type]
+            strike = float(strike)
+            sym = f"NIFTY{expiry}{int(strike)}{opt}"
             lo, hi, n = r["exit_minutes"][0]["window"]
-            held = Contract(token=900000 + int(strike), tradingsymbol=sym, name="NIFTY", expiry=date.fromisoformat(r["day"]) + timedelta(days=1),
+            held = Contract(token=900000 + int(strike), tradingsymbol=sym, name="NIFTY", expiry=date.fromisoformat(expiry),
                             strike=strike, instrument_type=opt, lot_size=65, tick_size=0.05)
             entry_at = datetime.fromisoformat(r["day"]).replace(tzinfo=IST) + timedelta(minutes=555 + r["i"])
             pinned = asyncio.run(research_pins.pin([held], f"sn_gold:trace-{r['day']}", entry_at))
