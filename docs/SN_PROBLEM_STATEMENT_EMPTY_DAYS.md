@@ -353,3 +353,12 @@ Until then the best empty-day action remains no trade. A daily income comes from
   It stays a forward test only (fw9 / fw9a).
 - **Coverage routes are closed:** roll days (the lot is rarely affordable), SENSEX on NIFTY's skip days (−₹547 a session on NIFTY expiry days), RBI release days (3 events, all stopped) (SN398 / SN401 / SN402).
 - **Gold covers 17% of sessions** and pays ₹791 a market session at ₹205 (₹409 at ₹400) from ₹30k (SN405). Empty days would need +₹412 each at ₹400 to reach ₹750 a session. Nothing found in 410 slots comes close.
+
+## 24. Status after SN411–SN425 (Nov 17, 2026)
+
+- **The days are not empty of opportunity.** With hindsight, one affordable NIFTY lot could have made a median ₹9,376 on every one of 42 real-quote days. From fixed clocks with a 60-minute window, the best contract reached ₹750 in 83–97% of cases (SN412). The open problem is selection (side and exit), not instrument or wallet.
+- **Gold's empty days are a signal shortage.** Gold takes every N11 / R0.85 signal it gets. 730 of its 932 replay sessions have none, and its replay leaves out NIFTY's expiry days, 263 of 1,195 sessions (SN422).
+- **Per real market session Gold makes ₹617 at ₹205 and ₹319 at ₹400** from ₹30k. To reach ₹750 a session at ₹400, each of the 1,034 non-Gold sessions would need about +₹498.
+- **Other venues:** BANKNIFTY's ATM fits ₹15k mainly in its last five sessions before monthly expiry (93%; 30% of all sessions). FINNIFTY is thin and NIFTYNXT50 is untraded (SN413).
+- **A bank-sector residual reverses rather than persists** (SN414). It is pre-registered forward as F1 once BANKNIFTY quotes are recorded.
+- **Still closed:** company results and USDINR lack data on this PC (SN415 / SN416); RBI days are too few (SN402).

@@ -53,6 +53,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN366–SN380 (Nov 16): Gold v5 on unseen 2022 lost ₹15,281 from ₹30k (4 of 12 months positive, like 2023); the opening direction is a 20–30-minute effect; chain pressure sensors are too small for a bought option.** Forward fw7 frozen. See the SN366–SN380 section at the end.
 - **SN381–SN395 (Nov 16): under honest rules the opening ITM trade is break-even (+₹46 a session, −₹447 after Sep 7); the robust part is ITM over ATM; Gold's 2022 exam closed (N10 sheet D yes, N10 retry the sheets' lead); the wage is a capital question.** Forward fw7a / fw8 / fw9 frozen. See the SN381–SN395 section at the end.
 - **SN396–SN410 (Nov 17): on the real 09:16:00 clock the opening trade loses (−₹81 a session; the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected (p 0.80) and pre-auction checks; the 2022 N10–N11 gap is the stand-aside alone; Gold survives a minute of latency.** Forward fw7b / fw9a / fw8a frozen. See the SN396–SN410 section at the end.
+- **SN411–SN425 (Nov 17): every day offered ₹750 in hindsight (the gap is selection); Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205); Gold's exposure settings are leverage; BANKNIFTY is the only other venue (last week of the month).** Recorder BANKNIFTY change in Dev (not deployed); fw7c / fw9b frozen; F1 pre-registered. See the SN411–SN425 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1111,3 +1112,22 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - A bar labelled by its start and traded at its close is a minute ahead of a live decision.
 - "Cheap" sorts opening mornings but has not shown an edge after the search.
 - Gold's stand-aside is a path effect; its losses are signal losses, not price losses.
+
+## SN411–SN425 (Nov 17, 2026): observability, the hindsight ceiling, other indices, the bank residual, Gold's robustness (folder `docs/research/fno/2026-11-17-sn411`)
+
+**Owner:** the auditor's SN411–SN420 plus five own slots. Plan `e5cc95b7`.
+
+| SN | Result |
+|---|---|
+| 411 | fw7c / fw9b frozen (today's trade, pre-decision offset, 2 s strike / book); live entries 44–53 s after the bar end against the replay's 59 s |
+| 412 | Hindsight: median ₹9,376 a day, every day ≥ ₹750; fixed-clock windows 83–97% ≥ ₹750 |
+| 413 | BANKNIFTY front ATM affordable 30% (93% in its last week); FINNIFTY thin; recorder Dev change `1bfed1d0` (not deployed) |
+| 414 | The bank residual does not persist (−4.4 bp at 45 min); it reverses at 15–30 min (post hoc grid) |
+| 418 / 419 | Stand-aside: one regime, mildly positive at one lot; opener + Gold in one ledger +₹22.8k / +₹12.2k |
+| 421–425 | Gold: signal side flat, exposure side leverage; the replay excludes expiry days (₹617 a real session); no expert is dead weight; size ladder 1 lot ₹2.14L → cap 5 ₹15.5L; tail: no-bid bound ₹1L |
+| 415 / 416 / 417 / 420 | Closed at feasibility / protocol only / F1 pre-registered (BANKNIFTY residual fade) |
+
+**Lessons:**
+- The opportunity exists every day; selection is the problem.
+- Gold's empty days are a signal shortage.
+- Gold's size is the owner's leverage decision.

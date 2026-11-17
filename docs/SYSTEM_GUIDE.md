@@ -1,3 +1,34 @@
+## November 17 (late morning) - SN411–SN425: every day offered ₹750 (hindsight), so the gap is selection; Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205, not ₹791); Gold's signal settings are flat and its exposure settings are leverage; BANKNIFTY is the only other venue, mostly in its last week; recorder change for BANKNIFTY in Dev (NOT deployed)
+
+**Owner (Nov 17):** the auditor's SN411–SN420 (`docs/SN411_SN420_RESEARCH_BRIEF.md`) plus five own slots. Plan `e5cc95b7`. Results: `docs/research/fno/2026-11-17-sn411/README.md`.
+
+**Code (Dev only, `1bfed1d0`, awaiting the owner's "deploy"):**
+- **What it does:** `tick_recorder.py` records research chains for `TICK_RECORDER_EXTRA_UNDERLYINGS` (default BANKNIFTY): futures plus options on `TICK_RECORDER_EXTRA_EXPIRIES` = 2 expiries, `TICK_RECORDER_EXTRA_STRIKES` = 10 strikes either side. NIFTY / SENSEX keep their own limits.
+- **Scope:** only names with an `fno_underlyings` book are recorded (FINNIFTY is skipped).
+- **Budget:** about +15% bytes, against the 600 MiB day cap.
+- **Off switch:** `TICK_RECORDER_EXTRA_UNDERLYINGS=""`.
+- **Tests:** 2 new; `test_tick_recorder` 15 passed. Atlas regenerated.
+
+**Findings:**
+- **Hindsight ceiling (SN412):** one affordable lot offered a median ₹9,376 a day on all 42 real-quote days; 83–97% of fixed-clock windows held ₹750.
+- **Gold:**
+  - **Coverage (SN422):** its replay holds 932 of 1,195 sessions (no NIFTY expiry days); 730 have no signal; 0 signals go untaken.
+  - **Parameters (SN421):** the extension is flat; scale-in, ITM, day room, lots and growth each move the result 24–37%.
+  - **Size ladder (SN424):** 1 lot ₹2.14 lakh, deployed ₹8.51 lakh, cap 5 ₹15.5 lakh (2023–26), with the worst month scaling to −₹84k.
+  - **Tail (SN425):** 2 days lost more than 20% of the wallet; a no-bid exit could cost a full ₹1 lakh debit.
+  - **Stand-aside (SN418):** fires only in 2022–23; mildly positive at one lot; retained.
+  - **Live clock (SN411 B):** entries arrive 44–53 s after the bar end against the replay's 59 s.
+- **Other indices (SN413 A, public NSE end-of-day files):** BANKNIFTY front ATM is affordable on 30% of sessions (93% in its last week); FINNIFTY is equally affordable but thin (314 trades a day).
+- **The bank-sector residual (SN414):** it does not persist (−4.4 bp at 45 min); it reverses at 15–30 min in all 27 grid cells (post hoc).
+- **The one-ledger opener (SN419):** +₹22.8k / +₹12.2k over 10 months; all 12 of its stops slipped.
+- **Closed:** company results (SN415) and USDINR (SN416) at feasibility; SN417's partner protocol is frozen, not run.
+
+**Forward:**
+- fw7c / fw9b frozen (25 tests) beside fw7a / fw7b and fw9 / fw9a;
+- F1 (BANKNIFTY residual fade, `F1_SN420_SPEC.md`) is pre-registered for recorder data after the deploy.
+
+**Runtime:** no change. Still awaiting "deploy": SN329, V8 shadow, and now the recorder's BANKNIFTY chains.
+
 ## November 17 (morning) - SN396–SN410: on the real 09:16:00 clock the opening trade loses (the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected and pre-auction checks; N10 vs N11 inside Gold = the stand-aside alone; Gold is not a clock artefact; forward companions fw7b / fw9a / fw8a frozen (research only, nothing deployed)
 
 **Owner (Nov 17):** the auditor's SN396–SN405 (`docs/SN396_SN405_RESEARCH_BRIEF.md`) plus five own slots. Plan `00693405`. Results: `docs/research/fno/2026-11-17-sn396/README.md`.
