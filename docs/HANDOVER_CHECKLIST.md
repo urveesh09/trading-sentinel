@@ -1,3 +1,23 @@
+## November 17 (afternoon) - SN441–SN455: on Gold's empty days a one-hour ITM trade needs ~62% / 77% direction (₹205 / ₹400); timing headroom (~₹1,000 a decision in hindsight) cannot be captured by waits, discounts or resting bids, and Gold's entries must stay immediate; Gold's replay is future-blind and ₹205 covers its cost at 6 lots; bank results, the London clock and expiry-afternoon pinning give nothing usable; expiry momentum is real-looking but does not pay; a development number has predicted almost nothing (median unseen / development −0.22) (research only, nothing deployed)
+
+**Owner (Nov 17):** the auditor's SN441–SN450 (`docs/SN441_SN450_RESEARCH_BRIEF.md` + `docs/research/fno/2026-11-17-sn441/nse-bank-filings-pilot.csv`, `6141c1df`) plus five own slots. Plan `f56f5807`. Results: `docs/research/fno/2026-11-17-sn441/README.md`.
+
+**Findings:**
+- **Direction hurdle (SN441):** on 98 common two-sided cells, break-even is 57.6% / 66.5%; on Gold-empty days 61.8% / 77.2%.
+- **Timing (SN442 / SN443 / SN453 / SN454):** the hindsight forward best price is worth ~₹1,000 a decision, but every observable patient entry loses. In Gold: delays −3 to −12%, a limit −74%.
+- **Gold's integrity and cost (SN452 / SN445):** all 186 decisions are identical with the future removed. Real depth at 6 lots costs +₹120 a lot over the model, inside ₹205.
+- **Information clocks (SN447 / SN448 / SN451):**
+  - bank results are INSUFFICIENT (8 sessions);
+  - there is no London clock;
+  - there is no expiry pin;
+  - expiry-afternoon momentum hits 57.7% against a 43.8% placebo, but makes +₹88 / −₹94 a trade.
+- **Loss bound (SN446):** a cheaper-strike ladder trades 39 times for ₹18k in four years.
+- **Program record (SN455):** 5 of 19 frozen development / unseen pairs kept their sign; only WK-H kept its rate.
+- **Baseline (SN450):** Gold 2023–26 at ₹205 makes ₹901 a market session, ₹750+ on 6.2% of sessions, its best 5 days are 41% of profit, and its longest stretch without a new high is 226 sessions.
+- **New frozen forward companion:** `fx5.py` (SN444; read once at 60 decisions).
+
+**Runtime:** no change. Still awaiting "deploy": SN329 hours, the V8 shadow, and the recorder's BANKNIFTY chains (`1bfed1d0`). The protected 2023 expiry exam is unspent (the owner's call).
+
 ## November 17 (midday) - SN426–SN440: the hindsight money is mostly timing and direction (break-even needs ~56% / ~68% direction at ₹205 / ₹400); Gold's expiry mornings hold ~7 signals a year (insufficient); Gold's exit headroom exists, but every exit rule cuts its winners; ₹205 is the realistic cost (Gold ≈ ₹617 a real session); a hard loss bound stops Gold at ₹30k (research only, nothing deployed)
 
 **Owner (Nov 17):** the auditor's SN426–SN435 (`docs/SN426_SN435_RESEARCH_BRIEF.md`) plus five own slots. Plan `123301ac`. Results: `docs/research/fno/2026-11-17-sn426/README.md`.

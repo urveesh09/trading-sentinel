@@ -369,3 +369,11 @@ Until then the best empty-day action remains no trade. A daily income comes from
 - **NIFTY's expiry mornings, a fifth of all sessions, are not a hidden Gold opportunity.** Gold's own signal fires on about 7 of them a year, and the few priced cases lose (SN427).
 - **Gold's realistic income is about ₹617 a real market session at ₹30k (₹205 stress).** Production's paper fills cost only a median ₹6.5 a lot more than the model (SN440). The gap to ₹750 is about ₹154 per non-Gold session.
 - **No simple exit, feed or size rule improves Gold in both its unseen year and its development years** (SN429 / SN434 / SN436–SN439b).
+
+## 26. Status after SN441–SN455 (Nov 17, 2026)
+
+- **The direction bar on Gold's empty days is about 62% at ₹205 and 77% at ₹400** for a one-hour 1-ITM option (SN441). The gross coin is already negative there (spread plus decay).
+- **Timing headroom exists only in hindsight** (about ₹1,000 a decision). Waits, discounts, limits and resting bids all lose (SN442 / SN443 / SN453 / SN454). Gold's own entries must stay immediate.
+- **No outside information clock was found.** Bank results are insufficient, there is no London clock and no expiry pin. Expiry-afternoon momentum is real-looking but does not pay (SN447 / SN448 / SN451).
+- **Gold is honest but lumpy.** Its replay is future-blind (SN452), and ₹205 covers its cost at 6 lots (SN445). In 2023–26 it pays ₹750+ on 6.2% of sessions, its best 5 days are 41% of profit, and it went 226 sessions without a new high (SN450).
+- **Development results have predicted almost nothing** (SN455: 5 of 19 pairs kept their sign). New ideas go to frozen forward tests, such as `fx5` (SN444).

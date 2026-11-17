@@ -55,6 +55,7 @@ Everything is research in the Dev checkout (`C:\Users\Urveesh\Desktop\trading-se
 - **SN396–SN410 (Nov 17): on the real 09:16:00 clock the opening trade loses (−₹81 a session; the +₹46 was a one-minute label lead); "cheap" sorts mornings but fails its search-corrected (p 0.80) and pre-auction checks; the 2022 N10–N11 gap is the stand-aside alone; Gold survives a minute of latency.** Forward fw7b / fw9a / fw8a frozen. See the SN396–SN410 section at the end.
 - **SN411–SN425 (Nov 17): every day offered ₹750 in hindsight (the gap is selection); Gold takes every signal but its replay excludes expiry days (₹617 a real session at ₹205); Gold's exposure settings are leverage; BANKNIFTY is the only other venue (last week of the month).** Recorder BANKNIFTY change in Dev (not deployed); fw7c / fw9b frozen; F1 pre-registered. See the SN411–SN425 section at the end.
 - **SN426–SN440 (Nov 17): break-even needs ~56% / ~68% direction (₹205 / ₹400) for a one-hour ITM trade; Gold's expiry mornings hold ~7 signals a year; Gold's exit headroom (₹2,085 a lot) resists every simple rule; ₹205 is the realistic Gold cost (₹617 a real session).** See the SN426–SN440 section at the end.
+- **SN441–SN455 (Nov 17): on Gold's empty days a one-hour ITM trade needs ~62% / 77% direction (₹205 / ₹400); timing headroom cannot be captured and Gold's entries must stay immediate; Gold's replay is future-blind and ₹205 covers its cost at 6 lots; bank results, the London clock and expiry pinning give nothing usable; a development number has predicted almost nothing (median unseen / development −0.22).** See the SN441–SN455 section at the end.
 - **A daily wage comes from paying out Gold, not from daily trades (SN177):** an account of ~₹3.15 lakh pays ₹750 every session, ~₹8.45 lakh pays ₹1,500 (Gold ₹30k fixed + watches, in-sample).
 
 **Data inventory (what is seen):**
@@ -1152,3 +1153,27 @@ See "Open items, Nov 14, 2026, after SN220" at the end of this file.
 - Selection needs ~56–68% direction accuracy for a one-hour ITM trade.
 - Gold's exits cannot be improved by simple rules.
 - Gold's realistic income is ₹617 a real session at ₹30k.
+
+## SN441–SN455 (Nov 17, 2026): the direction hurdle, waiting and discounts, passive and confirmed fills, Gold's cost at size, the loss bound's strike, bank results, the London clock, expiry-afternoon flows, Gold's future-blind check, the program's own record (folder `docs/research/fno/2026-11-17-sn441`)
+
+**Owner:** the auditor's SN441–SN450 plus five own slots. Plan `f56f5807`.
+
+| SN | Result |
+|---|---|
+| 441 | Break-even direction for a one-hour 1-ITM trade: 57.6% / 66.5% overall, **61.8% / 77.2% on Gold-empty days** (₹205 / ₹400); the gross coin is already negative there |
+| 442 | Hindsight's forward best price in 30 minutes is worth ~₹1,027 a decision; fixed waits +42 to +146 (decay, not timing) |
+| 443 / 453 / 454 | A delta-adjusted discount, plain limits, delays and a resting bid all lose; inside Gold, patient entries cost 3–74% |
+| 444 | `fx5.py` frozen (an unconditional 5-second control; persistence must be observed with ≤ 2 s gaps); plumbing: the delay explains the gain |
+| 445 | Gold at 6 lots on real depth: +₹120 a lot over the model (inside ₹205); 15:10 exits often unpriceable; dated STT +0.6% |
+| 446 | Full-loss bound with a cheaper-strike ladder: 39 trades, ₹18,204 in 2023–26 |
+| 447 / 448 | Bank results INSUFFICIENT (8 sessions, no drift); no London clock (the clock-change DiD reverses) |
+| 449 / 450 | No lead can cover ₹154 a session (momentum needs ~72 years of expiries to verify); Gold-only baseline: ₹901 a session, ₹750+ on 6.2%, best 5 days = 41% |
+| 451 | No expiry pin (44%); expiry-afternoon momentum 57.7% (placebo 43.8%) but +₹88 / −₹94 a trade |
+| 452 | Gold's replay is future-blind (186 decisions identical with the future removed; signals 59 s after the bar) |
+| 455 | 5 of 19 frozen development / unseen pairs kept their sign; median unseen / development rate −0.22; only WK-H kept its rate |
+
+**Lessons:**
+- The empty-day direction bar is ~62% / 77%.
+- Timing headroom exists only in hindsight; Gold's entries must stay immediate.
+- Gold is honest (future-blind, cost holds) but lumpy.
+- Development results are hypotheses only; frozen forward tests decide.
