@@ -1497,6 +1497,9 @@ class Settings(BaseSettings):
     TICK_RECORDER_PATH: str = "/data/research/ticks"
     TICK_RECORDER_EXPIRIES: int = 3              # nearest option expiries per index
     TICK_RECORDER_STRIKES: int = 20              # strikes either side of the front future
+    TICK_RECORDER_EXTRA_UNDERLYINGS: str = "BANKNIFTY"   # [SN413] research-only extra chains (instrument books only)
+    TICK_RECORDER_EXTRA_EXPIRIES: int = 2        # [SN413] nearest expiries for each extra chain
+    TICK_RECORDER_EXTRA_STRIKES: int = 10        # [SN413] strikes either side for each extra chain
     TICK_RECORDER_CHUNK_SEC: float = 60.0
     TICK_RECORDER_DAY_MAX_BYTES: int = 629_145_600       # 600 MiB a day (compressed)
     TICK_RECORDER_TOTAL_MAX_BYTES: int = 12_884_901_888  # 12 GiB in all
