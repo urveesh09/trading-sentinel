@@ -259,3 +259,19 @@
 SN441 → SN442 → SN454 → SN443 → SN447 → SN448 → SN451 → SN446 → SN452 → SN453 → SN445 → SN444 → SN455 → SN449 → SN450.
 
 ## 4. Amendments (added after freezing; disclosed)
+
+- **A1 (details fixed in scripts before their runs; no crash in this round):**
+  - **SN441:** the gross and fees-only views reuse the ₹205 exit price.
+  - **SN443:** the decision snapshot is the evaluated minute + 1.
+  - **SN445:** a junk line was removed before the first run.
+  - **SN449:** n is computed for a ₹154 effect at both stresses.
+  - **SN450:** Gold sessions without a 15:29 index bar join the calendar (8 dates).
+  - **SN453:** NO_DELTA signals enter at the decision as deployed.
+  - **SN455:** SN78's "+₹13–17k" development figure enters as its midpoint, ₹15,000.
+- **A2 (outcomes):**
+  - **SN443 / SN453 / SN454:** closed.
+  - **SN447:** INSUFFICIENT.
+  - **SN448:** no London clock; the surprise test is blocked.
+  - **SN451:** no development pass, nothing nominated.
+  - **SN450:** NOT_TRIGGERED.
+  - **SN444:** `fx5` is frozen at `6d3b4d93` for its prospective test.
