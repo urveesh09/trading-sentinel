@@ -876,7 +876,7 @@ Top-level declarations: `OptionType` (line 25), `FnoDirection` (line 30), `FnoSo
 
 [N11 2026-11-02] The paper F&O main book's account rules: the owner's call after the N11 study ("take N11 as the main strategy, the rest as shadows ... deploy it in production"). Research: docs/FNO_RESEARCH_N11.md, frozen at 43fa015. fno_book holds N11's signals and exits. This module holds what sits around them: - size by volatility: two lots only when yesterday's daily ATR% is at or above its median of the last 250 sessions; - one lot after a realised loss today (never a refusal); - stand aside: real entries wait while yesterday's ATR% is below 0.9 of that median AND the last 20 closed one-lot paper trades sum to zero or less. The paper record keeps trading (``fno_n11_paper``), so it ends
 
-Top-level declarations: `_num` (line 132), `extra_cost` (line 136), `vol_reading` (line 143), `vol_up` (line 169), `stand_aside` (line 174), `lot_ceiling` (line 179), `eff_clock` (line 188), `budget` (line 198), `SecondLot` (line 213), `paper_positive` (line 219), `tolerance_limit` (line 224), `backstop_points` (line 229), `stop_price` (line 237), `second_lot_reason` (line 242), `second_lot` (line 260), `second_lot_stop` (line 279), `adverse_distance` (line 285), `parent_loss_at_stop` (line 289), `child_full_loss` (line 296), `is_parent` (line 301), `init_db` (line 311), `paper_nets` (line 326), `realised_today` (line 336), `child_counts` (line 344), `parent_open` (line 353), `record_second_lot` (line 366), `second_lots_today` (line 378), `_has_child` (line 392), `_volatility` (line 405), `_record_gate` (line 433), `gate` (line 454), `record_paper_signal` (line 467), `manage_paper` (line 513), `maybe_add` (line 575), `shadow_table` (line 659), `send_shadow_report_once` (line 670), `tick` (line 706)
+Top-level declarations: `_num` (line 132), `extra_cost` (line 136), `vol_reading` (line 143), `vol_up` (line 169), `stand_aside` (line 174), `lot_ceiling` (line 179), `eff_clock` (line 188), `budget` (line 198), `SecondLot` (line 213), `paper_positive` (line 219), `tolerance_limit` (line 224), `backstop_points` (line 229), `stop_price` (line 237), `second_lot_reason` (line 242), `second_lot` (line 260), `second_lot_stop` (line 279), `adverse_distance` (line 285), `parent_loss_at_stop` (line 289), `child_full_loss` (line 296), `is_parent` (line 301), `init_db` (line 311), `paper_nets` (line 326), `realised_today` (line 336), `child_counts` (line 344), `parent_open` (line 353), `record_second_lot` (line 366), `second_lots_today` (line 378), `_has_child` (line 392), `_volatility` (line 405), `_record_gate` (line 433), `gate` (line 454), `record_paper_signal` (line 467), `manage_paper` (line 516), `maybe_add` (line 578), `shadow_table` (line 662), `send_shadow_report_once` (line 673), `tick` (line 709)
 
 Engine dependencies: `config`, `fno_adaptive_risk`, `fno_book`, `fno_costs`, `fno_entry_plan`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shared_risk`, `operator_alert`
 
@@ -2650,6 +2650,16 @@ Engine dependencies: `config`, `penny_engine_connors`, `penny_executor`, `penny_
 
 Related tests: `python-engine/tests/test_research_penny_cnc_lifecycle.py`
 
+## `python-engine/research_pins.py`
+
+[SN477 2026-11-17] Keep the minute research archive quoting the exact contract a paper book holds, until the day's close. Why: the minute quote collector (research_quote_collector) snapshots a rolling window of strikes around the front future (RESEARCH_QUOTE_STRIKE_WINDOW either side). A contract a paper book bought near the money drops out of that window once the market runs far enough, and its exit can no longer be priced from the archive. SN464 found Gold's two largest winners of the archive window unpriced for exactly this reason (Oct 8 22600 PE, Oct 21 23100 PE). The collector already unions its window with the exact legs registered in research_leg_subscriptions (the partner advisory us
+
+Top-level declarations: `deadline_for` (line 28), `pin` (line 33)
+
+Engine dependencies: `config`, `research_leg_subscriptions`
+
+Related tests: `python-engine/tests/test_research_pins.py`
+
 ## `python-engine/research_quote_collector.py`
 
 Forward-only NIFTY/SENSEX quote evidence collection. This module is intentionally independent from partner delivery, profiles, qualification and every order API. It records exactly what the permitted provider returned and marks the REST path as lower-frequency; a WebSocket consumer may feed ``ingest_provider_packet`` without changing its evidence format.
@@ -2846,7 +2856,7 @@ Related tests: `python-engine/tests/test_smart_classic_enrichment.py`
 
 [SN Gold v5 2026-11-13] The owner's small-wallet F&O book, run on PAPER beside the main book. Never places an order. Owner, Nov 13: "whatever configuration ... of the best Gold that we have, set it up to run tomorrow as an independent module". Research: docs/research/fno/sn-gold/SN_GOLD_V5.json (frozen harness gold_v5.py, verify_gold_v5.py, tag sn-gold-v5). What it does, in the research's words, on live quotes: * entries: N11's live paper record (fno_n11_paper, NIFTY). Each new record is offered here at the moment N11 records it, with the same chain snapshot. SN Gold also takes the signals of N11's sister book R0.85, which stands aside a little less: a signal waits only when yesterday's vola
 
-Top-level declarations: `init_db` (line 114), `ceil_tick` (line 123), `lots_for` (line 127), `itm_depth` (line 132), `pick_contract` (line 137), `day_stop` (line 160), `scale_in_stop` (line 165), `position_net` (line 172), `grow` (line 177), `atr_from_bars` (line 188), `minute_atr` (line 202), `wallet_state` (line 238), `_realized_today` (line 251), `_record_price` (line 256), `_bars` (line 269), `_flush_bars` (line 279), `_skip` (line 292), `on_paper_signal` (line 301), `tick` (line 375), `_manage` (line 410), `_v8_call` (line 503), `close_day` (line 515), `_tell` (line 550)
+Top-level declarations: `init_db` (line 114), `ceil_tick` (line 123), `lots_for` (line 127), `itm_depth` (line 132), `pick_contract` (line 137), `day_stop` (line 160), `scale_in_stop` (line 165), `position_net` (line 172), `grow` (line 177), `atr_from_bars` (line 188), `minute_atr` (line 202), `wallet_state` (line 238), `_realized_today` (line 251), `_record_price` (line 256), `_bars` (line 269), `_flush_bars` (line 279), `_skip` (line 292), `on_paper_signal` (line 301), `tick` (line 378), `_manage` (line 413), `_v8_call` (line 506), `close_day` (line 518), `_tell` (line 553)
 
 Engine dependencies: `config`, `fno_costs`, `fno_instruments`, `operator_alert`
 
