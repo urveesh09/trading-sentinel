@@ -1,0 +1,306 @@
+{
+ "DEPLOYED | 2022 @205": {
+  "net": -15281,
+  "by_year": {
+   "2022": -15281
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9276,
+  "worst_day": -5992,
+  "refilled": 53896,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -80.4,
+  "final_wallet": 30000,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 28784,
+  "median_debit": 18057
+ },
+ "NO_ADDS | 2022 @205": {
+  "net": -10804,
+  "by_year": {
+   "2022": -10804
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9276,
+  "worst_day": -5992,
+  "refilled": 49428,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -56.9,
+  "final_wallet": 30000,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 28660,
+  "median_debit": 17299
+ },
+ "BOUND | 2022 @205": {
+  "net": 0,
+  "by_year": {
+   "2022": 0
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 0,
+  "sessions": 190,
+  "per_session": 0.0,
+  "final_wallet": 30000,
+  "skipped": 35,
+  "skipped_by_expert": {
+   "TPB": 32,
+   "EFF": 1,
+   "SHIPPED": 1,
+   "OR20": 1
+  },
+  "skipped_by_year": {
+   "2022": 35
+  },
+  "lots_cut": 0,
+  "largest_debit_at_risk": 0,
+  "median_debit": 0
+ },
+ "DEPLOYED | 2022 @400": {
+  "net": -23511,
+  "by_year": {
+   "2022": -23511
+  },
+  "months_positive": 3,
+  "months": 12,
+  "worst_month": -9667,
+  "worst_day": -5994,
+  "refilled": 59839,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -123.7,
+  "final_wallet": 30000,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 28784,
+  "median_debit": 18057
+ },
+ "NO_ADDS | 2022 @400": {
+  "net": -17826,
+  "by_year": {
+   "2022": -17826
+  },
+  "months_positive": 4,
+  "months": 12,
+  "worst_month": -9667,
+  "worst_day": -5994,
+  "refilled": 54154,
+  "trades": 30,
+  "sessions": 190,
+  "per_session": -93.8,
+  "final_wallet": 30000,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 28660,
+  "median_debit": 17299
+ },
+ "BOUND | 2022 @400": {
+  "net": 0,
+  "by_year": {
+   "2022": 0
+  },
+  "months_positive": 0,
+  "months": 12,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 0,
+  "sessions": 190,
+  "per_session": 0.0,
+  "final_wallet": 30000,
+  "skipped": 35,
+  "skipped_by_expert": {
+   "TPB": 32,
+   "EFF": 1,
+   "SHIPPED": 1,
+   "OR20": 1
+  },
+  "skipped_by_year": {
+   "2022": 35
+  },
+  "lots_cut": 0,
+  "largest_debit_at_risk": 0,
+  "median_debit": 0
+ },
+ "DEPLOYED | 2023-2026 @205": {
+  "net": 850883,
+  "by_year": {
+   "2023": -12107,
+   "2024": 187476,
+   "2025": 292811,
+   "2026": 382702
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -38531,
+  "worst_day": -21113,
+  "refilled": 562130,
+  "trades": 156,
+  "sessions": 742,
+  "per_session": 1146.7,
+  "final_wallet": 101250,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 100166,
+  "median_debit": 85655
+ },
+ "NO_ADDS | 2023-2026 @205": {
+  "net": 648289,
+  "by_year": {
+   "2023": -1332,
+   "2024": 124118,
+   "2025": 194841,
+   "2026": 330662
+  },
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -28552,
+  "worst_day": -21113,
+  "refilled": 438052,
+  "trades": 156,
+  "sessions": 742,
+  "per_session": 873.7,
+  "final_wallet": 101250,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 100127,
+  "median_debit": 52243
+ },
+ "BOUND | 2023-2026 @205": {
+  "net": 11799,
+  "by_year": {
+   "2023": 4027,
+   "2024": 7771,
+   "2025": 0,
+   "2026": 0
+  },
+  "months_positive": 3,
+  "months": 46,
+  "worst_month": 0,
+  "worst_day": 0,
+  "refilled": 0,
+  "trades": 4,
+  "sessions": 742,
+  "per_session": 15.9,
+  "final_wallet": 30000,
+  "skipped": 183,
+  "skipped_by_expert": {
+   "TPB": 123,
+   "OR20": 18,
+   "SHIPPED": 17,
+   "EFF": 25
+  },
+  "skipped_by_year": {
+   "2023": 31,
+   "2024": 26,
+   "2025": 76,
+   "2026": 50
+  },
+  "lots_cut": 3,
+  "largest_debit_at_risk": 5897,
+  "median_debit": 5500
+ },
+ "DEPLOYED | 2023-2026 @400": {
+  "net": 495597,
+  "by_year": {
+   "2023": -20385,
+   "2024": 86356,
+   "2025": 92429,
+   "2026": 337198
+  },
+  "months_positive": 23,
+  "months": 46,
+  "worst_month": -41913,
+  "worst_day": -20202,
+  "refilled": 494651,
+  "trades": 154,
+  "sessions": 742,
+  "per_session": 667.9,
+  "final_wallet": 101250,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 99688,
+  "median_debit": 54425
+ },
+ "NO_ADDS | 2023-2026 @400": {
+  "net": 484557,
+  "by_year": {
+   "2023": -8549,
+   "2024": 82609,
+   "2025": 120851,
+   "2026": 289646
+  },
+  "months_positive": 23,
+  "months": 46,
+  "worst_month": -33101,
+  "worst_day": -20202,
+  "refilled": 472970,
+  "trades": 155,
+  "sessions": 742,
+  "per_session": 653.0,
+  "final_wallet": 101250,
+  "skipped": 0,
+  "skipped_by_expert": {},
+  "skipped_by_year": {},
+  "lots_cut": 0,
+  "largest_debit_at_risk": 100127,
+  "median_debit": 50029
+ },
+ "BOUND | 2023-2026 @400": {
+  "net": 11019,
+  "by_year": {
+   "2023": 3832,
+   "2024": 7186,
+   "2025": 0,
+   "2026": 0
+  },
+  "months_positive": 2,
+  "months": 46,
+  "worst_month": -171,
+  "worst_day": -171,
+  "refilled": 171,
+  "trades": 4,
+  "sessions": 742,
+  "per_session": 14.8,
+  "final_wallet": 30000,
+  "skipped": 183,
+  "skipped_by_expert": {
+   "TPB": 123,
+   "OR20": 18,
+   "SHIPPED": 17,
+   "EFF": 25
+  },
+  "skipped_by_year": {
+   "2023": 31,
+   "2024": 26,
+   "2025": 76,
+   "2026": 50
+  },
+  "lots_cut": 3,
+  "largest_debit_at_risk": 5897,
+  "median_debit": 5500
+ }
+}
