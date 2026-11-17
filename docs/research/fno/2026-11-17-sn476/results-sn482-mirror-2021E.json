@@ -1,0 +1,12 @@
+{
+ "point": "2021E",
+ "rule": "NIFTY 1-minute rows 2020-12-01 .. 2021-08-31 (index / future / option groups with expiry 2020-11-27 .. 2021-12-09), without the Muhurat evenings ('2019-10-27', '2020-11-14'); daily bars before 2021-09-01",
+ "groups": 65,
+ "rows_by_kind": {
+  "daily": 266,
+  "future": 119683,
+  "index": 69595,
+  "option": 1493727
+ },
+ "sha256": "417419e56babdd6a7165f41f90556a86d07554d01eaccb734ece39c84f48025d"
+}
