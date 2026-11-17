@@ -1,0 +1,189 @@
+{
+ "sensex_sessions": 306,
+ "classes": {
+  "EXPIRY": 81,
+  "INADMISSIBLE": 30,
+  "NO_SIGNAL": 51,
+  "COMMON": 143,
+  "NO_DATA": 1
+ },
+ "banknifty": "no intraday BANKNIFTY history on this PC: the Breeze DB holds only its daily bars (1,195, Jan 3, 2022 - Oct 28, 2026); no futures / options minutes; the recorder and the archive hold none",
+ "SENSEX_GAP skip-days @205": {
+  "n": 90,
+  "fills": 71,
+  "per_session": -316.0,
+  "without_best": -401.2,
+  "by_year": {
+   "2024": -1897.0,
+   "2025": -178.4,
+   "2026": -12.8
+  }
+ },
+ "SENSEX_GAP expiry-days @205": {
+  "n": 64,
+  "fills": 56,
+  "per_session": -546.7,
+  "without_best": -647.5,
+  "by_year": {
+   "2024": -2107.8,
+   "2025": -368.4,
+   "2026": -85.4
+  }
+ },
+ "SENSEX_GAP inadmissible-days @205": {
+  "n": 26,
+  "fills": 15,
+  "per_session": 252.0,
+  "without_best": -28.9,
+  "by_year": {
+   "2024": 0.0,
+   "2025": 512.8,
+   "2026": 65.0
+  }
+ },
+ "SENSEX_GAP common-days @205": {
+  "n": 120,
+  "fills": 111,
+  "per_session": 21.1,
+  "without_best": -67.2,
+  "by_year": {
+   "2024": -734.7,
+   "2025": 82.6,
+   "2026": 548.8
+  }
+ },
+ "SENSEX_GAP skip-days @400": {
+  "n": 90,
+  "fills": 71,
+  "per_session": -449.6,
+  "without_best": -534.1,
+  "by_year": {
+   "2024": -1875.7,
+   "2025": -365.0,
+   "2026": -106.6
+  }
+ },
+ "SENSEX_GAP expiry-days @400": {
+  "n": 64,
+  "fills": 56,
+  "per_session": -667.7,
+  "without_best": -767.3,
+  "by_year": {
+   "2024": -2084.1,
+   "2025": -523.5,
+   "2026": -202.4
+  }
+ },
+ "SENSEX_GAP inadmissible-days @400": {
+  "n": 26,
+  "fills": 15,
+  "per_session": 87.4,
+  "without_best": -192.2,
+  "by_year": {
+   "2024": 0.0,
+   "2025": 211.4,
+   "2026": -3.9
+  }
+ },
+ "SENSEX_GAP common-days @400": {
+  "n": 120,
+  "fills": 111,
+  "per_session": -170.4,
+  "without_best": -258.8,
+  "by_year": {
+   "2024": -895.3,
+   "2025": -87.3,
+   "2026": 245.5
+  }
+ },
+ "SENSEX_GAP pass": false,
+ "NIFTY_AUCTION skip-days @205": {
+  "n": 16,
+  "fills": 8,
+  "per_session": -341.0,
+  "without_best": -660.2,
+  "by_year": {
+   "2024": null,
+   "2025": null,
+   "2026": -341.0
+  }
+ },
+ "NIFTY_AUCTION expiry-days @205": {
+  "n": 0,
+  "fills": 0,
+  "per_session": null,
+  "without_best": null,
+  "by_year": {
+   "2024": null,
+   "2025": null,
+   "2026": null
+  }
+ },
+ "NIFTY_AUCTION inadmissible-days @205": {
+  "n": 16,
+  "fills": 8,
+  "per_session": -341.0,
+  "without_best": -660.2,
+  "by_year": {
+   "2024": null,
+   "2025": null,
+   "2026": -341.0
+  }
+ },
+ "NIFTY_AUCTION common-days @205": {
+  "n": 37,
+  "fills": 32,
+  "per_session": 122.5,
+  "without_best": -61.8,
+  "by_year": {
+   "2024": null,
+   "2025": -377.1,
+   "2026": 283.1
+  }
+ },
+ "NIFTY_AUCTION skip-days @400": {
+  "n": 16,
+  "fills": 8,
+  "per_session": -406.5,
+  "without_best": -717.1,
+  "by_year": {
+   "2024": null,
+   "2025": null,
+   "2026": -406.5
+  }
+ },
+ "NIFTY_AUCTION expiry-days @400": {
+  "n": 0,
+  "fills": 0,
+  "per_session": null,
+  "without_best": null,
+  "by_year": {
+   "2024": null,
+   "2025": null,
+   "2026": null
+  }
+ },
+ "NIFTY_AUCTION inadmissible-days @400": {
+  "n": 16,
+  "fills": 8,
+  "per_session": -406.5,
+  "without_best": -717.1,
+  "by_year": {
+   "2024": null,
+   "2025": null,
+   "2026": -406.5
+  }
+ },
+ "NIFTY_AUCTION common-days @400": {
+  "n": 37,
+  "fills": 32,
+  "per_session": -113.2,
+  "without_best": -298.7,
+  "by_year": {
+   "2024": null,
+   "2025": -572.1,
+   "2026": 34.3
+  }
+ },
+ "NIFTY_AUCTION pass": false
+}
