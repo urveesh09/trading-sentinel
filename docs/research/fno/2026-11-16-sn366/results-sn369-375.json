@@ -1,0 +1,15 @@
+{
+ "SN369": {
+  "verdict": "BLOCKED",
+  "found": "no timestamped NIFTYBEES quotes or trades: the TR01 recorder's 499 instruments are NIFTY / SENSEX options, futures and indices plus INDIA VIX; the real-quote archive and the Breeze history hold no ETF",
+  "needed": "add the NIFTYBEES token (and its iNAV if published) to the recorder's subscription - an operational change in Production, the owner's call; then the auditor's test runs forward on recorder packets"
+ },
+ "SN375": {
+  "verdict": "NOT TRIGGERED",
+  "why": "no candidate passed its own slot; the only frozen forward candidates are fw5 (auction queue pressure + mid-gap watch) and fw7 (SN380's AUCTION ITM arm), both scored with SN300a after its 20th qualified session; sn352.Journal is the shared-wallet harness for a later survivor"
+ },
+ "SN366_N10_sheet_D": {
+  "verdict": "NOT RUN",
+  "why": "the 2022 -> 2026 one-account carry for N09.1 CUSHION and N10 with WATCH needs carried state across five year routes (2022, 2023 exam point, 2024-2026); left for its own round"
+ }
+}

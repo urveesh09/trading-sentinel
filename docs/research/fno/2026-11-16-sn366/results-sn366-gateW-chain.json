@@ -1,0 +1,35 @@
+{
+ "route": "TEST2025",
+ "evals": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\fno\\2026-11-16-sn366\\_local\\gatew-n11-evals",
+ "books": {
+  "N08": {
+   "key_equal": false,
+   "economics_equal": true,
+   "trades": 75,
+   "net": 58646.53,
+   "seconds": 45.5
+  },
+  "VOL_CLOCK": {
+   "key_equal": false,
+   "economics_equal": true,
+   "trades": 75,
+   "net": 52319.97,
+   "seconds": 46.9
+  },
+  "N10": {
+   "key_equal": false,
+   "economics_equal": true,
+   "trades": 74,
+   "net": 51582.51,
+   "seconds": 47.4
+  },
+  "N11": {
+   "key_equal": true,
+   "economics_equal": true,
+   "trades": 74,
+   "net": 53094.68,
+   "seconds": 31.2
+  }
+ },
+ "pass": false
+}

@@ -1,0 +1,353 @@
+{
+ "rows": 171,
+ "unconditional": {
+  "20m@205": {
+   "n": 171,
+   "fills": 146,
+   "per_session": 60.3
+  },
+  "20m@400": {
+   "n": 171,
+   "fills": 146,
+   "per_session": -108.4
+  },
+  "60m@205": {
+   "n": 171,
+   "fills": 146,
+   "per_session": 45.6
+  },
+  "60m@400": {
+   "n": 171,
+   "fills": 146,
+   "per_session": -137.5
+  }
+ },
+ "SN383": {
+  "common_sessions": 129,
+  "ATM": {
+   "dmid": 255.6,
+   "delta": 291.0,
+   "vega": -145.9,
+   "theta": -54.2,
+   "resid": 164.8,
+   "cost": 61.7,
+   "tv_share": 0.919,
+   "net0": 142.4,
+   "entry_delta": 0.003,
+   "debit": 7726.4,
+   "n": 129
+  },
+  "ITM1": {
+   "dmid": 294.6,
+   "delta": 330.5,
+   "vega": -145.5,
+   "theta": -53.5,
+   "resid": 163.1,
+   "cost": 64.6,
+   "tv_share": 0.682,
+   "net0": 183.1,
+   "entry_delta": -0.0,
+   "debit": 9476.2,
+   "n": 129
+  },
+  "ITM2": {
+   "dmid": 348.6,
+   "delta": 368.4,
+   "vega": -123.2,
+   "theta": -51.1,
+   "resid": 154.5,
+   "cost": 68.7,
+   "tv_share": 0.452,
+   "net0": 237.4,
+   "entry_delta": -0.005,
+   "debit": 11450.6,
+   "n": 129
+  },
+  "next_week": "not available (gl holds the front weekly only)"
+ },
+ "SN384": {
+  "fills": 146,
+  "exited": 29,
+  "winners_cut": 7,
+  "rule_fixed@205": 10.5,
+  "hold_fixed@205": 24.2,
+  "rule_fixed@400": -184.5,
+  "hold_fixed@400": -170.8,
+  "paired_diff@205": -13.7,
+  "paired_se": 61.0,
+  "native": {
+   "205": {
+    "rule": 35.2,
+    "hold": 53.4,
+    "n": 146
+   },
+   "400": {
+    "rule": -168.4,
+    "hold": -161.1,
+    "n": 146
+   }
+  }
+ },
+ "SN385": {
+  "coverage": 84,
+  "closed": "coverage below 100",
+  "roll_dates": {
+   "n": 9,
+   "agree": 6,
+   "per_session_agree": 2111.0,
+   "per_session_disagree": -255.3
+  }
+ },
+ "SN391": {
+  "sessions": 9,
+  "BUILDING": {
+   "20m@205": {
+    "n": 5,
+    "fills": 5,
+    "per_session": 611.2
+   },
+   "20m@400": {
+    "n": 5,
+    "fills": 5,
+    "per_session": 416.2
+   },
+   "60m@205": {
+    "n": 5,
+    "fills": 5,
+    "per_session": 1006.3
+   },
+   "60m@400": {
+    "n": 5,
+    "fills": 5,
+    "per_session": 869.7
+   }
+  },
+  "FADING": {
+   "20m@205": {
+    "n": 4,
+    "fills": 4,
+    "per_session": -354.4
+   },
+   "20m@400": {
+    "n": 4,
+    "fills": 4,
+    "per_session": -549.4
+   },
+   "60m@205": {
+    "n": 4,
+    "fills": 4,
+    "per_session": -729.1
+   },
+   "60m@400": {
+    "n": 4,
+    "fills": 4,
+    "per_session": -924.1
+   }
+  }
+ },
+ "SN393": {
+  "sessions": 77,
+  "HIGH": {
+   "20m@205": {
+    "n": 36,
+    "fills": 28,
+    "per_session": -72.1
+   },
+   "20m@400": {
+    "n": 36,
+    "fills": 28,
+    "per_session": -215.9
+   },
+   "60m@205": {
+    "n": 36,
+    "fills": 28,
+    "per_session": -445.5
+   },
+   "60m@400": {
+    "n": 36,
+    "fills": 28,
+    "per_session": -573.9
+   }
+  },
+  "LOW": {
+   "20m@205": {
+    "n": 41,
+    "fills": 36,
+    "per_session": 88.5
+   },
+   "20m@400": {
+    "n": 41,
+    "fills": 36,
+    "per_session": -86.0
+   },
+   "60m@205": {
+    "n": 41,
+    "fills": 36,
+    "per_session": 102.0
+   },
+   "60m@400": {
+    "n": 41,
+    "fills": 36,
+    "per_session": -67.4
+   }
+  }
+ },
+ "SN394": {
+  "CHEAP": {
+   "20m@205": {
+    "n": 73,
+    "fills": 67,
+    "per_session": 46.7
+   },
+   "20m@400": {
+    "n": 73,
+    "fills": 67,
+    "per_session": -150.3
+   },
+   "60m@205": {
+    "n": 73,
+    "fills": 67,
+    "per_session": 396.3
+   },
+   "60m@400": {
+    "n": 73,
+    "fills": 67,
+    "per_session": 198.9
+   }
+  },
+  "MID": {
+   "20m@205": {
+    "n": 11,
+    "fills": 8,
+    "per_session": -673.8
+   },
+   "20m@400": {
+    "n": 11,
+    "fills": 8,
+    "per_session": -767.5
+   },
+   "60m@205": {
+    "n": 11,
+    "fills": 8,
+    "per_session": -1275.3
+   },
+   "60m@400": {
+    "n": 11,
+    "fills": 8,
+    "per_session": -1346.7
+   }
+  },
+  "RICH": {
+   "20m@205": {
+    "n": 40,
+    "fills": 36,
+    "per_session": 296.0
+   },
+   "20m@400": {
+    "n": 40,
+    "fills": 36,
+    "per_session": 126.6
+   },
+   "60m@205": {
+    "n": 40,
+    "fills": 36,
+    "per_session": -90.3
+   },
+   "60m@400": {
+    "n": 40,
+    "fills": 36,
+    "per_session": -361.5
+   }
+  },
+  "skip_RICH": {
+   "20m@205": {
+    "n": 84,
+    "fills": 75,
+    "per_session": -47.6
+   },
+   "20m@400": {
+    "n": 84,
+    "fills": 75,
+    "per_session": -231.1
+   },
+   "60m@205": {
+    "n": 84,
+    "fills": 75,
+    "per_session": 177.4
+   },
+   "60m@400": {
+    "n": 84,
+    "fills": 75,
+    "per_session": -3.5
+   }
+  },
+  "unconditional_with_reading": {
+   "20m@205": {
+    "n": 124,
+    "fills": 111,
+    "per_session": 63.2
+   },
+   "20m@400": {
+    "n": 124,
+    "fills": 111,
+    "per_session": -115.7
+   },
+   "60m@205": {
+    "n": 124,
+    "fills": 111,
+    "per_session": 91.1
+   },
+   "60m@400": {
+    "n": 124,
+    "fills": 111,
+    "per_session": -119.0
+   }
+  }
+ },
+ "by_period": {
+  "pre": {
+   "20m@205": {
+    "n": 144,
+    "fills": 120,
+    "per_session": 111.3
+   },
+   "20m@400": {
+    "n": 144,
+    "fills": 120,
+    "per_session": -55.0
+   },
+   "60m@205": {
+    "n": 144,
+    "fills": 120,
+    "per_session": 137.9
+   },
+   "60m@400": {
+    "n": 144,
+    "fills": 120,
+    "per_session": -53.6
+   }
+  },
+  "post": {
+   "20m@205": {
+    "n": 27,
+    "fills": 26,
+    "per_session": -212.2
+   },
+   "20m@400": {
+    "n": 27,
+    "fills": 26,
+    "per_session": -393.1
+   },
+   "60m@205": {
+    "n": 27,
+    "fills": 26,
+    "per_session": -447.1
+   },
+   "60m@400": {
+    "n": 27,
+    "fills": 26,
+    "per_session": -585.0
+   }
+  }
+ }
+}

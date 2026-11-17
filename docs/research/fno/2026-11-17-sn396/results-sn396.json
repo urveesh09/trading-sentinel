@@ -1,0 +1,1814 @@
+{
+ "A": {
+  "ORIGINAL": {
+   "all": {
+    "sessions": 171,
+    "fills": 146,
+    "states": {
+     "FILLED": 146,
+     "INADMISSIBLE": 25,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 60.3,
+    "per_session 20m@400": -108.4,
+    "per_session 60m@205": 45.6,
+    "without_best_day 60m@205": -7.0,
+    "per_session 60m@400": -137.5,
+    "without_best_day 60m@400": -190.1,
+    "paired vs ATM 60m@205": {
+     "common": 146,
+     "mean": 122.0,
+     "se": 39.4
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 144,
+     "mean": 186.8,
+     "se": 279.9
+    }
+   },
+   "all pre": {
+    "sessions": 144,
+    "fills": 120,
+    "states": {
+     "FILLED": 120,
+     "INADMISSIBLE": 24,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 111.3,
+    "per_session 20m@400": -55.0,
+    "per_session 60m@205": 137.9,
+    "without_best_day 60m@205": 87.4,
+    "per_session 60m@400": -53.6,
+    "without_best_day 60m@400": -104.1,
+    "paired vs ATM 60m@205": {
+     "common": 120,
+     "mean": 123.2,
+     "se": 42.9
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 118,
+     "mean": 154.8,
+     "se": 282.5
+    }
+   },
+   "all post": {
+    "sessions": 27,
+    "fills": 26,
+    "states": {
+     "FILLED": 26,
+     "INADMISSIBLE": 1,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -212.2,
+    "per_session 20m@400": -393.1,
+    "per_session 60m@205": -447.1,
+    "without_best_day 60m@205": -809.9,
+    "per_session 60m@400": -585.0,
+    "without_best_day 60m@400": -945.7,
+    "paired vs ATM 60m@205": {
+     "common": 26,
+     "mean": 116.4,
+     "se": 101.4
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 26,
+     "mean": 332.1,
+     "se": 886.8
+    }
+   },
+   "all match_row": {
+    "sessions": 97,
+    "fills": 84,
+    "states": {
+     "FILLED": 84,
+     "INADMISSIBLE": 13,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 56.1,
+    "per_session 20m@400": -109.4,
+    "per_session 60m@205": -14.1,
+    "without_best_day 60m@205": -77.6,
+    "per_session 60m@400": -205.3,
+    "without_best_day 60m@400": -268.8,
+    "paired vs ATM 60m@205": {
+     "common": 84,
+     "mean": 106.9,
+     "se": 54.7
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 83,
+     "mean": 148.5,
+     "se": 398.6
+    }
+   },
+   "all fallback_0915_open": {
+    "sessions": 74,
+    "fills": 62,
+    "states": {
+     "FILLED": 62,
+     "INADMISSIBLE": 12,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 65.7,
+    "per_session 20m@400": -107.0,
+    "per_session 60m@205": 123.7,
+    "without_best_day 60m@205": 2.3,
+    "per_session 60m@400": -48.7,
+    "without_best_day 60m@400": -169.8,
+    "paired vs ATM 60m@205": {
+     "common": 62,
+     "mean": 142.4,
+     "se": 56.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 61,
+     "mean": 238.9,
+     "se": 381.1
+    }
+   },
+   "CHEAP fixed": {
+    "with_reading": 124,
+    "cheap": 71,
+    "sessions": 71,
+    "fills": 65,
+    "states": {
+     "FILLED": 65,
+     "INADMISSIBLE": 6,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 50.7,
+    "per_session 20m@400": -146.4,
+    "per_session 60m@205": 333.4,
+    "without_best_day 60m@205": 209.8,
+    "per_session 60m@400": 135.9,
+    "without_best_day 60m@400": 12.2,
+    "paired vs ATM 60m@205": {
+     "common": 65,
+     "mean": 126.2,
+     "se": 63.9
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 64,
+     "mean": 66.2,
+     "se": 410.4
+    }
+   },
+   "OTHER fixed": {
+    "sessions": 53,
+    "fills": 46,
+    "states": {
+     "FILLED": 46,
+     "INADMISSIBLE": 7,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 80.0,
+    "per_session 20m@400": -74.7,
+    "per_session 60m@205": -233.6,
+    "without_best_day 60m@205": -355.1,
+    "per_session 60m@400": -460.5,
+    "without_best_day 60m@400": -582.6,
+    "paired vs ATM 60m@205": {
+     "common": 46,
+     "mean": 163.7,
+     "se": 68.6
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 46,
+     "mean": 589.4,
+     "se": 492.7
+    }
+   },
+   "CHEAP fixed pre": {
+    "sessions": 61,
+    "fills": 55,
+    "states": {
+     "FILLED": 55,
+     "INADMISSIBLE": 6,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 59.0,
+    "per_session 20m@400": -138.4,
+    "per_session 60m@205": 216.2,
+    "without_best_day 60m@205": 124.0,
+    "per_session 60m@400": 13.6,
+    "without_best_day 60m@400": -78.8,
+    "paired vs ATM 60m@205": {
+     "common": 55,
+     "mean": 114.7,
+     "se": 67.2
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 54,
+     "mean": -203.4,
+     "se": 396.4
+    }
+   },
+   "CHEAP fixed post": {
+    "sessions": 10,
+    "fills": 10,
+    "states": {
+     "FILLED": 10,
+     "INADMISSIBLE": 0,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 0.2,
+    "per_session 20m@400": -194.8,
+    "per_session 60m@205": 1047.9,
+    "without_best_day 60m@205": 165.8,
+    "per_session 60m@400": 882.1,
+    "without_best_day 60m@400": 3.3,
+    "paired vs ATM 60m@205": {
+     "common": 10,
+     "mean": 189.2,
+     "se": 197.9
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 10,
+     "mean": 1521.6,
+     "se": 1506.5
+    }
+   },
+   "CHEAP fixed over all sessions 60m@205": 138.4,
+   "CHEAP fixed over all sessions 60m@400": 56.4,
+   "CHEAP moving": {
+    "with_reading": 124,
+    "cheap": 73,
+    "sessions": 73,
+    "fills": 67,
+    "states": {
+     "FILLED": 67,
+     "INADMISSIBLE": 6,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 46.7,
+    "per_session 20m@400": -150.3,
+    "per_session 60m@205": 396.3,
+    "without_best_day 60m@205": 277.0,
+    "per_session 60m@400": 198.9,
+    "without_best_day 60m@400": 79.6,
+    "paired vs ATM 60m@205": {
+     "common": 67,
+     "mean": 137.0,
+     "se": 63.6
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 66,
+     "mean": 58.7,
+     "se": 397.9
+    }
+   },
+   "OTHER moving": {
+    "sessions": 51,
+    "fills": 44,
+    "states": {
+     "FILLED": 44,
+     "INADMISSIBLE": 7,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 86.8,
+    "per_session 20m@400": -66.3,
+    "per_session 60m@205": -345.9,
+    "without_best_day 60m@205": -449.5,
+    "per_session 60m@400": -574.0,
+    "without_best_day 60m@400": -678.3,
+    "paired vs ATM 60m@205": {
+     "common": 44,
+     "mean": 149.0,
+     "se": 68.4
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 44,
+     "mean": 624.3,
+     "se": 514.6
+    }
+   },
+   "CHEAP moving pre": {
+    "sessions": 63,
+    "fills": 57,
+    "states": {
+     "FILLED": 57,
+     "INADMISSIBLE": 6,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 54.1,
+    "per_session 20m@400": -143.2,
+    "per_session 60m@205": 292.9,
+    "without_best_day 60m@205": 199.5,
+    "per_session 60m@400": 90.5,
+    "without_best_day 60m@400": -3.1,
+    "paired vs ATM 60m@205": {
+     "common": 57,
+     "mean": 127.8,
+     "se": 67.0
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 56,
+     "mean": -202.5,
+     "se": 382.1
+    }
+   },
+   "CHEAP moving post": {
+    "sessions": 10,
+    "fills": 10,
+    "states": {
+     "FILLED": 10,
+     "INADMISSIBLE": 0,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 0.2,
+    "per_session 20m@400": -194.8,
+    "per_session 60m@205": 1047.9,
+    "without_best_day 60m@205": 165.8,
+    "per_session 60m@400": 882.1,
+    "without_best_day 60m@400": 3.3,
+    "paired vs ATM 60m@205": {
+     "common": 10,
+     "mean": 189.2,
+     "se": 197.9
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 10,
+     "mean": 1521.6,
+     "se": 1506.5
+    }
+   },
+   "CHEAP moving over all sessions 60m@205": 169.2,
+   "CHEAP moving over all sessions 60m@400": 84.9
+  },
+  "HONEST": {
+   "all": {
+    "sessions": 171,
+    "fills": 145,
+    "states": {
+     "FILLED": 145,
+     "INADMISSIBLE": 26,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -74.1,
+    "per_session 20m@400": -242.2,
+    "per_session 60m@205": -80.7,
+    "without_best_day 60m@205": -143.6,
+    "per_session 60m@400": -234.6,
+    "without_best_day 60m@400": -297.4,
+    "paired vs ATM 60m@205": {
+     "common": 145,
+     "mean": 16.1,
+     "se": 64.4
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 140,
+     "mean": 3.3,
+     "se": 299.6
+    }
+   },
+   "all pre": {
+    "sessions": 144,
+    "fills": 119,
+    "states": {
+     "FILLED": 119,
+     "INADMISSIBLE": 25,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -18.6,
+    "per_session 20m@400": -187.3,
+    "per_session 60m@205": -28.3,
+    "without_best_day 60m@205": -77.3,
+    "per_session 60m@400": -172.5,
+    "without_best_day 60m@400": -221.1,
+    "paired vs ATM 60m@205": {
+     "common": 119,
+     "mean": 1.6,
+     "se": 74.6
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 114,
+     "mean": -32.1,
+     "se": 304.1
+    }
+   },
+   "all post": {
+    "sessions": 27,
+    "fills": 26,
+    "states": {
+     "FILLED": 26,
+     "INADMISSIBLE": 1,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -370.2,
+    "per_session 20m@400": -534.9,
+    "per_session 60m@205": -359.6,
+    "without_best_day 60m@205": -782.2,
+    "per_session 60m@400": -565.8,
+    "without_best_day 60m@400": -988.8,
+    "paired vs ATM 60m@205": {
+     "common": 26,
+     "mean": 82.3,
+     "se": 113.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 26,
+     "mean": 158.5,
+     "se": 924.0
+    }
+   },
+   "all match_row": {
+    "sessions": 97,
+    "fills": 84,
+    "states": {
+     "FILLED": 84,
+     "INADMISSIBLE": 13,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -177.0,
+    "per_session 20m@400": -331.4,
+    "per_session 60m@205": -258.3,
+    "without_best_day 60m@205": -329.4,
+    "per_session 60m@400": -384.6,
+    "without_best_day 60m@400": -454.9,
+    "paired vs ATM 60m@205": {
+     "common": 84,
+     "mean": -66.8,
+     "se": 98.4
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 83,
+     "mean": -193.7,
+     "se": 423.9
+    }
+   },
+   "all fallback_0915_open": {
+    "sessions": 74,
+    "fills": 61,
+    "states": {
+     "FILLED": 61,
+     "INADMISSIBLE": 13,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 60.8,
+    "per_session 20m@400": -125.2,
+    "per_session 60m@205": 152.3,
+    "without_best_day 60m@205": 8.8,
+    "per_session 60m@400": -38.0,
+    "without_best_day 60m@400": -181.4,
+    "paired vs ATM 60m@205": {
+     "common": 61,
+     "mean": 130.2,
+     "se": 69.6
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 57,
+     "mean": 290.1,
+     "se": 402.0
+    }
+   },
+   "CHEAP fixed": {
+    "with_reading": 124,
+    "cheap": 72,
+    "sessions": 72,
+    "fills": 68,
+    "states": {
+     "FILLED": 68,
+     "INADMISSIBLE": 4,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 32.3,
+    "per_session 20m@400": -173.1,
+    "per_session 60m@205": 334.5,
+    "without_best_day 60m@205": 189.5,
+    "per_session 60m@400": 181.5,
+    "without_best_day 60m@400": 37.1,
+    "paired vs ATM 60m@205": {
+     "common": 68,
+     "mean": 15.8,
+     "se": 107.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 66,
+     "mean": -51.4,
+     "se": 419.7
+    }
+   },
+   "OTHER fixed": {
+    "sessions": 52,
+    "fills": 43,
+    "states": {
+     "FILLED": 43,
+     "INADMISSIBLE": 9,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -56.1,
+    "per_session 20m@400": -199.8,
+    "per_session 60m@205": -469.5,
+    "without_best_day 60m@205": -573.8,
+    "per_session 60m@400": -582.2,
+    "without_best_day 60m@400": -684.9,
+    "paired vs ATM 60m@205": {
+     "common": 43,
+     "mean": 77.6,
+     "se": 109.8
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 43,
+     "mean": 644.6,
+     "se": 544.2
+    }
+   },
+   "CHEAP fixed pre": {
+    "sessions": 62,
+    "fills": 58,
+    "states": {
+     "FILLED": 58,
+     "INADMISSIBLE": 4,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 13.2,
+    "per_session 20m@400": -193.8,
+    "per_session 60m@205": 163.6,
+    "without_best_day 60m@205": 58.8,
+    "per_session 60m@400": 15.0,
+    "without_best_day 60m@400": -89.1,
+    "paired vs ATM 60m@205": {
+     "common": 58,
+     "mean": -33.3,
+     "se": 120.7
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 56,
+     "mean": -365.6,
+     "se": 387.4
+    }
+   },
+   "CHEAP fixed post": {
+    "sessions": 10,
+    "fills": 10,
+    "states": {
+     "FILLED": 10,
+     "INADMISSIBLE": 0,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 150.3,
+    "per_session 20m@400": -44.7,
+    "per_session 60m@205": 1393.7,
+    "without_best_day 60m@205": 367.7,
+    "per_session 60m@400": 1213.9,
+    "without_best_day 60m@400": 189.6,
+    "paired vs ATM 60m@205": {
+     "common": 10,
+     "mean": 301.0,
+     "se": 199.0
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 10,
+     "mean": 1708.0,
+     "se": 1689.7
+    }
+   },
+   "CHEAP fixed over all sessions 60m@205": 140.8,
+   "CHEAP fixed over all sessions 60m@400": 76.4,
+   "CHEAP moving": {
+    "with_reading": 124,
+    "cheap": 74,
+    "sessions": 74,
+    "fills": 70,
+    "states": {
+     "FILLED": 70,
+     "INADMISSIBLE": 4,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 10.4,
+    "per_session 20m@400": -197.2,
+    "per_session 60m@205": 278.7,
+    "without_best_day 60m@205": 136.9,
+    "per_session 60m@400": 128.1,
+    "without_best_day 60m@400": -13.1,
+    "paired vs ATM 60m@205": {
+     "common": 70,
+     "mean": 10.3,
+     "se": 104.6
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 68,
+     "mean": -7.3,
+     "se": 409.6
+    }
+   },
+   "OTHER moving": {
+    "sessions": 50,
+    "fills": 41,
+    "states": {
+     "FILLED": 41,
+     "INADMISSIBLE": 9,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -27.2,
+    "per_session 20m@400": -165.1,
+    "per_session 60m@205": -419.0,
+    "without_best_day 60m@205": -526.6,
+    "per_session 60m@400": -533.6,
+    "without_best_day 60m@400": -639.5,
+    "paired vs ATM 60m@205": {
+     "common": 41,
+     "mean": 90.1,
+     "se": 114.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 41,
+     "mean": 605.4,
+     "se": 568.1
+    }
+   },
+   "CHEAP moving pre": {
+    "sessions": 64,
+    "fills": 60,
+    "states": {
+     "FILLED": 60,
+     "INADMISSIBLE": 4,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -11.5,
+    "per_session 20m@400": -221.1,
+    "per_session 60m@205": 104.5,
+    "without_best_day 60m@205": 2.0,
+    "per_session 60m@400": -41.6,
+    "without_best_day 60m@400": -143.3,
+    "paired vs ATM 60m@205": {
+     "common": 60,
+     "mean": -38.2,
+     "se": 116.8
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 58,
+     "mean": -303.1,
+     "se": 378.2
+    }
+   },
+   "CHEAP moving post": {
+    "sessions": 10,
+    "fills": 10,
+    "states": {
+     "FILLED": 10,
+     "INADMISSIBLE": 0,
+     "MISSED": 0,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 150.3,
+    "per_session 20m@400": -44.7,
+    "per_session 60m@205": 1393.7,
+    "without_best_day 60m@205": 367.7,
+    "per_session 60m@400": 1213.9,
+    "without_best_day 60m@400": 189.6,
+    "paired vs ATM 60m@205": {
+     "common": 10,
+     "mean": 301.0,
+     "se": 199.0
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 10,
+     "mean": 1708.0,
+     "se": 1689.7
+    }
+   },
+   "CHEAP moving over all sessions 60m@205": 120.6,
+   "CHEAP moving over all sessions 60m@400": 55.4
+  },
+  "LATE": {
+   "all": {
+    "sessions": 171,
+    "fills": 82,
+    "states": {
+     "FILLED": 82,
+     "INADMISSIBLE": 26,
+     "MISSED": 63,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -104.7,
+    "per_session 20m@400": -195.1,
+    "per_session 60m@205": -252.8,
+    "without_best_day 60m@205": -290.1,
+    "per_session 60m@400": -348.6,
+    "without_best_day 60m@400": -385.3,
+    "paired vs ATM 60m@205": {
+     "common": 79,
+     "mean": -72.3,
+     "se": 104.2
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 41,
+     "mean": -388.5,
+     "se": 222.7
+    }
+   },
+   "all pre": {
+    "sessions": 144,
+    "fills": 70,
+    "states": {
+     "FILLED": 70,
+     "INADMISSIBLE": 25,
+     "MISSED": 49,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -149.3,
+    "per_session 20m@400": -241.8,
+    "per_session 60m@205": -200.0,
+    "without_best_day 60m@205": -243.9,
+    "per_session 60m@400": -308.7,
+    "without_best_day 60m@400": -352.0,
+    "paired vs ATM 60m@205": {
+     "common": 67,
+     "mean": -7.4,
+     "se": 89.2
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 35,
+     "mean": -455.1,
+     "se": 259.8
+    }
+   },
+   "all post": {
+    "sessions": 27,
+    "fills": 12,
+    "states": {
+     "FILLED": 12,
+     "INADMISSIBLE": 1,
+     "MISSED": 14,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 133.4,
+    "per_session 20m@400": 53.7,
+    "per_session 60m@205": -534.7,
+    "without_best_day 60m@205": -666.1,
+    "per_session 60m@400": -561.5,
+    "without_best_day 60m@400": -686.5,
+    "paired vs ATM 60m@205": {
+     "common": 12,
+     "mean": -434.7,
+     "se": 475.9
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 6,
+     "mean": 0.0,
+     "se": 0.0
+    }
+   },
+   "all match_row": {
+    "sessions": 97,
+    "fills": 53,
+    "states": {
+     "FILLED": 53,
+     "INADMISSIBLE": 13,
+     "MISSED": 31,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -109.5,
+    "per_session 20m@400": -216.9,
+    "per_session 60m@205": -258.5,
+    "without_best_day 60m@205": -324.6,
+    "per_session 60m@400": -383.9,
+    "without_best_day 60m@400": -449.2,
+    "paired vs ATM 60m@205": {
+     "common": 50,
+     "mean": -140.6,
+     "se": 157.4
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 25,
+     "mean": -558.8,
+     "se": 344.8
+    }
+   },
+   "all fallback_0915_open": {
+    "sessions": 74,
+    "fills": 29,
+    "states": {
+     "FILLED": 29,
+     "INADMISSIBLE": 13,
+     "MISSED": 32,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -98.3,
+    "per_session 20m@400": -166.7,
+    "per_session 60m@205": -245.4,
+    "without_best_day 60m@205": -309.0,
+    "per_session 60m@400": -302.4,
+    "without_best_day 60m@400": -364.1,
+    "paired vs ATM 60m@205": {
+     "common": 29,
+     "mean": 45.5,
+     "se": 82.7
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 16,
+     "mean": -122.3,
+     "se": 184.2
+    }
+   },
+   "CHEAP fixed": {
+    "with_reading": 124,
+    "cheap": 72,
+    "sessions": 72,
+    "fills": 36,
+    "states": {
+     "FILLED": 36,
+     "INADMISSIBLE": 4,
+     "MISSED": 32,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -22.3,
+    "per_session 20m@400": -123.5,
+    "per_session 60m@205": 54.7,
+    "without_best_day 60m@205": -30.2,
+    "per_session 60m@400": -41.8,
+    "without_best_day 60m@400": -125.3,
+    "paired vs ATM 60m@205": {
+     "common": 34,
+     "mean": 44.0,
+     "se": 157.0
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 19,
+     "mean": -325.1,
+     "se": 373.2
+    }
+   },
+   "OTHER fixed": {
+    "sessions": 52,
+    "fills": 26,
+    "states": {
+     "FILLED": 26,
+     "INADMISSIBLE": 9,
+     "MISSED": 17,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -161.2,
+    "per_session 20m@400": -253.7,
+    "per_session 60m@205": -466.1,
+    "without_best_day 60m@205": -563.9,
+    "per_session 60m@400": -610.4,
+    "without_best_day 60m@400": -707.2,
+    "paired vs ATM 60m@205": {
+     "common": 26,
+     "mean": -193.5,
+     "se": 232.6
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 14,
+     "mean": -198.4,
+     "se": 198.4
+    }
+   },
+   "CHEAP fixed pre": {
+    "sessions": 62,
+    "fills": 32,
+    "states": {
+     "FILLED": 32,
+     "INADMISSIBLE": 4,
+     "MISSED": 26,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -36.4,
+    "per_session 20m@400": -141.4,
+    "per_session 60m@205": 77.8,
+    "without_best_day 60m@205": -20.7,
+    "per_session 60m@400": -26.4,
+    "without_best_day 60m@400": -123.4,
+    "paired vs ATM 60m@205": {
+     "common": 30,
+     "mean": 46.2,
+     "se": 174.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 17,
+     "mean": -363.4,
+     "se": 417.4
+    }
+   },
+   "CHEAP fixed post": {
+    "sessions": 10,
+    "fills": 4,
+    "states": {
+     "FILLED": 4,
+     "INADMISSIBLE": 0,
+     "MISSED": 6,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 65.4,
+    "per_session 20m@400": -12.6,
+    "per_session 60m@205": -88.3,
+    "without_best_day 60m@205": -418.4,
+    "per_session 60m@400": -137.1,
+    "without_best_day 60m@400": -450.9,
+    "paired vs ATM 60m@205": {
+     "common": 4,
+     "mean": 27.5,
+     "se": 313.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 2,
+     "mean": 0.0,
+     "se": 0.0
+    }
+   },
+   "CHEAP fixed over all sessions 60m@205": 23.0,
+   "CHEAP fixed over all sessions 60m@400": -17.6,
+   "CHEAP moving": {
+    "with_reading": 124,
+    "cheap": 74,
+    "sessions": 74,
+    "fills": 37,
+    "states": {
+     "FILLED": 37,
+     "INADMISSIBLE": 4,
+     "MISSED": 33,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -43.7,
+    "per_session 20m@400": -144.8,
+    "per_session 60m@205": 20.6,
+    "without_best_day 60m@205": -62.4,
+    "per_session 60m@400": -75.9,
+    "without_best_day 60m@400": -157.6,
+    "paired vs ATM 60m@205": {
+     "common": 35,
+     "mean": 26.6,
+     "se": 153.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 20,
+     "mean": -308.9,
+     "se": 354.4
+    }
+   },
+   "OTHER moving": {
+    "sessions": 50,
+    "fills": 25,
+    "states": {
+     "FILLED": 25,
+     "INADMISSIBLE": 9,
+     "MISSED": 16,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -135.1,
+    "per_session 20m@400": -227.4,
+    "per_session 60m@205": -436.6,
+    "without_best_day 60m@205": -537.8,
+    "per_session 60m@400": -582.7,
+    "without_best_day 60m@400": -682.9,
+    "paired vs ATM 60m@205": {
+     "common": 25,
+     "mean": -178.6,
+     "se": 241.6
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 13,
+     "mean": -213.6,
+     "se": 213.6
+    }
+   },
+   "CHEAP moving pre": {
+    "sessions": 64,
+    "fills": 33,
+    "states": {
+     "FILLED": 33,
+     "INADMISSIBLE": 4,
+     "MISSED": 27,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": -60.8,
+    "per_session 20m@400": -165.5,
+    "per_session 60m@205": 37.7,
+    "without_best_day 60m@205": -58.3,
+    "per_session 60m@400": -66.3,
+    "without_best_day 60m@400": -160.8,
+    "paired vs ATM 60m@205": {
+     "common": 31,
+     "mean": 26.5,
+     "se": 169.9
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 18,
+     "mean": -343.2,
+     "se": 394.1
+    }
+   },
+   "CHEAP moving post": {
+    "sessions": 10,
+    "fills": 4,
+    "states": {
+     "FILLED": 4,
+     "INADMISSIBLE": 0,
+     "MISSED": 6,
+     "NO_PRICE": 0
+    },
+    "per_session 20m@205": 65.4,
+    "per_session 20m@400": -12.6,
+    "per_session 60m@205": -88.3,
+    "without_best_day 60m@205": -418.4,
+    "per_session 60m@400": -137.1,
+    "without_best_day 60m@400": -450.9,
+    "paired vs ATM 60m@205": {
+     "common": 4,
+     "mean": 27.5,
+     "se": 313.5
+    },
+    "paired vs COIN_ITM 60m@205": {
+     "common": 2,
+     "mean": 0.0,
+     "se": 0.0
+    }
+   },
+   "CHEAP moving over all sessions 60m@205": 8.9,
+   "CHEAP moving over all sessions 60m@400": -32.8
+  },
+  "changes_vs_ORIGINAL": {
+   "HONEST": {
+    "strike_changed": 41,
+    "depth_changed": 13,
+    "state_changed": 3,
+    "cheap_label_changed fixed": 5,
+    "common_readings fixed": 124,
+    "cheap_label_changed moving": 3,
+    "common_readings moving": 124
+   },
+   "LATE": {
+    "strike_changed": 26,
+    "depth_changed": 13,
+    "state_changed": 66,
+    "cheap_label_changed fixed": 5,
+    "common_readings fixed": 124,
+    "cheap_label_changed moving": 3,
+    "common_readings moving": 124
+   }
+  },
+  "jump_corr_ORIGINAL_HONEST": 0.984
+ },
+ "B": {
+  "days": 24,
+  "ATM": {
+   "n": 15,
+   "extra_round_trip_per_lot_mean": 237.2,
+   "extra_round_trip_per_lot_median": -35.7,
+   "extra_p75": 845.0,
+   "extra_p90": 1245.4,
+   "share_above_205": 0.333,
+   "share_above_400": 0.333,
+   "entry_extra_mean": 146.25,
+   "exit_extra_mean": 91.0,
+   "real_spread_lot_median": 16.25,
+   "model_spread_lot_median": 22.75,
+   "mid_vs_close0916_median": 6.05,
+   "mid_vs_close0915_median": 7.2,
+   "mid0915_vs_close0915_median": 5.45,
+   "rows": [
+    {
+     "day": "2026-09-28",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:59",
+     "real_ask": 71.6,
+     "model_ask": 68.95,
+     "real_bid": 120.65,
+     "model_bid": 120.5,
+     "entry_extra": 172.24999999999943,
+     "exit_extra": -9.75000000000037,
+     "real_spread": 12.999999999999261,
+     "model_spread": 16.25,
+     "mid_vs_close0916": 2.6999969482421875,
+     "mid_vs_close0915": 7.75,
+     "mid0915_vs_close0915": 12.674999999999997
+    },
+    {
+     "day": "2026-09-30",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:59",
+     "real_ask": 119.55,
+     "model_ask": 121.35,
+     "real_bid": 82.9,
+     "model_bid": 82.8,
+     "entry_extra": -116.99999999999982,
+     "exit_extra": -6.500000000000554,
+     "real_spread": 9.749999999999446,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 1.7249969482421932,
+     "mid_vs_close0915": 1.574998474121088,
+     "mid0915_vs_close0915": 1.2249984741210938
+    },
+    {
+     "day": "2026-10-01",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:59",
+     "real_ask": 107.05,
+     "model_ask": 106.35,
+     "real_bid": 106.0,
+     "model_bid": 105.65,
+     "entry_extra": 45.500000000000185,
+     "exit_extra": -22.74999999999963,
+     "real_spread": 16.25,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 0.7749984741210909,
+     "mid_vs_close0915": 8.725001525878909,
+     "mid0915_vs_close0915": 1.7249984741210938
+    },
+    {
+     "day": "2026-10-05",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:24",
+     "real_ask": 103.65,
+     "model_ask": 108.75,
+     "real_bid": 103.6,
+     "model_bid": 105.4,
+     "entry_extra": -331.49999999999966,
+     "exit_extra": 117.00000000000074,
+     "real_spread": 13.000000000000185,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 5.049998474121082,
+     "mid_vs_close0915": 7.199999999999989,
+     "mid0915_vs_close0915": 8.799999999999997
+    },
+    {
+     "day": "2026-10-07",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:24",
+     "real_ask": 157.35,
+     "model_ask": 157.1,
+     "real_bid": 144.2,
+     "model_bid": 137.15,
+     "entry_extra": 16.25,
+     "exit_extra": -458.24999999999886,
+     "real_spread": 26.00000000000037,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 0.29999389648435226,
+     "mid_vs_close0915": 2.1499999999999773,
+     "mid0915_vs_close0915": 16.774999999999977
+    },
+    {
+     "day": "2026-10-08",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:24",
+     "real_ask": 144.7,
+     "model_ask": 134.4,
+     "real_bid": 162.55,
+     "model_bid": 170.75,
+     "entry_extra": 669.4999999999989,
+     "exit_extra": 532.9999999999993,
+     "real_spread": 25.999999999998522,
+     "model_spread": 19.50000000000074,
+     "mid_vs_close0916": 10.25,
+     "mid_vs_close0915": 3.75,
+     "mid0915_vs_close0915": 0.7249999999999943
+    },
+    {
+     "day": "2026-10-09",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 143.6,
+     "model_ask": 149.6,
+     "real_bid": 214.0,
+     "model_bid": 214.6,
+     "entry_extra": -390.0,
+     "exit_extra": 38.99999999999963,
+     "real_spread": 26.00000000000037,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 6.04999694824221,
+     "mid_vs_close0915": 9.099996948242165,
+     "mid0915_vs_close0915": 14.750003051757801
+    },
+    {
+     "day": "2026-10-12",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:27",
+     "real_ask": 92.35,
+     "model_ask": 92.95,
+     "real_bid": 35.1,
+     "model_bid": 33.7,
+     "entry_extra": -39.000000000000554,
+     "exit_extra": -90.99999999999991,
+     "real_spread": 12.999999999999261,
+     "model_spread": 16.25,
+     "mid_vs_close0916": 0.5500030517578125,
+     "mid_vs_close0915": 0.0500030517578125,
+     "mid0915_vs_close0915": 2.4250030517578125
+    },
+    {
+     "day": "2026-10-14",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 119.5,
+     "model_ask": 110.25,
+     "real_bid": 134.0,
+     "model_bid": 133.85,
+     "entry_extra": 601.25,
+     "exit_extra": -9.75000000000037,
+     "real_spread": 26.00000000000037,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 9.249996948242185,
+     "mid_vs_close0915": 16.250003051757815,
+     "mid0915_vs_close0915": 5.450003051757818
+    },
+    {
+     "day": "2026-10-15",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:26",
+     "real_ask": 132.25,
+     "model_ask": 146.05,
+     "real_bid": 264.5,
+     "model_bid": 268.4,
+     "entry_extra": -897.0000000000007,
+     "exit_extra": 253.49999999999852,
+     "real_spread": 16.25,
+     "model_spread": 22.750000000001478,
+     "mid_vs_close0916": 13.725006103515625,
+     "mid_vs_close0915": 3.1750030517578125,
+     "mid0915_vs_close0915": 4.999996948242199
+    },
+    {
+     "day": "2026-10-21",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 187.7,
+     "model_ask": 169.1,
+     "real_bid": 134.7,
+     "model_bid": 135.7,
+     "entry_extra": 1208.9999999999995,
+     "exit_extra": 65.0,
+     "real_spread": 35.74999999999889,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 18.574993896484386,
+     "mid_vs_close0915": 12.874996948242199,
+     "mid0915_vs_close0915": 27.425003051757812
+    },
+    {
+     "day": "2026-10-22",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:26",
+     "real_ask": 176.2,
+     "model_ask": 165.3,
+     "real_bid": 124.2,
+     "model_bid": 130.2,
+     "entry_extra": 708.4999999999985,
+     "exit_extra": 389.9999999999991,
+     "real_spread": 12.999999999999261,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 11.049996948242182,
+     "mid_vs_close0915": 0.5499969482421818,
+     "mid0915_vs_close0915": 12.199996948242188
+    },
+    {
+     "day": "2026-10-23",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 204.0,
+     "model_ask": 211.7,
+     "real_bid": 76.15,
+     "model_bid": 74.15,
+     "entry_extra": -500.49999999999926,
+     "exit_extra": -130.0,
+     "real_spread": 32.5,
+     "model_spread": 42.24999999999852,
+     "mid_vs_close0916": 7.649993896484375,
+     "mid_vs_close0915": 9.699996948242188,
+     "mid0915_vs_close0915": 13.575003051757818
+    },
+    {
+     "day": "2026-10-26",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 106.6,
+     "model_ask": 103.1,
+     "real_bid": 53.25,
+     "model_bid": 49.2,
+     "entry_extra": 227.5,
+     "exit_extra": -263.24999999999983,
+     "real_spread": 16.25,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 3.525003051757807,
+     "mid_vs_close0915": 15.6249984741211,
+     "mid0915_vs_close0915": 4.299998474121082
+    },
+    {
+     "day": "2026-10-28",
+     "t_entry": "09:16:27",
+     "t_exit": "10:16:28",
+     "real_ask": 234.1,
+     "model_ask": 221.5,
+     "real_bid": 236.6,
+     "model_bid": 251.35,
+     "entry_extra": 818.9999999999997,
+     "exit_extra": 958.75,
+     "real_spread": 35.74999999999889,
+     "model_spread": 42.25000000000037,
+     "mid_vs_close0916": 12.625003051757801,
+     "mid_vs_close0915": 4.774996948242176,
+     "mid0915_vs_close0915": 1.5250030517578352
+    }
+   ]
+  },
+  "ITM1": {
+   "n": 15,
+   "extra_round_trip_per_lot_mean": 250.7,
+   "extra_round_trip_per_lot_median": -42.3,
+   "extra_p75": 1106.6,
+   "extra_p90": 1359.2,
+   "share_above_205": 0.333,
+   "share_above_400": 0.333,
+   "entry_extra_mean": 158.38,
+   "exit_extra_mean": 92.3,
+   "real_spread_lot_median": 22.75,
+   "model_spread_lot_median": 32.5,
+   "mid_vs_close0916_median": 6.62,
+   "mid_vs_close0915_median": 8.32,
+   "mid0915_vs_close0915_median": 6.37,
+   "rows": [
+    {
+     "day": "2026-09-28",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:58",
+     "real_ask": 93.85,
+     "model_ask": 91.8,
+     "real_bid": 152.2,
+     "model_bid": 152.35,
+     "entry_extra": 133.24999999999983,
+     "exit_extra": 9.75000000000037,
+     "real_spread": 12.999999999999261,
+     "model_spread": 16.25,
+     "mid_vs_close0916": 2.0500030517578125,
+     "mid_vs_close0915": 9.75,
+     "mid0915_vs_close0915": 13.224999999999994
+    },
+    {
+     "day": "2026-09-30",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:58",
+     "real_ask": 139.5,
+     "model_ask": 141.35,
+     "real_bid": 99.8,
+     "model_bid": 99.2,
+     "entry_extra": -120.24999999999963,
+     "exit_extra": -38.99999999999963,
+     "real_spread": 22.74999999999963,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 1.8749969482421989,
+     "mid_vs_close0915": 0.42500610351561363,
+     "mid0915_vs_close0915": 1.600006103515625
+    },
+    {
+     "day": "2026-10-01",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:59",
+     "real_ask": 128.05,
+     "model_ask": 129.1,
+     "real_bid": 128.05,
+     "model_bid": 128.45,
+     "entry_extra": -68.24999999999889,
+     "exit_extra": 25.999999999998522,
+     "real_spread": 13.000000000001108,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 0.9999969482421847,
+     "mid_vs_close0915": 11.150006103515622,
+     "mid0915_vs_close0915": 2.274993896484375
+    },
+    {
+     "day": "2026-10-05",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:24",
+     "real_ask": 133.3,
+     "model_ask": 139.9,
+     "real_bid": 134.05,
+     "model_bid": 136.7,
+     "entry_extra": -428.99999999999966,
+     "exit_extra": 172.24999999999852,
+     "real_spread": 22.750000000001478,
+     "model_spread": 19.50000000000074,
+     "mid_vs_close0916": 6.625,
+     "mid_vs_close0915": 8.324996948242188,
+     "mid0915_vs_close0915": 10.425003051757812
+    },
+    {
+     "day": "2026-10-07",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:24",
+     "real_ask": 182.5,
+     "model_ask": 182.5,
+     "real_bid": 168.25,
+     "model_bid": 160.0,
+     "entry_extra": 0.0,
+     "exit_extra": -536.25,
+     "real_spread": 26.00000000000037,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 0.05000000000001137,
+     "mid_vs_close0915": 3.4000061035156364,
+     "mid0915_vs_close0915": 16.774993896484375
+    },
+    {
+     "day": "2026-10-08",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:24",
+     "real_ask": 172.45,
+     "model_ask": 157.95,
+     "real_bid": 192.05,
+     "model_bid": 200.75,
+     "entry_extra": 942.5,
+     "exit_extra": 565.4999999999993,
+     "real_spread": 22.74999999999963,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 14.57500305175779,
+     "mid_vs_close0915": 2.3250061035156477,
+     "mid0915_vs_close0915": 1.4749938964843636
+    },
+    {
+     "day": "2026-10-09",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 174.95,
+     "model_ask": 180.9,
+     "real_bid": 250.6,
+     "model_bid": 250.8,
+     "entry_extra": -386.75000000000114,
+     "exit_extra": 13.000000000001108,
+     "real_spread": 32.5,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 5.949993896484386,
+     "mid_vs_close0915": 12.349993896484364,
+     "mid0915_vs_close0915": 17.250006103515602
+    },
+    {
+     "day": "2026-10-12",
+     "t_entry": "09:16:26",
+     "t_exit": "10:16:26",
+     "real_ask": 122.35,
+     "model_ask": 123.4,
+     "real_bid": 49.9,
+     "model_bid": 48.0,
+     "entry_extra": -68.25000000000074,
+     "exit_extra": -123.49999999999991,
+     "real_spread": 19.499999999999815,
+     "model_spread": 19.50000000000074,
+     "mid_vs_close0916": 1.0500000000000114,
+     "mid_vs_close0915": 0.39999694824217613,
+     "mid0915_vs_close0915": 2.3000030517578125
+    },
+    {
+     "day": "2026-10-14",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 142.15,
+     "model_ask": 126.85,
+     "real_bid": 156.75,
+     "model_bid": 157.0,
+     "entry_extra": 994.5000000000007,
+     "exit_extra": 16.25,
+     "real_spread": 22.74999999999963,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 15.275003051757835,
+     "mid_vs_close0915": 15.125006103515602,
+     "mid0915_vs_close0915": 6.200006103515619
+    },
+    {
+     "day": "2026-10-15",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 158.95,
+     "model_ask": 172.9,
+     "real_bid": 302.6,
+     "model_bid": 307.45,
+     "entry_extra": -906.7500000000011,
+     "exit_extra": 315.2499999999978,
+     "real_spread": 25.999999999998522,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 13.899993896484375,
+     "mid_vs_close0915": 2.0500030517578125,
+     "mid0915_vs_close0915": 6.374996948242199
+    },
+    {
+     "day": "2026-10-21",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:26",
+     "real_ask": 216.8,
+     "model_ask": 196.65,
+     "real_bid": 158.05,
+     "model_bid": 158.75,
+     "entry_extra": 1309.7500000000005,
+     "exit_extra": 45.49999999999926,
+     "real_spread": 39.00000000000148,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 20.100006103515625,
+     "mid_vs_close0915": 12.149993896484375,
+     "mid0915_vs_close0915": 32.525006103515636
+    },
+    {
+     "day": "2026-10-22",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:25",
+     "real_ask": 204.0,
+     "model_ask": 192.35,
+     "real_bid": 145.55,
+     "model_bid": 152.4,
+     "entry_extra": 757.2500000000003,
+     "exit_extra": 445.24999999999966,
+     "real_spread": 38.99999999999963,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 11.599993896484364,
+     "mid_vs_close0915": 0.39999694824217613,
+     "mid0915_vs_close0915": 13.174996948242182
+    },
+    {
+     "day": "2026-10-23",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 236.15,
+     "model_ask": 243.95,
+     "real_bid": 91.6,
+     "model_bid": 89.3,
+     "entry_extra": -506.99999999999886,
+     "exit_extra": -149.49999999999983,
+     "real_spread": 42.25000000000037,
+     "model_spread": 42.24999999999852,
+     "mid_vs_close0916": 7.824993896484386,
+     "mid_vs_close0915": 10.974993896484364,
+     "mid0915_vs_close0915": 12.450006103515648
+    },
+    {
+     "day": "2026-10-26",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 128.45,
+     "model_ask": 124.1,
+     "real_bid": 64.15,
+     "model_bid": 59.6,
+     "entry_extra": 282.74999999999966,
+     "exit_extra": -295.7500000000003,
+     "real_spread": 19.49999999999889,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 4.350003051757824,
+     "mid_vs_close0915": 17.349993896484364,
+     "mid0915_vs_close0915": 5.424993896484381
+    },
+    {
+     "day": "2026-10-28",
+     "t_entry": "09:16:26",
+     "t_exit": "10:16:27",
+     "real_ask": 256.95,
+     "model_ask": 250.15,
+     "real_bid": 264.9,
+     "model_bid": 279.05,
+     "entry_extra": 441.99999999999886,
+     "exit_extra": 919.7500000000023,
+     "real_spread": 19.50000000000074,
+     "model_spread": 42.25000000000037,
+     "mid_vs_close0916": 6.999996948242142,
+     "mid_vs_close0915": 1.0499999999999545,
+     "mid0915_vs_close0915": 0.19999999999998863
+    }
+   ]
+  },
+  "ITM2": {
+   "n": 13,
+   "extra_round_trip_per_lot_mean": 394.5,
+   "extra_round_trip_per_lot_median": 39.0,
+   "extra_p75": 1400.8,
+   "extra_p90": 1516.5,
+   "share_above_205": 0.385,
+   "share_above_400": 0.385,
+   "entry_extra_mean": 314.5,
+   "exit_extra_mean": 80.0,
+   "real_spread_lot_median": 26.0,
+   "model_spread_lot_median": 32.5,
+   "mid_vs_close0916_median": 8.2,
+   "mid_vs_close0915_median": 9.1,
+   "mid0915_vs_close0915_median": 8.2,
+   "rows": [
+    {
+     "day": "2026-09-28",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:59",
+     "real_ask": 122.5,
+     "model_ask": 119.75,
+     "real_bid": 187.9,
+     "model_bid": 187.9,
+     "entry_extra": 178.75,
+     "exit_extra": 0.0,
+     "real_spread": 26.00000000000037,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 2.7000015258789034,
+     "mid_vs_close0915": 14.399998474121091,
+     "mid0915_vs_close0915": 14.950001525878918
+    },
+    {
+     "day": "2026-09-30",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:58",
+     "real_ask": 162.6,
+     "model_ask": 163.65,
+     "real_bid": 118.55,
+     "model_bid": 118.65,
+     "entry_extra": -68.25000000000074,
+     "exit_extra": 6.500000000000554,
+     "real_spread": 26.00000000000037,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 0.9999938964843977,
+     "mid_vs_close0915": 2.3499969482421648,
+     "mid0915_vs_close0915": 0.5749969482421875
+    },
+    {
+     "day": "2026-10-01",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:59",
+     "real_ask": 153.4,
+     "model_ask": 152.8,
+     "real_bid": 153.25,
+     "model_bid": 153.25,
+     "entry_extra": 38.99999999999963,
+     "exit_extra": 0.0,
+     "real_spread": 16.25,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 0.7249969482421932,
+     "mid_vs_close0915": 13.12499389648437,
+     "mid0915_vs_close0915": 2.8000061035156136
+    },
+    {
+     "day": "2026-10-05",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:24",
+     "real_ask": 167.35,
+     "model_ask": 175.7,
+     "real_bid": 168.4,
+     "model_bid": 171.05,
+     "entry_extra": -542.7499999999997,
+     "exit_extra": 172.25000000000037,
+     "real_spread": 12.999999999999261,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 8.199996948242188,
+     "mid_vs_close0915": 9.100006103515625,
+     "mid0915_vs_close0915": 9.99999389648437
+    },
+    {
+     "day": "2026-10-07",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 208.8,
+     "model_ask": 209.65,
+     "real_bid": 194.9,
+     "model_bid": 186.55,
+     "entry_extra": -55.24999999999963,
+     "exit_extra": -542.7499999999997,
+     "real_spread": 35.75000000000074,
+     "model_spread": 42.25000000000037,
+     "mid_vs_close0916": 0.7750030517578068,
+     "mid_vs_close0915": 2.575003051757818,
+     "mid0915_vs_close0915": 17.474996948242193
+    },
+    {
+     "day": "2026-10-08",
+     "t_entry": "09:16:24",
+     "t_exit": "10:16:24",
+     "real_ask": 201.5,
+     "model_ask": 184.85,
+     "real_bid": 223.8,
+     "model_bid": 233.6,
+     "entry_extra": 1082.2500000000005,
+     "exit_extra": 636.9999999999989,
+     "real_spread": 32.5,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 16.649993896484375,
+     "mid_vs_close0915": 3.5,
+     "mid0915_vs_close0915": 0.5
+    },
+    {
+     "day": "2026-10-12",
+     "t_entry": "09:16:26",
+     "t_exit": "10:16:26",
+     "real_ask": 156.35,
+     "model_ask": 157.25,
+     "real_bid": 68.4,
+     "model_bid": 66.05,
+     "entry_extra": -58.50000000000037,
+     "exit_extra": -152.75000000000057,
+     "real_spread": 3.2499999999988916,
+     "model_spread": 32.5,
+     "mid_vs_close0916": 0.6750000000000114,
+     "mid_vs_close0915": 0.07499389648438637,
+     "mid0915_vs_close0915": 3.0999938964843636
+    },
+    {
+     "day": "2026-10-14",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 160.3,
+     "model_ask": 147.15,
+     "real_bid": 182.75,
+     "model_bid": 181.95,
+     "entry_extra": 854.7500000000003,
+     "exit_extra": -52.00000000000074,
+     "real_spread": 19.50000000000074,
+     "model_spread": 19.50000000000074,
+     "mid_vs_close0916": 13.150000000000006,
+     "mid_vs_close0915": 21.849999999999994,
+     "mid0915_vs_close0915": 7.650000000000006
+    },
+    {
+     "day": "2026-10-21",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 248.75,
+     "model_ask": 227.0,
+     "real_bid": 183.45,
+     "model_bid": 185.2,
+     "entry_extra": 1413.75,
+     "exit_extra": 113.75,
+     "real_spread": 38.99999999999963,
+     "model_spread": 42.25000000000037,
+     "mid_vs_close0916": 21.7500030517578,
+     "mid_vs_close0915": 14.349993896484364,
+     "mid0915_vs_close0915": 35.5000061035156
+    },
+    {
+     "day": "2026-10-22",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 233.5,
+     "model_ask": 219.9,
+     "real_bid": 169.1,
+     "model_bid": 177.05,
+     "entry_extra": 883.9999999999997,
+     "exit_extra": 516.7500000000011,
+     "real_spread": 42.25000000000037,
+     "model_spread": 42.25000000000037,
+     "mid_vs_close0916": 13.624996948242199,
+     "mid_vs_close0915": 0.37500305175780113,
+     "mid0915_vs_close0915": 11.124996948242199
+    },
+    {
+     "day": "2026-10-23",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:25",
+     "real_ask": 270.0,
+     "model_ask": 279.1,
+     "real_bid": 109.65,
+     "model_bid": 107.15,
+     "entry_extra": -591.5000000000015,
+     "exit_extra": -162.5,
+     "real_spread": 42.24999999999852,
+     "model_spread": 42.25000000000222,
+     "mid_vs_close0916": 9.124987792968739,
+     "mid_vs_close0915": 10.125012207031261,
+     "mid0915_vs_close0915": 14.54998779296875
+    },
+    {
+     "day": "2026-10-26",
+     "t_entry": "09:16:25",
+     "t_exit": "10:16:26",
+     "real_ask": 153.6,
+     "model_ask": 147.85,
+     "real_bid": 77.45,
+     "model_bid": 71.45,
+     "entry_extra": 373.75,
+     "exit_extra": -390.0,
+     "real_spread": 26.00000000000037,
+     "model_spread": 22.74999999999963,
+     "mid_vs_close0916": 5.70000305175779,
+     "mid_vs_close0915": 20.54999694824221,
+     "mid0915_vs_close0915": 8.199996948242188
+    },
+    {
+     "day": "2026-10-28",
+     "t_entry": "09:16:26",
+     "t_exit": "10:16:28",
+     "real_ask": 286.6,
+     "model_ask": 277.7,
+     "real_bid": 295.35,
+     "model_bid": 309.1,
+     "entry_extra": 578.5000000000023,
+     "exit_extra": 893.75,
+     "real_spread": 42.25000000000222,
+     "model_spread": 42.24999999999852,
+     "mid_vs_close0916": 8.924993896484352,
+     "mid_vs_close0915": 1.4750000000000227,
+     "mid0915_vs_close0915": 3.2250000000000227
+    }
+   ]
+  }
+ }
+}

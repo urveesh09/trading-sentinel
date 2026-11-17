@@ -1,0 +1,2 @@
+6465 passed, 4 skipped, 53 warnings in 695.98s (0:11:35)
+pytest_exit=0 (python-engine/winvenv, full tests/, 2026-11-17 21:27-21:39 IST, EN01+EN02 working tree)

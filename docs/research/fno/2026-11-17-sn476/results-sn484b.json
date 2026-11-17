@@ -1,0 +1,99 @@
+{
+ "dropped_row": [
+  "2019-12-19",
+  13.020000457763672,
+  13.020000457763672
+ ],
+ "source_sha256": "9b6fcd4aa165eb027b90fb49fb3cab8ccb8c9923a2a84c6e4a555dce7aadff31",
+ "2010-2026": {
+  "TREND cash@0%": {
+   "final": 71800,
+   "spendable_pnl": 41800,
+   "contributions": 30000,
+   "max_drawdown_pct": 90.07,
+   "max_drawdown_rs": 58226,
+   "share_of_sessions_invested": 0.804,
+   "trades": 24,
+   "costs": 2067,
+   "sessions": 4149,
+   "first": "2010-01-04",
+   "last": "2026-10-28",
+   "cagr_pct": 5.33
+  },
+  "BUY_HOLD cash@0%": {
+   "final": 148505,
+   "spendable_pnl": 118505,
+   "contributions": 30000,
+   "max_drawdown_pct": 89.88,
+   "max_drawdown_rs": 66362,
+   "share_of_sessions_invested": 1.0,
+   "trades": 2,
+   "costs": 50,
+   "sessions": 4149,
+   "first": "2010-01-04",
+   "last": "2026-10-28",
+   "cagr_pct": 9.98
+  },
+  "CASH cash@0%": {
+   "final": 30000,
+   "spendable_pnl": 0,
+   "contributions": 30000,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_rs": 0,
+   "share_of_sessions_invested": 0.0,
+   "trades": 0,
+   "costs": 0,
+   "sessions": 4149,
+   "first": "2010-01-04",
+   "last": "2026-10-28",
+   "cagr_pct": 0.0
+  },
+  "TREND cash@5%": {
+   "final": 85063,
+   "spendable_pnl": 55063,
+   "contributions": 30000,
+   "max_drawdown_pct": 89.92,
+   "max_drawdown_rs": 63826,
+   "share_of_sessions_invested": 0.804,
+   "trades": 25,
+   "costs": 2284,
+   "sessions": 4149,
+   "first": "2010-01-04",
+   "last": "2026-10-28",
+   "cagr_pct": 6.39
+  },
+  "BUY_HOLD cash@5%": {
+   "final": 149019,
+   "spendable_pnl": 119019,
+   "contributions": 30000,
+   "max_drawdown_pct": 89.85,
+   "max_drawdown_rs": 66362,
+   "share_of_sessions_invested": 1.0,
+   "trades": 2,
+   "costs": 51,
+   "sessions": 4149,
+   "first": "2010-01-04",
+   "last": "2026-10-28",
+   "cagr_pct": 10.0
+  },
+  "CASH cash@5%": {
+   "final": 68175,
+   "spendable_pnl": 38175,
+   "contributions": 30000,
+   "max_drawdown_pct": 0.0,
+   "max_drawdown_rs": 0,
+   "share_of_sessions_invested": 0.0,
+   "trades": 0,
+   "costs": 0,
+   "sessions": 4149,
+   "first": "2010-01-04",
+   "last": "2026-10-28",
+   "cagr_pct": 5.0
+  },
+  "verdict_primary": "FAIL",
+  "return_per_drawdown": {
+   "TREND": 0.059,
+   "BUY_HOLD": 0.111
+  }
+ }
+}

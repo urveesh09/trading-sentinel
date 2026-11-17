@@ -1,0 +1,3293 @@
+{
+  "freeze_head": "9624b5421685901fcc17b414a9659e2975788d69",
+  "E032": {
+    "2023|ordinary": {
+      "net": -3645.12,
+      "without_best": -4625.79,
+      "worst": -1161.74,
+      "drawdown": 3645.12,
+      "trades": 17
+    },
+    "2023|tickets": [
+      {
+        "day": "2023-02-02",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.2,
+        "net": -402.65,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-02-09",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": -0.23,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-02-16",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.0,
+        "net": -361.07,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-02",
+        "side": "P",
+        "lots": 3,
+        "entry": 11.7,
+        "net": -3.96,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "P",
+        "lots": 2,
+        "entry": 15.4,
+        "net": -888.83,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-03-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.5,
+        "net": 38.0,
+        "origin": "E032",
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2023-03-29",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.95,
+        "net": -234.25,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-04-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.15,
+        "net": 48.55,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-15",
+        "side": "P",
+        "lots": 6,
+        "entry": 5.6,
+        "net": -1161.74,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.5,
+        "net": -123.58,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-06-22",
+        "side": "P",
+        "lots": 4,
+        "entry": 5.4,
+        "net": 1104.25,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-07-27",
+        "side": "P",
+        "lots": 3,
+        "entry": 11.7,
+        "net": 142.01,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-08-17",
+        "side": "C",
+        "lots": 2,
+        "entry": 7.4,
+        "net": -425.75,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-08-31",
+        "side": "P",
+        "lots": 2,
+        "entry": 12.75,
+        "net": -343.07,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-09-07",
+        "side": "C",
+        "lots": 2,
+        "entry": 6.1,
+        "net": -133.42,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2023-12-07",
+        "side": "P",
+        "lots": 2,
+        "entry": 14.9,
+        "net": -830.29,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2023-12-14",
+        "side": "C",
+        "lots": 3,
+        "entry": 5.25,
+        "net": -69.09,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "2023|adverse": {
+      "net": -4035.53,
+      "without_best": -4113.64,
+      "worst": -1220.22,
+      "drawdown": 4035.53,
+      "trades": 14
+    },
+    "2023|catastrophe": {
+      "net": -4172.68,
+      "without_best": -4172.68,
+      "worst": -1278.8,
+      "drawdown": 4172.68,
+      "trades": 7
+    },
+    "2024|ordinary": {
+      "net": 15580.74,
+      "without_best": 3810.02,
+      "worst": -646.98,
+      "drawdown": 691.65,
+      "trades": 19
+    },
+    "2024|tickets": [
+      {
+        "day": "2024-01-11",
+        "side": "P",
+        "lots": 1,
+        "entry": 19.0,
+        "net": -646.98,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2024-02-22",
+        "side": "C",
+        "lots": 1,
+        "entry": 14.45,
+        "net": 1312.95,
+        "origin": "E032",
+        "exits": [
+          "TARGET"
+        ]
+      },
+      {
+        "day": "2024-02-29",
+        "side": "C",
+        "lots": 2,
+        "entry": 6.85,
+        "net": -471.0,
+        "origin": "E032",
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2024-03-28",
+        "side": "P",
+        "lots": 4,
+        "entry": 7.6,
+        "net": 11770.72,
+        "origin": "E032",
+        "exits": [
+          "TARGET_BASE",
+          "HERO_TARGET"
+        ]
+      },
+      {
+        "day": "2024-04-04",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.4,
+        "net": -386.61,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2024-04-25",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.3,
+        "net": -305.04,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2024-05-09",
+        "side": "P",
+        "lots": 2,
+        "entry": 18.15,
+        "net": 1049.19,
+        "origin": "E032",
+        "exits": [
+          "TARGET_BASE",
+          "RUNNER_TRAIL"
+        ]
+      },
+      {
+        "day": "2024-05-23",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.55,
+        "net": -360.69,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2024-06-20",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.0,
+        "net": -68.36,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2024-06-27",
+        "side": "C",
+        "lots": 1,
+        "entry": 11.25,
+        "net": 1044.21,
+        "origin": "E032",
+        "exits": [
+          "TARGET"
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "side": "C",
+        "lots": 1,
+        "entry": 16.3,
+        "net": -182.71,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2024-07-18",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.25,
+        "net": 1149.56,
+        "origin": "E032",
+        "exits": [
+          "TARGET_BASE",
+          "RUNNER_TRAIL"
+        ]
+      },
+      {
+        "day": "2024-08-08",
+        "side": "P",
+        "lots": 2,
+        "entry": 17.85,
+        "net": 1376.9,
+        "origin": "E032",
+        "exits": [
+          "TARGET_BASE",
+          "RUNNER_TRAIL"
+        ]
+      },
+      {
+        "day": "2024-08-14",
+        "side": "P",
+        "lots": 4,
+        "entry": 8.65,
+        "net": -506.66,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2024-08-22",
+        "side": "P",
+        "lots": 5,
+        "entry": 7.0,
+        "net": 952.98,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2024-09-05",
+        "side": "P",
+        "lots": 3,
+        "entry": 10.5,
+        "net": -90.98,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2024-09-12",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.55,
+        "net": -324.55,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2024-10-31",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.4,
+        "net": -322.26,
+        "origin": "E032",
+        "exits": [
+          "STRUCTURE"
+        ]
+      },
+      {
+        "day": "2024-10-31",
+        "side": "P",
+        "lots": 3,
+        "entry": 10.8,
+        "net": 590.07,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      }
+    ],
+    "2024|adverse": {
+      "net": 14629.39,
+      "without_best": 3046.86,
+      "worst": -669.72,
+      "drawdown": 730.65,
+      "trades": 19
+    },
+    "2024|catastrophe": {
+      "net": -2582.43,
+      "without_best": -2582.43,
+      "worst": -632.82,
+      "drawdown": 2582.43,
+      "trades": 7
+    },
+    "2025|ordinary": {
+      "net": 5936.81,
+      "without_best": 4084.55,
+      "worst": -478.01,
+      "drawdown": 606.19,
+      "trades": 20
+    },
+    "2025|tickets": [
+      {
+        "day": "2025-01-02",
+        "side": "C",
+        "lots": 2,
+        "entry": 5.9,
+        "net": -204.72,
+        "origin": "E032",
+        "exits": [
+          "TRAIL"
+        ]
+      },
+      {
+        "day": "2025-02-06",
+        "side": "C",
+        "lots": 1,
+        "entry": 13.25,
+        "net": -324.96,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-02-13",
+        "side": "P",
+        "lots": 2,
+        "entry": 17.6,
+        "net": 401.5,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-03-06",
+        "side": "C",
+        "lots": 2,
+        "entry": 8.55,
+        "net": -478.01,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2025-04-17",
+        "side": "C",
+        "lots": 1,
+        "entry": 16.35,
+        "net": 761.22,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-05-22",
+        "side": "P",
+        "lots": 2,
+        "entry": 14.45,
+        "net": -278.72,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-06-12",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.1,
+        "net": -182.52,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-06-12",
+        "side": "P",
+        "lots": 2,
+        "entry": 17.25,
+        "net": 966.02,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-07-03",
+        "side": "P",
+        "lots": 2,
+        "entry": 13.8,
+        "net": 337.8,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-08-07",
+        "side": "P",
+        "lots": 2,
+        "entry": 13.4,
+        "net": 1252.67,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-08-07",
+        "side": "C",
+        "lots": 1,
+        "entry": 12.75,
+        "net": 599.59,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-08-21",
+        "side": "P",
+        "lots": 6,
+        "entry": 5.15,
+        "net": 940.63,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-09-02",
+        "side": "P",
+        "lots": 2,
+        "entry": 15.05,
+        "net": 1046.91,
+        "origin": "E032",
+        "exits": [
+          "TARGET_BASE",
+          "RUNNER_TRAIL"
+        ]
+      },
+      {
+        "day": "2025-10-14",
+        "side": "C",
+        "lots": 1,
+        "entry": 16.25,
+        "net": 258.45,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-11-11",
+        "side": "C",
+        "lots": 1,
+        "entry": 15.75,
+        "net": 15.25,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-11-11",
+        "side": "C",
+        "lots": 1,
+        "entry": 17.7,
+        "net": -491.08,
+        "origin": "E032",
+        "exits": [
+          "STOP"
+        ]
+      },
+      {
+        "day": "2025-11-25",
+        "side": "P",
+        "lots": 2,
+        "entry": 14.25,
+        "net": 538.78,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-12-09",
+        "side": "P",
+        "lots": 2,
+        "entry": 15.6,
+        "net": -233.66,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-12-16",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.5,
+        "net": 320.97,
+        "origin": "E032",
+        "exits": [
+          "TIME"
+        ]
+      },
+      {
+        "day": "2025-12-30",
+        "side": "C",
+        "lots": 1,
+        "entry": 10.95,
+        "net": 690.69,
+        "origin": "E032",
+        "exits": [
+          "TARGET"
+        ]
+      }
+    ],
+    "2025|adverse": {
+      "net": 5371.36,
+      "without_best": 3616.52,
+      "worst": -537.55,
+      "drawdown": 557.7,
+      "trades": 20
+    },
+    "2025|catastrophe": {
+      "net": 144.73,
+      "without_best": -640.16,
+      "worst": -823.99,
+      "drawdown": 1019.51,
+      "trades": 8
+    }
+  },
+  "EN08": {
+    "thresholds": {
+      "calm_below": 0.5194,
+      "active_from": 0.7662
+    },
+    "tickets_by_tier": {
+      "2023|active": [
+        4,
+        -1111.47,
+        2,
+        13
+      ],
+      "2023|mid": [
+        4,
+        -664.19,
+        0,
+        18
+      ],
+      "2023|calm": [
+        9,
+        -1869.46,
+        2,
+        18
+      ],
+      "2024|calm": [
+        4,
+        -291.64,
+        1,
+        13
+      ],
+      "2024|active": [
+        7,
+        15806.67,
+        5,
+        24
+      ],
+      "2024|mid": [
+        8,
+        65.71,
+        2,
+        15
+      ],
+      "2025|active": [
+        7,
+        134.76,
+        3,
+        15
+      ],
+      "2025|mid": [
+        8,
+        2264.07,
+        5,
+        18
+      ],
+      "2025|calm": [
+        5,
+        3537.98,
+        5,
+        20
+      ]
+    },
+    "straddle_tiers": {
+      "low_below": 0.2152,
+      "high_from": 0.2981,
+      "tickets": {
+        "2023|high": [
+          8,
+          -1710.98
+        ],
+        "2023|mid": [
+          6,
+          -901.34
+        ],
+        "2023|low": [
+          3,
+          -1032.8
+        ],
+        "2024|low": [
+          5,
+          482.83
+        ],
+        "2024|mid": [
+          3,
+          737.93
+        ],
+        "2024|high": [
+          11,
+          14359.98
+        ],
+        "2025|high": [
+          5,
+          359.22
+        ],
+        "2025|low": [
+          8,
+          4928.0
+        ],
+        "2025|mid": [
+          7,
+          649.59
+        ]
+      }
+    },
+    "arm": {
+      "2023|ordinary": {
+        "net": -1775.66,
+        "without_best": -1917.67,
+        "worst": -850.83,
+        "drawdown": 1775.66,
+        "trades": 8
+      },
+      "2023|tickets": [
+        {
+          "day": "2023-02-02",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.2,
+          "net": -402.65,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-02-09",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": -0.23,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-03-02",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.7,
+          "net": -3.96,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-03-16",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.4,
+          "net": -888.83,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-03-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.5,
+          "net": 38.0,
+          "origin": "E032",
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2023-03-29",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.95,
+          "net": -234.25,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-07-27",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.7,
+          "net": 142.01,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-08-17",
+          "side": "C",
+          "lots": 2,
+          "entry": 7.4,
+          "net": -425.75,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        }
+      ],
+      "2023|adverse": {
+        "net": -2074.25,
+        "without_best": -2138.32,
+        "worst": -928.81,
+        "drawdown": 2074.25,
+        "trades": 7
+      },
+      "2023|catastrophe": {
+        "net": -2721.58,
+        "without_best": -2721.58,
+        "worst": -1090.26,
+        "drawdown": 2721.58,
+        "trades": 5
+      },
+      "2024|ordinary": {
+        "net": 15872.38,
+        "without_best": 4101.66,
+        "worst": -471.0,
+        "drawdown": 691.65,
+        "trades": 15
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "origin": "E032",
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "origin": "E032",
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "origin": "E032",
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "origin": "E032",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.8,
+          "net": 590.07,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 15171.07,
+        "without_best": 3588.54,
+        "worst": -490.5,
+        "drawdown": 730.65,
+        "trades": 15
+      },
+      "2024|catastrophe": {
+        "net": -2316.24,
+        "without_best": -2316.24,
+        "worst": -632.82,
+        "drawdown": 2316.24,
+        "trades": 6
+      },
+      "2025|ordinary": {
+        "net": 2398.83,
+        "without_best": 546.57,
+        "worst": -478.01,
+        "drawdown": 709.49,
+        "trades": 15
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "origin": "E032",
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.45,
+          "net": -278.72,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.25,
+          "net": 966.02,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 337.8,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.4,
+          "net": 1252.67,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": -233.66,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 1937.47,
+        "without_best": 182.63,
+        "worst": -537.55,
+        "drawdown": 829.68,
+        "trades": 15
+      },
+      "2025|catastrophe": {
+        "net": -925.9,
+        "without_best": -1505.46,
+        "worst": -823.99,
+        "drawdown": 1096.05,
+        "trades": 6
+      }
+    },
+    "robust": false,
+    "checks": {
+      "2023_ordinary": true,
+      "2023_adverse": true,
+      "2023_without_best": true,
+      "2024_ordinary": true,
+      "2024_adverse": true,
+      "2024_without_best": true,
+      "2025_ordinary": false,
+      "2025_adverse": false,
+      "2025_without_best": false,
+      "severe_sum": true,
+      "worst_day": true
+    },
+    "mechanism_calm_loses_every_year": false,
+    "passed": false
+  },
+  "EN09": {
+    "signal_days": {
+      "2023": 22,
+      "2024": 32,
+      "2025": 32
+    },
+    "add": {
+      "2023|ordinary": {
+        "net": -4013.42,
+        "without_best": -4370.31,
+        "worst": -922.47,
+        "drawdown": 4013.42,
+        "trades": 18
+      },
+      "2023|tickets": [
+        {
+          "day": "2023-02-02",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.75,
+          "net": -519.82,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-02-02",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.2,
+          "net": -402.65,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-02-09",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": -0.23,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-02-16",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.0,
+          "net": -361.07,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-02-23",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.45,
+          "net": 149.16,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-03-02",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.7,
+          "net": -3.96,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-03-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.45,
+          "net": -558.29,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2023-03-09",
+          "side": "P",
+          "lots": 5,
+          "entry": 6.55,
+          "net": -701.0,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-03-16",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.4,
+          "net": -888.83,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-03-29",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.95,
+          "net": -234.25,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-04-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.15,
+          "net": 48.55,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-05-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 8.95,
+          "net": 356.89,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-06-15",
+          "side": "P",
+          "lots": 3,
+          "entry": 5.6,
+          "net": -604.47,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-06-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.5,
+          "net": -123.58,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-06-22",
+          "side": "P",
+          "lots": 1,
+          "entry": 5.4,
+          "net": 240.66,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-07-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.7,
+          "net": -0.65,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-07-27",
+          "side": "P",
+          "lots": 1,
+          "entry": 11.7,
+          "net": 15.87,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-08-17",
+          "side": "C",
+          "lots": 2,
+          "entry": 7.4,
+          "net": -425.75,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        }
+      ],
+      "2023|adverse": {
+        "net": -4184.2,
+        "without_best": -4518.37,
+        "worst": -961.45,
+        "drawdown": 4184.2,
+        "trades": 12
+      },
+      "2023|catastrophe": {
+        "net": -4124.1,
+        "without_best": -4399.79,
+        "worst": -1772.75,
+        "drawdown": 4124.1,
+        "trades": 7
+      },
+      "2024|ordinary": {
+        "net": -965.65,
+        "without_best": -2342.55,
+        "worst": -1207.2,
+        "drawdown": 2370.88,
+        "trades": 36
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.6,
+          "net": -499.95,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-01-18",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.85,
+          "net": -539.24,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-02-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.75,
+          "net": -130.52,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.1,
+          "net": -133.55,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "origin": "E032",
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "origin": "E032",
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.95,
+          "net": -205.05,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-03-21",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.85,
+          "net": -264.02,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 2,
+          "entry": 12.75,
+          "net": -609.06,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 1,
+          "entry": 7.6,
+          "net": 681.48,
+          "origin": "E032",
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-13",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.2,
+          "net": -299.01,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "origin": "E032",
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.6,
+          "net": -778.0,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-11",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": 301.02,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 5,
+          "entry": 5.95,
+          "net": -700.54,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 952.98,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 12.1,
+          "net": -850.76,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-10",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.25,
+          "net": -850.37,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-17",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.4,
+          "net": 745.96,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-10-24",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.4,
+          "net": -519.3,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.35,
+          "net": 145.47,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 2,
+          "entry": 10.8,
+          "net": 377.65,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-11-07",
+          "side": "P",
+          "lots": 3,
+          "entry": 9.25,
+          "net": -226.64,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-11-14",
+          "side": "C",
+          "lots": 2,
+          "entry": 7.9,
+          "net": -153.43,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": -2475.89,
+        "without_best": -3774.86,
+        "worst": -1307.89,
+        "drawdown": 2783.35,
+        "trades": 36
+      },
+      "2024|catastrophe": {
+        "net": -4100.57,
+        "without_best": -4100.57,
+        "worst": -902.58,
+        "drawdown": 4100.57,
+        "trades": 8
+      },
+      "2025|ordinary": {
+        "net": -4192.4,
+        "without_best": -4593.9,
+        "worst": -1009.1,
+        "drawdown": 4192.4,
+        "trades": 10
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.0,
+          "net": -804.38,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "origin": "E032",
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-01-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.55,
+          "net": -622.58,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-01-16",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -425.59,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -276.31,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-20",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": -824.64,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2025-02-27",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.2,
+          "net": -830.51,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.8,
+          "net": -412.6,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 8.6,
+          "net": -192.57,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": -4292.78,
+        "without_best": -4622.84,
+        "worst": -888.99,
+        "drawdown": 4292.78,
+        "trades": 9
+      },
+      "2025|catastrophe": {
+        "net": -4155.94,
+        "without_best": -4155.94,
+        "worst": -869.53,
+        "drawdown": 4155.94,
+        "trades": 7
+      }
+    },
+    "only": {
+      "2023|ordinary": {
+        "net": -2919.91,
+        "without_best": -3276.8,
+        "worst": -816.73,
+        "drawdown": 2919.91,
+        "trades": 13
+      },
+      "2023|tickets": [
+        {
+          "day": "2023-02-02",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.75,
+          "net": -519.82,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-02-23",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.45,
+          "net": 149.16,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-03-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.45,
+          "net": -558.29,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2023-03-09",
+          "side": "P",
+          "lots": 5,
+          "entry": 6.55,
+          "net": -701.0,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-05-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 8.95,
+          "net": 356.89,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-07-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.7,
+          "net": -0.65,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-08-24",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.15,
+          "net": -198.32,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-09-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.2,
+          "net": -78.89,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-10-26",
+          "side": "C",
+          "lots": 1,
+          "entry": 9.75,
+          "net": 158.89,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-11-23",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.0,
+          "net": -816.73,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-11-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.45,
+          "net": -376.89,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-12-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.1,
+          "net": -266.09,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2023-12-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 9.75,
+          "net": -68.17,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2023|adverse": {
+        "net": -3361.66,
+        "without_best": -3695.83,
+        "worst": -855.72,
+        "drawdown": 3361.66,
+        "trades": 13
+      },
+      "2023|catastrophe": {
+        "net": -2465.52,
+        "without_best": -2741.21,
+        "worst": -1466.95,
+        "drawdown": 2465.52,
+        "trades": 4
+      },
+      "2024|ordinary": {
+        "net": -4200.32,
+        "without_best": -4501.34,
+        "worst": -778.0,
+        "drawdown": 4200.32,
+        "trades": 13
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.6,
+          "net": -499.95,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-01-18",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.85,
+          "net": -539.24,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-02-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.75,
+          "net": -130.52,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.1,
+          "net": -133.55,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-03-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.95,
+          "net": -205.05,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-03-21",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.85,
+          "net": -264.02,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 2,
+          "entry": 12.75,
+          "net": -609.06,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-06-13",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.2,
+          "net": -299.01,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-07-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.6,
+          "net": -778.0,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-11",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": 301.02,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 1,
+          "entry": 15.3,
+          "net": -419.35,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 2,
+          "entry": 5.95,
+          "net": -308.54,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 1,
+          "entry": 12.1,
+          "net": -315.05,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": -4310.77,
+        "without_best": -4585.8,
+        "worst": -816.98,
+        "drawdown": 4310.77,
+        "trades": 12
+      },
+      "2024|catastrophe": {
+        "net": -4142.6,
+        "without_best": -4378.74,
+        "worst": -1181.7,
+        "drawdown": 4142.6,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": -4196.61,
+        "without_best": -4196.61,
+        "worst": -830.51,
+        "drawdown": 4196.61,
+        "trades": 7
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.0,
+          "net": -804.38,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-01-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.55,
+          "net": -622.58,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-01-16",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -425.59,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -276.31,
+          "origin": "SQUEEZE",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-20",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": -824.64,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2025-02-27",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.2,
+          "net": -830.51,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.8,
+          "net": -412.6,
+          "origin": "SQUEEZE",
+          "exits": [
+            "STOP"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": -4403.86,
+        "without_best": -4403.86,
+        "worst": -883.11,
+        "drawdown": 4403.86,
+        "trades": 8
+      },
+      "2025|catastrophe": {
+        "net": -4155.94,
+        "without_best": -4155.94,
+        "worst": -869.53,
+        "drawdown": 4155.94,
+        "trades": 7
+      }
+    },
+    "null_median": {
+      "2023": -2292.62,
+      "2024": -3281.03,
+      "2025": -3900.3
+    },
+    "robust": false,
+    "checks": {
+      "2023_ordinary": false,
+      "2023_adverse": false,
+      "2023_without_best": true,
+      "2024_ordinary": false,
+      "2024_adverse": false,
+      "2024_without_best": false,
+      "2025_ordinary": false,
+      "2025_adverse": false,
+      "2025_without_best": false,
+      "severe_sum": false,
+      "worst_day": true
+    },
+    "only_positive_2_of_3": false,
+    "only_above_null_every_year": false,
+    "passed": false
+  },
+  "EN10": {
+    "arm": {
+      "2023|ordinary": {
+        "net": -3045.03,
+        "without_best": -4025.7,
+        "worst": -1161.74,
+        "drawdown": 3045.03,
+        "trades": 17
+      },
+      "2023|tickets": [
+        {
+          "day": "2023-02-02",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.2,
+          "net": -402.65,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-02-09",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": -0.23,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-02-16",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.0,
+          "net": -361.07,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-03-02",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.7,
+          "net": -3.96,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-03-16",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.4,
+          "net": -888.83,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-03-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.5,
+          "net": 638.09,
+          "origin": "E032",
+          "exits": [
+            "ONE_LOT_BANK"
+          ]
+        },
+        {
+          "day": "2023-03-29",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.95,
+          "net": -234.25,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-04-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.15,
+          "net": 48.55,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-06-15",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.6,
+          "net": -1161.74,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-06-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.5,
+          "net": -123.58,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-06-22",
+          "side": "P",
+          "lots": 4,
+          "entry": 5.4,
+          "net": 1104.25,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-07-27",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.7,
+          "net": 142.01,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-08-17",
+          "side": "C",
+          "lots": 2,
+          "entry": 7.4,
+          "net": -425.75,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-08-31",
+          "side": "P",
+          "lots": 2,
+          "entry": 12.75,
+          "net": -343.07,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-09-07",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.1,
+          "net": -133.42,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2023-12-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.9,
+          "net": -830.29,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2023-12-14",
+          "side": "C",
+          "lots": 3,
+          "entry": 5.25,
+          "net": -69.09,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2023|adverse": {
+        "net": -3694.37,
+        "without_best": -4597.1,
+        "worst": -1220.22,
+        "drawdown": 3694.37,
+        "trades": 16
+      },
+      "2023|catastrophe": {
+        "net": -4172.68,
+        "without_best": -4172.68,
+        "worst": -1278.8,
+        "drawdown": 4172.68,
+        "trades": 7
+      },
+      "2024|ordinary": {
+        "net": 15217.45,
+        "without_best": 3446.73,
+        "worst": -646.98,
+        "drawdown": 778.15,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 339.83,
+          "origin": "E032",
+          "exits": [
+            "ONE_LOT_BANK"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "origin": "E032",
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "origin": "E032",
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": 427.12,
+          "origin": "E032",
+          "exits": [
+            "ONE_LOT_BANK"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 952.98,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "origin": "E032",
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.8,
+          "net": 590.07,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 14269.33,
+        "without_best": 2686.8,
+        "worst": -669.72,
+        "drawdown": 852.87,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2439.71,
+        "without_best": -2439.71,
+        "worst": -632.82,
+        "drawdown": 2439.71,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 5852.47,
+        "without_best": 4000.21,
+        "worst": -478.01,
+        "drawdown": 606.19,
+        "trades": 20
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "origin": "E032",
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 543.89,
+          "origin": "E032",
+          "exits": [
+            "ONE_LOT_BANK"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.45,
+          "net": -278.72,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.25,
+          "net": 966.02,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 337.8,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.4,
+          "net": 1252.67,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.15,
+          "net": 940.63,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.05,
+          "net": 1046.91,
+          "origin": "E032",
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 472.54,
+          "origin": "E032",
+          "exits": [
+            "ONE_LOT_BANK"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "origin": "E032",
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.25,
+          "net": 538.78,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": -233.66,
+          "origin": "E032",
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 239.87,
+          "origin": "E032",
+          "exits": [
+            "ONE_LOT_BANK"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "origin": "E032",
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 5400.55,
+        "without_best": 3645.71,
+        "worst": -537.55,
+        "drawdown": 557.7,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": -92.06,
+        "without_best": -876.95,
+        "worst": -823.99,
+        "drawdown": 1086.15,
+        "trades": 8
+      }
+    },
+    "robust": false,
+    "checks": {
+      "2023_ordinary": true,
+      "2023_adverse": true,
+      "2023_without_best": true,
+      "2024_ordinary": false,
+      "2024_adverse": false,
+      "2024_without_best": false,
+      "2025_ordinary": false,
+      "2025_adverse": true,
+      "2025_without_best": false,
+      "severe_sum": true,
+      "worst_day": true
+    },
+    "one_lot_changes": {
+      "2023": {
+        "changed": 1,
+        "better": 1,
+        "worse": 0,
+        "truncated_2x": 0,
+        "delta": 600.09,
+        "by_side": {
+          "C": 600.09,
+          "P": 0
+        }
+      },
+      "2024": {
+        "changed": 2,
+        "better": 1,
+        "worse": 1,
+        "truncated_2x": 1,
+        "delta": -363.29,
+        "by_side": {
+          "C": -363.29,
+          "P": 0
+        }
+      },
+      "2025": {
+        "changed": 3,
+        "better": 1,
+        "worse": 2,
+        "truncated_2x": 0,
+        "delta": -84.34,
+        "by_side": {
+          "C": -84.34,
+          "P": 0
+        }
+      }
+    },
+    "passed": false
+  }
+}

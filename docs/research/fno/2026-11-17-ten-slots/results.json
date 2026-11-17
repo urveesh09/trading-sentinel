@@ -1,0 +1,2280 @@
+{
+  "calendar_sessions": {
+    "2024": 248,
+    "2025": 249,
+    "2026": 203
+  },
+  "evaluation_non_expiry_feature_option_days": {
+    "2024": 162,
+    "2025": 177,
+    "2026": 160
+  },
+  "feature_option_days": {
+    "2022": 142,
+    "2023": 192,
+    "2024": 162,
+    "2025": 177,
+    "2026": 160
+  },
+  "ledger10_parity_checks": 76,
+  "entry_cap_rupees": 15000.0,
+  "slots": {
+    "R1": {
+      "forecast": {
+        "usable_training_and_test_dates": 577,
+        "predictions": 319,
+        "base": {
+          "correlation": -0.02453,
+          "sign_accuracy": 0.48276,
+          "rmse_bps": 25.23345
+        },
+        "augmented": {
+          "correlation": -0.0369,
+          "sign_accuracy": 0.46082,
+          "rmse_bps": 25.55655
+        },
+        "paired_mse_gain_bps_squared": -16.41024,
+        "paired_mse_gain_90ci": [
+          -30.9262,
+          -1.5357
+        ],
+        "by_year": {
+          "2024": {
+            "predictions": 87,
+            "mse_gain_bps_squared": -28.96251
+          },
+          "2025": {
+            "predictions": 120,
+            "mse_gain_bps_squared": -3.30291
+          },
+          "2026": {
+            "predictions": 112,
+            "mse_gain_bps_squared": -20.70337
+          }
+        }
+      },
+      "economics": {
+        "205": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 580,
+              "OVER_LIMIT": 31,
+              "ENTERED": 80,
+              "NO_LABEL_OR_CASH": 9
+            },
+            "decisions": 120,
+            "fills": 80,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 71,
+              "STOP": 9
+            },
+            "max_debit": 14922.65,
+            "net": -26897.59,
+            "per_session": -38.43,
+            "per_session_90ci": [
+              -87.7015,
+              11.4972
+            ],
+            "net_ex_best": -33462.5,
+            "maximum_realized_drawdown": 30251.15,
+            "worst_day": -3473.68,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 28,
+                "fills": 14,
+                "net": -13423.11
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 41,
+                "fills": 30,
+                "net": 7919.33
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 51,
+                "fills": 36,
+                "net": -21393.81
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 602,
+              "ENTERED": 66,
+              "OVER_LIMIT": 24,
+              "NO_LABEL_OR_CASH": 8
+            },
+            "decisions": 98,
+            "fills": 66,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 55,
+              "STOP": 11
+            },
+            "max_debit": 14922.65,
+            "net": -18550.19,
+            "per_session": -26.5,
+            "per_session_90ci": [
+              -78.8282,
+              26.8409
+            ],
+            "net_ex_best": -26131.7,
+            "maximum_realized_drawdown": 25428.67,
+            "worst_day": -3473.68,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 27,
+                "fills": 14,
+                "net": -14363.21
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 38,
+                "fills": 29,
+                "net": -1686.17
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 33,
+                "fills": 23,
+                "net": -2500.81
+              }
+            }
+          },
+          "delta": -8347.41,
+          "delta_per_session_90ci": [
+            -57.1418,
+            33.3584
+          ],
+          "matched_coin_net": -31870.28,
+          "edge_vs_coin_90ci": [
+            -31.2096,
+            47.4636
+          ]
+        },
+        "400": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 580,
+              "OVER_LIMIT": 31,
+              "ENTERED": 80,
+              "NO_LABEL_OR_CASH": 9
+            },
+            "decisions": 120,
+            "fills": 80,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 69,
+              "STOP": 11
+            },
+            "max_debit": 14922.65,
+            "net": -41891.01,
+            "per_session": -59.84,
+            "per_session_90ci": [
+              -108.4312,
+              -10.6672
+            ],
+            "net_ex_best": -48260.92,
+            "maximum_realized_drawdown": 44659.57,
+            "worst_day": -3397.13,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 28,
+                "fills": 14,
+                "net": -15458.95
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 41,
+                "fills": 30,
+                "net": 1560.06
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 51,
+                "fills": 36,
+                "net": -27992.12
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 602,
+              "ENTERED": 66,
+              "OVER_LIMIT": 24,
+              "NO_LABEL_OR_CASH": 8
+            },
+            "decisions": 98,
+            "fills": 66,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 52,
+              "STOP": 14
+            },
+            "max_debit": 14922.65,
+            "net": -32403.04,
+            "per_session": -46.29,
+            "per_session_90ci": [
+              -102.0502,
+              8.7783
+            ],
+            "net_ex_best": -39789.56,
+            "maximum_realized_drawdown": 35022.43,
+            "worst_day": -3446.26,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 27,
+                "fills": 14,
+                "net": -18335.57
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 38,
+                "fills": 29,
+                "net": -7321.7
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 33,
+                "fills": 23,
+                "net": -6745.77
+              }
+            }
+          },
+          "delta": -9487.96,
+          "delta_per_session_90ci": [
+            -60.3431,
+            33.5872
+          ],
+          "matched_coin_net": -44640.16,
+          "edge_vs_coin_90ci": [
+            -32.9423,
+            42.5456
+          ]
+        },
+        "gates": {
+          "at_least_30_fills_both": true,
+          "resolved_both": true,
+          "positive_all_years_both": false,
+          "154_per_session_at_205": false,
+          "positive_without_best_at_400": false,
+          "lower_90ci_at_400_positive": false
+        },
+        "advances": false
+      }
+    },
+    "R2": {
+      "forecast": {
+        "usable_training_and_test_dates": 832,
+        "predictions": 498,
+        "base": {
+          "correlation": -0.055,
+          "sign_accuracy": 0.45783,
+          "rmse_bps": 25.70818
+        },
+        "augmented": {
+          "correlation": -0.03321,
+          "sign_accuracy": 0.48996,
+          "rmse_bps": 25.8225
+        },
+        "paired_mse_gain_bps_squared": -5.89062,
+        "paired_mse_gain_90ci": [
+          -15.783,
+          3.7616
+        ],
+        "by_year": {
+          "2024": {
+            "predictions": 162,
+            "mse_gain_bps_squared": -9.47474
+          },
+          "2025": {
+            "predictions": 177,
+            "mse_gain_bps_squared": -1.69931
+          },
+          "2026": {
+            "predictions": 159,
+            "mse_gain_bps_squared": -6.90468
+          }
+        }
+      },
+      "economics": {
+        "205": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 554,
+              "OVER_LIMIT": 54,
+              "ENTERED": 82,
+              "NO_LABEL_OR_CASH": 10
+            },
+            "decisions": 146,
+            "fills": 82,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 68,
+              "STOP": 14
+            },
+            "max_debit": 14922.65,
+            "net": -44901.39,
+            "per_session": -64.14,
+            "per_session_90ci": [
+              -117.9164,
+              -15.6629
+            ],
+            "net_ex_best": -49520.71,
+            "maximum_realized_drawdown": 54138.7,
+            "worst_day": -3473.68,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 46,
+                "fills": 23,
+                "net": -9615.36
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 51,
+                "fills": 30,
+                "net": -16144.56
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -19141.47
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 46,
+              "ENTERED": 93,
+              "NO_LABEL_OR_CASH": 11
+            },
+            "decisions": 150,
+            "fills": 93,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 77,
+              "STOP": 16
+            },
+            "max_debit": 14922.65,
+            "net": -35934.9,
+            "per_session": -51.34,
+            "per_session_90ci": [
+              -101.1194,
+              -0.0723
+            ],
+            "net_ex_best": -42499.81,
+            "maximum_realized_drawdown": 41075.03,
+            "worst_day": -3473.68,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 55,
+                "fills": 32,
+                "net": -17607.86
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 46,
+                "fills": 32,
+                "net": -5506.16
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -12820.87
+              }
+            }
+          },
+          "delta": -8966.49,
+          "delta_per_session_90ci": [
+            -58.6376,
+            27.7895
+          ],
+          "matched_coin_net": -29576.54,
+          "edge_vs_coin_90ci": [
+            -65.163,
+            17.8665
+          ]
+        },
+        "400": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 554,
+              "OVER_LIMIT": 54,
+              "ENTERED": 82,
+              "NO_LABEL_OR_CASH": 10
+            },
+            "decisions": 146,
+            "fills": 82,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 63,
+              "STOP": 19
+            },
+            "max_debit": 14922.65,
+            "net": -64112.44,
+            "per_session": -91.59,
+            "per_session_90ci": [
+              -146.8586,
+              -41.4326
+            ],
+            "net_ex_best": -68536.76,
+            "maximum_realized_drawdown": 71594.76,
+            "worst_day": -3511.89,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 46,
+                "fills": 23,
+                "net": -14943.73
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 51,
+                "fills": 30,
+                "net": -21121.99
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -28046.71
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 46,
+              "ENTERED": 93,
+              "NO_LABEL_OR_CASH": 11
+            },
+            "decisions": 150,
+            "fills": 93,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 74,
+              "STOP": 19
+            },
+            "max_debit": 14922.65,
+            "net": -54708.92,
+            "per_session": -78.16,
+            "per_session_90ci": [
+              -130.3489,
+              -26.948
+            ],
+            "net_ex_best": -61078.83,
+            "maximum_realized_drawdown": 56868.46,
+            "worst_day": -3563.8,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 55,
+                "fills": 32,
+                "net": -25090.22
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 46,
+                "fills": 32,
+                "net": -11535.32
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -18083.38
+              }
+            }
+          },
+          "delta": -9403.52,
+          "delta_per_session_90ci": [
+            -58.747,
+            27.4322
+          ],
+          "matched_coin_net": -46611.59,
+          "edge_vs_coin_90ci": [
+            -66.8038,
+            14.1427
+          ]
+        },
+        "gates": {
+          "at_least_30_fills_both": true,
+          "resolved_both": true,
+          "positive_all_years_both": false,
+          "154_per_session_at_205": false,
+          "positive_without_best_at_400": false,
+          "lower_90ci_at_400_positive": false
+        },
+        "advances": false
+      }
+    },
+    "R3": {
+      "forecast": {
+        "usable_training_and_test_dates": 833,
+        "predictions": 499,
+        "base": {
+          "correlation": -0.05479,
+          "sign_accuracy": 0.45892,
+          "rmse_bps": 25.68427
+        },
+        "augmented": {
+          "correlation": 0.0479,
+          "sign_accuracy": 0.45892,
+          "rmse_bps": 25.53957
+        },
+        "paired_mse_gain_bps_squared": 7.41208,
+        "paired_mse_gain_90ci": [
+          -11.1803,
+          24.3446
+        ],
+        "by_year": {
+          "2024": {
+            "predictions": 162,
+            "mse_gain_bps_squared": 24.0499
+          },
+          "2025": {
+            "predictions": 177,
+            "mse_gain_bps_squared": -13.15358
+          },
+          "2026": {
+            "predictions": 160,
+            "mse_gain_bps_squared": 13.31704
+          }
+        }
+      },
+      "economics": {
+        "205": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 531,
+              "OVER_LIMIT": 56,
+              "ENTERED": 99,
+              "NO_LABEL_OR_CASH": 14
+            },
+            "decisions": 169,
+            "fills": 99,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 88,
+              "STOP": 11
+            },
+            "max_debit": 14922.65,
+            "net": -29924.01,
+            "per_session": -42.75,
+            "per_session_90ci": [
+              -93.1927,
+              16.8044
+            ],
+            "net_ex_best": -40777.77,
+            "maximum_realized_drawdown": 39568.86,
+            "worst_day": -3712.81,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 52,
+                "fills": 30,
+                "net": -12306.61
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 67,
+                "fills": 38,
+                "net": -11414.27
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 50,
+                "fills": 31,
+                "net": -6203.13
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 46,
+              "ENTERED": 93,
+              "NO_LABEL_OR_CASH": 11
+            },
+            "decisions": 150,
+            "fills": 93,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 77,
+              "STOP": 16
+            },
+            "max_debit": 14922.65,
+            "net": -35934.9,
+            "per_session": -51.34,
+            "per_session_90ci": [
+              -101.1194,
+              -0.0723
+            ],
+            "net_ex_best": -42499.81,
+            "maximum_realized_drawdown": 41075.03,
+            "worst_day": -3473.68,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 55,
+                "fills": 32,
+                "net": -17607.86
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 46,
+                "fills": 32,
+                "net": -5506.16
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -12820.87
+              }
+            }
+          },
+          "delta": 6010.89,
+          "delta_per_session_90ci": [
+            -64.3086,
+            84.8745
+          ],
+          "matched_coin_net": -28273.84,
+          "edge_vs_coin_90ci": [
+            -46.6916,
+            44.3318
+          ]
+        },
+        "400": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 531,
+              "OVER_LIMIT": 56,
+              "ENTERED": 99,
+              "NO_LABEL_OR_CASH": 14
+            },
+            "decisions": 169,
+            "fills": 99,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 85,
+              "STOP": 14
+            },
+            "max_debit": 14922.65,
+            "net": -48460.24,
+            "per_session": -69.23,
+            "per_session_90ci": [
+              -121.1108,
+              -8.6408
+            ],
+            "net_ex_best": -59119.0,
+            "maximum_realized_drawdown": 57262.94,
+            "worst_day": -3511.89,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 52,
+                "fills": 30,
+                "net": -19051.89
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 67,
+                "fills": 38,
+                "net": -17903.04
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 50,
+                "fills": 31,
+                "net": -11505.31
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 46,
+              "ENTERED": 93,
+              "NO_LABEL_OR_CASH": 11
+            },
+            "decisions": 150,
+            "fills": 93,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 74,
+              "STOP": 19
+            },
+            "max_debit": 14922.65,
+            "net": -54708.92,
+            "per_session": -78.16,
+            "per_session_90ci": [
+              -130.3489,
+              -26.948
+            ],
+            "net_ex_best": -61078.83,
+            "maximum_realized_drawdown": 56868.46,
+            "worst_day": -3563.8,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 55,
+                "fills": 32,
+                "net": -25090.22
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 46,
+                "fills": 32,
+                "net": -11535.32
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -18083.38
+              }
+            }
+          },
+          "delta": 6248.68,
+          "delta_per_session_90ci": [
+            -64.8646,
+            85.7862
+          ],
+          "matched_coin_net": -47010.06,
+          "edge_vs_coin_90ci": [
+            -45.6693,
+            43.8445
+          ]
+        },
+        "gates": {
+          "at_least_30_fills_both": true,
+          "resolved_both": true,
+          "positive_all_years_both": false,
+          "154_per_session_at_205": false,
+          "positive_without_best_at_400": false,
+          "lower_90ci_at_400_positive": false
+        },
+        "advances": false
+      }
+    },
+    "R4": {
+      "forecast": {
+        "usable_training_and_test_dates": 833,
+        "predictions": 499,
+        "base": {
+          "correlation": -0.05479,
+          "sign_accuracy": 0.45892,
+          "rmse_bps": 25.68427
+        },
+        "augmented": {
+          "correlation": -0.06513,
+          "sign_accuracy": 0.46293,
+          "rmse_bps": 25.75004
+        },
+        "paired_mse_gain_bps_squared": -3.38276,
+        "paired_mse_gain_90ci": [
+          -6.0338,
+          -0.5816
+        ],
+        "by_year": {
+          "2024": {
+            "predictions": 162,
+            "mse_gain_bps_squared": -6.05621
+          },
+          "2025": {
+            "predictions": 177,
+            "mse_gain_bps_squared": -1.79274
+          },
+          "2026": {
+            "predictions": 160,
+            "mse_gain_bps_squared": -2.43484
+          }
+        }
+      },
+      "economics": {
+        "205": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 47,
+              "ENTERED": 95,
+              "NO_LABEL_OR_CASH": 8
+            },
+            "decisions": 150,
+            "fills": 95,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 79,
+              "STOP": 16
+            },
+            "max_debit": 14922.65,
+            "net": -46437.27,
+            "per_session": -66.34,
+            "per_session_90ci": [
+              -120.2319,
+              -10.4634
+            ],
+            "net_ex_best": -53002.18,
+            "maximum_realized_drawdown": 50695.66,
+            "worst_day": -3473.68,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 51,
+                "fills": 31,
+                "net": -16668.68
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 52,
+                "fills": 30,
+                "net": -3843.56
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 47,
+                "fills": 34,
+                "net": -25925.02
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 46,
+              "ENTERED": 93,
+              "NO_LABEL_OR_CASH": 11
+            },
+            "decisions": 150,
+            "fills": 93,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 77,
+              "STOP": 16
+            },
+            "max_debit": 14922.65,
+            "net": -35934.9,
+            "per_session": -51.34,
+            "per_session_90ci": [
+              -101.1194,
+              -0.0723
+            ],
+            "net_ex_best": -42499.81,
+            "maximum_realized_drawdown": 41075.03,
+            "worst_day": -3473.68,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 55,
+                "fills": 32,
+                "net": -17607.86
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 46,
+                "fills": 32,
+                "net": -5506.16
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -12820.87
+              }
+            }
+          },
+          "delta": -10502.37,
+          "delta_per_session_90ci": [
+            -39.8112,
+            10.2681
+          ],
+          "matched_coin_net": -26226.46,
+          "edge_vs_coin_90ci": [
+            -74.2168,
+            14.409
+          ]
+        },
+        "400": {
+          "candidate": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 47,
+              "ENTERED": 95,
+              "NO_LABEL_OR_CASH": 8
+            },
+            "decisions": 150,
+            "fills": 95,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 76,
+              "STOP": 19
+            },
+            "max_debit": 14922.65,
+            "net": -65247.72,
+            "per_session": -93.21,
+            "per_session_90ci": [
+              -151.1154,
+              -35.8092
+            ],
+            "net_ex_best": -71617.63,
+            "maximum_realized_drawdown": 67407.26,
+            "worst_day": -3563.8,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 51,
+                "fills": 31,
+                "net": -23956.04
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 52,
+                "fills": 30,
+                "net": -9245.92
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 47,
+                "fills": 34,
+                "net": -32045.75
+              }
+            }
+          },
+          "control": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 550,
+              "OVER_LIMIT": 46,
+              "ENTERED": 93,
+              "NO_LABEL_OR_CASH": 11
+            },
+            "decisions": 150,
+            "fills": 93,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 74,
+              "STOP": 19
+            },
+            "max_debit": 14922.65,
+            "net": -54708.92,
+            "per_session": -78.16,
+            "per_session_90ci": [
+              -130.3489,
+              -26.948
+            ],
+            "net_ex_best": -61078.83,
+            "maximum_realized_drawdown": 56868.46,
+            "worst_day": -3563.8,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 55,
+                "fills": 32,
+                "net": -25090.22
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 46,
+                "fills": 32,
+                "net": -11535.32
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 49,
+                "fills": 29,
+                "net": -18083.38
+              }
+            }
+          },
+          "delta": -10538.8,
+          "delta_per_session_90ci": [
+            -40.0575,
+            10.6407
+          ],
+          "matched_coin_net": -42809.38,
+          "edge_vs_coin_90ci": [
+            -77.2211,
+            10.6048
+          ]
+        },
+        "gates": {
+          "at_least_30_fills_both": true,
+          "resolved_both": true,
+          "positive_all_years_both": false,
+          "154_per_session_at_205": false,
+          "positive_without_best_at_400": false,
+          "lower_90ci_at_400_positive": false
+        },
+        "advances": false
+      }
+    },
+    "R5": {
+      "205": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 610,
+            "OVER_LIMIT": 33,
+            "ENTERED": 57
+          },
+          "decisions": 90,
+          "fills": 57,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 44,
+            "STOP": 13
+          },
+          "max_debit": 14825.1,
+          "net": -28510.43,
+          "per_session": -40.73,
+          "per_session_90ci": [
+            -89.1021,
+            10.8609
+          ],
+          "net_ex_best": -40213.11,
+          "maximum_realized_drawdown": 31059.97,
+          "worst_day": -3473.68,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 31,
+              "fills": 19,
+              "net": -24001.79
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 40,
+              "fills": 28,
+              "net": -2774.47
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 19,
+              "fills": 10,
+              "net": -1734.17
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 528,
+            "OVER_LIMIT": 63,
+            "ENTERED": 92,
+            "NO_LABEL_OR_CASH": 17
+          },
+          "decisions": 172,
+          "fills": 92,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 75,
+            "STOP": 17
+          },
+          "max_debit": 14922.65,
+          "net": -33954.44,
+          "per_session": -48.51,
+          "per_session_90ci": [
+            -96.2937,
+            5.0835
+          ],
+          "net_ex_best": -40792.6,
+          "maximum_realized_drawdown": 50115.21,
+          "worst_day": -3712.81,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 56,
+              "fills": 33,
+              "net": -23519.43
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 63,
+              "fills": 33,
+              "net": -22097.29
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 53,
+              "fills": 26,
+              "net": 11662.28
+            }
+          }
+        },
+        "delta": 5444.01,
+        "delta_per_session_90ci": [
+          -45.357,
+          61.8362
+        ],
+        "matched_coin_net": -18168.42,
+        "edge_vs_coin_90ci": [
+          -58.9363,
+          26.5625
+        ]
+      },
+      "400": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 610,
+            "OVER_LIMIT": 33,
+            "ENTERED": 57
+          },
+          "decisions": 90,
+          "fills": 57,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 41,
+            "STOP": 16
+          },
+          "max_debit": 14825.1,
+          "net": -37575.37,
+          "per_session": -53.68,
+          "per_session_90ci": [
+            -103.2106,
+            -1.854
+          ],
+          "net_ex_best": -49083.05,
+          "maximum_realized_drawdown": 39734.91,
+          "worst_day": -3511.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 31,
+              "fills": 19,
+              "net": -26818.0
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 40,
+              "fills": 28,
+              "net": -7073.2
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 19,
+              "fills": 10,
+              "net": -3684.17
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 528,
+            "OVER_LIMIT": 63,
+            "ENTERED": 92,
+            "NO_LABEL_OR_CASH": 17
+          },
+          "decisions": 172,
+          "fills": 92,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 71,
+            "STOP": 21
+          },
+          "max_debit": 14922.65,
+          "net": -54502.42,
+          "per_session": -77.86,
+          "per_session_90ci": [
+            -127.7328,
+            -23.6282
+          ],
+          "net_ex_best": -61145.58,
+          "maximum_realized_drawdown": 66485.05,
+          "worst_day": -3599.47,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 56,
+              "fills": 33,
+              "net": -30450.73
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 63,
+              "fills": 33,
+              "net": -27267.23
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 53,
+              "fills": 26,
+              "net": 3215.53
+            }
+          }
+        },
+        "delta": 16927.05,
+        "delta_per_session_90ci": [
+          -31.7083,
+          82.2908
+        ],
+        "matched_coin_net": -26353.55,
+        "edge_vs_coin_90ci": [
+          -58.963,
+          23.7857
+        ]
+      },
+      "gates": {
+        "at_least_30_fills_both": true,
+        "resolved_both": true,
+        "positive_all_years_both": false,
+        "154_per_session_at_205": false,
+        "positive_without_best_at_400": false,
+        "lower_90ci_at_400_positive": false
+      },
+      "advances": false
+    },
+    "R6": {
+      "205": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "OVER_LIMIT": 13,
+            "ENTERED": 21
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 18,
+            "STOP": 3
+          },
+          "max_debit": 14825.1,
+          "net": 4111.6,
+          "per_session": 5.87,
+          "per_session_90ci": [
+            -27.7787,
+            44.2492
+          ],
+          "net_ex_best": -7591.08,
+          "maximum_realized_drawdown": 10093.03,
+          "worst_day": -3316.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 7,
+              "net": -6848.04
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 13,
+              "net": 8308.14
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2651.49
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 610,
+            "OVER_LIMIT": 33,
+            "ENTERED": 57
+          },
+          "decisions": 90,
+          "fills": 57,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 44,
+            "STOP": 13
+          },
+          "max_debit": 14825.1,
+          "net": -28510.43,
+          "per_session": -40.73,
+          "per_session_90ci": [
+            -89.1021,
+            10.8609
+          ],
+          "net_ex_best": -40213.11,
+          "maximum_realized_drawdown": 31059.97,
+          "worst_day": -3473.68,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 31,
+              "fills": 19,
+              "net": -24001.79
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 40,
+              "fills": 28,
+              "net": -2774.47
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 19,
+              "fills": 10,
+              "net": -1734.17
+            }
+          }
+        },
+        "delta": 32622.03,
+        "delta_per_session_90ci": [
+          19.6994,
+          77.7001
+        ],
+        "matched_coin_net": -4260.78,
+        "edge_vs_coin_90ci": [
+          -15.192,
+          39.4385
+        ]
+      },
+      "400": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "OVER_LIMIT": 13,
+            "ENTERED": 21
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 18,
+            "STOP": 3
+          },
+          "max_debit": 14825.1,
+          "net": 610.2,
+          "per_session": 0.87,
+          "per_session_90ci": [
+            -33.6697,
+            39.5941
+          ],
+          "net_ex_best": -10897.47,
+          "maximum_realized_drawdown": 11670.0,
+          "worst_day": -3511.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 7,
+              "net": -7992.47
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 13,
+              "net": 6146.17
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2456.49
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 610,
+            "OVER_LIMIT": 33,
+            "ENTERED": 57
+          },
+          "decisions": 90,
+          "fills": 57,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 41,
+            "STOP": 16
+          },
+          "max_debit": 14825.1,
+          "net": -37575.37,
+          "per_session": -53.68,
+          "per_session_90ci": [
+            -103.2106,
+            -1.854
+          ],
+          "net_ex_best": -49083.05,
+          "maximum_realized_drawdown": 39734.91,
+          "worst_day": -3511.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 31,
+              "fills": 19,
+              "net": -26818.0
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 40,
+              "fills": 28,
+              "net": -7073.2
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 19,
+              "fills": 10,
+              "net": -3684.17
+            }
+          }
+        },
+        "delta": 38185.58,
+        "delta_per_session_90ci": [
+          26.3079,
+          86.2369
+        ],
+        "matched_coin_net": -7020.6,
+        "edge_vs_coin_90ci": [
+          -15.8722,
+          37.2248
+        ]
+      },
+      "gates": {
+        "at_least_30_fills_both": false,
+        "resolved_both": true,
+        "positive_all_years_both": false,
+        "154_per_session_at_205": false,
+        "positive_without_best_at_400": false,
+        "lower_90ci_at_400_positive": false
+      },
+      "advances": false
+    },
+    "R7": {
+      "205": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 643,
+            "OVER_LIMIT": 23,
+            "ENTERED": 34
+          },
+          "decisions": 57,
+          "fills": 34,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 31,
+            "STOP": 3
+          },
+          "max_debit": 14860.87,
+          "net": -449.06,
+          "per_session": -0.64,
+          "per_session_90ci": [
+            -33.9933,
+            36.4856
+          ],
+          "net_ex_best": -12151.74,
+          "maximum_realized_drawdown": 10831.28,
+          "worst_day": -3316.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 24,
+              "fills": 12,
+              "net": -9593.91
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 24,
+              "fills": 18,
+              "net": 7287.68
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 9,
+              "fills": 4,
+              "net": 1857.17
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "OVER_LIMIT": 13,
+            "ENTERED": 21
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 18,
+            "STOP": 3
+          },
+          "max_debit": 14825.1,
+          "net": 4111.6,
+          "per_session": 5.87,
+          "per_session_90ci": [
+            -27.7787,
+            44.2492
+          ],
+          "net_ex_best": -7591.08,
+          "maximum_realized_drawdown": 10093.03,
+          "worst_day": -3316.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 7,
+              "net": -6848.04
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 13,
+              "net": 8308.14
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2651.49
+            }
+          }
+        },
+        "delta": -4560.66,
+        "delta_per_session_90ci": [
+          -18.1113,
+          4.4841
+        ],
+        "matched_coin_net": -8678.38,
+        "edge_vs_coin_90ci": [
+          -15.5514,
+          39.6837
+        ]
+      },
+      "400": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 643,
+            "OVER_LIMIT": 23,
+            "ENTERED": 34
+          },
+          "decisions": 57,
+          "fills": 34,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 31,
+            "STOP": 3
+          },
+          "max_debit": 14860.87,
+          "net": -6485.46,
+          "per_session": -9.26,
+          "per_session_90ci": [
+            -43.3262,
+            28.1686
+          ],
+          "net_ex_best": -17993.13,
+          "maximum_realized_drawdown": 12560.7,
+          "worst_day": -3511.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 24,
+              "fills": 12,
+              "net": -11713.34
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 24,
+              "fills": 18,
+              "net": 4150.71
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 9,
+              "fills": 4,
+              "net": 1077.17
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "OVER_LIMIT": 13,
+            "ENTERED": 21
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 18,
+            "STOP": 3
+          },
+          "max_debit": 14825.1,
+          "net": 610.2,
+          "per_session": 0.87,
+          "per_session_90ci": [
+            -33.6697,
+            39.5941
+          ],
+          "net_ex_best": -10897.47,
+          "maximum_realized_drawdown": 11670.0,
+          "worst_day": -3511.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 7,
+              "net": -7992.47
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 13,
+              "net": 6146.17
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2456.49
+            }
+          }
+        },
+        "delta": -7095.66,
+        "delta_per_session_90ci": [
+          -22.6178,
+          1.4541
+        ],
+        "matched_coin_net": -13778.2,
+        "edge_vs_coin_90ci": [
+          -16.458,
+          37.9972
+        ]
+      },
+      "gates": {
+        "at_least_30_fills_both": true,
+        "resolved_both": true,
+        "positive_all_years_both": false,
+        "154_per_session_at_205": false,
+        "positive_without_best_at_400": false,
+        "lower_90ci_at_400_positive": false
+      },
+      "advances": false,
+      "chosen_horizons": {
+        "60": 30,
+        "20": 27
+      }
+    },
+    "R8": {
+      "205": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "ENTERED": 21,
+            "OVER_LIMIT": 13
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "STOP": 4,
+            "TIME": 17
+          },
+          "max_debit": 14825.1,
+          "net": -8613.43,
+          "per_session": -12.3,
+          "per_session_90ci": [
+            -49.599,
+            28.4027
+          ],
+          "net_ex_best": -21294.61,
+          "maximum_realized_drawdown": 13518.06,
+          "worst_day": -3316.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 8,
+              "net": -13518.06
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 12,
+              "net": 1975.2
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2929.43
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "OVER_LIMIT": 13,
+            "ENTERED": 21
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 18,
+            "STOP": 3
+          },
+          "max_debit": 14825.1,
+          "net": 4111.6,
+          "per_session": 5.87,
+          "per_session_90ci": [
+            -27.7787,
+            44.2492
+          ],
+          "net_ex_best": -7591.08,
+          "maximum_realized_drawdown": 10093.03,
+          "worst_day": -3316.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 7,
+              "net": -6848.04
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 13,
+              "net": 8308.14
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2651.49
+            }
+          }
+        },
+        "delta": -12725.02,
+        "delta_per_session_90ci": [
+          -33.8977,
+          -4.5424
+        ],
+        "matched_coin_net": -10495.29,
+        "edge_vs_coin_90ci": [
+          -24.5745,
+          27.7052
+        ]
+      },
+      "400": {
+        "candidate": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "ENTERED": 21,
+            "OVER_LIMIT": 13
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "STOP": 8,
+            "TIME": 13
+          },
+          "max_debit": 14825.1,
+          "net": -16795.56,
+          "per_session": -23.99,
+          "per_session_90ci": [
+            -64.555,
+            18.0546
+          ],
+          "net_ex_best": -29281.74,
+          "maximum_realized_drawdown": 19530.0,
+          "worst_day": -3511.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 8,
+              "net": -16933.49
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 12,
+              "net": -2596.5
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2734.43
+            }
+          }
+        },
+        "control": {
+          "sessions": 700,
+          "states": {
+            "NO_SIGNAL": 666,
+            "OVER_LIMIT": 13,
+            "ENTERED": 21
+          },
+          "decisions": 34,
+          "fills": 21,
+          "missing_exit": 0,
+          "exit_reasons": {
+            "TIME": 18,
+            "STOP": 3
+          },
+          "max_debit": 14825.1,
+          "net": 610.2,
+          "per_session": 0.87,
+          "per_session_90ci": [
+            -33.6697,
+            39.5941
+          ],
+          "net_ex_best": -10897.47,
+          "maximum_realized_drawdown": 11670.0,
+          "worst_day": -3511.89,
+          "by_year": {
+            "2024": {
+              "sessions": 248,
+              "decisions": 14,
+              "fills": 7,
+              "net": -7992.47
+            },
+            "2025": {
+              "sessions": 249,
+              "decisions": 16,
+              "fills": 13,
+              "net": 6146.17
+            },
+            "2026": {
+              "sessions": 203,
+              "decisions": 4,
+              "fills": 1,
+              "net": 2456.49
+            }
+          }
+        },
+        "delta": -17405.77,
+        "delta_per_session_90ci": [
+          -44.694,
+          -7.7274
+        ],
+        "matched_coin_net": -16824.87,
+        "edge_vs_coin_90ci": [
+          -27.6232,
+          25.1281
+        ]
+      },
+      "gates": {
+        "at_least_30_fills_both": false,
+        "resolved_both": true,
+        "positive_all_years_both": false,
+        "154_per_session_at_205": false,
+        "positive_without_best_at_400": false,
+        "lower_90ci_at_400_positive": false
+      },
+      "advances": false
+    },
+    "R9": {
+      "days": [
+        "2026-09-10",
+        "2026-09-11",
+        "2026-09-16",
+        "2026-09-17",
+        "2026-09-21",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-25",
+        "2026-09-28",
+        "2026-09-30",
+        "2026-10-01",
+        "2026-10-05",
+        "2026-10-07",
+        "2026-10-08",
+        "2026-10-09",
+        "2026-10-12",
+        "2026-10-14",
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-21",
+        "2026-10-22",
+        "2026-10-23",
+        "2026-10-26",
+        "2026-10-28"
+      ],
+      "quote": {
+        "205": {
+          "sessions": 24,
+          "states": {
+            "NO_SIGNAL": 24
+          },
+          "decisions": 0,
+          "fills": 0,
+          "missing_exit": 0,
+          "exit_reasons": {},
+          "max_debit": 0.0,
+          "net": 0.0,
+          "per_session": 0.0,
+          "per_session_90ci": [
+            0.0,
+            0.0
+          ],
+          "net_ex_best": 0.0,
+          "maximum_realized_drawdown": 0.0,
+          "worst_day": 0.0,
+          "by_year": {
+            "2026": {
+              "sessions": 24,
+              "decisions": 0,
+              "fills": 0,
+              "net": 0.0
+            }
+          }
+        },
+        "400": {
+          "sessions": 24,
+          "states": {
+            "NO_SIGNAL": 24
+          },
+          "decisions": 0,
+          "fills": 0,
+          "missing_exit": 0,
+          "exit_reasons": {},
+          "max_debit": 0.0,
+          "net": 0.0,
+          "per_session": 0.0,
+          "per_session_90ci": [
+            0.0,
+            0.0
+          ],
+          "net_ex_best": 0.0,
+          "maximum_realized_drawdown": 0.0,
+          "worst_day": 0.0,
+          "by_year": {
+            "2026": {
+              "sessions": 24,
+              "decisions": 0,
+              "fills": 0,
+              "net": 0.0
+            }
+          }
+        }
+      },
+      "bar_same_days": {
+        "205": {
+          "sessions": 24,
+          "states": {
+            "NO_SIGNAL": 24
+          },
+          "decisions": 0,
+          "fills": 0,
+          "missing_exit": 0,
+          "exit_reasons": {},
+          "max_debit": 0.0,
+          "net": 0.0,
+          "per_session": 0.0,
+          "per_session_90ci": [
+            0.0,
+            0.0
+          ],
+          "net_ex_best": 0.0,
+          "maximum_realized_drawdown": 0.0,
+          "worst_day": 0.0,
+          "by_year": {
+            "2026": {
+              "sessions": 24,
+              "decisions": 0,
+              "fills": 0,
+              "net": 0.0
+            }
+          }
+        },
+        "400": {
+          "sessions": 24,
+          "states": {
+            "NO_SIGNAL": 24
+          },
+          "decisions": 0,
+          "fills": 0,
+          "missing_exit": 0,
+          "exit_reasons": {},
+          "max_debit": 0.0,
+          "net": 0.0,
+          "per_session": 0.0,
+          "per_session_90ci": [
+            0.0,
+            0.0
+          ],
+          "net_ex_best": 0.0,
+          "maximum_realized_drawdown": 0.0,
+          "worst_day": 0.0,
+          "by_year": {
+            "2026": {
+              "sessions": 24,
+              "decisions": 0,
+              "fills": 0,
+              "net": 0.0
+            }
+          }
+        }
+      },
+      "per_day": {
+        "205": {},
+        "400": {}
+      }
+    },
+    "R10": {
+      "gold_baseline": {
+        "2022": {
+          "net": -15281,
+          "by_year": {
+            "2022": -15281
+          },
+          "months_positive": 4,
+          "months": 12,
+          "worst_month": -9276,
+          "worst_day": -5992,
+          "refilled": 53896,
+          "trades": 30,
+          "sessions": 190,
+          "per_session": -80.4,
+          "final_wallet": 30000
+        },
+        "2023-2026": {
+          "net": 850883,
+          "by_year": {
+            "2023": -12107,
+            "2024": 187476,
+            "2025": 292811,
+            "2026": 382702
+          },
+          "months_positive": 25,
+          "months": 46,
+          "worst_month": -38531,
+          "worst_day": -21113,
+          "refilled": 562130,
+          "trades": 156,
+          "sessions": 742,
+          "per_session": 1146.7,
+          "final_wallet": 101250
+        }
+      },
+      "clear_sessions": 542,
+      "decisions_blocked": 1,
+      "stress": {
+        "205": {
+          "gold_priority_bar_diagnostic": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 667,
+              "OVER_LIMIT": 13,
+              "ENTERED": 20
+            },
+            "decisions": 33,
+            "fills": 20,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 17,
+              "STOP": 3
+            },
+            "max_debit": 14825.1,
+            "net": 1614.92,
+            "per_session": 2.31,
+            "per_session_90ci": [
+              -30.6426,
+              39.6496
+            ],
+            "net_ex_best": -10087.75,
+            "maximum_realized_drawdown": 10093.03,
+            "worst_day": -3316.89,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 14,
+                "fills": 7,
+                "net": -6848.04
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 15,
+                "fills": 12,
+                "net": 5811.47
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 4,
+                "fills": 1,
+                "net": 2651.49
+              }
+            }
+          },
+          "standalone": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 666,
+              "OVER_LIMIT": 13,
+              "ENTERED": 21
+            },
+            "decisions": 34,
+            "fills": 21,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 18,
+              "STOP": 3
+            },
+            "max_debit": 14825.1,
+            "net": 4111.6,
+            "per_session": 5.87,
+            "per_session_90ci": [
+              -27.7787,
+              44.2492
+            ],
+            "net_ex_best": -7591.08,
+            "maximum_realized_drawdown": 10093.03,
+            "worst_day": -3316.89,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 14,
+                "fills": 7,
+                "net": -6848.04
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 16,
+                "fills": 13,
+                "net": 8308.14
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 4,
+                "fills": 1,
+                "net": 2651.49
+              }
+            }
+          },
+          "possible_collision_days": []
+        },
+        "400": {
+          "gold_priority_bar_diagnostic": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 667,
+              "OVER_LIMIT": 13,
+              "ENTERED": 20
+            },
+            "decisions": 33,
+            "fills": 20,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 17,
+              "STOP": 3
+            },
+            "max_debit": 14825.1,
+            "net": -1691.47,
+            "per_session": -2.42,
+            "per_session_90ci": [
+              -36.4666,
+              34.9248
+            ],
+            "net_ex_best": -13199.14,
+            "maximum_realized_drawdown": 11670.0,
+            "worst_day": -3511.89,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 14,
+                "fills": 7,
+                "net": -7992.47
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 15,
+                "fills": 12,
+                "net": 3844.5
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 4,
+                "fills": 1,
+                "net": 2456.49
+              }
+            }
+          },
+          "standalone": {
+            "sessions": 700,
+            "states": {
+              "NO_SIGNAL": 666,
+              "OVER_LIMIT": 13,
+              "ENTERED": 21
+            },
+            "decisions": 34,
+            "fills": 21,
+            "missing_exit": 0,
+            "exit_reasons": {
+              "TIME": 18,
+              "STOP": 3
+            },
+            "max_debit": 14825.1,
+            "net": 610.2,
+            "per_session": 0.87,
+            "per_session_90ci": [
+              -33.6697,
+              39.5941
+            ],
+            "net_ex_best": -10897.47,
+            "maximum_realized_drawdown": 11670.0,
+            "worst_day": -3511.89,
+            "by_year": {
+              "2024": {
+                "sessions": 248,
+                "decisions": 14,
+                "fills": 7,
+                "net": -7992.47
+              },
+              "2025": {
+                "sessions": 249,
+                "decisions": 16,
+                "fills": 13,
+                "net": 6146.17
+              },
+              "2026": {
+                "sessions": 203,
+                "decisions": 4,
+                "fills": 1,
+                "net": 2456.49
+              }
+            }
+          },
+          "possible_collision_days": []
+        }
+      }
+    }
+  }
+}

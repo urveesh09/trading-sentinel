@@ -1,0 +1,466 @@
+{
+ "history": {
+  "expiries": 43,
+  "covering_prev_expiry_day": 0,
+  "rows": [
+   {
+    "expiry": "2026-01-13",
+    "prev_expiry": "2026-01-06",
+    "first_request": "2026-01-07",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-01-20",
+    "prev_expiry": "2026-01-13",
+    "first_request": "2026-01-14",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-01-27",
+    "prev_expiry": "2026-01-20",
+    "first_request": "2026-01-21",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-02-03",
+    "prev_expiry": "2026-01-27",
+    "first_request": "2026-01-28",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-02-10",
+    "prev_expiry": "2026-02-03",
+    "first_request": "2026-02-04",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-02-17",
+    "prev_expiry": "2026-02-10",
+    "first_request": "2026-02-11",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-02-24",
+    "prev_expiry": "2026-02-17",
+    "first_request": "2026-02-18",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-03-02",
+    "prev_expiry": "2026-02-24",
+    "first_request": "2026-02-25",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-03-10",
+    "prev_expiry": "2026-03-02",
+    "first_request": "2026-03-04",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-03-17",
+    "prev_expiry": "2026-03-10",
+    "first_request": "2026-03-11",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-03-24",
+    "prev_expiry": "2026-03-17",
+    "first_request": "2026-03-18",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-03-30",
+    "prev_expiry": "2026-03-24",
+    "first_request": "2026-03-25",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-04-07",
+    "prev_expiry": "2026-03-30",
+    "first_request": "2026-04-01",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-04-13",
+    "prev_expiry": "2026-04-07",
+    "first_request": "2026-04-08",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-04-21",
+    "prev_expiry": "2026-04-13",
+    "first_request": "2026-04-15",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-04-28",
+    "prev_expiry": "2026-04-21",
+    "first_request": "2026-04-22",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-05-05",
+    "prev_expiry": "2026-04-28",
+    "first_request": "2026-04-29",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-05-12",
+    "prev_expiry": "2026-05-05",
+    "first_request": "2026-05-06",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-05-19",
+    "prev_expiry": "2026-05-12",
+    "first_request": "2026-05-13",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-05-26",
+    "prev_expiry": "2026-05-19",
+    "first_request": "2026-05-20",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-06-02",
+    "prev_expiry": "2026-05-26",
+    "first_request": "2026-05-27",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-06-09",
+    "prev_expiry": "2026-06-02",
+    "first_request": "2026-06-03",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-06-16",
+    "prev_expiry": "2026-06-09",
+    "first_request": "2026-06-10",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-06-23",
+    "prev_expiry": "2026-06-16",
+    "first_request": "2026-06-17",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-06-30",
+    "prev_expiry": "2026-06-23",
+    "first_request": "2026-06-24",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-07-07",
+    "prev_expiry": "2026-06-30",
+    "first_request": "2026-07-01",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-07-14",
+    "prev_expiry": "2026-07-07",
+    "first_request": "2026-07-08",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-07-21",
+    "prev_expiry": "2026-07-14",
+    "first_request": "2026-07-15",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-07-28",
+    "prev_expiry": "2026-07-21",
+    "first_request": "2026-07-22",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-08-04",
+    "prev_expiry": "2026-07-28",
+    "first_request": "2026-07-29",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-08-11",
+    "prev_expiry": "2026-08-04",
+    "first_request": "2026-08-05",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-08-18",
+    "prev_expiry": "2026-08-11",
+    "first_request": "2026-08-12",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-08-25",
+    "prev_expiry": "2026-08-18",
+    "first_request": "2026-08-19",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-09-01",
+    "prev_expiry": "2026-08-25",
+    "first_request": "2026-08-26",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-09-08",
+    "prev_expiry": "2026-09-01",
+    "first_request": "2026-09-02",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-09-15",
+    "prev_expiry": "2026-09-08",
+    "first_request": "2026-09-09",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-09-22",
+    "prev_expiry": "2026-09-15",
+    "first_request": "2026-09-16",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-09-29",
+    "prev_expiry": "2026-09-22",
+    "first_request": "2026-09-23",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-10-06",
+    "prev_expiry": "2026-09-29",
+    "first_request": "2026-09-30",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-10-13",
+    "prev_expiry": "2026-10-06",
+    "first_request": "2026-10-07",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-10-19",
+    "prev_expiry": "2026-10-13",
+    "first_request": "2026-10-14",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-10-27",
+    "prev_expiry": "2026-10-19",
+    "first_request": "2026-10-21",
+    "covers_prev_expiry_day": false
+   },
+   {
+    "expiry": "2026-11-03",
+    "prev_expiry": "2026-10-27",
+    "first_request": "2026-10-28",
+    "covers_prev_expiry_day": false
+   }
+  ]
+ },
+ "roll_days": [
+  {
+   "day": "2026-09-16",
+   "prev": "2026-09-15",
+   "front": "2026-09-22",
+   "roll": true,
+   "reading": false
+  },
+  {
+   "day": "2026-09-23",
+   "prev": "2026-09-22",
+   "front": "2026-09-29",
+   "roll": true,
+   "reading": false
+  },
+  {
+   "day": "2026-09-30",
+   "prev": "2026-09-29",
+   "front": "2026-10-06",
+   "roll": true,
+   "reading": true,
+   "jump": 0.4282201099616023,
+   "d_total_variance": -1.4810967130864897e-05,
+   "cheap": true,
+   "gap_proxy_pts": 100.79999999999927,
+   "trade@205": {
+    "depth": 2,
+    "net": 1342.43,
+    "exit_t": "10:16:58",
+    "why": "time",
+    "debit": 11544.38
+   },
+   "trade@400": {
+    "depth": 2,
+    "net": 1147.43,
+    "exit_t": "10:16:58",
+    "why": "time",
+    "debit": 11544.38
+   }
+  },
+  {
+   "day": "2026-10-07",
+   "prev": "2026-10-06",
+   "front": "2026-10-13",
+   "roll": true,
+   "reading": true,
+   "jump": 0.49751675596938494,
+   "d_total_variance": -1.037589471122142e-05,
+   "cheap": true,
+   "gap_proxy_pts": -114.79999999999927,
+   "trade@205": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   },
+   "trade@400": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   }
+  },
+  {
+   "day": "2026-10-14",
+   "prev": "2026-10-13",
+   "front": "2026-10-19",
+   "roll": true,
+   "reading": true,
+   "jump": 1.2387754076160828,
+   "d_total_variance": 1.3945816513788239e-05,
+   "cheap": true,
+   "gap_proxy_pts": -106.70000000000073,
+   "trade@205": {
+    "depth": 2,
+    "net": 1700.32,
+    "exit_t": "10:16:26",
+    "why": "time",
+    "debit": 13830.16
+   },
+   "trade@400": {
+    "depth": 2,
+    "net": 1505.32,
+    "exit_t": "10:16:26",
+    "why": "time",
+    "debit": 13830.16
+   }
+  },
+  {
+   "day": "2026-10-21",
+   "prev": "2026-10-19",
+   "front": "2026-10-27",
+   "roll": true,
+   "reading": true,
+   "jump": 1.1631773156628278,
+   "d_total_variance": -2.5199233980933967e-05,
+   "cheap": true,
+   "gap_proxy_pts": 105.09999999999854,
+   "trade@205": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   },
+   "trade@400": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   }
+  },
+  {
+   "day": "2026-10-28",
+   "prev": "2026-10-27",
+   "front": "2026-11-03",
+   "roll": true,
+   "reading": true,
+   "jump": 2.7258479754743217,
+   "d_total_variance": 0.0001061876960732613,
+   "cheap": false,
+   "gap_proxy_pts": -106.40000000000146,
+   "trade@205": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   },
+   "trade@400": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   }
+  },
+  {
+   "day": "2026-11-04",
+   "prev": "2026-11-03",
+   "front": "2026-11-09",
+   "roll": true,
+   "reading": true,
+   "jump": 1.8491005320570242,
+   "d_total_variance": 3.7749621574778634e-05,
+   "cheap": false,
+   "gap_proxy_pts": -38.89999999999782,
+   "trade@205": {
+    "depth": 2,
+    "net": -3116.11,
+    "exit_t": "09:28:25",
+    "why": "stop",
+    "debit": 13596.05
+   },
+   "trade@400": {
+    "depth": 2,
+    "net": -3148.92,
+    "exit_t": "09:27:27",
+    "why": "stop",
+    "debit": 13596.05
+   }
+  },
+  {
+   "day": "2026-11-11",
+   "prev": "2026-11-09",
+   "front": "2026-11-17",
+   "roll": true,
+   "reading": true,
+   "jump": 1.0649831370619423,
+   "d_total_variance": -7.451693470924832e-05,
+   "cheap": true,
+   "gap_proxy_pts": 320.2000000000007,
+   "trade@205": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   },
+   "trade@400": {
+    "depth": null,
+    "net": null,
+    "why": "INADMISSIBLE"
+   }
+  }
+ ],
+ "roll_summary": {
+  "roll_days": 9,
+  "with_reading": 7,
+  "cheap": 5,
+  "affordable_trades": 3,
+  "all_roll per_session@205": -8.2,
+  "cheap_roll per_session@205": 608.5,
+  "all_roll per_session@400": -55.1,
+  "cheap_roll per_session@400": 530.5
+ },
+ "jump_distribution": {
+  "ordinary_n": 18,
+  "ordinary_median": 1.294,
+  "ordinary_share_cheap": 0.5,
+  "roll_n": 7,
+  "roll_jumps": [
+   0.428,
+   0.498,
+   1.239,
+   1.163,
+   2.726,
+   1.849,
+   1.065
+  ]
+ }
+}

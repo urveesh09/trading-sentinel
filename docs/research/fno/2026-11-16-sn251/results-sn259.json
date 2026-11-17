@@ -1,0 +1,184 @@
+{
+ "variants": {
+  "(a) turn of the month: ATM call 09:20-15:10": {
+   "trades": 168,
+   "net": -654,
+   "per_trade": -3.9,
+   "win_pct": 41.1,
+   "worst": -3575,
+   "best": 18102,
+   "without_best5": -64021,
+   "by_year": {
+    "2022": 26287,
+    "2023": 6823,
+    "2024": -20552,
+    "2025": 4793,
+    "2026": -18004
+   },
+   "years_positive": 3,
+   "years": 5,
+   "months_positive": 23,
+   "months": 53,
+   "worst_month": -12537,
+   "maxmin": -20552
+  },
+  "(b) before a weekday holiday: ATM call 09:20-15:10": {
+   "trades": 45,
+   "net": 13331,
+   "per_trade": 296.2,
+   "win_pct": 37.8,
+   "worst": -3301,
+   "best": 18102,
+   "without_best5": -40076,
+   "by_year": {
+    "2022": 13443,
+    "2023": 2067,
+    "2024": -8390,
+    "2025": -3326,
+    "2026": 9537
+   },
+   "years_positive": 3,
+   "years": 5,
+   "months_positive": 12,
+   "months": 32,
+   "worst_month": -5137,
+   "maxmin": -8390
+  },
+  "(c) RBI policy day: ATM straddle 09:50-15:10": {
+   "trades": 21,
+   "net": -20857,
+   "per_trade": -993.2,
+   "win_pct": 19.0,
+   "worst": -3127,
+   "best": 6873,
+   "without_best5": -34991,
+   "by_year": {
+    "2022": -5922,
+    "2023": -5240,
+    "2024": -1779,
+    "2025": -1154,
+    "2026": -6762
+   },
+   "years_positive": 0,
+   "years": 5,
+   "months_positive": 4,
+   "months": 21,
+   "worst_month": -3127,
+   "maxmin": -6762
+  },
+  "(d) Budget day: ATM straddle 09:20-15:10": {
+   "trades": 4,
+   "net": -13172,
+   "per_trade": -3292.9,
+   "win_pct": 0.0,
+   "worst": -3760,
+   "best": -3033,
+   "without_best5": 0,
+   "by_year": {
+    "2023": -3760,
+    "2024": -3033,
+    "2025": -3299,
+    "2026": -3079
+   },
+   "years_positive": 0,
+   "years": 4,
+   "months_positive": 0,
+   "months": 4,
+   "worst_month": -3760,
+   "maxmin": -3760
+  }
+ },
+ "pick": "(d) Budget day: ATM straddle 09:20-15:10",
+ "pick_dev": {
+  "trades": 4,
+  "net": -13172,
+  "per_trade": -3292.9,
+  "win_pct": 0.0,
+  "worst": -3760,
+  "best": -3033,
+  "without_best5": 0,
+  "by_year": {
+   "2023": -3760,
+   "2024": -3033,
+   "2025": -3299,
+   "2026": -3079
+  },
+  "years_positive": 0,
+  "years": 4,
+  "months_positive": 0,
+  "months": 4,
+  "worst_month": -3760,
+  "maxmin": -3760
+ },
+ "null": {
+  "kind": "day",
+  "selected_maxmin_p95": -791,
+  "selected_maxmin_mean": -2975
+ },
+ "dev_stress_400": -13525,
+ "dev_late_1": -12891,
+ "exams": {
+  "TEST": {
+   "trades": 0,
+   "net": 0,
+   "per_trade": 0.0,
+   "win_pct": 0.0,
+   "worst": 0,
+   "best": 0,
+   "without_best5": 0,
+   "by_year": {},
+   "years_positive": 0,
+   "years": 0,
+   "months_positive": 0,
+   "months": 0,
+   "worst_month": 0,
+   "stress_400": 0
+  },
+  "EXAMN": {
+   "trades": 2,
+   "net": 7462,
+   "per_trade": 3731.0,
+   "win_pct": 50.0,
+   "worst": -3346,
+   "best": 10808,
+   "without_best5": 0,
+   "by_year": {
+    "2021": 10808,
+    "2022": -3346
+   },
+   "years_positive": 1,
+   "years": 2,
+   "months_positive": 1,
+   "months": 2,
+   "worst_month": -3346,
+   "stress_400": -6682
+  },
+  "EXAMS": {
+   "trades": 2,
+   "net": -6578,
+   "per_trade": -3288.9,
+   "win_pct": 0.0,
+   "worst": -3306,
+   "best": -3272,
+   "without_best5": 0,
+   "by_year": {
+    "2025": -3306,
+    "2026": -3272
+   },
+   "years_positive": 0,
+   "years": 2,
+   "months_positive": 0,
+   "months": 2,
+   "worst_month": -3306,
+   "stress_400": -6301
+  }
+ },
+ "gates": {
+  "G1": false,
+  "G2": false,
+  "G3": false,
+  "G4": false
+ },
+ "verdict": "FAIL",
+ "notes": []
+}

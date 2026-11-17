@@ -1,0 +1,375 @@
+{
+ "written": "2026-11-16T13:24:03",
+ "lots": {
+  "NIFTY 2019-07..2020-09": 75,
+  "NIFTY 2026": 65
+ },
+ "download_reports": {
+  "2019Q3": "Jul 30 without the ATM pair",
+  "2019Q4": "Nov 6 without the ATM pair",
+  "2020Q1": "Feb 1 (Budget Saturday) in daily bars only; Mar 13 no 09:30 index bar (market-wide halt); options for the Apr 2 expiry empty (it moved to Apr 1)",
+  "2020Q2": "Apr 1 without the ATM pair",
+  "2020Q3": "clean"
+ },
+ "nifty_2019": {
+  "quarters": {
+   "2019Q3": {
+    "sessions": 62,
+    "index_minutes_min": 376,
+    "index_minutes_median": 376,
+    "sessions_without_futures": 0,
+    "sessions_without_options": 14,
+    "option_series_median": 26
+   },
+   "2019Q4": {
+    "sessions": 60,
+    "index_minutes_min": 376,
+    "index_minutes_median": 377,
+    "sessions_without_futures": 0,
+    "sessions_without_options": 14,
+    "option_series_median": 26
+   }
+  },
+  "expiries": 27,
+  "sessions_without_0930_index_bar": [],
+  "sha256": "d8c09118dffe5cec032f83b22c70a725e05a9562cd3f1b936782974e2e89ea6a"
+ },
+ "nifty_2020_wkh": {
+  "sn248_coverage": {
+   "expiries": 39,
+   "expiries_with_3plus_sessions": 38,
+   "index_sessions": 209,
+   "min_series_at_1515": 15
+  },
+  "weeks": [
+   {
+    "expiry": "2020-01-02",
+    "entry_day": "2019-12-30",
+    "series_at_1515": 19,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-01-09",
+    "entry_day": "2020-01-06",
+    "series_at_1515": 26,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-01-16",
+    "entry_day": "2020-01-13",
+    "series_at_1515": 22,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-01-23",
+    "entry_day": "2020-01-20",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-01-30",
+    "entry_day": "2020-01-27",
+    "series_at_1515": 25,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-02-06",
+    "entry_day": "2020-02-03",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-02-13",
+    "entry_day": "2020-02-10",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-02-20",
+    "entry_day": "2020-02-17",
+    "series_at_1515": 25,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-02-27",
+    "entry_day": "2020-02-24",
+    "series_at_1515": 27,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-03-05",
+    "entry_day": "2020-03-02",
+    "series_at_1515": 37,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-03-12",
+    "entry_day": "2020-03-11",
+    "series_at_1515": 31,
+    "sessions_to_expiry": 1,
+    "futures_marks_present": 6,
+    "futures_marks_expected": 6
+   },
+   {
+    "expiry": "2020-03-19",
+    "entry_day": "2020-03-16",
+    "series_at_1515": 32,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-03-26",
+    "entry_day": "2020-03-23",
+    "series_at_1515": 47,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-04-01",
+    "entry_day": "2020-03-30",
+    "series_at_1515": 32,
+    "sessions_to_expiry": 2,
+    "futures_marks_present": 12,
+    "futures_marks_expected": 12
+   },
+   {
+    "expiry": "2020-04-09",
+    "entry_day": "2020-04-07",
+    "series_at_1515": 36,
+    "sessions_to_expiry": 2,
+    "futures_marks_present": 12,
+    "futures_marks_expected": 12
+   },
+   {
+    "expiry": "2020-04-16",
+    "entry_day": "2020-04-15",
+    "series_at_1515": 34,
+    "sessions_to_expiry": 1,
+    "futures_marks_present": 6,
+    "futures_marks_expected": 6
+   },
+   {
+    "expiry": "2020-04-23",
+    "entry_day": "2020-04-20",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-04-30",
+    "entry_day": "2020-04-27",
+    "series_at_1515": 23,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-05-07",
+    "entry_day": "2020-05-04",
+    "series_at_1515": 30,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-05-14",
+    "entry_day": "2020-05-11",
+    "series_at_1515": 27,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-05-21",
+    "entry_day": "2020-05-18",
+    "series_at_1515": 31,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-05-28",
+    "entry_day": "2020-05-26",
+    "series_at_1515": 27,
+    "sessions_to_expiry": 2,
+    "futures_marks_present": 12,
+    "futures_marks_expected": 12
+   },
+   {
+    "expiry": "2020-06-04",
+    "entry_day": "2020-06-01",
+    "series_at_1515": 26,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-06-11",
+    "entry_day": "2020-06-08",
+    "series_at_1515": 27,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-06-18",
+    "entry_day": "2020-06-15",
+    "series_at_1515": 28,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-06-25",
+    "entry_day": "2020-06-22",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-07-02",
+    "entry_day": "2020-06-29",
+    "series_at_1515": 25,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-07-09",
+    "entry_day": "2020-07-06",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-07-16",
+    "entry_day": "2020-07-13",
+    "series_at_1515": 23,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-07-23",
+    "entry_day": "2020-07-20",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-07-30",
+    "entry_day": "2020-07-27",
+    "series_at_1515": 25,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-08-06",
+    "entry_day": "2020-08-03",
+    "series_at_1515": 26,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-08-13",
+    "entry_day": "2020-08-10",
+    "series_at_1515": 24,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-08-20",
+    "entry_day": "2020-08-17",
+    "series_at_1515": 27,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-08-27",
+    "entry_day": "2020-08-24",
+    "series_at_1515": 23,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-09-03",
+    "entry_day": "2020-08-31",
+    "series_at_1515": 36,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-09-10",
+    "entry_day": "2020-09-07",
+    "series_at_1515": 25,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-09-17",
+    "entry_day": "2020-09-14",
+    "series_at_1515": 25,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   },
+   {
+    "expiry": "2020-09-24",
+    "entry_day": "2020-09-21",
+    "series_at_1515": 32,
+    "sessions_to_expiry": 3,
+    "futures_marks_present": 18,
+    "futures_marks_expected": 18
+   }
+  ],
+  "thursday_expiries_without_options": [],
+  "lean_sha256": "8a2161a6b080207dae6072e4d631b73ed967ce493cefb2b4961ff3bb60fb3995",
+  "fut_sha256": "c9539209319e7b35cd431d67b3692283678c9dcd5261297631ccc50659a90b66"
+ },
+ "seconds_2026q1": {
+  "days": 52,
+  "days_with_index_and_both_options": 52,
+  "index_seconds_median": 22499,
+  "days_with_more_than_one_strike": [],
+  "short_days": [],
+  "sha256": "dfe0db672248fd0c7d47b32cc5dc6647ddbeb22134bb3e27f66b6fb4943d3e52"
+ },
+ "uses": {
+  "2019": "SN318 only",
+  "2020": "SN317 (frozen SN248) only",
+  "seconds 2026 Jan 16 - Apr 2": "SN78's discharge, then SN319-SN322's test"
+ }
+}

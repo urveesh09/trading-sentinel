@@ -1,0 +1,35 @@
+# Ten follow-up F&O slots · November 17
+
+## Scope
+
+Test a cash-funded NIFTY challenger against abstaining and against matched controls. Preserve the deployed Gold v5 rules, the 2023 expiry-chain exam and the outstanding forward cohorts. No market-data downloads, broker actions, production edits or configuration changes. Use a single bought option, one 65-unit lot and at most ₹15,000 for entry including charges. All evaluation dates were available to earlier research. Chronological out-of-sample predictions are development evidence across this broader research program.
+
+Use the already sealed SN456 futures and SN251 non-expiry bar inputs. Score 2024, 2025 and January–October 2026 with calendar-quarter rolling-origin fits on earlier eligible dates from April 2022 onward, at least 250 complete training dates, ridge penalty 10, train-only scaling. Keep the same time and economics across matched arms. The primary decision clock is 10:00 IST. The signal and all strike and limit decisions only use the 09:59 bar close or earlier. The model asks at the 10:00 bar open. The price cap is the 09:59 model ask plus ₹0.10, subject to cash. Require a positive-volume option bar. Exit at the 20/60-minute clock or at the first eligible open after a printed close breaches the ₹3,000 net stop. Exit observations have a five-minute fallback. Apply existing P75 spread and charges, then ₹205 and ₹400 per-lot stress. Show a full debit loss bound for unresolved exits. One joint train/test day cutoff for all features and realized payoffs.
+
+## Slots
+
+| Slot | Question and fixed comparison |
+|---|---|
+| R1 | Does the second monthly future add information? Add its 09:30–10:00 and 09:50–10:00 return minus the front return to a reference ridge on gap, opening return, recent returns, volatility, range and expiry distance. Require genuine prints from both maturities at all three clocks. Compare on identical dates. |
+| R2 | Does volume confirm a price move? Add signed volume share over 09:15–09:59, the final ten minutes' relative share and their interaction with price. Use exact completed front-futures prints. |
+| R3 | Is there same-clock return memory? Add the prior 5/20 sessions' 10:00–11:00 returns, never the current day's outcome. This transfers a cross-sectional seasonal mechanism to a single index as an explicit test. |
+| R4 | Does the shape of the opening move matter after knowing its size? Add upward versus downward squared-return balance, time above the open and last price location inside the opening range. Compare incremental ridge against the same base. |
+| R5 | Train on the money. On the same covariates as R4 plus R2 and R3, fit side-specific 60-minute expected rupee outcomes at ₹400 stress, including zero for unfilled entries. Take the higher positive out-of-sample score. Compare against the base futures-return ridge and a matched coin. |
+| R6 | Limit the influence of windfalls. Repeat R5 with training labels winsorized to ±₹3,000. Compare with R5 on identical test days, including both arms' abstentions. This caps labels only. |
+| R7 | Can an economically selected shorter hold help? Compare separately fitted 20-minute and 60-minute scores for each side using R6's labels. Choose the highest positive score across both sides and horizons. Report against R6, including cash cap, all sessions and actual selected horizons. |
+| R8 | Change the contract while holding the R6 decision fixed. Seek the cheapest extrinsic premium per unit of delta among ATM, 1-ITM and 2-ITM. Estimate absolute delta by the centered adjacent-strike premium slope, require it in [0.2, 0.95], and fall back to the original strike if unavailable. Quote at the same clock, use the same hold and reserve the full debit. |
+| R9 | Reprice the frozen R6 signals on the existing pre-November 17 quote archive on overlapping non-expiry development days. Use the same strike and cap, actual one-lot depth at 10:01 and priced exits, with a maximum five-second provider-to-receipt lag. Report bar versus walked economics, missing depth and sample size. No forward outcome collected. |
+| R10 | Check R6 alongside Gold v5. Reproduce the prior Gold baseline with its native replay. At the same entry clock skip days with a live Gold trade or same-minute pending entry. Count later Gold entries before the actual challenger exit as potential conflicts without dropping those days from P&L. This measures compatibility with Gold priority and does not simulate a shared wallet. |
+
+Futures-forecast arms R1–R4 take sign of the predicted move only when its absolute size exceeds the 70th percentile of absolute fitted values on the training sample. R5–R7 take one decision if the best fitted payoff is positive. R8 changes the strike route only. A matched-coin reference draws either side on every selected day at the same horizon, and reports their exact expected average. Skipped days count as zero. The primary economic denominator is every session in the futures calendar in 2024–26, including zero allocations on expiry and unavailable-input days. Missing exits lose the entire debit plus stress in the reported bound. Per-session returns, drawdown, per-year results, largest-day sensitivity, coverage, counts, and a seeded paired block bootstrap will be published. Advancement requires at least 30 fills, no unresolved exits, positive net in each evaluation year at both stresses, at least ₹154/session at ₹205, positive net excluding the best day at ₹400 and a positive lower 90% confidence bound on ₹400 net. No strategy can qualify live on these previously researched dates.
+
+## Implementation and evidence
+
+Create `run.py` and a source/input freeze under this directory. Run offline from Dev and verify calendar chronology, close/open alignment, stop timing and entry caps with synthetic cases before scoring. Cross-check the archived SN456 and Gold baselines without changing previous receipts. Retain dated trade records, explicit missing-state counts and a short results report. No rollout or migration. The next step for any passing rule is a fresh forward test. The previous paper rules can continue as before.
+
+## Public research leads
+
+- Gao, Han, Li and Zhou, [Market intraday momentum](https://profiles.wustl.edu/en/publications/market-intraday-momentum/). This motivated the duplicate check. SN125 already explored late-session continuation, so this round leaves it out.
+- Heston, Korajczyk and Sadka, [Intraday Patterns in the Cross-section of Stock Returns](https://arxiv.org/abs/1005.3535). Same-time return patterns motivate R3. The paper studies equities and includes spread sensitivity.
+- Cont, Kukanov and Stoikov, [The Price Impact of Order Book Events](https://arxiv.org/abs/1011.6402). R2 uses signed bar volume as a testable proxy for directional trading activity. True order-flow imbalance requires order book event data.
+- [The NSE-hosted spot/futures price discovery study](https://nsearchives.nseindia.com/content/research/comppaper155.pdf) motivates testing whether a different maturity adds information beyond the near contract. R1 tests that inference directly.

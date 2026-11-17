@@ -9,7 +9,11 @@ What it records (one websocket connection, Kite's "full" mode: price, volumes, O
   - the indices NIFTY 50, SENSEX and INDIA VIX;
   - each index's front and next-month future;
   - options on the nearest TICK_RECORDER_EXPIRIES expiries, TICK_RECORDER_STRIKES strikes either side of the front
-    future, CE and PE. The window is centred on the future's first price and widened (never narrowed) when the
+    future, CE and PE;
+  - [SN413] research chains for TICK_RECORDER_EXTRA_UNDERLYINGS (default BANKNIFTY, whose instrument book the
+    analytics refresh already keeps): its futures and options on the nearest TICK_RECORDER_EXTRA_EXPIRIES expiries,
+    TICK_RECORDER_EXTRA_STRIKES strikes either side. Names without an instrument book (fno_underlyings.SPECS) are
+    skipped with a warning. The window is centred on the future's first price and widened (never narrowed) when the
     future moves more than half the window from the last centre, so a contract once recorded stays recorded all day.
     At most MAX_TOKENS instruments (Kite allows 3,000 on one connection).
 
@@ -53,6 +57,7 @@ import structlog
 
 import background_tasks
 from config import settings
+from market_calendar import derivatives_close_minute  # [SN329]
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -124,7 +129,12 @@ def _token(now: Optional[datetime] = None) -> Optional[str]:
 
 def _in_window(now: datetime) -> bool:
     minute = now.hour * 60 + now.minute
-    return now.weekday() < 5 and START_MIN <= minute < END_MIN
+    return now.weekday() < 5 and START_MIN <= minute < _end_min(now)
+
+
+def _end_min(now: datetime) -> int:
+    """[SN329 2026-11-16] One minute after the derivatives close: 15:41 until 2026-12-04, 15:46 from 2026-12-07."""
+    return max(END_MIN, derivatives_close_minute(now.date()) + 1)
 
 
 def _should_run(now: datetime, day: str) -> bool:
@@ -241,9 +251,30 @@ def read_chunk(path) -> List[dict]:
 # What to record
 # ----------------------------------------------------------------------------------------------------------------
 
+def extra_underlyings() -> Tuple[str, ...]:
+    """[SN413] Research-only extra chains: known instrument books only, never a duplicate of UNDERLYINGS."""
+    from fno_underlyings import SPECS
+    out: List[str] = []
+    for raw in str(getattr(settings, "TICK_RECORDER_EXTRA_UNDERLYINGS", "") or "").split(","):
+        name = raw.strip().upper()
+        if not name or name in UNDERLYINGS or name in out:
+            continue
+        if name not in SPECS:
+            logger.warning("tick_recorder_extra_unknown name=%s -- skipped", name)
+            continue
+        out.append(name)
+    return tuple(out)
+
+
+def _extra_limits() -> Dict[str, Tuple[int, int]]:
+    n_exp = int(getattr(settings, "TICK_RECORDER_EXTRA_EXPIRIES", 2))
+    n_str = int(getattr(settings, "TICK_RECORDER_EXTRA_STRIKES", 10))
+    return {name: (n_exp, n_str) for name in extra_underlyings()}
+
+
 def _books() -> Dict[str, object]:
     from fno_underlyings import get_instruments_for
-    return {name: get_instruments_for(name) for name in UNDERLYINGS}
+    return {name: get_instruments_for(name) for name in UNDERLYINGS + extra_underlyings()}
 
 
 def _contract_meta(contract, underlying: str, exchange: str) -> dict:
@@ -257,11 +288,14 @@ class Universe:
     """The instruments subscribed today: grows, never shrinks."""
 
     def __init__(self, today: date, books: Optional[Dict[str, object]] = None,
-                 expiries: Optional[int] = None, strikes: Optional[int] = None):
+                 expiries: Optional[int] = None, strikes: Optional[int] = None,
+                 limits: Optional[Dict[str, Tuple[int, int]]] = None):
         self.today = today
         self.books = books if books is not None else _books()
         self.expiries = int(expiries if expiries is not None else settings.TICK_RECORDER_EXPIRIES)
         self.strikes = int(strikes if strikes is not None else settings.TICK_RECORDER_STRIKES)
+        # [SN413] per-book (expiries, strikes) for the research extras; NIFTY / SENSEX keep the settings above
+        self.limits: Dict[str, Tuple[int, int]] = dict(limits) if limits is not None else _extra_limits()
         self.meta: Dict[int, dict] = {}
         self.front: Dict[int, str] = {}               # front future token -> underlying
         self.centre: Dict[str, float] = {}
@@ -315,15 +349,16 @@ class Universe:
         step = float(getattr(book, "strike_step", 0) or 0)
         if step <= 0:
             return []
+        n_exp, n_str = self.limits.get(name, (self.expiries, self.strikes))
         centre = self.centre.get(name)
-        if centre is not None and abs(price - centre) < step * self.strikes / 2:
+        if centre is not None and abs(price - centre) < step * n_str / 2:
             return []
         self.centre[name] = price
         from fno_models import OptionType
         exchange = getattr(book, "segment", "NFO")
         added = []
-        for expiry in [e for e in book.option_expiries if e >= self.today][:self.expiries]:
-            for strike in book.strikes_window(price, self.strikes):
+        for expiry in [e for e in book.option_expiries if e >= self.today][:n_exp]:
+            for strike in book.strikes_window(price, n_str):
                 for kind in (OptionType.CE, OptionType.PE):
                     contract = book.option(expiry, strike, kind)
                     if contract is not None:

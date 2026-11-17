@@ -39,6 +39,7 @@ import fno_analytics
 import fno_oi_store
 import options_math
 from config import settings
+from market_calendar import derivatives_close_minute  # [SN329]
 from fno_chain import RISK_FREE_RATE, take_chain_snapshot, years_to_expiry
 from fno_engine_mom import SESSION_OPEN_MIN
 from fno_models import FnoDirection
@@ -1586,8 +1587,8 @@ async def _send_pin_note(spec, book, snap, max_pain, now: datetime, day_iso: str
 async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     global _last_regime_reported, _halt_reported_on
     now = now or datetime.now(IST)
-    # [O24-MC 2026-10-24] Snapshots run to the 15:40 derivatives close.
-    if not await _gates_open(now, 9 * 60 + 20, 15 * 60 + 40):
+    # [O24-MC 2026-10-24] Snapshots run to the 15:40 derivatives close ([SN329] 15:45 from 2026-12-07).
+    if not await _gates_open(now, 9 * 60 + 20, derivatives_close_minute(now.astimezone(IST).date())):
         return
     import main as _main
     logger.info("partner_analytics_tick_invoked now_ist=%s", now.strftime("%H:%M:%S"))

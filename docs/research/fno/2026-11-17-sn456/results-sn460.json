@@ -1,0 +1,411 @@
+{
+ "A_paper_stops": {
+  "stop_events": 24,
+  "states": {
+   "NOT_IN_ARCHIVE": 13,
+   "NO_CAUSAL_STATE": 3,
+   "LABELLED": 8
+  },
+  "by_reason": {
+   "underlying_stop": 16,
+   "trail_stop": 6,
+   "premium_backstop": 2
+  },
+  "independent_stop_dates": 18,
+  "labelled_dates": 5,
+  "own": {
+   "buckets": {
+    "late": 7,
+    "unresolved": 1
+   },
+   "median_elapsed_s": 28.0,
+   "mean_extra_loss": 603.7
+  },
+  "one_lot": {
+   "buckets": {
+    "late": 7,
+    "unresolved": 1
+   },
+   "median_elapsed_s": 28.0,
+   "mean_extra_loss": 603.7
+  },
+  "six_lots": {
+   "buckets": {
+    "late": 7,
+    "unresolved": 1
+   },
+   "median_elapsed_s": 28.0,
+   "mean_extra_loss": 3629.0
+  },
+  "classifier": "INSUFFICIENT (fewer than 30 independent stop dates)",
+  "rows": [
+   {
+    "day": "2026-07-20",
+    "reason": "underlying_stop",
+    "qty": 130,
+    "exit_clock": "12:55:20",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-07-24",
+    "reason": "underlying_stop",
+    "qty": 130,
+    "exit_clock": "11:21:37",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-07-27",
+    "reason": "underlying_stop",
+    "qty": 130,
+    "exit_clock": "13:33:26",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-07-27",
+    "reason": "trail_stop",
+    "qty": 130,
+    "exit_clock": "14:38:26",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-07-30",
+    "reason": "premium_backstop",
+    "qty": 130,
+    "exit_clock": "13:10:30",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-07-31",
+    "reason": "trail_stop",
+    "qty": 130,
+    "exit_clock": "13:32:06",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-08-03",
+    "reason": "underlying_stop",
+    "qty": 130,
+    "exit_clock": "13:07:08",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-08-07",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "11:26:22",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-08-18",
+    "reason": "underlying_stop",
+    "qty": 130,
+    "exit_clock": "09:16:16",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-08-19",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "14:36:15",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-08-28",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "13:23:39",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-08-28",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "13:25:09",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-09-09",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "10:21:10",
+    "state": "NOT_IN_ARCHIVE"
+   },
+   {
+    "day": "2026-09-28",
+    "reason": "trail_stop",
+    "qty": 130,
+    "exit_clock": "14:46:23",
+    "state": "NO_CAUSAL_STATE"
+   },
+   {
+    "day": "2026-09-30",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "11:51:36",
+    "state": "LABELLED",
+    "spread": 0.5,
+    "best_bid_units": 650,
+    "bid5_units": 3835,
+    "receipt_lag_s": 1.45,
+    "trigger_mark": 185.45,
+    "vol_change_5m": null,
+    "own": {
+     "bucket": "late",
+     "elapsed_s": 48.9,
+     "extra_loss": -35.8
+    },
+    "one_lot": {
+     "bucket": "late",
+     "elapsed_s": 48.9,
+     "extra_loss": -35.8
+    },
+    "six_lots": {
+     "bucket": "late",
+     "elapsed_s": 48.9,
+     "extra_loss": -214.5
+    },
+    "paper_exit_premium": 187.6
+   },
+   {
+    "day": "2026-09-30",
+    "reason": "trail_stop",
+    "qty": 65,
+    "exit_clock": "14:48:36",
+    "state": "NO_CAUSAL_STATE"
+   },
+   {
+    "day": "2026-10-01",
+    "reason": "trail_stop",
+    "qty": 65,
+    "exit_clock": "13:01:23",
+    "state": "LABELLED",
+    "spread": 0.8,
+    "best_bid_units": 65,
+    "bid5_units": 910,
+    "receipt_lag_s": 1.04,
+    "trigger_mark": 338.3,
+    "vol_change_5m": 284375,
+    "own": {
+     "bucket": "unresolved",
+     "elapsed_s": 152.2,
+     "extra_loss": 2115.8
+    },
+    "one_lot": {
+     "bucket": "unresolved",
+     "elapsed_s": 152.2,
+     "extra_loss": 2115.8
+    },
+    "six_lots": {
+     "bucket": "unresolved",
+     "elapsed_s": 152.2,
+     "extra_loss": 12704.2
+    },
+    "paper_exit_premium": 315.75
+   },
+   {
+    "day": "2026-10-07",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "13:36:09",
+    "state": "LABELLED",
+    "spread": 0.4,
+    "best_bid_units": 325,
+    "bid5_units": 2795,
+    "receipt_lag_s": 1.08,
+    "trigger_mark": 168.0,
+    "vol_change_5m": 794560,
+    "own": {
+     "bucket": "late",
+     "elapsed_s": 15.2,
+     "extra_loss": -143.0
+    },
+    "one_lot": {
+     "bucket": "late",
+     "elapsed_s": 15.2,
+     "extra_loss": -143.0
+    },
+    "six_lots": {
+     "bucket": "late",
+     "elapsed_s": 15.2,
+     "extra_loss": -854.7
+    },
+    "paper_exit_premium": 167.45
+   },
+   {
+    "day": "2026-10-07",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "14:27:09",
+    "state": "LABELLED",
+    "spread": 0.4,
+    "best_bid_units": 455,
+    "bid5_units": 2405,
+    "receipt_lag_s": 1.41,
+    "trigger_mark": 185.35,
+    "vol_change_5m": 1011270,
+    "own": {
+     "bucket": "late",
+     "elapsed_s": 15.1,
+     "extra_loss": 533.0
+    },
+    "one_lot": {
+     "bucket": "late",
+     "elapsed_s": 15.1,
+     "extra_loss": 533.0
+    },
+    "six_lots": {
+     "bucket": "late",
+     "elapsed_s": 15.1,
+     "extra_loss": 3240.3
+    },
+    "paper_exit_premium": 174.35
+   },
+   {
+    "day": "2026-10-29",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "13:34:12",
+    "state": "NO_CAUSAL_STATE"
+   },
+   {
+    "day": "2026-11-02",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "12:11:58",
+    "state": "LABELLED",
+    "spread": 0.35,
+    "best_bid_units": 1235,
+    "bid5_units": 3705,
+    "receipt_lag_s": 1.07,
+    "trigger_mark": 135.55,
+    "vol_change_5m": 2811315,
+    "own": {
+     "bucket": "late",
+     "elapsed_s": 26.2,
+     "extra_loss": 984.8
+    },
+    "one_lot": {
+     "bucket": "late",
+     "elapsed_s": 26.2,
+     "extra_loss": 984.8
+    },
+    "six_lots": {
+     "bucket": "late",
+     "elapsed_s": 26.2,
+     "extra_loss": 5908.5
+    },
+    "paper_exit_premium": 124.15
+   },
+   {
+    "day": "2026-11-02",
+    "reason": "underlying_stop",
+    "qty": 65,
+    "exit_clock": "12:55:08",
+    "state": "LABELLED",
+    "spread": 0.15,
+    "best_bid_units": 3705,
+    "bid5_units": 17095,
+    "receipt_lag_s": 1.07,
+    "trigger_mark": 54.3,
+    "vol_change_5m": 5994040,
+    "own": {
+     "bucket": "late",
+     "elapsed_s": 18.2,
+     "extra_loss": 331.5
+    },
+    "one_lot": {
+     "bucket": "late",
+     "elapsed_s": 18.2,
+     "extra_loss": 331.5
+    },
+    "six_lots": {
+     "bucket": "late",
+     "elapsed_s": 18.2,
+     "extra_loss": 1989.0
+    },
+    "paper_exit_premium": 47.3
+   },
+   {
+    "day": "2026-11-02",
+    "reason": "premium_backstop",
+    "qty": 65,
+    "exit_clock": "12:32:59",
+    "state": "LABELLED",
+    "spread": 0.15,
+    "best_bid_units": 2015,
+    "bid5_units": 16445,
+    "receipt_lag_s": 0.29,
+    "trigger_mark": 51.25,
+    "vol_change_5m": 6303115,
+    "own": {
+     "bucket": "late",
+     "elapsed_s": 29.8,
+     "extra_loss": 581.8
+    },
+    "one_lot": {
+     "bucket": "late",
+     "elapsed_s": 29.8,
+     "extra_loss": 581.8
+    },
+    "six_lots": {
+     "bucket": "late",
+     "elapsed_s": 29.8,
+     "extra_loss": 3490.5
+    },
+    "paper_exit_premium": 44.7
+   },
+   {
+    "day": "2026-11-05",
+    "reason": "trail_stop",
+    "qty": 65,
+    "exit_clock": "14:20:43",
+    "state": "LABELLED",
+    "spread": 0.55,
+    "best_bid_units": 195,
+    "bid5_units": 1235,
+    "receipt_lag_s": 1.47,
+    "trigger_mark": 230.1,
+    "vol_change_5m": 1094990,
+    "own": {
+     "bucket": "late",
+     "elapsed_s": 63.8,
+     "extra_loss": 461.5
+    },
+    "one_lot": {
+     "bucket": "late",
+     "elapsed_s": 63.8,
+     "extra_loss": 461.5
+    },
+    "six_lots": {
+     "bucket": "late",
+     "elapsed_s": 63.8,
+     "extra_loss": 2769.0
+    },
+    "paper_exit_premium": 224.3
+   }
+  ]
+ },
+ "B_gold_replay": {
+  "gold_trades": 10,
+  "reasons": {
+   "ext_trail": 2,
+   "n11": 8
+  },
+  "observed_hard_exits": 0
+ },
+ "C_plumbing": {
+  "label": "PLUMBING (Nov 16 recorder copy)",
+  "one_lot": {
+   "orders": 12,
+   "median_elapsed_packet_s": 0.8443348407745361,
+   "median_elapsed_minute_s": 60.0,
+   "mean_packet_minus_minute_rupees_a_lot": -17.3
+  },
+  "six_lots": {
+   "orders": 12,
+   "median_elapsed_packet_s": 0.8443348407745361,
+   "median_elapsed_minute_s": 60.0,
+   "mean_packet_minus_minute_rupees_a_lot": -17.3
+  }
+ }
+}

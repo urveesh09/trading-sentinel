@@ -1,0 +1,67 @@
+{
+ "test_dates": 551,
+ "train_dates": 1037,
+ "excluded": {
+  "history_gap": 201,
+  "no_target": 2,
+  "no_near": 7,
+  "contract_history": 10,
+  "today_gap": 1
+ },
+ "event_rate": 0.6987,
+ "draws_per_date": 8,
+ "MAE_bp": {
+  "K": 37.765,
+  "R": 13.299,
+  "ZERO": 13.207
+ },
+ "MSE_bp2": {
+  "K": 2703.1,
+  "R": 338.27,
+  "ZERO": 335.47
+ },
+ "Brier": {
+  "K": 0.27047,
+  "R": 0.2153,
+  "VOL": 0.21516
+ },
+ "sign_hit": {
+  "K": 0.4818,
+  "R": 0.4964
+ },
+ "corr": {
+  "K": -0.0639,
+  "R": 0.0228
+ },
+ "paired": {
+  "MAE_K_minus_ZERO_bp": {
+   "mean": 24.5581,
+   "ci90": [
+    21.1456,
+    28.1896
+   ]
+  },
+  "MAE_K_minus_R_bp": {
+   "mean": 24.4657,
+   "ci90": [
+    21.0084,
+    28.0806
+   ]
+  },
+  "Brier_K_minus_VOL": {
+   "mean": 0.05532,
+   "ci90": [
+    0.03968,
+    0.07088
+   ]
+  },
+  "Brier_K_minus_R": {
+   "mean": 0.05517,
+   "ci90": [
+    0.03944,
+    0.07073
+   ]
+  }
+ },
+ "verdict": "STOP (no forecast value over simple controls)"
+}

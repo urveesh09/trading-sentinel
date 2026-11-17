@@ -1,0 +1,53 @@
+{
+ "inputs": {
+  "triggers_sn414b_cell": 16,
+  "sn414_sessions": 143,
+  "raw_trigger_rate": 0.1119,
+  "banknifty_lot": [
+   30
+  ],
+  "atm_affordable_share": 0.303,
+  "atm_affordable_by_dte": {
+   "1-5": 0.933,
+   "6-10": 0.275,
+   "11-20": 0.062,
+   ">20": 0.0
+  },
+  "itm1_affordable_share": 0.225
+ },
+ "cases": {
+  "base": {
+   "qualified_per_session": 0.029,
+   "per_monthly_cycle_21": 0.61,
+   "expected_by_cap_120": 3.5,
+   "sessions_to_30": 1035,
+   "years_to_30": 4.1,
+   "p_avoid_insufficient_at_cap": 4e-06
+  },
+  "optimistic": {
+   "qualified_per_session": 0.0339,
+   "per_monthly_cycle_21": 0.71,
+   "expected_by_cap_120": 4.1,
+   "sessions_to_30": 885,
+   "years_to_30": 3.5,
+   "p_avoid_insufficient_at_cap": 2.4e-05
+  },
+  "triggers_x1.5": {
+   "qualified_per_session": 0.0435,
+   "per_monthly_cycle_21": 0.91,
+   "expected_by_cap_120": 5.2,
+   "sessions_to_30": 690,
+   "years_to_30": 2.8,
+   "p_avoid_insufficient_at_cap": 0.000351
+  },
+  "triggers_x1.5_optimistic": {
+   "qualified_per_session": 0.0509,
+   "per_monthly_cycle_21": 1.07,
+   "expected_by_cap_120": 6.1,
+   "sessions_to_30": 590,
+   "years_to_30": 2.4,
+   "p_avoid_insufficient_at_cap": 0.001645
+  }
+ },
+ "verdict": "F1 cannot reach its verdict: INSUFFICIENT at the 120-session cap is near-certain; 30 qualified triggers take years. The recorder change's value for F1 alone is negligible."
+}

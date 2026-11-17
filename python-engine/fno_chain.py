@@ -27,7 +27,7 @@ import structlog
 import options_math
 from config import settings
 from fno_instruments import FnoInstruments
-from market_calendar import DERIVATIVES_CLOSE_TIME
+from market_calendar import DERIVATIVES_CLOSE_TIME, expiring_index_close_time
 from fno_models import Contract, ContractQuote, OptionType
 
 logger = structlog.get_logger()
@@ -44,9 +44,10 @@ EXPIRY_CUTOFF_HOUR, EXPIRY_CUTOFF_MIN = DERIVATIVES_CLOSE_TIME.hour, DERIVATIVES
 
 
 def years_to_expiry(expiry: date, now_ist: datetime) -> float:
+    # [SN329 2026-11-16] from 2026-12-07 an expiring index contract stops trading at 15:30 (NSE CAS 2.0)
+    close = expiring_index_close_time(expiry)
     cutoff = IST.localize(
-        datetime(expiry.year, expiry.month, expiry.day,
-                 EXPIRY_CUTOFF_HOUR, EXPIRY_CUTOFF_MIN)
+        datetime(expiry.year, expiry.month, expiry.day, close.hour, close.minute)
     )
     seconds = (cutoff - now_ist).total_seconds()
     return max(seconds, 0.0) / (365.0 * 24 * 3600)

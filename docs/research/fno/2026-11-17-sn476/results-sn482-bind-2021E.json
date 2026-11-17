@@ -1,0 +1,77 @@
+{
+ "point": "2021E",
+ "window": [
+  "2021-01-01",
+  "2021-08-31"
+ ],
+ "sessions": 164,
+ "first_last_session": [
+  "2021-01-01",
+  "2021-08-31"
+ ],
+ "sessions_with_options": 130,
+ "sessions_without_any_option": [
+  "2021-01-07",
+  "2021-01-14",
+  "2021-01-21",
+  "2021-01-28",
+  "2021-02-04",
+  "2021-02-11",
+  "2021-02-18",
+  "2021-02-25",
+  "2021-03-04",
+  "2021-03-10",
+  "2021-03-18",
+  "2021-03-25",
+  "2021-04-01",
+  "2021-04-08",
+  "2021-04-15",
+  "2021-04-22",
+  "2021-04-29",
+  "2021-05-06",
+  "2021-05-12",
+  "2021-05-20",
+  "2021-05-27",
+  "2021-06-03",
+  "2021-06-10",
+  "2021-06-17",
+  "2021-06-24",
+  "2021-07-01",
+  "2021-07-08",
+  "2021-07-15",
+  "2021-07-22",
+  "2021-07-29",
+  "2021-08-05",
+  "2021-08-12",
+  "2021-08-18",
+  "2021-08-26"
+ ],
+ "short_sessions": [
+  "2021-01-11",
+  "2021-02-24"
+ ],
+ "rows_by_kind": {
+  "future": 119682,
+  "index": 69490,
+  "option": 1493727
+ },
+ "bad_rows": {
+  "nonpositive_ohlc": 0,
+  "incoherent_ohlc": 0,
+  "negative_volume": 0,
+  "negative_oi": 0,
+  "invalid_timestamp": 0
+ },
+ "option_expiries": 39,
+ "weekly_expiry_calendar_days": 39,
+ "daily_bars": 613,
+ "daily_first": "2019-03-01",
+ "daily_last": "2021-08-31",
+ "bars_before_first_session": 451,
+ "sessions_with_no_trend_reading": [],
+ "gate_high": 36,
+ "gate_low": 128,
+ "dataset_breeze_sqlite_sha256": "bde13f474eb045ecfbca54ec915156c644505bd391f1037d302e581ce13e537b",
+ "daily_sha256": "050999776f6028f14f9fe5c15f29bf3b72a48fdadc762076f7087a4dfc2c9301",
+ "prices_shown": false
+}

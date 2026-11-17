@@ -1,0 +1,223 @@
+{
+  "2026-10-06": {
+    "underlying": "NIFTY",
+    "coverage": "NO_FIVE_LEVEL_PACKET"
+  },
+  "2026-10-08": {
+    "underlying": "SENSEX",
+    "now": {
+      "net": 0,
+      "closed": 0,
+      "unresolved": 0,
+      "trades": []
+    },
+    "nov5": {
+      "net": 0,
+      "closed": 0
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 73,
+      "bar_gap": 33,
+      "outside_window": 40
+    }
+  },
+  "2026-10-13": {
+    "underlying": "NIFTY",
+    "now": {
+      "net": 0,
+      "closed": 0,
+      "unresolved": 0,
+      "trades": []
+    },
+    "nov5": {
+      "net": 0,
+      "closed": 0
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "no_pullback": 11,
+      "low_efficiency": 91,
+      "stretched": 4,
+      "passed": 3,
+      "outside_window": 40
+    }
+  },
+  "2026-10-15": {
+    "underlying": "SENSEX",
+    "now": {
+      "net": 0,
+      "closed": 0,
+      "unresolved": 0,
+      "trades": []
+    },
+    "nov5": {
+      "net": 0,
+      "closed": 0
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 102,
+      "no_pullback": 7,
+      "bar_gap": 11,
+      "outside_window": 12
+    }
+  },
+  "2026-10-19": {
+    "underlying": "NIFTY",
+    "now": {
+      "net": 0,
+      "closed": 0,
+      "unresolved": 0,
+      "trades": []
+    },
+    "nov5": {
+      "net": 0,
+      "closed": 0
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 107,
+      "no_pullback": 2,
+      "outside_window": 40
+    }
+  },
+  "2026-10-22": {
+    "underlying": "SENSEX",
+    "now": {
+      "net": -1063.75,
+      "closed": 1,
+      "unresolved": 0,
+      "trades": [
+        [
+          "SENSEX26O2273100PE",
+          "2026-10-22T14:56:30.052611+05:30",
+          2,
+          48.5,
+          -1063.75,
+          [
+            "BUY",
+            "STOP"
+          ]
+        ]
+      ]
+    },
+    "nov5": {
+      "net": -1063.75,
+      "closed": 1
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 97,
+      "no_pullback": 5,
+      "stretched": 2,
+      "future_disagrees": 1,
+      "passed": 1,
+      "outside_window": 39
+    }
+  },
+  "2026-10-27": {
+    "underlying": "NIFTY",
+    "now": {
+      "net": 240.79,
+      "closed": 1,
+      "unresolved": 0,
+      "trades": [
+        [
+          "NIFTY26OCT22600PE",
+          "2026-10-27T13:18:00.401755+05:30",
+          2,
+          12.8,
+          240.79,
+          [
+            "BUY",
+            "TIME"
+          ]
+        ]
+      ]
+    },
+    "nov5": {
+      "net": 240.79,
+      "closed": 1
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 97,
+      "no_pullback": 2,
+      "passed": 1,
+      "stretched": 1,
+      "outside_window": 40
+    }
+  },
+  "2026-10-29": {
+    "underlying": "SENSEX",
+    "now": {
+      "net": 0,
+      "closed": 0,
+      "unresolved": 0,
+      "trades": []
+    },
+    "nov5": {
+      "net": 0,
+      "closed": 0
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 104,
+      "stretched": 2,
+      "no_pullback": 2,
+      "no_resume": 1,
+      "outside_window": 40
+    }
+  },
+  "2026-11-03": {
+    "underlying": "NIFTY",
+    "now": {
+      "net": 0,
+      "closed": 0,
+      "unresolved": 0,
+      "trades": []
+    },
+    "nov5": {
+      "net": 0,
+      "closed": 0
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 102,
+      "no_pullback": 6,
+      "passed": 1,
+      "outside_window": 40
+    }
+  },
+  "2026-11-05": {
+    "underlying": "SENSEX",
+    "now": {
+      "net": 0,
+      "closed": 0,
+      "unresolved": 0,
+      "trades": []
+    },
+    "nov5": {
+      "net": 0,
+      "closed": 0
+    },
+    "same": true,
+    "signal": {
+      "warmup": 11,
+      "low_efficiency": 97,
+      "no_pullback": 8,
+      "stretched": 3,
+      "future_disagrees": 1,
+      "outside_window": 40
+    }
+  }
+}

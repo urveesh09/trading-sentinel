@@ -1,0 +1,348 @@
+{
+ "2022 @205": {
+  "DEPLOYED": {
+   "net": -9702,
+   "by_year": {
+    "2022": -9702
+   },
+   "months_positive": 4,
+   "months": 12,
+   "worst_month": -5335,
+   "worst_day": -2998,
+   "refilled": 35950,
+   "trades": 30,
+   "sessions": 190,
+   "per_session": -51.1,
+   "final_wallet": 15000
+  },
+  "RUNTIME": {
+   "net": -12659,
+   "by_year": {
+    "2022": -12659
+   },
+   "months_positive": 3,
+   "months": 12,
+   "worst_month": -5335,
+   "worst_day": -2998,
+   "refilled": 38907,
+   "trades": 32,
+   "sessions": 190,
+   "per_session": -66.6,
+   "final_wallet": 15000
+  },
+  "CLOSE_STOP": {
+   "net": -10079,
+   "by_year": {
+    "2022": -10079
+   },
+   "months_positive": 4,
+   "months": 12,
+   "worst_month": -5335,
+   "worst_day": -3374,
+   "refilled": 36326,
+   "trades": 30,
+   "sessions": 190,
+   "per_session": -53.0,
+   "final_wallet": 15000
+  },
+  "runtime_minus_deployed": -2957,
+  "close_minus_bar_low": -377,
+  "runtime_only_trades": [
+   [
+    "2022-04-12",
+    190,
+    "TPB",
+    -1331
+   ],
+   [
+    "2022-06-07",
+    216,
+    "TPB",
+    -1626
+   ]
+  ],
+  "stops": [
+   1,
+   1
+  ]
+ },
+ "2022 @400": {
+  "DEPLOYED": {
+   "net": -15627,
+   "by_year": {
+    "2022": -15627
+   },
+   "months_positive": 4,
+   "months": 12,
+   "worst_month": -6384,
+   "worst_day": -2999,
+   "refilled": 40260,
+   "trades": 30,
+   "sessions": 190,
+   "per_session": -82.2,
+   "final_wallet": 15000
+  },
+  "RUNTIME": {
+   "net": -18195,
+   "by_year": {
+    "2022": -18195
+   },
+   "months_positive": 3,
+   "months": 12,
+   "worst_month": -6384,
+   "worst_day": -2999,
+   "refilled": 42829,
+   "trades": 32,
+   "sessions": 190,
+   "per_session": -95.8,
+   "final_wallet": 15000
+  },
+  "CLOSE_STOP": {
+   "net": -15929,
+   "by_year": {
+    "2022": -15929
+   },
+   "months_positive": 4,
+   "months": 12,
+   "worst_month": -5920,
+   "worst_day": -3764,
+   "refilled": 40562,
+   "trades": 30,
+   "sessions": 190,
+   "per_session": -83.8,
+   "final_wallet": 15000
+  },
+  "runtime_minus_deployed": -2568,
+  "close_minus_bar_low": -302,
+  "runtime_only_trades": [
+   [
+    "2022-04-12",
+    190,
+    "TPB",
+    -1137
+   ],
+   [
+    "2022-06-07",
+    216,
+    "TPB",
+    -1431
+   ]
+  ],
+  "stops": [
+   2,
+   1
+  ]
+ },
+ "2023-2026 @205": {
+  "DEPLOYED": {
+   "net": 151155,
+   "by_year": {
+    "2023": 397,
+    "2024": 52158,
+    "2025": 48506,
+    "2026": 50094
+   },
+   "months_positive": 26,
+   "months": 46,
+   "worst_month": -6007,
+   "worst_day": -2998,
+   "refilled": 101145,
+   "trades": 140,
+   "sessions": 742,
+   "per_session": 203.7,
+   "final_wallet": 15000
+  },
+  "RUNTIME": {
+   "net": 151121,
+   "by_year": {
+    "2023": 3384,
+    "2024": 52158,
+    "2025": 45485,
+    "2026": 50094
+   },
+   "months_positive": 26,
+   "months": 46,
+   "worst_month": -5021,
+   "worst_day": -3021,
+   "refilled": 106100,
+   "trades": 147,
+   "sessions": 742,
+   "per_session": 203.7,
+   "final_wallet": 15000
+  },
+  "CLOSE_STOP": {
+   "net": 149588,
+   "by_year": {
+    "2023": 186,
+    "2024": 51755,
+    "2025": 47257,
+    "2026": 50389
+   },
+   "months_positive": 26,
+   "months": 46,
+   "worst_month": -6007,
+   "worst_day": -4130,
+   "refilled": 102712,
+   "trades": 140,
+   "sessions": 742,
+   "per_session": 201.6,
+   "final_wallet": 15000
+  },
+  "runtime_minus_deployed": -34,
+  "close_minus_bar_low": -1567,
+  "runtime_only_trades": [
+   [
+    "2023-02-07",
+    141,
+    "TPB",
+    2666
+   ],
+   [
+    "2023-02-13",
+    265,
+    "TPB",
+    -1532
+   ],
+   [
+    "2023-02-27",
+    180,
+    "TPB",
+    -402
+   ],
+   [
+    "2023-02-28",
+    175,
+    "TPB",
+    -1494
+   ],
+   [
+    "2023-02-28",
+    207,
+    "TPB",
+    3749
+   ],
+   [
+    "2025-03-04",
+    165,
+    "TPB",
+    -985
+   ],
+   [
+    "2025-03-04",
+    294,
+    "TPB",
+    -2036
+   ]
+  ],
+  "stops": [
+   5,
+   4
+  ]
+ },
+ "2023-2026 @400": {
+  "DEPLOYED": {
+   "net": 82725,
+   "by_year": {
+    "2023": -19682,
+    "2024": 46697,
+    "2025": 25398,
+    "2026": 30311
+   },
+   "months_positive": 24,
+   "months": 46,
+   "worst_month": -6787,
+   "worst_day": -3325,
+   "refilled": 124962,
+   "trades": 140,
+   "sessions": 742,
+   "per_session": 111.5,
+   "final_wallet": 15000
+  },
+  "RUNTIME": {
+   "net": 81858,
+   "by_year": {
+    "2023": -17556,
+    "2024": 46697,
+    "2025": 22405,
+    "2026": 30311
+   },
+   "months_positive": 24,
+   "months": 46,
+   "worst_month": -6551,
+   "worst_day": -3325,
+   "refilled": 130165,
+   "trades": 147,
+   "sessions": 742,
+   "per_session": 110.3,
+   "final_wallet": 15000
+  },
+  "CLOSE_STOP": {
+   "net": 106748,
+   "by_year": {
+    "2023": -19974,
+    "2024": 46613,
+    "2025": 36155,
+    "2026": 43954
+   },
+   "months_positive": 25,
+   "months": 46,
+   "worst_month": -6843,
+   "worst_day": -4325,
+   "refilled": 119516,
+   "trades": 140,
+   "sessions": 742,
+   "per_session": 143.9,
+   "final_wallet": 15000
+  },
+  "runtime_minus_deployed": -867,
+  "close_minus_bar_low": 24023,
+  "runtime_only_trades": [
+   [
+    "2023-02-07",
+    141,
+    "TPB",
+    2471
+   ],
+   [
+    "2023-02-13",
+    265,
+    "TPB",
+    -1727
+   ],
+   [
+    "2023-02-27",
+    180,
+    "TPB",
+    -483
+   ],
+   [
+    "2023-02-28",
+    175,
+    "TPB",
+    -1689
+   ],
+   [
+    "2023-02-28",
+    207,
+    "TPB",
+    3554
+   ],
+   [
+    "2025-03-04",
+    165,
+    "TPB",
+    -1180
+   ],
+   [
+    "2025-03-04",
+    294,
+    "TPB",
+    -1813
+   ]
+  ],
+  "stops": [
+   11,
+   6
+  ]
+ }
+}

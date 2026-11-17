@@ -1,0 +1,14 @@
+{
+ "trades": 186,
+ "with_best": 184,
+ "headroom_per_lot_mean": 2085.1,
+ "headroom_per_lot_median": 1950.0,
+ "realized_per_lot_mean": 949.9,
+ "best_per_lot_mean": 3035.0,
+ "first_hour_best_per_lot_mean": 1957.3,
+ "share_best_in_first_hour": 0.658,
+ "median_best_minute": 34.0,
+ "median_hold_minutes": 70.5,
+ "losers_whose_best_was_above_entry": 82,
+ "losers": 106
+}

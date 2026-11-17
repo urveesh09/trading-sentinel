@@ -1,0 +1,56 @@
+{
+ "months @205": {
+  "n": 58,
+  "mean_monthly_return": 0.1633,
+  "positive": 29
+ },
+ "PROFIT_ONLY @205": {
+  "outside_p50": 0,
+  "outside_p90": 18790,
+  "outside_p95": 28554,
+  "outside_max": 145550,
+  "share_paths_no_outside": 0.645,
+  "dry_p50": 10.0,
+  "dry_p90": 17.0,
+  "share_months_15750": 0.079,
+  "median_withdrawn_24m": 55995
+ },
+ "SALARY @205": {
+  "outside_p50": 287380,
+  "outside_p90": 350173,
+  "outside_p95": 364310,
+  "outside_max": 492154,
+  "share_paths_no_outside": 0.003,
+  "dry_p50": 0.0,
+  "dry_p90": 0.0,
+  "share_months_15750": 1.0,
+  "median_withdrawn_24m": 378000
+ },
+ "months @400": {
+  "n": 58,
+  "mean_monthly_return": 0.094,
+  "positive": 26
+ },
+ "PROFIT_ONLY @400": {
+  "outside_p50": 0,
+  "outside_p90": 24623,
+  "outside_p95": 34416,
+  "outside_max": 138776,
+  "share_paths_no_outside": 0.511,
+  "dry_p50": 11.0,
+  "dry_p90": 20.0,
+  "share_months_15750": 0.032,
+  "median_withdrawn_24m": 33384
+ },
+ "SALARY @400": {
+  "outside_p50": 321983,
+  "outside_p90": 368792,
+  "outside_p95": 381343,
+  "outside_max": 462226,
+  "share_paths_no_outside": 0.0,
+  "dry_p50": 0.0,
+  "dry_p90": 0.0,
+  "share_months_15750": 1.0,
+  "median_withdrawn_24m": 378000
+ }
+}

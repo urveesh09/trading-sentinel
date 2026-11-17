@@ -1,0 +1,18 @@
+{
+ "faulty": {
+  "sessions": 242,
+  "with_reading": 112,
+  "vol_up_days": 0,
+  "below_0.9x_usual": 105,
+  "median_atr_pct": 1.15,
+  "median_usual": 1.599
+ },
+ "fixed": {
+  "sessions": 242,
+  "with_reading": 242,
+  "vol_up_days": 115,
+  "below_0.9x_usual": 103,
+  "median_atr_pct": 1.41,
+  "median_usual": 1.44
+ }
+}

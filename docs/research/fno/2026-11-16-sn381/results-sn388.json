@@ -1,0 +1,279 @@
+{
+ "fires": 21,
+ "fired_sessions": 16,
+ "fires_net_total": 5449,
+ "fires_net_mean": 259.5,
+ "fires_won": 6,
+ "by_month": {
+  "2022-01": -1386,
+  "2022-07": -2832,
+  "2022-08": 4101,
+  "2022-09": 1176,
+  "2022-11": -1759,
+  "2022-12": 6148
+ },
+ "by_expert": {
+  "EFF": {
+   "n": 5,
+   "net": -6385
+  },
+  "OR20": {
+   "n": 1,
+   "net": 502
+  },
+  "SHIPPED": {
+   "n": 2,
+   "net": 8224
+  },
+  "TPB": {
+   "n": 13,
+   "net": 3107
+  }
+ },
+ "by_side": {
+  "CE": 3597,
+  "PE": 1851
+ },
+ "longest_run_of_fired_sessions": 11,
+ "knife_edge_fires_(|last20|<2000)": 5,
+ "exam_nets": {
+  "panel|N11": -14079,
+  "panel|NO_STAND": -8630,
+  "STRICT": -4363,
+  "ctrl|N10": -3803,
+  "CUSHION": -4363
+ },
+ "rows": [
+  {
+   "day": "2022-01-18",
+   "entry": "11:45",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -1385.61,
+   "paper_last20_sum": -17268.1,
+   "paper_count": 54,
+   "atr_pct": 1.086,
+   "usual_x0.9": 1.139
+  },
+  {
+   "day": "2022-07-15",
+   "entry": "12:06",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -1313.53,
+   "paper_last20_sum": -13587.2,
+   "paper_count": 80,
+   "atr_pct": 1.345,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-07-25",
+   "entry": "13:30",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -1518.58,
+   "paper_last20_sum": -19131.0,
+   "paper_count": 81,
+   "atr_pct": 1.21,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-19",
+   "entry": "13:25",
+   "expert": "EFF",
+   "side": "CE",
+   "net": -1704.3,
+   "paper_last20_sum": -16720.9,
+   "paper_count": 83,
+   "atr_pct": 1.011,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-22",
+   "entry": "12:45",
+   "expert": "TPB",
+   "side": "PE",
+   "net": 2959.47,
+   "paper_last20_sum": -22234.4,
+   "paper_count": 84,
+   "atr_pct": 1.065,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-23",
+   "entry": "11:36",
+   "expert": "EFF",
+   "side": "CE",
+   "net": -1503.86,
+   "paper_last20_sum": -17738.5,
+   "paper_count": 85,
+   "atr_pct": 1.108,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-23",
+   "entry": "12:55",
+   "expert": "OR20",
+   "side": "CE",
+   "net": 502.03,
+   "paper_last20_sum": -17764.3,
+   "paper_count": 86,
+   "atr_pct": 1.108,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-23",
+   "entry": "13:18",
+   "expert": "SHIPPED",
+   "side": "CE",
+   "net": -177.03,
+   "paper_last20_sum": -17764.3,
+   "paper_count": 86,
+   "atr_pct": 1.108,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-24",
+   "entry": "12:36",
+   "expert": "TPB",
+   "side": "CE",
+   "net": -1200.11,
+   "paper_last20_sum": -14204.9,
+   "paper_count": 88,
+   "atr_pct": 1.135,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-26",
+   "entry": "12:10",
+   "expert": "EFF",
+   "side": "CE",
+   "net": -720.08,
+   "paper_last20_sum": -13805.9,
+   "paper_count": 89,
+   "atr_pct": 1.13,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-26",
+   "entry": "13:25",
+   "expert": "EFF",
+   "side": "PE",
+   "net": -856.88,
+   "paper_last20_sum": -12245.0,
+   "paper_count": 90,
+   "atr_pct": 1.13,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-29",
+   "entry": "12:55",
+   "expert": "EFF",
+   "side": "PE",
+   "net": -1599.5,
+   "paper_last20_sum": -10838.6,
+   "paper_count": 92,
+   "atr_pct": 1.117,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-08-30",
+   "entry": "10:10",
+   "expert": "SHIPPED",
+   "side": "CE",
+   "net": 8400.83,
+   "paper_last20_sum": -10307.9,
+   "paper_count": 93,
+   "atr_pct": 1.223,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-09-23",
+   "entry": "11:36",
+   "expert": "TPB",
+   "side": "PE",
+   "net": 3139.37,
+   "paper_last20_sum": -2318.3,
+   "paper_count": 94,
+   "atr_pct": 1.257,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-09-26",
+   "entry": "11:45",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -1963.04,
+   "paper_last20_sum": -1545.8,
+   "paper_count": 95,
+   "atr_pct": 1.332,
+   "usual_x0.9": 1.353
+  },
+  {
+   "day": "2022-11-02",
+   "entry": "11:36",
+   "expert": "TPB",
+   "side": "PE",
+   "net": 340.91,
+   "paper_last20_sum": -1527.4,
+   "paper_count": 100,
+   "atr_pct": 1.131,
+   "usual_x0.9": 1.357
+  },
+  {
+   "day": "2022-11-02",
+   "entry": "13:36",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -841.2,
+   "paper_last20_sum": -1527.4,
+   "paper_count": 100,
+   "atr_pct": 1.131,
+   "usual_x0.9": 1.357
+  },
+  {
+   "day": "2022-11-23",
+   "entry": "13:10",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -616.15,
+   "paper_last20_sum": -698.9,
+   "paper_count": 106,
+   "atr_pct": 0.942,
+   "usual_x0.9": 1.357
+  },
+  {
+   "day": "2022-11-23",
+   "entry": "13:31",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -642.35,
+   "paper_last20_sum": -1817.0,
+   "paper_count": 107,
+   "atr_pct": 0.942,
+   "usual_x0.9": 1.357
+  },
+  {
+   "day": "2022-12-20",
+   "entry": "12:55",
+   "expert": "TPB",
+   "side": "PE",
+   "net": -1420.64,
+   "paper_last20_sum": -2282.4,
+   "paper_count": 108,
+   "atr_pct": 0.91,
+   "usual_x0.9": 1.301
+  },
+  {
+   "day": "2022-12-21",
+   "entry": "12:00",
+   "expert": "TPB",
+   "side": "PE",
+   "net": 7568.8,
+   "paper_last20_sum": -2502.9,
+   "paper_count": 109,
+   "atr_pct": 0.931,
+   "usual_x0.9": 1.301
+  }
+ ]
+}

@@ -1,0 +1,5213 @@
+{
+  "freeze_head": "48270fb355e78613d33276e6984a26a2c146d861",
+  "arms": {
+    "E032": {
+      "rule": {},
+      "2024|ordinary": {
+        "net": 15580.74,
+        "without_best": 3810.02,
+        "worst": -646.98,
+        "drawdown": 691.65,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 952.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.8,
+          "net": 590.07,
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 14629.39,
+        "without_best": 3046.86,
+        "worst": -669.72,
+        "drawdown": 730.65,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2582.43,
+        "without_best": -2582.43,
+        "worst": -632.82,
+        "drawdown": 2582.43,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 5936.81,
+        "without_best": 4084.55,
+        "worst": -478.01,
+        "drawdown": 606.19,
+        "trades": 20
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.45,
+          "net": -278.72,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.25,
+          "net": 966.02,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 337.8,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.4,
+          "net": 1252.67,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.15,
+          "net": 940.63,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.05,
+          "net": 1046.91,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.25,
+          "net": 538.78,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": -233.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 5371.36,
+        "without_best": 3616.52,
+        "worst": -537.55,
+        "drawdown": 557.7,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": 144.73,
+        "without_best": -640.16,
+        "worst": -823.99,
+        "drawdown": 1019.51,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 21517.55,
+        "without_best": 9746.83,
+        "worst": -646.98,
+        "drawdown": 753.91,
+        "trades": 39
+      },
+      "both|adverse": {
+        "net": 20000.75,
+        "without_best": 8418.22,
+        "worst": -669.72,
+        "drawdown": 906.78,
+        "trades": 39
+      },
+      "skeptical": {
+        "loss_year_chance": 0.2194,
+        "year_p5": -1955.27,
+        "year_median": 1976.76,
+        "drawdown_p95": 3234.96,
+        "median_log_growth": 0.0761
+      },
+      "both|catastrophe": {
+        "net": -2437.7,
+        "without_best": -3222.59,
+        "worst": -823.99,
+        "drawdown": 3431.79,
+        "trades": 15
+      },
+      "risk_plan": {
+        "loss_year": true,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "EN03_eff0.65": {
+      "rule": {
+        "put_eff": 0.65
+      },
+      "2024|ordinary": {
+        "net": 14393.15,
+        "without_best": 2622.43,
+        "worst": -837.24,
+        "drawdown": 1295.33,
+        "trades": 23
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.95,
+          "net": -648.35,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 752.11,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.2,
+          "net": -454.11,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-16",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.4,
+          "net": -837.24,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 952.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.8,
+          "net": 590.07,
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 11055.81,
+        "without_best": -526.72,
+        "worst": -895.7,
+        "drawdown": 2567.35,
+        "trades": 22
+      },
+      "2024|catastrophe": {
+        "net": -4070.32,
+        "without_best": -4070.32,
+        "worst": -771.75,
+        "drawdown": 4070.32,
+        "trades": 8
+      },
+      "2025|ordinary": {
+        "net": -4026.25,
+        "without_best": -4787.47,
+        "worst": -1116.61,
+        "drawdown": 4026.25,
+        "trades": 13
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-13",
+          "side": "P",
+          "lots": 3,
+          "entry": 9.85,
+          "net": -1005.42,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-20",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.85,
+          "net": -1116.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-03",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.15,
+          "net": -538.52,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.6,
+          "net": -901.56,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 1,
+          "entry": 14.45,
+          "net": -162.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 1,
+          "entry": 13.8,
+          "net": 145.3,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-17",
+          "side": "P",
+          "lots": 2,
+          "entry": 6.5,
+          "net": -418.99,
+          "exits": [
+            "STOP"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": -4286.36,
+        "without_best": -5008.61,
+        "worst": -1155.6,
+        "drawdown": 4286.36,
+        "trades": 13
+      },
+      "2025|catastrophe": {
+        "net": -4179.32,
+        "without_best": -4758.88,
+        "worst": -1207.44,
+        "drawdown": 4179.32,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 10366.9,
+        "without_best": -1403.82,
+        "worst": -1116.61,
+        "drawdown": 4173.97,
+        "trades": 36
+      },
+      "both|adverse": {
+        "net": 7366.77,
+        "without_best": -4215.76,
+        "worst": -1155.6,
+        "drawdown": 4038.12,
+        "trades": 33
+      },
+      "skeptical": {
+        "loss_year_chance": 0.5879,
+        "year_p5": -5385.28,
+        "year_median": -590.15,
+        "drawdown_p95": 6174.99,
+        "median_log_growth": -0.02389
+      },
+      "both|catastrophe": {
+        "net": -4070.32,
+        "without_best": -4070.32,
+        "worst": -771.75,
+        "drawdown": 4070.32,
+        "trades": 8
+      },
+      "risk_plan": {
+        "loss_year": false,
+        "drawdown": false,
+        "severe": true
+      }
+    },
+    "EN03_eff0.60": {
+      "rule": {
+        "put_eff": 0.6
+      },
+      "2024|ordinary": {
+        "net": 10973.35,
+        "without_best": -797.37,
+        "worst": -1447.92,
+        "drawdown": 2604.19,
+        "trades": 35
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.95,
+          "net": -648.35,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 752.11,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.2,
+          "net": -454.11,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.35,
+          "net": -976.92,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-07",
+          "side": "P",
+          "lots": 5,
+          "entry": 6.85,
+          "net": -506.6,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-03-14",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.2,
+          "net": -649.67,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.95,
+          "net": 401.7,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-16",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.4,
+          "net": -837.24,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-01",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.95,
+          "net": -234.37,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 16.2,
+          "net": -298.72,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 952.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-29",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.25,
+          "net": -656.75,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-03",
+          "side": "P",
+          "lots": 3,
+          "entry": 12.05,
+          "net": -43.04,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-10-10",
+          "side": "P",
+          "lots": 3,
+          "entry": 9.35,
+          "net": -90.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-10-24",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.25,
+          "net": -791.63,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 1,
+          "entry": 10.8,
+          "net": 165.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-11-07",
+          "side": "P",
+          "lots": 4,
+          "entry": 9.05,
+          "net": 206.72,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-11-14",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.05,
+          "net": 644.78,
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 2045.61,
+        "without_best": -3710.25,
+        "worst": -1035.39,
+        "drawdown": 3746.85,
+        "trades": 33
+      },
+      "2024|catastrophe": {
+        "net": -4348.53,
+        "without_best": -4348.53,
+        "worst": -1385.65,
+        "drawdown": 4348.53,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": -4136.55,
+        "without_best": -4897.77,
+        "worst": -1343.37,
+        "drawdown": 4136.55,
+        "trades": 17
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-01-09",
+          "side": "P",
+          "lots": 3,
+          "entry": 9.8,
+          "net": -752.38,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "P",
+          "lots": 5,
+          "entry": 6.3,
+          "net": 142.57,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-13",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.6,
+          "net": -337.95,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-13",
+          "side": "P",
+          "lots": 3,
+          "entry": 9.85,
+          "net": -1005.42,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-20",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.85,
+          "net": -1116.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-27",
+          "side": "P",
+          "lots": 2,
+          "entry": 7.35,
+          "net": 164.62,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-04-03",
+          "side": "P",
+          "lots": 3,
+          "entry": 5.15,
+          "net": -292.86,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-08",
+          "side": "P",
+          "lots": 1,
+          "entry": 14.6,
+          "net": -474.38,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 1,
+          "entry": 14.45,
+          "net": -162.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 1,
+          "entry": 13.8,
+          "net": 145.3,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-17",
+          "side": "P",
+          "lots": 2,
+          "entry": 6.5,
+          "net": -418.99,
+          "exits": [
+            "STOP"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": -4035.05,
+        "without_best": -4365.11,
+        "worst": -1424.56,
+        "drawdown": 4035.05,
+        "trades": 11
+      },
+      "2025|catastrophe": {
+        "net": -4204.99,
+        "without_best": -4204.99,
+        "worst": -1207.44,
+        "drawdown": 4204.99,
+        "trades": 7
+      },
+      "both|ordinary": {
+        "net": 8226.89,
+        "without_best": -3543.83,
+        "worst": -1447.92,
+        "drawdown": 4049.4,
+        "trades": 43
+      },
+      "both|adverse": {
+        "net": -279.16,
+        "without_best": -6035.02,
+        "worst": -1035.39,
+        "drawdown": 4119.94,
+        "trades": 43
+      },
+      "skeptical": {
+        "loss_year_chance": 0.6857,
+        "year_p5": -5138.03,
+        "year_median": -1165.05,
+        "drawdown_p95": 5836.78,
+        "median_log_growth": -0.04772
+      },
+      "both|catastrophe": {
+        "net": -4348.53,
+        "without_best": -4348.53,
+        "worst": -1385.65,
+        "drawdown": 4348.53,
+        "trades": 7
+      },
+      "risk_plan": {
+        "loss_year": false,
+        "drawdown": false,
+        "severe": true
+      }
+    },
+    "EN03_eff0.55": {
+      "rule": {
+        "put_eff": 0.55
+      },
+      "2024|ordinary": {
+        "net": -4149.32,
+        "without_best": -4901.43,
+        "worst": -1095.29,
+        "drawdown": 4149.32,
+        "trades": 12
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.95,
+          "net": -648.35,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-01-04",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.0,
+          "net": -446.94,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.0,
+          "net": -252.63,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-01-25",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.7,
+          "net": -688.34,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-02-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 752.11,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-02-15",
+          "side": "P",
+          "lots": 5,
+          "entry": 6.0,
+          "net": 61.71,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.2,
+          "net": -454.11,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.35,
+          "net": -976.92,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-03-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -230.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-03-14",
+          "side": "P",
+          "lots": 1,
+          "entry": 15.9,
+          "net": -198.87,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-21",
+          "side": "P",
+          "lots": 2,
+          "entry": 6.65,
+          "net": -419.04,
+          "exits": [
+            "STOP"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": -4044.65,
+        "without_best": -4044.65,
+        "worst": -1179.76,
+        "drawdown": 4044.65,
+        "trades": 10
+      },
+      "2024|catastrophe": {
+        "net": -4354.96,
+        "without_best": -4354.96,
+        "worst": -1385.65,
+        "drawdown": 4354.96,
+        "trades": 6
+      },
+      "2025|ordinary": {
+        "net": -1296.81,
+        "without_best": -2637.68,
+        "worst": -999.59,
+        "drawdown": 3812.24,
+        "trades": 37
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-01-09",
+          "side": "P",
+          "lots": 3,
+          "entry": 9.8,
+          "net": -752.38,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.7,
+          "net": -662.39,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": 97.21,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "P",
+          "lots": 2,
+          "entry": 12.2,
+          "net": -654.29,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 8.55,
+          "net": -262.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-13",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.6,
+          "net": -337.95,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-20",
+          "side": "P",
+          "lots": 2,
+          "entry": 8.85,
+          "net": -581.91,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-03-27",
+          "side": "P",
+          "lots": 2,
+          "entry": 7.35,
+          "net": 164.62,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-04-03",
+          "side": "P",
+          "lots": 3,
+          "entry": 5.15,
+          "net": -292.86,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-08",
+          "side": "P",
+          "lots": 3,
+          "entry": 5.6,
+          "net": 1026.25,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.45,
+          "net": -278.72,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 1,
+          "entry": 17.25,
+          "net": 459.41,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 337.8,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-17",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.0,
+          "net": -32.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-24",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.85,
+          "net": -571.66,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2025-07-31",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.15,
+          "net": -680.85,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.4,
+          "net": 1252.67,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 5.4,
+          "net": 88.2,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.15,
+          "net": 940.63,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.05,
+          "net": 1046.91,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-09-23",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.45,
+          "net": -999.59,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-09-30",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.5,
+          "net": -130.75,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-10-28",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.0,
+          "net": -821.06,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.25,
+          "net": 538.78,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-02",
+          "side": "P",
+          "lots": 5,
+          "entry": 6.6,
+          "net": -279.35,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 12.85,
+          "net": 370.53,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "P",
+          "lots": 3,
+          "entry": 6.55,
+          "net": -244.86,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "P",
+          "lots": 3,
+          "entry": 11.2,
+          "net": -879.53,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": -4000.85,
+        "without_best": -4139.49,
+        "worst": -1087.99,
+        "drawdown": 4000.85,
+        "trades": 11
+      },
+      "2025|catastrophe": {
+        "net": -4159.45,
+        "without_best": -4159.45,
+        "worst": -1093.04,
+        "drawdown": 4159.45,
+        "trades": 6
+      },
+      "both|ordinary": {
+        "net": -4149.32,
+        "without_best": -4901.43,
+        "worst": -1095.29,
+        "drawdown": 4149.32,
+        "trades": 12
+      },
+      "both|adverse": {
+        "net": -4044.65,
+        "without_best": -4044.65,
+        "worst": -1179.76,
+        "drawdown": 4044.65,
+        "trades": 10
+      },
+      "skeptical": {
+        "loss_year_chance": 0.3962,
+        "year_p5": -2860.35,
+        "year_median": 97.72,
+        "drawdown_p95": 3538.97,
+        "median_log_growth": 0.0039
+      },
+      "both|catastrophe": {
+        "net": -4354.96,
+        "without_best": -4354.96,
+        "worst": -1385.65,
+        "drawdown": 4354.96,
+        "trades": 6
+      },
+      "risk_plan": {
+        "loss_year": false,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "EN04_put2.5x": {
+      "rule": {
+        "put_mult": 2.5
+      },
+      "2024|ordinary": {
+        "net": 15992.64,
+        "without_best": 3493.24,
+        "worst": -1246.76,
+        "drawdown": 1246.76,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 2,
+          "entry": 19.0,
+          "net": -1246.76,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.6,
+          "net": 12499.4,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 5,
+          "entry": 8.65,
+          "net": -621.53,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 6,
+          "entry": 7.0,
+          "net": 1153.01,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 4,
+          "entry": 10.5,
+          "net": -105.57,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 4,
+          "entry": 10.8,
+          "net": 802.5,
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 14911.39,
+        "without_best": 2622.92,
+        "worst": -1292.25,
+        "drawdown": 1292.25,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2655.42,
+        "without_best": -2655.42,
+        "worst": -632.82,
+        "drawdown": 2655.42,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 7853.25,
+        "without_best": 5351.07,
+        "worst": -478.01,
+        "drawdown": 606.19,
+        "trades": 21
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 3,
+          "entry": 14.45,
+          "net": -394.48,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.25,
+          "net": 966.02,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 3,
+          "entry": 13.8,
+          "net": 530.3,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 3,
+          "entry": 13.4,
+          "net": 1902.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 8,
+          "entry": 5.15,
+          "net": 1269.9,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-28",
+          "side": "P",
+          "lots": 3,
+          "entry": 12.45,
+          "net": -451.93,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 3,
+          "entry": 15.05,
+          "net": 2066.37,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 3,
+          "entry": 14.25,
+          "net": 831.76,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": -233.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 7190.23,
+        "without_best": 4817.92,
+        "worst": -537.55,
+        "drawdown": 557.7,
+        "trades": 21
+      },
+      "2025|catastrophe": {
+        "net": 200.15,
+        "without_best": -862.09,
+        "worst": -1212.39,
+        "drawdown": 1407.91,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 23845.89,
+        "without_best": 11346.49,
+        "worst": -1246.76,
+        "drawdown": 1246.76,
+        "trades": 40
+      },
+      "both|adverse": {
+        "net": 22101.62,
+        "without_best": 9813.15,
+        "worst": -1292.25,
+        "drawdown": 1292.25,
+        "trades": 40
+      },
+      "skeptical": {
+        "loss_year_chance": 0.2156,
+        "year_p5": -2338.74,
+        "year_median": 2437.46,
+        "drawdown_p95": 3836.81,
+        "median_log_growth": 0.09303
+      },
+      "both|catastrophe": {
+        "net": -3342.93,
+        "without_best": -3922.49,
+        "worst": -1212.39,
+        "drawdown": 3893.18,
+        "trades": 15
+      },
+      "risk_plan": {
+        "loss_year": true,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "EN04_put3x": {
+      "rule": {
+        "put_mult": 3.0
+      },
+      "2024|ordinary": {
+        "net": 24802.08,
+        "without_best": 6381.92,
+        "worst": -1246.76,
+        "drawdown": 1246.76,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 2,
+          "entry": 19.0,
+          "net": -1246.76,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 7,
+          "entry": 7.6,
+          "net": 18420.16,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 3,
+          "entry": 18.15,
+          "net": 2340.66,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 3,
+          "entry": 17.85,
+          "net": 2691.12,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 6,
+          "entry": 8.65,
+          "net": -736.39,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 7,
+          "entry": 7.0,
+          "net": 1353.04,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 5,
+          "entry": 10.5,
+          "net": -120.17,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 5,
+          "entry": 10.8,
+          "net": 1014.92,
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 23451.38,
+        "without_best": 5336.25,
+        "worst": -1292.25,
+        "drawdown": 1292.25,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2728.42,
+        "without_best": -2728.42,
+        "worst": -632.82,
+        "drawdown": 2728.42,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 9363.12,
+        "without_best": 6211.01,
+        "worst": -586.85,
+        "drawdown": 586.85,
+        "trades": 21
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 3,
+          "entry": 17.6,
+          "net": 625.85,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 3,
+          "entry": 14.45,
+          "net": -394.48,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 3,
+          "entry": 17.25,
+          "net": 1472.63,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 4,
+          "entry": 13.8,
+          "net": 722.79,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 4,
+          "entry": 13.4,
+          "net": 2552.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 9,
+          "entry": 5.15,
+          "net": 1434.54,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 12.45,
+          "net": -586.85,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 3,
+          "entry": 15.05,
+          "net": 2066.37,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 3,
+          "entry": 14.25,
+          "net": 831.76,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 3,
+          "entry": 15.6,
+          "net": -326.89,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 7889.65,
+        "without_best": 4899.88,
+        "worst": -690.77,
+        "drawdown": 690.77,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": 338.83,
+        "without_best": -862.09,
+        "worst": -1212.39,
+        "drawdown": 1407.91,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 34165.2,
+        "without_best": 15745.04,
+        "worst": -1246.76,
+        "drawdown": 1246.76,
+        "trades": 40
+      },
+      "both|adverse": {
+        "net": 31341.03,
+        "without_best": 13225.9,
+        "worst": -1292.25,
+        "drawdown": 1292.25,
+        "trades": 39
+      },
+      "skeptical": {
+        "loss_year_chance": 0.1895,
+        "year_p5": -2531.13,
+        "year_median": 3274.09,
+        "drawdown_p95": 4358.54,
+        "median_log_growth": 0.12307
+      },
+      "both|catastrophe": {
+        "net": -3277.25,
+        "without_best": -3923.45,
+        "worst": -1212.39,
+        "drawdown": 3966.18,
+        "trades": 15
+      },
+      "risk_plan": {
+        "loss_year": true,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "EN04_put3.5x": {
+      "rule": {
+        "put_mult": 3.5
+      },
+      "2024|ordinary": {
+        "net": 29665.02,
+        "without_best": 6052.77,
+        "worst": -1846.54,
+        "drawdown": 1846.54,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 3,
+          "entry": 19.0,
+          "net": -1846.54,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 8,
+          "entry": 7.6,
+          "net": 23612.25,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 3,
+          "entry": 18.15,
+          "net": 2340.66,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 3,
+          "entry": 17.85,
+          "net": 2691.12,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 7,
+          "entry": 8.65,
+          "net": -851.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 9,
+          "entry": 7.0,
+          "net": 1753.11,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 6,
+          "entry": 10.5,
+          "net": -134.75,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 5,
+          "entry": 10.8,
+          "net": 1014.92,
+          "exits": [
+            "TIME"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 26378.02,
+        "without_best": 3142.18,
+        "worst": -1914.77,
+        "drawdown": 1914.77,
+        "trades": 18
+      },
+      "2024|catastrophe": {
+        "net": -2801.42,
+        "without_best": -2801.42,
+        "worst": -632.82,
+        "drawdown": 2801.42,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 9575.09,
+        "without_best": 6422.98,
+        "worst": -721.76,
+        "drawdown": 721.76,
+        "trades": 21
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 3,
+          "entry": 17.6,
+          "net": 625.85,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 4,
+          "entry": 14.45,
+          "net": -510.23,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 3,
+          "entry": 17.25,
+          "net": 1472.63,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 4,
+          "entry": 13.8,
+          "net": 722.79,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 4,
+          "entry": 13.4,
+          "net": 2552.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 10,
+          "entry": 5.15,
+          "net": 1599.18,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-28",
+          "side": "P",
+          "lots": 5,
+          "entry": 12.45,
+          "net": -721.76,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 4,
+          "entry": 15.05,
+          "net": 2164.61,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 4,
+          "entry": 14.25,
+          "net": 1124.74,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 4,
+          "entry": 15.6,
+          "net": -420.12,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 8554.86,
+        "without_best": 5565.09,
+        "worst": -851.67,
+        "drawdown": 851.67,
+        "trades": 21
+      },
+      "2025|catastrophe": {
+        "net": 255.6,
+        "without_best": -1084.01,
+        "worst": -1600.79,
+        "drawdown": 1796.31,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 39240.11,
+        "without_best": 15627.86,
+        "worst": -1846.54,
+        "drawdown": 1846.54,
+        "trades": 40
+      },
+      "both|adverse": {
+        "net": 34932.88,
+        "without_best": 11697.04,
+        "worst": -1914.77,
+        "drawdown": 1914.77,
+        "trades": 39
+      },
+      "skeptical": {
+        "loss_year_chance": 0.2087,
+        "year_p5": -2947.81,
+        "year_median": 3061.05,
+        "drawdown_p95": 4993.95,
+        "median_log_growth": 0.11551
+      },
+      "both|catastrophe": {
+        "net": -4232.06,
+        "without_best": -4811.62,
+        "worst": -1600.79,
+        "drawdown": 4232.06,
+        "trades": 10
+      },
+      "risk_plan": {
+        "loss_year": true,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "EN05_run1.1": {
+      "rule": {
+        "put_runner": 1.1
+      },
+      "2024|ordinary": {
+        "net": 14631.77,
+        "without_best": 2861.05,
+        "worst": -646.98,
+        "drawdown": 691.65,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 287.11,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.8,
+          "net": 306.97,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 13693.4,
+        "without_best": 2110.87,
+        "worst": -669.72,
+        "drawdown": 988.11,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2582.43,
+        "without_best": -2582.43,
+        "worst": -632.82,
+        "drawdown": 2582.43,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 3719.2,
+        "without_best": 2390.09,
+        "worst": -478.01,
+        "drawdown": 911.99,
+        "trades": 20
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 95.7,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.45,
+          "net": -278.72,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.25,
+          "net": 631.03,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 74.15,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.4,
+          "net": 729.52,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.15,
+          "net": 488.86,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.05,
+          "net": 1046.91,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.25,
+          "net": 200.53,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": -233.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 3169.95,
+        "without_best": 1935.0,
+        "worst": -537.55,
+        "drawdown": 860.27,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": -538.25,
+        "without_best": -1117.81,
+        "worst": -823.99,
+        "drawdown": 1019.51,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 18350.97,
+        "without_best": 6580.25,
+        "worst": -646.98,
+        "drawdown": 1562.36,
+        "trades": 39
+      },
+      "both|adverse": {
+        "net": 16863.35,
+        "without_best": 5280.82,
+        "worst": -669.72,
+        "drawdown": 1848.38,
+        "trades": 39
+      },
+      "skeptical": {
+        "loss_year_chance": 0.3005,
+        "year_p5": -2311.99,
+        "year_median": 1191.44,
+        "drawdown_p95": 3324.12,
+        "median_log_growth": 0.04656
+      },
+      "both|catastrophe": {
+        "net": -3046.22,
+        "without_best": -3625.78,
+        "worst": -823.99,
+        "drawdown": 3431.79,
+        "trades": 15
+      },
+      "risk_plan": {
+        "loss_year": false,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "EN05_run1.2": {
+      "rule": {
+        "put_runner": 1.2
+      },
+      "2024|ordinary": {
+        "net": 14631.77,
+        "without_best": 2861.05,
+        "worst": -646.98,
+        "drawdown": 691.65,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 287.11,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.8,
+          "net": 306.97,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 13693.4,
+        "without_best": 2110.87,
+        "worst": -669.72,
+        "drawdown": 988.11,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2582.43,
+        "without_best": -2582.43,
+        "worst": -632.82,
+        "drawdown": 2582.43,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 3719.2,
+        "without_best": 2390.09,
+        "worst": -478.01,
+        "drawdown": 911.99,
+        "trades": 20
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 95.7,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.45,
+          "net": -278.72,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.25,
+          "net": 631.03,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 74.15,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.4,
+          "net": 729.52,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.15,
+          "net": 488.86,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.05,
+          "net": 1046.91,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.25,
+          "net": 200.53,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": -233.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 3472.52,
+        "without_best": 2237.57,
+        "worst": -537.55,
+        "drawdown": 684.37,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": -538.25,
+        "without_best": -1117.81,
+        "worst": -823.99,
+        "drawdown": 1019.51,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 18350.97,
+        "without_best": 6580.25,
+        "worst": -646.98,
+        "drawdown": 1562.36,
+        "trades": 39
+      },
+      "both|adverse": {
+        "net": 17165.92,
+        "without_best": 5583.39,
+        "worst": -669.72,
+        "drawdown": 1545.81,
+        "trades": 39
+      },
+      "skeptical": {
+        "loss_year_chance": 0.2861,
+        "year_p5": -2193.87,
+        "year_median": 1266.62,
+        "drawdown_p95": 3230.0,
+        "median_log_growth": 0.04942
+      },
+      "both|catastrophe": {
+        "net": -3046.22,
+        "without_best": -3625.78,
+        "worst": -823.99,
+        "drawdown": 3431.79,
+        "trades": 15
+      },
+      "risk_plan": {
+        "loss_year": true,
+        "drawdown": true,
+        "severe": true
+      }
+    },
+    "EN05_run1.3": {
+      "rule": {
+        "put_runner": 1.3
+      },
+      "2024|ordinary": {
+        "net": 14631.77,
+        "without_best": 2861.05,
+        "worst": -646.98,
+        "drawdown": 691.65,
+        "trades": 19
+      },
+      "2024|tickets": [
+        {
+          "day": "2024-01-11",
+          "side": "P",
+          "lots": 1,
+          "entry": 19.0,
+          "net": -646.98,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-02-22",
+          "side": "C",
+          "lots": 1,
+          "entry": 14.45,
+          "net": 1312.95,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-02-29",
+          "side": "C",
+          "lots": 2,
+          "entry": 6.85,
+          "net": -471.0,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2024-03-28",
+          "side": "P",
+          "lots": 4,
+          "entry": 7.6,
+          "net": 11770.72,
+          "exits": [
+            "TARGET_BASE",
+            "HERO_TARGET"
+          ]
+        },
+        {
+          "day": "2024-04-04",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.4,
+          "net": -386.61,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-04-25",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.3,
+          "net": -305.04,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-05-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 18.15,
+          "net": 1049.19,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-05-23",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.55,
+          "net": -360.69,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-06-20",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.0,
+          "net": -68.36,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-06-27",
+          "side": "C",
+          "lots": 1,
+          "entry": 11.25,
+          "net": 1044.21,
+          "exits": [
+            "TARGET"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.3,
+          "net": -182.71,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-07-18",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.25,
+          "net": 1149.56,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-08",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.85,
+          "net": 1376.9,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-08-14",
+          "side": "P",
+          "lots": 4,
+          "entry": 8.65,
+          "net": -506.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-08-22",
+          "side": "P",
+          "lots": 5,
+          "entry": 7.0,
+          "net": 287.11,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2024-09-05",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.5,
+          "net": -90.98,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2024-09-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.55,
+          "net": -324.55,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.4,
+          "net": -322.26,
+          "exits": [
+            "STRUCTURE"
+          ]
+        },
+        {
+          "day": "2024-10-31",
+          "side": "P",
+          "lots": 3,
+          "entry": 10.8,
+          "net": 306.97,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        }
+      ],
+      "2024|adverse": {
+        "net": 13693.4,
+        "without_best": 2110.87,
+        "worst": -669.72,
+        "drawdown": 988.11,
+        "trades": 19
+      },
+      "2024|catastrophe": {
+        "net": -2582.43,
+        "without_best": -2582.43,
+        "worst": -632.82,
+        "drawdown": 2582.43,
+        "trades": 7
+      },
+      "2025|ordinary": {
+        "net": 4626.9,
+        "without_best": 3297.79,
+        "worst": -478.01,
+        "drawdown": 606.19,
+        "trades": 20
+      },
+      "2025|tickets": [
+        {
+          "day": "2025-01-02",
+          "side": "C",
+          "lots": 2,
+          "entry": 5.9,
+          "net": -204.72,
+          "exits": [
+            "TRAIL"
+          ]
+        },
+        {
+          "day": "2025-02-06",
+          "side": "C",
+          "lots": 1,
+          "entry": 13.25,
+          "net": -324.96,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-02-13",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.6,
+          "net": 401.5,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-03-06",
+          "side": "C",
+          "lots": 2,
+          "entry": 8.55,
+          "net": -478.01,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-04-17",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.35,
+          "net": 761.22,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-05-22",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.45,
+          "net": -278.72,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.1,
+          "net": -182.52,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-06-12",
+          "side": "P",
+          "lots": 2,
+          "entry": 17.25,
+          "net": 631.03,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-07-03",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.8,
+          "net": 337.8,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "P",
+          "lots": 2,
+          "entry": 13.4,
+          "net": 729.52,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-08-07",
+          "side": "C",
+          "lots": 1,
+          "entry": 12.75,
+          "net": 599.59,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-08-21",
+          "side": "P",
+          "lots": 6,
+          "entry": 5.15,
+          "net": 488.86,
+          "exits": [
+            "PUT_RUNNER",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-09-02",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.05,
+          "net": 1046.91,
+          "exits": [
+            "TARGET_BASE",
+            "RUNNER_TRAIL"
+          ]
+        },
+        {
+          "day": "2025-10-14",
+          "side": "C",
+          "lots": 1,
+          "entry": 16.25,
+          "net": 258.45,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 15.75,
+          "net": 15.25,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-11-11",
+          "side": "C",
+          "lots": 1,
+          "entry": 17.7,
+          "net": -491.08,
+          "exits": [
+            "STOP"
+          ]
+        },
+        {
+          "day": "2025-11-25",
+          "side": "P",
+          "lots": 2,
+          "entry": 14.25,
+          "net": 538.78,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-09",
+          "side": "P",
+          "lots": 2,
+          "entry": 15.6,
+          "net": -233.66,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-16",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.5,
+          "net": 320.97,
+          "exits": [
+            "TIME"
+          ]
+        },
+        {
+          "day": "2025-12-30",
+          "side": "C",
+          "lots": 1,
+          "entry": 10.95,
+          "net": 690.69,
+          "exits": [
+            "TARGET"
+          ]
+        }
+      ],
+      "2025|adverse": {
+        "net": 4067.93,
+        "without_best": 2832.98,
+        "worst": -537.55,
+        "drawdown": 557.7,
+        "trades": 20
+      },
+      "2025|catastrophe": {
+        "net": -297.32,
+        "without_best": -876.88,
+        "worst": -823.99,
+        "drawdown": 1019.51,
+        "trades": 8
+      },
+      "both|ordinary": {
+        "net": 19258.67,
+        "without_best": 7487.95,
+        "worst": -646.98,
+        "drawdown": 1256.56,
+        "trades": 39
+      },
+      "both|adverse": {
+        "net": 17761.33,
+        "without_best": 6178.8,
+        "worst": -669.72,
+        "drawdown": 1545.81,
+        "trades": 39
+      },
+      "skeptical": {
+        "loss_year_chance": 0.2598,
+        "year_p5": -2039.19,
+        "year_median": 1441.83,
+        "drawdown_p95": 3168.62,
+        "median_log_growth": 0.05607
+      },
+      "both|catastrophe": {
+        "net": -3046.22,
+        "without_best": -3625.78,
+        "worst": -823.99,
+        "drawdown": 3431.79,
+        "trades": 15
+      },
+      "risk_plan": {
+        "loss_year": true,
+        "drawdown": true,
+        "severe": true
+      }
+    }
+  },
+  "decisions": {
+    "per_arm": {
+      "EN03_eff0.65": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": false,
+          "2024_adverse": false,
+          "2024_without_best": false,
+          "2025_ordinary": false,
+          "2025_adverse": false,
+          "2025_without_best": false,
+          "severe": false,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": false,
+          "drawdown": false,
+          "severe": true
+        }
+      },
+      "EN03_eff0.60": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": false,
+          "2024_adverse": false,
+          "2024_without_best": false,
+          "2025_ordinary": false,
+          "2025_adverse": false,
+          "2025_without_best": false,
+          "severe": false,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": false,
+          "drawdown": false,
+          "severe": true
+        }
+      },
+      "EN03_eff0.55": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": false,
+          "2024_adverse": false,
+          "2024_without_best": false,
+          "2025_ordinary": false,
+          "2025_adverse": false,
+          "2025_without_best": false,
+          "severe": false,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": false,
+          "drawdown": true,
+          "severe": true
+        }
+      },
+      "EN04_put2.5x": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": true,
+          "2024_adverse": true,
+          "2024_without_best": false,
+          "2025_ordinary": true,
+          "2025_adverse": true,
+          "2025_without_best": true,
+          "severe": true,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": true,
+          "drawdown": true,
+          "severe": true
+        }
+      },
+      "EN04_put3x": {
+        "beats": true,
+        "checks": {
+          "2024_ordinary": true,
+          "2024_adverse": true,
+          "2024_without_best": true,
+          "2025_ordinary": true,
+          "2025_adverse": true,
+          "2025_without_best": true,
+          "severe": true,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": true,
+          "drawdown": true,
+          "severe": true
+        }
+      },
+      "EN04_put3.5x": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": true,
+          "2024_adverse": true,
+          "2024_without_best": true,
+          "2025_ordinary": true,
+          "2025_adverse": true,
+          "2025_without_best": true,
+          "severe": false,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": true,
+          "drawdown": true,
+          "severe": true
+        }
+      },
+      "EN05_run1.1": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": false,
+          "2024_adverse": false,
+          "2024_without_best": false,
+          "2025_ordinary": false,
+          "2025_adverse": false,
+          "2025_without_best": false,
+          "severe": true,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": false,
+          "drawdown": true,
+          "severe": true
+        }
+      },
+      "EN05_run1.2": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": false,
+          "2024_adverse": false,
+          "2024_without_best": false,
+          "2025_ordinary": false,
+          "2025_adverse": false,
+          "2025_without_best": false,
+          "severe": true,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": true,
+          "drawdown": true,
+          "severe": true
+        }
+      },
+      "EN05_run1.3": {
+        "beats": false,
+        "checks": {
+          "2024_ordinary": false,
+          "2024_adverse": false,
+          "2024_without_best": false,
+          "2025_ordinary": false,
+          "2025_adverse": false,
+          "2025_without_best": false,
+          "severe": true,
+          "worst_day": true
+        },
+        "risk_plan": {
+          "loss_year": true,
+          "drawdown": true,
+          "severe": true
+        }
+      }
+    },
+    "EN03": null,
+    "EN04": null,
+    "EN05": null,
+    "adopted": {},
+    "candidate": null
+  }
+}

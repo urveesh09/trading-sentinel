@@ -1,0 +1,322 @@
+{
+ "gold": {
+  "ONE_15K @205": {
+   "sessions": 932,
+   "per_session": 151.8,
+   "year_net": {
+    "mean": 29305,
+    "p5": -5361,
+    "p50": 27175,
+    "p95": 71851
+   },
+   "P_year_below_0": 0.094,
+   "longest_without_new_high": {
+    "p50": 183,
+    "p95": 414
+   },
+   "worst_drawdown": {
+    "p50": 16110,
+    "p95": 27640
+   },
+   "gold_vs_zero": {
+    "mean": 151.77,
+    "sd": 1557.5,
+    "autocorr_1_5": [
+     0.025,
+     0.01,
+     -0.048,
+     0.013,
+     0.03
+    ],
+    "sigma_LR": 1727.1,
+    "n_star_replay": 350,
+    "n_star_market_sessions": 444,
+    "n_star_years": 1.8
+   }
+  },
+  "ONE_15K @400": {
+   "sessions": 932,
+   "per_session": 72.0,
+   "year_net": {
+    "mean": 14265,
+    "p5": -16607,
+    "p50": 11779,
+    "p95": 53373
+   },
+   "P_year_below_0": 0.275,
+   "longest_without_new_high": {
+    "p50": 319,
+    "p95": 758
+   },
+   "worst_drawdown": {
+    "p50": 25742,
+    "p95": 47243
+   },
+   "gold_vs_zero": {
+    "mean": 71.99,
+    "sd": 1433.8,
+    "autocorr_1_5": [
+     0.032,
+     0.02,
+     -0.07,
+     0.022,
+     0.049
+    ],
+    "sigma_LR": 1533.1,
+    "n_star_replay": 1227,
+    "n_star_market_sessions": 1556,
+    "n_star_years": 6.3
+   }
+  },
+  "GOLD_30K @205": {
+   "sessions": 932,
+   "per_session": 896.6,
+   "year_net": {
+    "mean": 174706,
+    "p5": -3408,
+    "p50": 160275,
+    "p95": 401770
+   },
+   "P_year_below_0": 0.056,
+   "longest_without_new_high": {
+    "p50": 164,
+    "p95": 345
+   },
+   "worst_drawdown": {
+    "p50": 69848,
+    "p95": 112899
+   },
+   "gold_vs_zero": {
+    "mean": 896.57,
+    "sd": 8468.4,
+    "autocorr_1_5": [
+     -0.016,
+     0.025,
+     -0.027,
+     0.022,
+     0.031
+    ],
+    "sigma_LR": 9053.4,
+    "n_star_replay": 276,
+    "n_star_market_sessions": 350,
+    "n_star_years": 1.4
+   }
+  },
+  "GOLD_30K @400": {
+   "sessions": 932,
+   "per_session": 506.5,
+   "year_net": {
+    "mean": 97131,
+    "p5": -29757,
+    "p50": 82395,
+    "p95": 280716
+   },
+   "P_year_below_0": 0.137,
+   "longest_without_new_high": {
+    "p50": 224,
+    "p95": 502
+   },
+   "worst_drawdown": {
+    "p50": 70625,
+    "p95": 117806
+   },
+   "gold_vs_zero": {
+    "mean": 506.53,
+    "sd": 6641.2,
+    "autocorr_1_5": [
+     -0.042,
+     0.051,
+     -0.033,
+     0.012,
+     0.033
+    ],
+    "sigma_LR": 6973.4,
+    "n_star_replay": 513,
+    "n_star_market_sessions": 650,
+    "n_star_years": 2.6
+   }
+  }
+ },
+ "contest": {
+  "SN480 failed add | ONE_15K @205": {
+   "mean": -7.55,
+   "sd": 230.4,
+   "autocorr_1_5": [
+    -0.001,
+    -0.001,
+    -0.001,
+    -0.001,
+    -0.001
+   ],
+   "sigma_LR": 229.8,
+   "n_star_replay": 2507,
+   "n_star_market_sessions": 3179,
+   "n_star_years": 12.9
+  },
+  "SN489 adds only TPB / SHIPPED | ONE_15K @205": {
+   "mean": -15.36,
+   "sd": 392.4,
+   "autocorr_1_5": [
+    -0.002,
+    -0.002,
+    -0.002,
+    -0.002,
+    -0.002
+   ],
+   "sigma_LR": 425.9,
+   "n_star_replay": 2081,
+   "n_star_market_sessions": 2639,
+   "n_star_years": 10.7
+  },
+  "SN478 FAST | ONE_15K @205": {
+   "mean": -14.25,
+   "sd": 451.2,
+   "autocorr_1_5": [
+    -0.008,
+    0.016,
+    0.003,
+    -0.001,
+    0.003
+   ],
+   "sigma_LR": 449.7,
+   "n_star_replay": 2694,
+   "n_star_market_sessions": 3415,
+   "n_star_years": 13.9
+  },
+  "SN480 failed add | ONE_15K @400": {
+   "mean": -7.55,
+   "sd": 230.4,
+   "autocorr_1_5": [
+    -0.001,
+    -0.001,
+    -0.001,
+    -0.001,
+    -0.001
+   ],
+   "sigma_LR": 226.0,
+   "n_star_replay": 2425,
+   "n_star_market_sessions": 3075,
+   "n_star_years": 12.5
+  },
+  "SN489 adds only TPB / SHIPPED | ONE_15K @400": {
+   "mean": 2.0,
+   "sd": 266.2,
+   "autocorr_1_5": [
+    -0.0,
+    -0.0,
+    -0.0,
+    -0.0,
+    -0.0
+   ],
+   "sigma_LR": 235.4,
+   "n_star_replay": 37370,
+   "n_star_market_sessions": 47386,
+   "n_star_years": 192.6
+  },
+  "SN478 FAST | ONE_15K @400": {
+   "mean": -8.84,
+   "sd": 376.7,
+   "autocorr_1_5": [
+    -0.012,
+    -0.001,
+    -0.0,
+    -0.0,
+    -0.0
+   ],
+   "sigma_LR": 370.5,
+   "n_star_replay": 4754,
+   "n_star_market_sessions": 6028,
+   "n_star_years": 24.5
+  },
+  "SN480 failed add | GOLD_30K @205": {
+   "mean": -167.23,
+   "sd": 1948.3,
+   "autocorr_1_5": [
+    0.055,
+    0.117,
+    -0.06,
+    -0.002,
+    -0.033
+   ],
+   "sigma_LR": 1994.4,
+   "n_star_replay": 385,
+   "n_star_market_sessions": 488,
+   "n_star_years": 2.0
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K @205": {
+   "mean": -26.87,
+   "sd": 1240.9,
+   "autocorr_1_5": [
+    0.104,
+    -0.008,
+    0.052,
+    -0.002,
+    0.003
+   ],
+   "sigma_LR": 1137.9,
+   "n_star_replay": 4852,
+   "n_star_market_sessions": 6153,
+   "n_star_years": 25.0
+  },
+  "SN478 FAST | GOLD_30K @205": {
+   "mean": 15.04,
+   "sd": 553.2,
+   "autocorr_1_5": [
+    -0.025,
+    -0.065,
+    0.011,
+    0.002,
+    -0.038
+   ],
+   "sigma_LR": 477.5,
+   "n_star_replay": 2728,
+   "n_star_market_sessions": 3460,
+   "n_star_years": 14.1
+  },
+  "SN480 failed add | GOLD_30K @400": {
+   "mean": -10.98,
+   "sd": 2281.6,
+   "autocorr_1_5": [
+    -0.02,
+    0.034,
+    0.053,
+    0.007,
+    0.003
+   ],
+   "sigma_LR": 2400.8,
+   "n_star_replay": 129438,
+   "n_star_market_sessions": 164133,
+   "n_star_years": 667.2
+  },
+  "SN489 adds only TPB / SHIPPED | GOLD_30K @400": {
+   "mean": 155.67,
+   "sd": 2444.0,
+   "autocorr_1_5": [
+    -0.001,
+    -0.035,
+    0.003,
+    -0.026,
+    -0.017
+   ],
+   "sigma_LR": 2196.0,
+   "n_star_replay": 539,
+   "n_star_market_sessions": 683,
+   "n_star_years": 2.8
+  },
+  "SN478 FAST | GOLD_30K @400": {
+   "mean": 16.74,
+   "sd": 767.0,
+   "autocorr_1_5": [
+    0.036,
+    -0.035,
+    -0.001,
+    -0.007,
+    -0.083
+   ],
+   "sigma_LR": 674.2,
+   "n_star_replay": 4390,
+   "n_star_market_sessions": 5567,
+   "n_star_years": 22.6
+  }
+ }
+}

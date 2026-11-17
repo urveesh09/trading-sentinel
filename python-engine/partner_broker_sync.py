@@ -91,7 +91,7 @@ import pytz
 import structlog
 
 from config import settings
-from market_calendar import DERIVATIVES_CLOSE_TIME
+from market_calendar import DERIVATIVES_CLOSE_TIME, derivatives_close_minute
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -102,7 +102,18 @@ TIME_BASIS = "EXCHANGE_FILL"
 LOGIN_URL = "https://kite.zerodha.com/connect/login"
 OPEN_MIN = 9 * 60 + 15
 # F&O orders cannot fill after this; a later read is the day's book. [O24-MC] The derivatives close (15:40).
+# [SN329] Sessions from 2026-12-07 close at 15:45: use close_min(day) wherever the session is known.
 CLOSE_MIN = DERIVATIVES_CLOSE_TIME.hour * 60 + DERIVATIVES_CLOSE_TIME.minute
+
+
+def close_min(day) -> int:
+    """[SN329 2026-11-16] The derivatives close of a session (an ISO date string, a date, or a datetime read in
+    IST), in minutes after midnight IST: 15:40 until 2026-12-04, 15:45 from 2026-12-07 (NSE CAS 2.0)."""
+    if isinstance(day, datetime):
+        day = (day.astimezone(IST) if day.tzinfo else day).date()
+    elif isinstance(day, str):
+        day = date.fromisoformat(day[:10])
+    return derivatives_close_minute(day)
 CARD_CLOCK_SLACK = timedelta(seconds=60)   # a fill this close before the card's send time is on that card
 PROMPT_KIND = "zerodha_prompt"
 _REQUEST_TOKEN = re.compile(r"^[A-Za-z0-9]{8,64}$")
@@ -1057,7 +1068,7 @@ async def _day_cards(db_path: str, first_day: str, last_day: str) -> list:
 
 
 def _complete(day: str, at: datetime) -> bool:
-    close = IST.localize(datetime.fromisoformat(day) + timedelta(minutes=CLOSE_MIN))
+    close = IST.localize(datetime.fromisoformat(day) + timedelta(minutes=close_min(day)))
     return at.astimezone(IST) >= close
 
 

@@ -148,10 +148,8 @@ def test_restart_cannot_refill_cash_or_the_days_allowance(tmp_path):
     assert result['day']['spent']==2500 and result['day']['trades']==2 and result['status']=='OBSERVING'
 
 
-def test_old_open_position_is_unresolved_and_blocks_new_day(tmp_path):
-    b=source(tmp_path);now=stamp();add(b,now)
-    s=state(now-timedelta(days=1));s['position']={'status':'OPEN'};put_state(b,s)
-    assert X.run_tick(b,enabled=True,now=now)['status']=='UNRESOLVED_PRIOR_DAY'
+# [EN01 2026-11-17] test_old_open_position_is_unresolved_and_blocks_new_day is superseded: a leg still open
+# after its session is now valued at settlement and the book carries on (tests/test_expiry_en01.py).
 
 
 def test_partial_sample_minute_is_not_filled_forward():

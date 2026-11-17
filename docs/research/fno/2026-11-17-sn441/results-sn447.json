@@ -1,0 +1,411 @@
+{
+ "events": 14,
+ "ok": 14,
+ "reaction_sessions": 8,
+ "in_session_filings": 1,
+ "sessions": {
+  "2026-01-19": [
+   "HDFCBANK",
+   "ICICIBANK"
+  ],
+  "2026-01-27": [
+   "KOTAKBANK",
+   "AXISBANK"
+  ],
+  "2026-02-09": [
+   "SBIN"
+  ],
+  "2026-04-20": [
+   "HDFCBANK",
+   "ICICIBANK"
+  ],
+  "2026-04-27": [
+   "AXISBANK"
+  ],
+  "2026-05-04": [
+   "KOTAKBANK"
+  ],
+  "2026-05-11": [
+   "SBIN"
+  ],
+  "2026-07-20": [
+   "AXISBANK",
+   "KOTAKBANK",
+   "HDFCBANK",
+   "ICICIBANK"
+  ]
+ },
+ "continuation R2a (bp)": {
+  "event_mean_by_session": 4.8,
+  "control_mean_by_session": -15.3,
+  "sessions_event_above_control": 4,
+  "issuer_event_mean": 3.2,
+  "issuer_share_continuing": 0.429
+ },
+ "continuation R2b (bp)": {
+  "event_mean_by_session": 4.2,
+  "control_mean_by_session": -17.7,
+  "sessions_event_above_control": 5,
+  "issuer_event_mean": 0.1,
+  "issuer_share_continuing": 0.429
+ },
+ "mean_abs_abnR1_bp": {
+  "event": 288.8,
+  "matched_control": 140.1
+ },
+ "nifty_mapping": [
+  {
+   "day": "2026-01-19",
+   "signal_bp": -19.09,
+   "side": "PE",
+   "nifty_R2a_bp": -7.7,
+   "hit": true,
+   "price_state": "FILLED",
+   "net@205": -199.9,
+   "exit": "time",
+   "net@400": -394.9
+  },
+  {
+   "day": "2026-01-27",
+   "signal_bp": 1.92,
+   "side": "CE",
+   "nifty_R2a_bp": 2.8,
+   "hit": true,
+   "net@205": null,
+   "price_state": "NO_SESSION",
+   "net@400": null
+  },
+  {
+   "day": "2026-02-09",
+   "signal_bp": 15.82,
+   "side": "CE",
+   "nifty_R2a_bp": 22.5,
+   "hit": true,
+   "price_state": "FILLED",
+   "net@205": 1448.6,
+   "exit": "time",
+   "net@400": 1253.6
+  },
+  {
+   "day": "2026-04-20",
+   "signal_bp": 7.38,
+   "side": "CE",
+   "nifty_R2a_bp": 65.8,
+   "hit": true,
+   "price_state": "FILLED",
+   "net@205": 6655.1,
+   "exit": "time",
+   "net@400": 6460.1
+  },
+  {
+   "day": "2026-04-27",
+   "signal_bp": -13.95,
+   "side": "PE",
+   "nifty_R2a_bp": -19.4,
+   "hit": true,
+   "price_state": "FILLED",
+   "net@205": 1560.2,
+   "exit": "time",
+   "net@400": 1365.2
+  },
+  {
+   "day": "2026-05-04",
+   "signal_bp": -9.78,
+   "side": "PE",
+   "nifty_R2a_bp": -19.9,
+   "hit": true,
+   "price_state": "FILLED",
+   "net@205": 1534.2,
+   "exit": "time",
+   "net@400": 1339.2
+  },
+  {
+   "day": "2026-05-11",
+   "signal_bp": -6.25,
+   "side": "PE",
+   "nifty_R2a_bp": 35.1,
+   "hit": false,
+   "price_state": "FILLED",
+   "net@205": -3182.2,
+   "exit": "stop",
+   "net@400": -3377.2
+  },
+  {
+   "day": "2026-07-20",
+   "signal_bp": -60.94,
+   "side": "PE",
+   "nifty_R2a_bp": 10.3,
+   "hit": false,
+   "price_state": "FILLED",
+   "net@205": -1623.2,
+   "exit": "stop",
+   "net@400": -3073.5
+  }
+ ],
+ "nifty_hit_rate": 0.75,
+ "nifty_priced@205": {
+  "n": 7,
+  "mean": 885,
+  "sum": 6193
+ },
+ "nifty_priced@400": {
+  "n": 7,
+  "mean": 510,
+  "sum": 3573
+ },
+ "verdict": "INSUFFICIENT",
+ "rows": [
+  {
+   "symbol": "HDFCBANK",
+   "filed": "2026-01-17T14:41:10+05:30",
+   "in_session": false,
+   "reaction": "2026-01-19",
+   "state": "OK",
+   "abn": {
+    "R1": 0.00261,
+    "R2a": -0.00265,
+    "R2b": -0.00288
+   },
+   "beta": 1.034,
+   "cont_R2a": -0.00265,
+   "ctrl_cont_R2a": 0.00019,
+   "cont_R2b": -0.00288,
+   "ctrl_cont_R2b": 0.00017,
+   "ctrl_mean_absR1": 0.00258
+  },
+  {
+   "symbol": "ICICIBANK",
+   "filed": "2026-01-17T15:06:51+05:30",
+   "in_session": false,
+   "reaction": "2026-01-19",
+   "state": "OK",
+   "abn": {
+    "R1": -0.02498,
+    "R2a": 0.00148,
+    "R2b": 0.00538
+   },
+   "beta": 0.687,
+   "cont_R2a": -0.00148,
+   "ctrl_cont_R2a": 0.00206,
+   "cont_R2b": -0.00538,
+   "ctrl_cont_R2b": 0.00188,
+   "ctrl_mean_absR1": 0.01702
+  },
+  {
+   "symbol": "KOTAKBANK",
+   "filed": "2026-01-24T14:18:35+05:30",
+   "in_session": false,
+   "reaction": "2026-01-27",
+   "state": "OK",
+   "abn": {
+    "R1": -0.03862,
+    "R2a": 0.00421,
+    "R2b": 0.00777
+   },
+   "beta": 0.736,
+   "cont_R2a": -0.00421,
+   "ctrl_cont_R2a": -0.00117,
+   "cont_R2b": -0.00777,
+   "ctrl_cont_R2b": -0.00156,
+   "ctrl_mean_absR1": 0.01809
+  },
+  {
+   "symbol": "AXISBANK",
+   "filed": "2026-01-26T13:14:19+05:30",
+   "in_session": false,
+   "reaction": "2026-01-27",
+   "state": "OK",
+   "abn": {
+    "R1": 0.03859,
+    "R2a": 0.01436,
+    "R2b": 0.00458
+   },
+   "beta": 0.997,
+   "cont_R2a": 0.01436,
+   "ctrl_cont_R2a": -0.00262,
+   "cont_R2b": 0.00458,
+   "ctrl_cont_R2b": -0.00359,
+   "ctrl_mean_absR1": 0.01453
+  },
+  {
+   "symbol": "SBIN",
+   "filed": "2026-02-07T13:30:40+05:30",
+   "in_session": false,
+   "reaction": "2026-02-09",
+   "state": "OK",
+   "abn": {
+    "R1": 0.05274,
+    "R2a": 0.00726,
+    "R2b": 0.01448
+   },
+   "beta": 1.228,
+   "cont_R2a": 0.00726,
+   "ctrl_cont_R2a": -0.00407,
+   "cont_R2b": 0.01448,
+   "ctrl_cont_R2b": -0.00365,
+   "ctrl_mean_absR1": 0.01808
+  },
+  {
+   "symbol": "HDFCBANK",
+   "filed": "2026-04-18T14:45:47+05:30",
+   "in_session": false,
+   "reaction": "2026-04-20",
+   "state": "OK",
+   "abn": {
+    "R1": -0.00767,
+    "R2a": 0.00468,
+    "R2b": 0.00299
+   },
+   "beta": 1.237,
+   "cont_R2a": -0.00468,
+   "ctrl_cont_R2a": -0.00048,
+   "cont_R2b": -0.00299,
+   "ctrl_cont_R2b": -0.00194,
+   "ctrl_mean_absR1": 0.00747
+  },
+  {
+   "symbol": "ICICIBANK",
+   "filed": "2026-04-18T14:59:56+05:30",
+   "in_session": false,
+   "reaction": "2026-04-20",
+   "state": "OK",
+   "abn": {
+    "R1": 0.01928,
+    "R2a": -0.01158,
+    "R2b": -0.01263
+   },
+   "beta": 0.95,
+   "cont_R2a": -0.01158,
+   "ctrl_cont_R2a": 0.00152,
+   "cont_R2b": -0.01263,
+   "ctrl_cont_R2b": 0.00114,
+   "ctrl_mean_absR1": 0.0159
+  },
+  {
+   "symbol": "AXISBANK",
+   "filed": "2026-04-25T12:58:45+05:30",
+   "in_session": false,
+   "reaction": "2026-04-27",
+   "state": "OK",
+   "abn": {
+    "R1": -0.0465,
+    "R2a": 0.00371,
+    "R2b": 0.00576
+   },
+   "beta": 1.283,
+   "cont_R2a": -0.00371,
+   "ctrl_cont_R2a": -0.00262,
+   "cont_R2b": -0.00576,
+   "ctrl_cont_R2b": -0.00359,
+   "ctrl_mean_absR1": 0.01453
+  },
+  {
+   "symbol": "KOTAKBANK",
+   "filed": "2026-05-02T14:56:47+05:30",
+   "in_session": false,
+   "reaction": "2026-05-04",
+   "state": "OK",
+   "abn": {
+    "R1": -0.03913,
+    "R2a": 0.00386,
+    "R2b": 0.00148
+   },
+   "beta": 1.065,
+   "cont_R2a": -0.00386,
+   "ctrl_cont_R2a": -0.00117,
+   "cont_R2b": -0.00148,
+   "ctrl_cont_R2b": -0.00156,
+   "ctrl_mean_absR1": 0.01809
+  },
+  {
+   "symbol": "SBIN",
+   "filed": "2026-05-08T14:01:39+05:30",
+   "in_session": true,
+   "reaction": "2026-05-11",
+   "state": "OK",
+   "abn": {
+    "R1": -0.02083,
+    "R2a": -0.00734,
+    "R2b": -0.00629
+   },
+   "beta": 1.136,
+   "cont_R2a": 0.00734,
+   "ctrl_cont_R2a": -0.00332,
+   "cont_R2b": 0.00629,
+   "ctrl_cont_R2b": -0.00187,
+   "ctrl_mean_absR1": 0.01652
+  },
+  {
+   "symbol": "AXISBANK",
+   "filed": "2026-07-18T11:24:14+05:30",
+   "in_session": false,
+   "reaction": "2026-07-20",
+   "state": "OK",
+   "abn": {
+    "R1": -0.04756,
+    "R2a": -0.00259,
+    "R2b": -0.00311
+   },
+   "beta": 0.823,
+   "cont_R2a": 0.00259,
+   "ctrl_cont_R2a": -0.00262,
+   "cont_R2b": 0.00311,
+   "ctrl_cont_R2b": -0.00359,
+   "ctrl_mean_absR1": 0.01453
+  },
+  {
+   "symbol": "KOTAKBANK",
+   "filed": "2026-07-18T12:37:59+05:30",
+   "in_session": false,
+   "reaction": "2026-07-20",
+   "state": "OK",
+   "abn": {
+    "R1": -0.02261,
+    "R2a": 0.0038,
+    "R2b": 0.00688
+   },
+   "beta": 0.932,
+   "cont_R2a": -0.0038,
+   "ctrl_cont_R2a": -0.00142,
+   "cont_R2b": -0.00688,
+   "ctrl_cont_R2b": -0.00203,
+   "ctrl_mean_absR1": 0.01486
+  },
+  {
+   "symbol": "HDFCBANK",
+   "filed": "2026-07-18T14:22:31+05:30",
+   "in_session": false,
+   "reaction": "2026-07-20",
+   "state": "OK",
+   "abn": {
+    "R1": -0.03632,
+    "R2a": -0.00332,
+    "R2b": -0.0092
+   },
+   "beta": 1.427,
+   "cont_R2a": 0.00332,
+   "ctrl_cont_R2a": 0.00095,
+   "cont_R2b": 0.0092,
+   "ctrl_cont_R2b": 0.00019,
+   "ctrl_mean_absR1": 0.01694
+  },
+  {
+   "symbol": "ICICIBANK",
+   "filed": "2026-07-18T14:23:54+05:30",
+   "in_session": false,
+   "reaction": "2026-07-20",
+   "state": "OK",
+   "abn": {
+    "R1": 0.00688,
+    "R2a": 0.00552,
+    "R2b": 0.00818
+   },
+   "beta": 1.028,
+   "cont_R2a": 0.00552,
+   "ctrl_cont_R2a": -0.00017,
+   "cont_R2b": 0.00818,
+   "ctrl_cont_R2b": -0.00079,
+   "ctrl_mean_absR1": 0.00694
+  }
+ ]
+}

@@ -666,8 +666,8 @@ def _positions_note(day: str, zerodha_day: Optional[dict]) -> Optional[str]:
     read = zerodha_day.get("positions_read_at")
     if not read:
         return None
-    from partner_broker_sync import CLOSE_MIN
-    close = IST.localize(datetime.fromisoformat(day) + timedelta(minutes=CLOSE_MIN))
+    from partner_broker_sync import close_min
+    close = IST.localize(datetime.fromisoformat(day) + timedelta(minutes=close_min(day)))
     if read == "FAILED":
         return ("Open positions could not be read from Zerodha for this day: whether anything was still held is not "
                 "confirmed here.")

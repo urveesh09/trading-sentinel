@@ -234,6 +234,28 @@ def test_the_universe_starts_with_indices_and_futures_and_widens_but_never_narro
     assert all(m["exchange"] == "BFO" for m in u.on_future_price(sensex_front, 82000.0))
 
 
+def test_research_extra_chains_use_their_own_narrower_limits():
+    b = books()
+    b["BANKNIFTY"] = Book("BANKNIFTY", "NFO", 7, 56000, 100, 30)                     # its own token space
+    u = tr.Universe(DAY, books=b, expiries=3, strikes=2, limits={"BANKNIFTY": (2, 1)})
+    first = u.initial()
+    assert len(first) == 3 + 3 * 2                                                  # three books, two futures each
+    bn_front = b["BANKNIFTY"].token(("BANKNIFTY", "2026-11-24", 0.0, "FUT"))
+    chain = u.on_future_price(bn_front, 56010.0)
+    assert len(chain) == 2 * 3 * 2 and {m["strike"] for m in chain} == {55900.0, 56000.0, 56100.0}
+    assert {m["expiry"] for m in chain} == {"2026-11-17", "2026-11-24"} and all(m["underlying"] == "BANKNIFTY" for m in chain)
+    assert u.on_future_price(bn_front, 56040.0) == []                               # half of its own 1-strike window
+    nifty = u.on_future_price(b["NIFTY"].token(("NIFTY", "2026-11-24", 0.0, "FUT")), 25010.0)
+    assert len(nifty) == 3 * 5 * 2                                                  # NIFTY keeps its own limits
+
+
+def test_extra_underlyings_are_known_books_only(monkeypatch):
+    monkeypatch.setattr(settings, "TICK_RECORDER_EXTRA_UNDERLYINGS", "banknifty, NIFTY, FINNIFTY, BANKNIFTY,")
+    assert tr.extra_underlyings() == ("BANKNIFTY",)                                 # NIFTY is already recorded; FINNIFTY has no book
+    monkeypatch.setattr(settings, "TICK_RECORDER_EXTRA_UNDERLYINGS", "")
+    assert tr.extra_underlyings() == () and tr._extra_limits() == {}
+
+
 def test_the_universe_stops_at_the_connection_limit(monkeypatch):
     monkeypatch.setattr(tr, "MAX_TOKENS", 10)
     b = books()

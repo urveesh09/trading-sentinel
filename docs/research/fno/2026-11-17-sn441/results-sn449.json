@@ -1,0 +1,78 @@
+{
+ "shrinkage_median_ratio": -0.221,
+ "arms": {
+  "SN451 MOM @205": {
+   "signal_share_of_expiry_sessions": 1.0,
+   "expiry_share_of_empty": 0.954,
+   "fill_share": 1.0,
+   "mean_per_fill": 88,
+   "sd_per_fill": 3805,
+   "per_empty_session_gain": 83.6,
+   "target": 154.0,
+   "dev_per_session_ci90": [
+    -490.0,
+    735.4
+   ],
+   "sessions_needed_for_154": 3776,
+   "years_of_expiries_needed": 72.6,
+   "expected_unseen_per_session_after_shrinkage": -18.5
+  },
+  "SN451 MOM @400": {
+   "signal_share_of_expiry_sessions": 1.0,
+   "expiry_share_of_empty": 0.954,
+   "fill_share": 1.0,
+   "mean_per_fill": -94,
+   "sd_per_fill": 3793,
+   "per_empty_session_gain": -90.2,
+   "target": 498.0,
+   "dev_per_session_ci90": [
+    -668.1,
+    548.5
+   ],
+   "sessions_needed_for_154": 3753,
+   "years_of_expiries_needed": 72.2,
+   "expected_unseen_per_session_after_shrinkage": 19.9
+  },
+  "SN447 BANK @205": {
+   "signal_share_of_sessions": 0.057,
+   "fill_share": 0.875,
+   "mean_per_fill": 885,
+   "sd_per_fill": 3122,
+   "mean_without_best": -77,
+   "per_session_gain": 44.2,
+   "target": 154.0,
+   "dev_per_session_ci90": [
+    -36.4,
+    148.8
+   ],
+   "sessions_needed_for_154": 120,
+   "years_needed": 0.5,
+   "independent_catalysts": 8,
+   "same_date_clusters": 4
+  },
+  "SN447 BANK @400": {
+   "signal_share_of_sessions": 0.057,
+   "fill_share": 0.875,
+   "mean_per_fill": 510,
+   "sd_per_fill": 3320,
+   "mean_without_best": -481,
+   "per_session_gain": 25.5,
+   "target": 498.0,
+   "dev_per_session_ci90": [
+    -60.6,
+    131.6
+   ],
+   "sessions_needed_for_154": 128,
+   "years_needed": 0.5,
+   "independent_catalysts": 8,
+   "same_date_clusters": 4
+  }
+ },
+ "execution_comparisons": {
+  "SN442 WAIT-5 (paired vs NOW, Rs 205, all decisions)": 54,
+  "SN444 CONFIRM-5 mechanics (per decision, Rs 205)": -67.2,
+  "note": "execution companions change fills on another signal; they are judged by fx5's frozen prospective rule, not here"
+ },
+ "BANKNIFTY last-week cluster": "no development net: F1 is pre-registered for recorder data after the deploy (SN420)",
+ "stopping_rule": "PASS when the 90% date-block CI of the per-empty-session contribution is wholly above Rs 154 (Rs 205); FAIL when wholly below; else EVIDENCE_INSUFFICIENT at N_max = 3 x sessions_needed"
+}

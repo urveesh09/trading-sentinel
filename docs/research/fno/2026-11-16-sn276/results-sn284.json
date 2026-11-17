@@ -1,0 +1,250 @@
+{
+ "gold_alone": {
+  "net": 850883,
+  "months_positive": 25,
+  "months": 46,
+  "worst_month": -38531,
+  "worst_day": -21113,
+  "green_days": 62
+ },
+ "gold_plus_call": {
+  "net": 865853,
+  "months_positive": 28,
+  "months": 46,
+  "worst_month": -20498,
+  "worst_day": -21113,
+  "green_days": 75
+ },
+ "call_trades": [
+  {
+   "day": "2023-03-06",
+   "net": -2168,
+   "why": "time",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-04-03",
+   "net": -49,
+   "why": "time",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-04-28",
+   "net": 4969,
+   "why": "time",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-08-14",
+   "net": 4999,
+   "why": "time",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-09-18",
+   "net": -1169,
+   "why": "time",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-09-29",
+   "net": 134,
+   "why": "time",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-10-23",
+   "net": -3155,
+   "why": "stop",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-11-13",
+   "net": -725,
+   "why": "forced",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-11-24",
+   "net": -2420,
+   "why": "time",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2023-12-22",
+   "net": 3889,
+   "why": "forced",
+   "wallet": 30000.0
+  },
+  {
+   "day": "2024-01-20",
+   "net": -2198,
+   "why": "forced",
+   "wallet": 45000.0
+  },
+  {
+   "day": "2024-03-02",
+   "net": 555,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-03-22",
+   "net": 6660,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-04-16",
+   "net": -2151,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-04-30",
+   "net": -1478,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-05-18",
+   "net": 413,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-06-14",
+   "net": 1195,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-07-16",
+   "net": -1116,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-10-01",
+   "net": -5791,
+   "why": "time",
+   "wallet": 67500.0
+  },
+  {
+   "day": "2024-11-19",
+   "net": -3415,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2024-12-24",
+   "net": -1205,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2025-02-01",
+   "net": -4334,
+   "why": "forced",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2025-02-25",
+   "net": -1438,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2025-03-28",
+   "net": -6663,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2025-04-11",
+   "net": 2638,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2025-08-26",
+   "net": -2454,
+   "why": "forced",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2025-10-01",
+   "net": 9161,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2025-12-24",
+   "net": -3678,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-01-14",
+   "net": -3034,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-01-23",
+   "net": -2470,
+   "why": "forced",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-01-30",
+   "net": 2518,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-03-25",
+   "net": 7878,
+   "why": "forced",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-04-02",
+   "net": 18757,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-04-30",
+   "net": 3681,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-05-27",
+   "net": -2480,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-06-25",
+   "net": -2294,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-09-11",
+   "net": 8494,
+   "why": "time",
+   "wallet": 101250.0
+  },
+  {
+   "day": "2026-10-01",
+   "net": -5086,
+   "why": "time",
+   "wallet": 101250.0
+  }
+ ],
+ "call_net": 14970,
+ "note": "information only: a post-hoc signal (SN272 / SN281), not a pass"
+}

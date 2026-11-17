@@ -1,0 +1,46 @@
+{
+ "traces": [
+  {
+   "day": "2026-10-08",
+   "contract": "NIFTY2026-10-1322600PE",
+   "held_strike": 22600.0,
+   "entry_minute": 81,
+   "exit_minute": 355,
+   "archive_window_at_exit": [
+    22050,
+    22550,
+    11
+   ],
+   "held_inside_window": false,
+   "pin": {
+    "state": "registered",
+    "legs": 1
+   },
+   "held_in_collector_request_with_pin": true,
+   "capacity_shortfall": 0,
+   "replay_net": 57861.5
+  },
+  {
+   "day": "2026-10-21",
+   "contract": "NIFTY2026-10-2723100PE",
+   "held_strike": 23100.0,
+   "entry_minute": 85,
+   "exit_minute": 355,
+   "archive_window_at_exit": [
+    22500,
+    23000,
+    11
+   ],
+   "held_inside_window": false,
+   "pin": {
+    "state": "registered",
+    "legs": 1
+   },
+   "held_in_collector_request_with_pin": true,
+   "capacity_shortfall": 0,
+   "replay_net": 71732.0
+  }
+ ],
+ "recorder": "no change: Universe grows only within a day and resubscribes the whole set after a drop (tests: widens_but_never_narrows, a_drop_reconnects_resubscribes_everything)",
+ "pass": true
+}
