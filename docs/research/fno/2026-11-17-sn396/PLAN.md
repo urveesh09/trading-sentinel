@@ -153,4 +153,5 @@
 5. SN400 → SN405 (forward design, then the wallet).
 
 ## 4. Amendments
-(none yet)
+- **A1 (Nov 17, SN400, from the Nov 16 plumbing copy only; no forward session read).** Kite packets arrive about once a second per contract. Each volume increment bundles a median of ~198 trades: increment ÷ last traded quantity is p10 23, p50 198, p90 888. Only 184 of 46,676 increments (0.4%) are single trades, so the strict rule signs 0.0% of volume. fw8's 91.7% is the sign of each bundle's last print. The strict event arm stays as specified (INSUFFICIENT by construction). fw8a's incremental OLS tests fw8's LAST-PRINT flow with the planned controls, and adds the strict flow only if it is non-degenerate.
+- **SN401 (disclosed fix after the first run).** The NIFTY expiry class was empty because gl DEV holds no expiry-day sessions. The faulty receipt is kept (`results-sn401-EXPIRY-CLASS-EMPTY.json`). Expiries now come from the sessions' front contracts.
