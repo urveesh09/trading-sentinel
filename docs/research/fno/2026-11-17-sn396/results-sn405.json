@@ -1,0 +1,1184 @@
+{
+ "coverage @205": {
+  "market_sessions": 932,
+  "gold_sessions": 161,
+  "empty_sessions": 771,
+  "net": 736894,
+  "net_per_market_session": 790.7,
+  "share_sessions_ge_750": 0.069,
+  "share_sessions_positive": 0.075,
+  "longest_sessions_to_new_high": 352,
+  "needed_per_empty_session_for_500": -351.4,
+  "needed_per_empty_session_for_750": -49.1
+ },
+ "coverage @400": {
+  "market_sessions": 932,
+  "gold_sessions": 161,
+  "empty_sessions": 771,
+  "net": 381297,
+  "net_per_market_session": 409.1,
+  "share_sessions_ge_750": 0.063,
+  "share_sessions_positive": 0.067,
+  "longest_sessions_to_new_high": 516,
+  "needed_per_empty_session_for_500": 109.9,
+  "needed_per_empty_session_for_750": 412.1
+ },
+ "shared wallet @205 (development illustration)": {
+  "window_market_sessions": 172,
+  "cheap_sessions": 72,
+  "opener_fills": 68,
+  "conflicts_gold_before_exit": 0,
+  "preemptions": 0,
+  "day_stop_breaches": 1,
+  "incremental_net": 24082,
+  "incremental_per_market_session": 140.0,
+  "positive_opener_days": 34,
+  "opener_days_ge_750": 26,
+  "gold_net_same_window": 382702,
+  "rows": [
+   {
+    "day": "2025-12-11",
+    "state": "FILLED",
+    "net": -3299.01,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-12",
+    "state": "FILLED",
+    "net": 641.09,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-18",
+    "state": "FILLED",
+    "net": -1278.79,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-19",
+    "state": "FILLED",
+    "net": 687.85,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-26",
+    "state": "FILLED",
+    "net": -247.02,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-02",
+    "state": "FILLED",
+    "net": 4216.26,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-08",
+    "state": "FILLED",
+    "net": 1033.03,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-09",
+    "state": "FILLED",
+    "net": -3253.96,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-16",
+    "state": "FILLED",
+    "net": 4467.77,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-22",
+    "state": "FILLED",
+    "net": 3153.24,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-23",
+    "state": "FILLED",
+    "net": -75.12,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-29",
+    "state": "FILLED",
+    "net": 1661.51,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-05",
+    "state": "FILLED",
+    "net": 1298.25,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-06",
+    "state": "FILLED",
+    "net": 1836.94,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-12",
+    "state": "FILLED",
+    "net": -111.08,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-13",
+    "state": "FILLED",
+    "net": 2232.63,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-19",
+    "state": "FILLED",
+    "net": -3111.49,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-20",
+    "state": "FILLED",
+    "net": -848.2,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-26",
+    "state": "FILLED",
+    "net": -3020.24,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-27",
+    "state": "FILLED",
+    "net": 3816.7,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-03-05",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-03-12",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-03-20",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-04-09",
+    "state": "FILLED",
+    "net": -3208.85,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-10",
+    "state": "FILLED",
+    "net": 3287.18,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-16",
+    "state": "FILLED",
+    "net": -2076.07,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-17",
+    "state": "FILLED",
+    "net": -3193.86,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-23",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-04-24",
+    "state": "FILLED",
+    "net": -3311.51,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-30",
+    "state": "FILLED",
+    "net": 6558.81,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-07",
+    "state": "FILLED",
+    "net": 2029.5,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-08",
+    "state": "FILLED",
+    "net": -686.75,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-14",
+    "state": "FILLED",
+    "net": -3044.21,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-15",
+    "state": "FILLED",
+    "net": 3219.21,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-21",
+    "state": "FILLED",
+    "net": -3189.14,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-22",
+    "state": "FILLED",
+    "net": 3330.6,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-04",
+    "state": "FILLED",
+    "net": -3250.69,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-05",
+    "state": "FILLED",
+    "net": -1191.54,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-11",
+    "state": "FILLED",
+    "net": -2464.45,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-12",
+    "state": "FILLED",
+    "net": -2079.47,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": true
+   },
+   {
+    "day": "2026-06-18",
+    "state": "FILLED",
+    "net": 537.67,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-19",
+    "state": "FILLED",
+    "net": -504.98,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-25",
+    "state": "FILLED",
+    "net": 1793.92,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-02",
+    "state": "FILLED",
+    "net": -1213.84,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-03",
+    "state": "FILLED",
+    "net": 189.9,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-09",
+    "state": "FILLED",
+    "net": 2762.54,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-10",
+    "state": "FILLED",
+    "net": 1720.47,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-16",
+    "state": "FILLED",
+    "net": -394.14,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-23",
+    "state": "FILLED",
+    "net": -3001.32,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-24",
+    "state": "FILLED",
+    "net": 3270.57,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-30",
+    "state": "FILLED",
+    "net": -1070.64,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-31",
+    "state": "FILLED",
+    "net": -2235.63,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-06",
+    "state": "FILLED",
+    "net": 766.96,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-07",
+    "state": "FILLED",
+    "net": 234.03,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-13",
+    "state": "FILLED",
+    "net": -309.98,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-14",
+    "state": "FILLED",
+    "net": -603.87,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-20",
+    "state": "FILLED",
+    "net": 1109.61,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-21",
+    "state": "FILLED",
+    "net": -1673.58,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-27",
+    "state": "FILLED",
+    "net": 3793.94,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-28",
+    "state": "FILLED",
+    "net": 3529.23,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-03",
+    "state": "FILLED",
+    "net": 166.34,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-04",
+    "state": "FILLED",
+    "net": 749.06,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-10",
+    "state": "FILLED",
+    "net": 413.47,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-11",
+    "state": "FILLED",
+    "net": -1771.64,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-17",
+    "state": "FILLED",
+    "net": -3115.8,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-18",
+    "state": "FILLED",
+    "net": -650.26,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-24",
+    "state": "FILLED",
+    "net": 2616.63,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-25",
+    "state": "FILLED",
+    "net": -540.82,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-01",
+    "state": "FILLED",
+    "net": -861.76,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-08",
+    "state": "FILLED",
+    "net": 1010.46,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-09",
+    "state": "FILLED",
+    "net": 6208.72,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-15",
+    "state": "FILLED",
+    "net": 10627.81,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   }
+  ]
+ },
+ "shared wallet @400 (development illustration)": {
+  "window_market_sessions": 172,
+  "cheap_sessions": 72,
+  "opener_fills": 68,
+  "conflicts_gold_before_exit": 0,
+  "preemptions": 0,
+  "day_stop_breaches": 1,
+  "incremental_net": 13070,
+  "incremental_per_market_session": 76.0,
+  "positive_opener_days": 32,
+  "opener_days_ge_750": 25,
+  "gold_net_same_window": 294788,
+  "rows": [
+   {
+    "day": "2025-12-11",
+    "state": "FILLED",
+    "net": -3494.01,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-12",
+    "state": "FILLED",
+    "net": 446.09,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-18",
+    "state": "FILLED",
+    "net": -1473.79,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-19",
+    "state": "FILLED",
+    "net": 492.85,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2025-12-26",
+    "state": "FILLED",
+    "net": -442.02,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-02",
+    "state": "FILLED",
+    "net": 4021.26,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-08",
+    "state": "FILLED",
+    "net": 838.03,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-09",
+    "state": "FILLED",
+    "net": -3448.96,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-16",
+    "state": "FILLED",
+    "net": 4272.77,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-22",
+    "state": "FILLED",
+    "net": 2958.24,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-23",
+    "state": "FILLED",
+    "net": -270.12,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-01-29",
+    "state": "FILLED",
+    "net": 1466.51,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-05",
+    "state": "FILLED",
+    "net": 1103.25,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-06",
+    "state": "FILLED",
+    "net": 1641.94,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-12",
+    "state": "FILLED",
+    "net": -306.08,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-13",
+    "state": "FILLED",
+    "net": 2037.63,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-19",
+    "state": "FILLED",
+    "net": -3004.82,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-20",
+    "state": "FILLED",
+    "net": -1043.2,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-26",
+    "state": "FILLED",
+    "net": -3215.24,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-02-27",
+    "state": "FILLED",
+    "net": 3621.7,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-03-05",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-03-12",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-03-20",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-04-09",
+    "state": "FILLED",
+    "net": -3137.86,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-10",
+    "state": "FILLED",
+    "net": 3092.18,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-16",
+    "state": "FILLED",
+    "net": -2271.07,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-17",
+    "state": "FILLED",
+    "net": -3038.53,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-23",
+    "state": "INADMISSIBLE",
+    "net": 0.0
+   },
+   {
+    "day": "2026-04-24",
+    "state": "FILLED",
+    "net": -3013.46,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-04-30",
+    "state": "FILLED",
+    "net": 6363.81,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-07",
+    "state": "FILLED",
+    "net": 1834.5,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-08",
+    "state": "FILLED",
+    "net": -881.75,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-14",
+    "state": "FILLED",
+    "net": -3239.21,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-15",
+    "state": "FILLED",
+    "net": 3024.21,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-21",
+    "state": "FILLED",
+    "net": -3127.89,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-05-22",
+    "state": "FILLED",
+    "net": 3135.6,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-04",
+    "state": "FILLED",
+    "net": -3017.51,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-05",
+    "state": "FILLED",
+    "net": -1386.54,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-11",
+    "state": "FILLED",
+    "net": -2659.45,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-12",
+    "state": "FILLED",
+    "net": -2274.47,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": true
+   },
+   {
+    "day": "2026-06-18",
+    "state": "FILLED",
+    "net": 342.67,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-19",
+    "state": "FILLED",
+    "net": -699.98,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-06-25",
+    "state": "FILLED",
+    "net": 1598.92,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-02",
+    "state": "FILLED",
+    "net": -1408.84,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-03",
+    "state": "FILLED",
+    "net": -5.1,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-09",
+    "state": "FILLED",
+    "net": 2567.54,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-10",
+    "state": "FILLED",
+    "net": 1525.47,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-16",
+    "state": "FILLED",
+    "net": -589.14,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-23",
+    "state": "FILLED",
+    "net": -3196.32,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-24",
+    "state": "FILLED",
+    "net": 3075.57,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-30",
+    "state": "FILLED",
+    "net": -1265.64,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-07-31",
+    "state": "FILLED",
+    "net": -2430.63,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-06",
+    "state": "FILLED",
+    "net": 571.96,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-07",
+    "state": "FILLED",
+    "net": 39.03,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-13",
+    "state": "FILLED",
+    "net": -504.98,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-14",
+    "state": "FILLED",
+    "net": -798.87,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-20",
+    "state": "FILLED",
+    "net": 914.61,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-21",
+    "state": "FILLED",
+    "net": -1868.58,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-27",
+    "state": "FILLED",
+    "net": 3598.94,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-08-28",
+    "state": "FILLED",
+    "net": 3334.23,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-03",
+    "state": "FILLED",
+    "net": -28.66,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-04",
+    "state": "FILLED",
+    "net": 554.06,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-10",
+    "state": "FILLED",
+    "net": 218.47,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-11",
+    "state": "FILLED",
+    "net": -1966.64,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-17",
+    "state": "FILLED",
+    "net": -3158.34,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-18",
+    "state": "FILLED",
+    "net": -845.26,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-24",
+    "state": "FILLED",
+    "net": 2421.63,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-09-25",
+    "state": "FILLED",
+    "net": -735.82,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-01",
+    "state": "FILLED",
+    "net": -1056.76,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-08",
+    "state": "FILLED",
+    "net": 815.46,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-09",
+    "state": "FILLED",
+    "net": 6013.72,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   },
+   {
+    "day": "2026-10-15",
+    "state": "FILLED",
+    "net": 10432.81,
+    "conflict": false,
+    "preempted": false,
+    "day_stop_breach": false
+   }
+  ]
+ }
+}
