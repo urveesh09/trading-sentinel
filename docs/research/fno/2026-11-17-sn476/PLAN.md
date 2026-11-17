@@ -185,3 +185,10 @@ the commits. Nothing deployed; nothing pushed without the owner.
   2023–26 (lots = W / 15k without limit, no liquidity model), at ₹400 it falls under ₹7,500 and stops trading. Both stay in SN480's
   receipt as frozen. Supplementary SN480b (in `sn486.py`) adds SELF_30K capped at Gold's own ceiling (₹1,01,250) and the bust date of
   the uncapped ₹400 path. SN480's verdicts (all FAIL) do not depend on it.
+- **A3 (SN482 / SN479, before either produced a number):** SN482 builds 2020 (Jan–Dec) and 2021E (Jan–Aug) through `sn482_build.py`
+  (SN366's steps; daily bars from 2019-06 minutes with Breeze's daily rows before that, ≥ 200 bars before the window) and
+  `sn482_exam.py` (N09 DIAG, then N11 / R0.85 / NO_STAND); SN366's 2021L (Sep–Dec 2021) is not added (its N11 books were never
+  built; the path ends Aug 2021). The quote archive is not packet-level (futures ~every 40–50 s, options ~once a minute) and
+  Production's recorder holds only Nov 16–17, with no paper stop since Nov 11: SN479's planned sample has no stop with packets, so
+  its planned verdict is INCONCLUSIVE; `sn479.py` adds a declared mechanism study on the two recorder days with synthetic one-lot
+  stops (0.15% underlying, 15% premium), which informs the engineering question but qualifies nothing.
