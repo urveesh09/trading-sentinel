@@ -10,6 +10,8 @@ SN437 where Gold's edge lives: Gold's DEPLOYED 2022-26 trades at Rs 205, net per
        and year; a cutoff is named only if a bucket is negative in both 2022 and 2023-26 with >= 10 trades each.
 SN438 size by expert: Gold's size rule "setup" (full lots for the named experts on volatility days, half otherwise) with
        {EFF}, {EFF, TPB}, {TPB} against the deployed "vol"; 2022 and 2023-26; Rs 205 / 400.
+Disclosed fix (Nov 17, after the first run crashed at +N08, before any +N08 number): N08's trades carry no n091_entry, so
+its stream is built from the tradingsymbol (robust_stream); every other book uses sn392.stream unchanged.
 SN439 Gold's exit headroom: on every DEPLOYED 2022-26 trade (Rs 205), from Gold's own option record (bar closes, the bid
        Gold's walk uses): the best close before the trade's stop between entry and its realized exit, and within the
        first 60 minutes; headroom per lot against the realized exit; the share of trades whose best close came in the
@@ -42,6 +44,35 @@ for b in CTRL:
 gw = gold.T.Q.gw
 _walk = None
 HEAD: list = []
+_sn392_stream = gold._orig_stream
+
+
+def robust_stream(year, book="N11"):
+    """sn392.stream, except for N08 (its trades predate N09.1 and carry no n091_entry): the same fields from the
+    tradingsymbol (NIFTYyymddSTRIKE{CE|PE}) - disclosed fix after the first run crashed on +N08, before any +N08 number."""
+    if book != "N08":
+        return _sn392_stream(year, book)
+    import json as _j
+    phase, name, exam = gold.P.SRC[book]
+    if year == "2022":
+        key = _j.loads((gold.P.SN366L / "keys-exam-2022.json").read_text(encoding="utf-8"))[exam]
+        data = _j.loads((gold.P.SN366L / "exam-evals-2022" / f"{key}.json").read_text(encoding="utf-8"))
+    else:
+        key = _j.loads((gold.P.N11L / f"keys-{phase}-{year}.json").read_text(encoding="utf-8"))[name]
+        data = _j.loads((gold.P.N11L / "evals" / f"{key}.json").read_text(encoding="utf-8"))
+    out = []
+    for t in data["trades"]:
+        sym = t["tradingsymbol"]
+        opt = sym[-2:]
+        strike = int(sym[11:-2])
+        out.append({"day": t["entry_time"][:10], "i": gold.B.minute_of(t["entry_time"]), "j": gold.B.minute_of(t["exit_time"]),
+                    "strike": strike, "opt": opt, "expiry": f"20{sym[5:7]}-{sym[7:9]}-{sym[9:11]}", "reason": t["exit_reason"],
+                    "expert": t["entry_expert"], "gate": t.get("entry_gate") or "", "book": book,
+                    "sig_key": (t["entry_time"][:16], strike, opt == "CE")})
+    return out
+
+
+gold._orig_stream = robust_stream
 
 
 def headroom_walk(S, rec, ask, lots, i, j_n11, d, v, room, wallet):
