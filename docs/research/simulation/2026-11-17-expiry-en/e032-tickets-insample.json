@@ -1,0 +1,695 @@
+[
+ {
+  "day": "2024-01-11",
+  "dir": -1,
+  "decision_min": 857,
+  "entry_min": 858,
+  "lots": 1,
+  "entry": 19.0,
+  "net": -646.98,
+  "exits": [
+   [
+    "STOP",
+    1,
+    9.8,
+    866
+   ]
+  ]
+ },
+ {
+  "day": "2024-02-22",
+  "dir": 1,
+  "decision_min": 834,
+  "entry_min": 835,
+  "lots": 1,
+  "entry": 14.45,
+  "net": 1312.95,
+  "exits": [
+   [
+    "TARGET",
+    1,
+    35.45,
+    843
+   ]
+  ]
+ },
+ {
+  "day": "2024-02-29",
+  "dir": 1,
+  "decision_min": 889,
+  "entry_min": 890,
+  "lots": 2,
+  "entry": 6.85,
+  "net": -471.0,
+  "exits": [
+   [
+    "TRAIL",
+    2,
+    3.6,
+    896
+   ]
+  ]
+ },
+ {
+  "day": "2024-03-28",
+  "dir": -1,
+  "decision_min": 894,
+  "entry_min": 895,
+  "lots": 4,
+  "entry": 7.6,
+  "net": 11770.72,
+  "exits": [
+   [
+    "TARGET_BASE",
+    2,
+    18.85,
+    901
+   ],
+   [
+    "HERO_TARGET",
+    2,
+    87.65,
+    908
+   ]
+  ]
+ },
+ {
+  "day": "2024-04-04",
+  "dir": 1,
+  "decision_min": 812,
+  "entry_min": 813,
+  "lots": 1,
+  "entry": 13.4,
+  "net": -386.61,
+  "exits": [
+   [
+    "STOP",
+    1,
+    8.2,
+    816
+   ]
+  ]
+ },
+ {
+  "day": "2024-04-25",
+  "dir": 1,
+  "decision_min": 851,
+  "entry_min": 852,
+  "lots": 1,
+  "entry": 10.3,
+  "net": -305.04,
+  "exits": [
+   [
+    "STOP",
+    1,
+    6.35,
+    854
+   ]
+  ]
+ },
+ {
+  "day": "2024-05-09",
+  "dir": -1,
+  "decision_min": 877,
+  "entry_min": 878,
+  "lots": 2,
+  "entry": 18.15,
+  "net": 1049.19,
+  "exits": [
+   [
+    "TARGET_BASE",
+    1,
+    38.1,
+    886
+   ],
+   [
+    "RUNNER_TRAIL",
+    1,
+    15.55,
+    892
+   ]
+  ]
+ },
+ {
+  "day": "2024-05-23",
+  "dir": 1,
+  "decision_min": 813,
+  "entry_min": 814,
+  "lots": 1,
+  "entry": 13.55,
+  "net": -360.69,
+  "exits": [
+   [
+    "STOP",
+    1,
+    8.75,
+    816
+   ]
+  ]
+ },
+ {
+  "day": "2024-06-20",
+  "dir": 1,
+  "decision_min": 806,
+  "entry_min": 807,
+  "lots": 1,
+  "entry": 11.0,
+  "net": -68.36,
+  "exits": [
+   [
+    "TIME",
+    1,
+    10.7,
+    816
+   ]
+  ]
+ },
+ {
+  "day": "2024-06-27",
+  "dir": 1,
+  "decision_min": 884,
+  "entry_min": 885,
+  "lots": 1,
+  "entry": 11.25,
+  "net": 1044.21,
+  "exits": [
+   [
+    "TARGET",
+    1,
+    28.1,
+    888
+   ]
+  ]
+ },
+ {
+  "day": "2024-07-18",
+  "dir": 1,
+  "decision_min": 798,
+  "entry_min": 799,
+  "lots": 1,
+  "entry": 16.3,
+  "net": -182.71,
+  "exits": [
+   [
+    "STOP",
+    1,
+    14.25,
+    806
+   ]
+  ]
+ },
+ {
+  "day": "2024-07-18",
+  "dir": 1,
+  "decision_min": 841,
+  "entry_min": 842,
+  "lots": 2,
+  "entry": 8.25,
+  "net": 1149.56,
+  "exits": [
+   [
+    "TARGET_BASE",
+    1,
+    21.1,
+    846
+   ],
+   [
+    "RUNNER_TRAIL",
+    1,
+    14.25,
+    866
+   ]
+  ]
+ },
+ {
+  "day": "2024-08-08",
+  "dir": -1,
+  "decision_min": 781,
+  "entry_min": 782,
+  "lots": 2,
+  "entry": 17.85,
+  "net": 1376.9,
+  "exits": [
+   [
+    "TARGET_BASE",
+    1,
+    38.15,
+    789
+   ],
+   [
+    "RUNNER_TRAIL",
+    1,
+    19.95,
+    822
+   ]
+  ]
+ },
+ {
+  "day": "2024-08-14",
+  "dir": -1,
+  "decision_min": 807,
+  "entry_min": 808,
+  "lots": 4,
+  "entry": 8.65,
+  "net": -506.66,
+  "exits": [
+   [
+    "TIME",
+    4,
+    6.9,
+    817
+   ]
+  ]
+ },
+ {
+  "day": "2024-08-22",
+  "dir": -1,
+  "decision_min": 865,
+  "entry_min": 866,
+  "lots": 5,
+  "entry": 7.0,
+  "net": 952.98,
+  "exits": [
+   [
+    "TIME",
+    5,
+    10.1,
+    875
+   ]
+  ]
+ },
+ {
+  "day": "2024-09-05",
+  "dir": -1,
+  "decision_min": 793,
+  "entry_min": 794,
+  "lots": 3,
+  "entry": 10.5,
+  "net": -90.98,
+  "exits": [
+   [
+    "TIME",
+    3,
+    10.3,
+    803
+   ]
+  ]
+ },
+ {
+  "day": "2024-09-12",
+  "dir": 1,
+  "decision_min": 894,
+  "entry_min": 895,
+  "lots": 1,
+  "entry": 10.55,
+  "net": -324.55,
+  "exits": [
+   [
+    "STOP",
+    1,
+    6.3,
+    896
+   ]
+  ]
+ },
+ {
+  "day": "2024-10-31",
+  "dir": 1,
+  "decision_min": 829,
+  "entry_min": 830,
+  "lots": 2,
+  "entry": 8.4,
+  "net": -322.26,
+  "exits": [
+   [
+    "STRUCTURE",
+    2,
+    6.3,
+    839
+   ]
+  ]
+ },
+ {
+  "day": "2024-10-31",
+  "dir": -1,
+  "decision_min": 844,
+  "entry_min": 845,
+  "lots": 3,
+  "entry": 10.8,
+  "net": 590.07,
+  "exits": [
+   [
+    "TIME",
+    3,
+    14.1,
+    854
+   ]
+  ]
+ },
+ {
+  "day": "2025-01-02",
+  "dir": 1,
+  "decision_min": 895,
+  "entry_min": 896,
+  "lots": 2,
+  "entry": 5.9,
+  "net": -204.72,
+  "exits": [
+   [
+    "TRAIL",
+    2,
+    4.7,
+    901
+   ]
+  ]
+ },
+ {
+  "day": "2025-02-06",
+  "dir": 1,
+  "decision_min": 808,
+  "entry_min": 809,
+  "lots": 1,
+  "entry": 13.25,
+  "net": -324.96,
+  "exits": [
+   [
+    "TIME",
+    1,
+    9.0,
+    818
+   ]
+  ]
+ },
+ {
+  "day": "2025-02-13",
+  "dir": -1,
+  "decision_min": 819,
+  "entry_min": 820,
+  "lots": 2,
+  "entry": 17.6,
+  "net": 401.5,
+  "exits": [
+   [
+    "TIME",
+    2,
+    21.1,
+    829
+   ]
+  ]
+ },
+ {
+  "day": "2025-03-06",
+  "dir": 1,
+  "decision_min": 882,
+  "entry_min": 883,
+  "lots": 2,
+  "entry": 8.55,
+  "net": -478.01,
+  "exits": [
+   [
+    "STOP",
+    2,
+    5.25,
+    887
+   ]
+  ]
+ },
+ {
+  "day": "2025-04-17",
+  "dir": 1,
+  "decision_min": 833,
+  "entry_min": 834,
+  "lots": 1,
+  "entry": 16.35,
+  "net": 761.22,
+  "exits": [
+   [
+    "TIME",
+    1,
+    28.85,
+    843
+   ]
+  ]
+ },
+ {
+  "day": "2025-05-22",
+  "dir": -1,
+  "decision_min": 865,
+  "entry_min": 866,
+  "lots": 2,
+  "entry": 14.45,
+  "net": -278.72,
+  "exits": [
+   [
+    "TIME",
+    2,
+    12.7,
+    875
+   ]
+  ]
+ },
+ {
+  "day": "2025-06-12",
+  "dir": 1,
+  "decision_min": 793,
+  "entry_min": 794,
+  "lots": 1,
+  "entry": 15.1,
+  "net": -182.52,
+  "exits": [
+   [
+    "TIME",
+    1,
+    13.05,
+    803
+   ]
+  ]
+ },
+ {
+  "day": "2025-06-12",
+  "dir": -1,
+  "decision_min": 818,
+  "entry_min": 819,
+  "lots": 2,
+  "entry": 17.25,
+  "net": 966.02,
+  "exits": [
+   [
+    "TIME",
+    2,
+    25.1,
+    828
+   ]
+  ]
+ },
+ {
+  "day": "2025-07-03",
+  "dir": -1,
+  "decision_min": 787,
+  "entry_min": 788,
+  "lots": 2,
+  "entry": 13.8,
+  "net": 337.8,
+  "exits": [
+   [
+    "TIME",
+    2,
+    16.8,
+    797
+   ]
+  ]
+ },
+ {
+  "day": "2025-08-07",
+  "dir": -1,
+  "decision_min": 797,
+  "entry_min": 798,
+  "lots": 2,
+  "entry": 13.4,
+  "net": 1252.67,
+  "exits": [
+   [
+    "TIME",
+    2,
+    23.45,
+    807
+   ]
+  ]
+ },
+ {
+  "day": "2025-08-07",
+  "dir": 1,
+  "decision_min": 849,
+  "entry_min": 850,
+  "lots": 1,
+  "entry": 12.75,
+  "net": 599.59,
+  "exits": [
+   [
+    "TIME",
+    1,
+    22.75,
+    859
+   ]
+  ]
+ },
+ {
+  "day": "2025-08-21",
+  "dir": -1,
+  "decision_min": 868,
+  "entry_min": 869,
+  "lots": 6,
+  "entry": 5.15,
+  "net": 940.63,
+  "exits": [
+   [
+    "TIME",
+    6,
+    7.7,
+    878
+   ]
+  ]
+ },
+ {
+  "day": "2025-09-02",
+  "dir": -1,
+  "decision_min": 840,
+  "entry_min": 841,
+  "lots": 2,
+  "entry": 15.05,
+  "net": 1046.91,
+  "exits": [
+   [
+    "TARGET_BASE",
+    1,
+    30.8,
+    848
+   ],
+   [
+    "RUNNER_TRAIL",
+    1,
+    16.6,
+    852
+   ]
+  ]
+ },
+ {
+  "day": "2025-10-14",
+  "dir": 1,
+  "decision_min": 809,
+  "entry_min": 810,
+  "lots": 1,
+  "entry": 16.25,
+  "net": 258.45,
+  "exits": [
+   [
+    "TIME",
+    1,
+    21.0,
+    819
+   ]
+  ]
+ },
+ {
+  "day": "2025-11-11",
+  "dir": 1,
+  "decision_min": 804,
+  "entry_min": 805,
+  "lots": 1,
+  "entry": 15.75,
+  "net": 15.25,
+  "exits": [
+   [
+    "TIME",
+    1,
+    16.75,
+    814
+   ]
+  ]
+ },
+ {
+  "day": "2025-11-11",
+  "dir": 1,
+  "decision_min": 834,
+  "entry_min": 835,
+  "lots": 1,
+  "entry": 17.7,
+  "net": -491.08,
+  "exits": [
+   [
+    "STOP",
+    1,
+    10.9,
+    838
+   ]
+  ]
+ },
+ {
+  "day": "2025-11-25",
+  "dir": -1,
+  "decision_min": 868,
+  "entry_min": 869,
+  "lots": 2,
+  "entry": 14.25,
+  "net": 538.78,
+  "exits": [
+   [
+    "TIME",
+    2,
+    18.8,
+    878
+   ]
+  ]
+ },
+ {
+  "day": "2025-12-09",
+  "dir": -1,
+  "decision_min": 870,
+  "entry_min": 871,
+  "lots": 2,
+  "entry": 15.6,
+  "net": -233.66,
+  "exits": [
+   [
+    "TIME",
+    2,
+    14.2,
+    880
+   ]
+  ]
+ },
+ {
+  "day": "2025-12-16",
+  "dir": 1,
+  "decision_min": 820,
+  "entry_min": 821,
+  "lots": 1,
+  "entry": 10.5,
+  "net": 320.97,
+  "exits": [
+   [
+    "TIME",
+    1,
+    16.2,
+    830
+   ]
+  ]
+ },
+ {
+  "day": "2025-12-30",
+  "dir": 1,
+  "decision_min": 820,
+  "entry_min": 821,
+  "lots": 1,
+  "entry": 10.95,
+  "net": 690.69,
+  "exits": [
+   [
+    "TARGET",
+    1,
+    22.35,
+    825
+   ]
+  ]
+ }
+]

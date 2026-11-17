@@ -1,0 +1,3482 @@
+[
+{
+"u": "NIFTY",
+"e": "2019-06-20",
+"legs": 30,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-06-27",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-07-04",
+"legs": 28,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-07-11",
+"legs": 42,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-07-18",
+"legs": 29,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-07-25",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-08-01",
+"legs": 36,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-08-08",
+"legs": 34,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-08-14",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-08-22",
+"legs": 30,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-08-29",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-09-05",
+"legs": 34,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-09-12",
+"legs": 29,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-09-19",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-09-26",
+"legs": 63,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-10-03",
+"legs": 36,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-10-10",
+"legs": 36,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-10-17",
+"legs": 34,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-10-24",
+"legs": 27,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-10-31",
+"legs": 38,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-11-07",
+"legs": 29,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-11-14",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-11-21",
+"legs": 29,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-11-28",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-12-05",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-12-12",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-12-19",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2019-12-26",
+"legs": 24,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-01-02",
+"legs": 27,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-01-09",
+"legs": 36,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-01-16",
+"legs": 27,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-01-23",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-01-30",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-02-06",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-02-13",
+"legs": 32,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-02-20",
+"legs": 34,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-02-27",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-03-05",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-03-12",
+"legs": 52,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-03-19",
+"legs": 93,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-03-26",
+"legs": 77,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-04-01",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-04-09",
+"legs": 65,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-04-16",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-04-23",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-04-30",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-05-07",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-05-14",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-05-21",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-05-28",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-06-04",
+"legs": 54,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-06-11",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-06-18",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-06-25",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-07-02",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-07-09",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-07-16",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-07-23",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-07-30",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-08-06",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-08-13",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-08-20",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-08-27",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-09-03",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-09-10",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-09-17",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-09-24",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-10-01",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-10-08",
+"legs": 34,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-10-15",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-10-22",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-10-29",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-11-05",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-11-12",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-11-19",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-11-26",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-12-03",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-12-10",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-12-17",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-12-24",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2020-12-31",
+"legs": 29,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-01-07",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-01-14",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-01-21",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-01-28",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-02-04",
+"legs": 75,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-02-11",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-02-18",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-02-25",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-03-04",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-03-10",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-03-18",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-03-25",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-04-01",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-04-08",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-04-15",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-04-22",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-04-29",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-05-06",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-05-12",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-05-20",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-05-27",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-06-03",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-06-10",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-06-17",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-06-24",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-07-08",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-07-15",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-07-22",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-07-29",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-08-05",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-08-12",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-08-18",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-08-26",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-09-02",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-09-09",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-09-16",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-09-23",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-09-30",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-10-07",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-10-14",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-10-21",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-10-28",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-11-03",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-11-11",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-11-18",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-11-25",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-12-02",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-12-09",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-12-16",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-12-23",
+"legs": 57,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2021-12-30",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-01-06",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-01-13",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-01-20",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-01-27",
+"legs": 59,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-02-03",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-02-10",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-02-17",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-02-24",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-03-03",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-03-10",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-03-17",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-03-24",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-04-07",
+"legs": 67,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-04-13",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-04-21",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-04-28",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-05-05",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-05-12",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-05-19",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-05-26",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-06-02",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-06-09",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-06-16",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-06-23",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-06-30",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-07-07",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-07-14",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-07-21",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-07-28",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-08-04",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-08-11",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-08-18",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-08-25",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-09-01",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-09-08",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-09-15",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-09-22",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-09-29",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-10-06",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-10-13",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-10-20",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-10-27",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-11-03",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-11-10",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-11-17",
+"legs": 29,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-11-24",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-12-01",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-12-08",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-12-15",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-12-22",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2022-12-29",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2023-01-05",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-01-12",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-01-19",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-01-25",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-02-02",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-02-09",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-02-16",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-02-23",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-03-02",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-03-09",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-03-16",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-03-23",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-03-29",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-04-06",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-04-13",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-04-20",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-04-27",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-05-04",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-05-11",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-05-18",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-05-25",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-06-01",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-06-08",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-06-15",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-06-22",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-06-28",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-07-06",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-07-13",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-07-20",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-07-27",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-08-03",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-08-10",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-08-17",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-08-24",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-08-31",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-09-07",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-09-14",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-09-21",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-09-28",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-10-05",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-10-12",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-10-19",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-10-26",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-11-02",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-11-09",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-11-16",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-11-23",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-11-30",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-12-07",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-12-14",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-12-21",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2023-12-28",
+"protected": true
+},
+{
+"u": "NIFTY",
+"e": "2024-01-04",
+"legs": 35,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2024-01-11",
+"legs": 37,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-01-18",
+"legs": 57,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2024-01-25",
+"legs": 47,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2024-02-01",
+"legs": 39,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-02-08",
+"legs": 41,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2024-02-15",
+"legs": 41,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-02-22",
+"legs": 39,
+"aft_legs": 39,
+"aft_rows": 5850
+},
+{
+"u": "NIFTY",
+"e": "2024-02-29",
+"legs": 39,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-03-07",
+"legs": 43,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2024-03-14",
+"legs": 47,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2024-03-21",
+"legs": 39,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-03-28",
+"legs": 49,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2024-04-04",
+"legs": 35,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2024-04-10",
+"legs": 37,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2024-04-18",
+"legs": 53,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2024-04-25",
+"legs": 57,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2024-05-02",
+"legs": 39,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-05-09",
+"legs": 57,
+"aft_legs": 39,
+"aft_rows": 5850
+},
+{
+"u": "NIFTY",
+"e": "2024-05-16",
+"legs": 47,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2024-05-23",
+"legs": 61,
+"aft_legs": 39,
+"aft_rows": 5850
+},
+{
+"u": "NIFTY",
+"e": "2024-05-30",
+"legs": 51,
+"aft_legs": 35,
+"aft_rows": 5247
+},
+{
+"u": "NIFTY",
+"e": "2024-06-06",
+"legs": 105,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2024-06-13",
+"legs": 51,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2024-06-20",
+"legs": 37,
+"aft_legs": 31,
+"aft_rows": 4639
+},
+{
+"u": "NIFTY",
+"e": "2024-06-27",
+"legs": 51,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2024-07-04",
+"legs": 41,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-07-11",
+"legs": 37,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-07-18",
+"legs": 43,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2024-07-25",
+"legs": 55,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-08-01",
+"legs": 49,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2024-08-08",
+"legs": 63,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2024-08-14",
+"legs": 37,
+"aft_legs": 25,
+"aft_rows": 3750
+},
+{
+"u": "NIFTY",
+"e": "2024-08-22",
+"legs": 49,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2024-08-29",
+"legs": 39,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-09-05",
+"legs": 33,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-09-12",
+"legs": 49,
+"aft_legs": 43,
+"aft_rows": 6450
+},
+{
+"u": "NIFTY",
+"e": "2024-09-19",
+"legs": 37,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2024-09-26",
+"legs": 55,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-10-03",
+"legs": 65,
+"aft_legs": 39,
+"aft_rows": 5850
+},
+{
+"u": "NIFTY",
+"e": "2024-10-10",
+"legs": 55,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-10-17",
+"legs": 43,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2024-10-24",
+"legs": 49,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-10-31",
+"legs": 39,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-11-07",
+"legs": 51,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2024-11-14",
+"legs": 57,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-11-21",
+"legs": 43,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2024-11-28",
+"legs": 63,
+"aft_legs": 41,
+"aft_rows": 6150
+},
+{
+"u": "NIFTY",
+"e": "2024-12-05",
+"legs": 61,
+"aft_legs": 47,
+"aft_rows": 7050
+},
+{
+"u": "NIFTY",
+"e": "2024-12-12",
+"legs": 33,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-12-19",
+"legs": 59,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2024-12-26",
+"legs": 45,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-01-02",
+"legs": 53,
+"aft_legs": 41,
+"aft_rows": 6150
+},
+{
+"u": "NIFTY",
+"e": "2025-01-09",
+"legs": 51,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-01-16",
+"legs": 45,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-01-23",
+"legs": 41,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-01-30",
+"legs": 45,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-02-06",
+"legs": 47,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-02-13",
+"legs": 59,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-02-20",
+"legs": 39,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-02-27",
+"legs": 39,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-03-06",
+"legs": 47,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2025-03-13",
+"legs": 37,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-03-20",
+"legs": 57,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-03-27",
+"legs": 53,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-04-03",
+"legs": 43,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-04-09",
+"legs": 81,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-04-17",
+"legs": 69,
+"aft_legs": 47,
+"aft_rows": 7050
+},
+{
+"u": "NIFTY",
+"e": "2025-04-24",
+"legs": 41,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-04-30",
+"legs": 49,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-05-08",
+"legs": 39,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-05-15",
+"legs": 71,
+"aft_legs": 49,
+"aft_rows": 7350
+},
+{
+"u": "NIFTY",
+"e": "2025-05-22",
+"legs": 47,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-05-29",
+"legs": 41,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-06-05",
+"legs": 37,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-06-12",
+"legs": 45,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2025-06-19",
+"legs": 43,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-06-26",
+"legs": 55,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2025-07-03",
+"legs": 35,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-07-10",
+"legs": 31,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-07-17",
+"legs": 35,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-07-24",
+"legs": 37,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-07-31",
+"legs": 39,
+"aft_legs": 37,
+"aft_rows": 5550
+},
+{
+"u": "NIFTY",
+"e": "2025-08-07",
+"legs": 41,
+"aft_legs": 35,
+"aft_rows": 5250
+},
+{
+"u": "NIFTY",
+"e": "2025-08-14",
+"legs": 39,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-08-21",
+"legs": 35,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-08-28",
+"legs": 47,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-09-02",
+"legs": 37,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-09-09",
+"legs": 41,
+"aft_legs": 25,
+"aft_rows": 3750
+},
+{
+"u": "NIFTY",
+"e": "2025-09-16",
+"legs": 37,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-09-23",
+"legs": 37,
+"aft_legs": 31,
+"aft_rows": 4627
+},
+{
+"u": "NIFTY",
+"e": "2025-09-30",
+"legs": 45,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-10-07",
+"legs": 47,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-10-14",
+"legs": 35,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-10-20",
+"legs": 53,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-10-28",
+"legs": 39,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-11-04",
+"legs": 43,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-11-11",
+"legs": 39,
+"aft_legs": 33,
+"aft_rows": 4950
+},
+{
+"u": "NIFTY",
+"e": "2025-11-18",
+"legs": 35,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-11-25",
+"legs": 37,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-12-02",
+"legs": 43,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-12-09",
+"legs": 43,
+"aft_legs": 31,
+"aft_rows": 4650
+},
+{
+"u": "NIFTY",
+"e": "2025-12-16",
+"legs": 39,
+"aft_legs": 29,
+"aft_rows": 4350
+},
+{
+"u": "NIFTY",
+"e": "2025-12-23",
+"legs": 43,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2025-12-30",
+"legs": 37,
+"aft_legs": 27,
+"aft_rows": 4050
+},
+{
+"u": "NIFTY",
+"e": "2026-01-06",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-01-13",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-01-20",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-01-27",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-02-03",
+"legs": 61,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-02-10",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-02-17",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-02-24",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-03-02",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-03-10",
+"legs": 71,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-03-17",
+"legs": 75,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-03-24",
+"legs": 79,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-03-30",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-04-07",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-04-13",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-04-21",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-04-28",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-05-05",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-05-12",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-05-19",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-05-26",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-06-02",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-06-09",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-06-16",
+"legs": 61,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-06-23",
+"legs": 33,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-06-30",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-07-07",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-07-14",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-07-21",
+"legs": 37,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-07-28",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-08-04",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-08-11",
+"legs": 31,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-08-18",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-08-25",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-09-01",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-09-08",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-09-15",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-09-22",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-09-29",
+"legs": 61,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-10-06",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-10-13",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-10-19",
+"legs": 59,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-10-27",
+"legs": 59,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-11-03",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-11-09",
+"legs": 8,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "NIFTY",
+"e": "2026-11-17",
+"legs": 4,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-05-31",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-06-07",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-06-14",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-06-21",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-06-28",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-07-05",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-07-12",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-07-19",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-07-26",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-08-02",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-08-09",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-08-23",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-08-30",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-09-06",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-09-13",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-09-20",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-09-27",
+"legs": 2,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-10-04",
+"legs": 67,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-10-11",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-10-18",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-10-25",
+"legs": 61,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-10-31",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-11-08",
+"legs": 69,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-11-14",
+"legs": 74,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-11-22",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-11-29",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-12-06",
+"legs": 83,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-12-13",
+"legs": 35,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-12-20",
+"legs": 83,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2024-12-27",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-01-03",
+"legs": 73,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-01-07",
+"legs": 59,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-01-14",
+"legs": 65,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-01-21",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-01-28",
+"legs": 57,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-02-04",
+"legs": 61,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-02-11",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-02-18",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-02-25",
+"legs": 63,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-03-04",
+"legs": 65,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-03-11",
+"legs": 57,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-03-18",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-03-25",
+"legs": 81,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-04-01",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-04-08",
+"legs": 105,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-04-15",
+"legs": 61,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-04-22",
+"legs": 85,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-04-29",
+"legs": 57,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-05-06",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-05-13",
+"legs": 87,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-05-20",
+"legs": 63,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-05-27",
+"legs": 63,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-06-03",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-06-10",
+"legs": 61,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-06-17",
+"legs": 69,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-06-24",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-07-01",
+"legs": 57,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-07-08",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-07-15",
+"legs": 57,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-07-22",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-07-29",
+"legs": 63,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-08-05",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-08-12",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-08-19",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-08-26",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-09-04",
+"legs": 44,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-09-11",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-09-18",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-09-25",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-10-01",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-10-09",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-10-16",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-10-23",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-10-30",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-11-06",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-11-13",
+"legs": 63,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-11-20",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-11-27",
+"legs": 45,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-12-04",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-12-11",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-12-18",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2025-12-24",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-01-01",
+"legs": 43,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-01-08",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-01-14",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-01-22",
+"legs": 83,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-01-29",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-02-05",
+"legs": 138,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-02-12",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-02-19",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-02-26",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-03-05",
+"legs": 97,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-03-12",
+"legs": 89,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-03-19",
+"legs": 83,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-03-25",
+"legs": 77,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-04-02",
+"legs": 85,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-04-09",
+"legs": 96,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-04-16",
+"legs": 71,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-04-23",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-04-30",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-05-07",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-05-14",
+"legs": 93,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-05-21",
+"legs": 57,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-05-27",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-06-04",
+"legs": 79,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-06-11",
+"legs": 51,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-06-18",
+"legs": 79,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-06-25",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-07-02",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-07-09",
+"legs": 71,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-07-16",
+"legs": 41,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-07-23",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-07-30",
+"legs": 69,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-08-06",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-08-13",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-08-20",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-08-27",
+"legs": 39,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-09-03",
+"legs": 47,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-09-10",
+"legs": 65,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-09-17",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-09-24",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-10-01",
+"legs": 63,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-10-08",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-10-15",
+"legs": 53,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-10-22",
+"legs": 55,
+"aft_legs": 0,
+"aft_rows": 0
+},
+{
+"u": "SENSEX",
+"e": "2026-10-29",
+"legs": 49,
+"aft_legs": 0,
+"aft_rows": 0
+}
+]
