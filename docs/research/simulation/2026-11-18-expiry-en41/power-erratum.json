@@ -1,0 +1,36 @@
+{
+ "NIFTY": {
+  "sessions": 197,
+  "e032_net": 14275.2,
+  "en55_net": 13164.7,
+  "en55_parents": 68,
+  "en55_parent_rate": 0.345,
+  "e032_parents": 66,
+  "sessions_with_en55_ticket": 59,
+  "affected_sessions": 58,
+  "affected_rate": 0.294,
+  "diff_mean": -5.64,
+  "diff_sd": 214.57,
+  "en55_sd": 798.52,
+  "n_for_50_per_expiry_diff": 114,
+  "n_for_50_per_expiry_abs": 1577,
+  "sessions_for_20_parents": 58
+ },
+ "SENSEX": {
+  "sessions": 63,
+  "e032_net": 2449.18,
+  "en55_net": 2470.34,
+  "en55_parents": 10,
+  "en55_parent_rate": 0.159,
+  "e032_parents": 12,
+  "sessions_with_en55_ticket": 9,
+  "affected_sessions": 11,
+  "affected_rate": 0.175,
+  "diff_mean": 0.34,
+  "diff_sd": 149.26,
+  "en55_sd": 657.32,
+  "n_for_50_per_expiry_diff": 56,
+  "n_for_50_per_expiry_abs": 1069,
+  "sessions_for_20_parents": 126
+ }
+}

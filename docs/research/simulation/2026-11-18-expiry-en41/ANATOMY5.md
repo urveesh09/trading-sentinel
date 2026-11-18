@@ -88,6 +88,8 @@ The opportunity is real, but the time decay comes first two times out of three.
 
 ## Round 5b (Nov 18): EN41 / EN42 on real order-book packets, and a resting-bid fill check
 
+> **Erratum (Nov 18):** in the Q28 row below, "conservative" is a volume-at-bid proxy and the optimistic rule is a price-through proxy. They are not nested bounds (88.75% against 88.33% at 60 s). The 97.5% is agreement between two models. The −2.1% / +17.6% is the mid 60 s after the decision relative to the initial bid, split by the proxy's fill flag, not a return after a fill. See [ERRATA-20261118.md](ERRATA-20261118.md).
+
 The owner authorised a read-only extraction. TR01's two complete recorded days were copied out of the Production container with `docker cp`; nothing in Production changed.
 - **Export:** `sentinel-operations/tr01-export-20261118`. All 802 chunks were re-hashed against the recorder's manifests and all match.
 - **Plan:** `PLAN5B.md`, frozen at `8737707a`.

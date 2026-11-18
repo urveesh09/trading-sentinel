@@ -1,5 +1,7 @@
 # Forward test registered for EN55: frozen before its first session
 
+> **Erratum, Nov 18 (before the first session):** the first sessions are SENSEX **Nov 19** and NIFTY **Nov 23**, not Nov 20 / 24. The 20-session result is a comparison only, and a separate qualification layer (first 40 expiries per index, ≥ 20 parents, positive at ordinary and adverse fills) is registered in [ERRATA-20261118.md](ERRATA-20261118.md). The rule below is unchanged.
+
 Written Nov 18, 2026, after the round-5 score and before the cohort's first session. The first session is SENSEX on Nov 20, 2026; the first NIFTY session is Nov 24, 2026.
 
 **What it tests:** EN55, the "learned E03.2", against E03.2 unchanged. This is not a qualification for real money.

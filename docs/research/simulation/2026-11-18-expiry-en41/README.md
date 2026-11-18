@@ -8,6 +8,7 @@
 | `render5.py` | Renders `ANATOMY5-tables.md` |
 | `ANATOMY5.md` | The write-up: where each slot won and lost |
 | `FORWARD5.md` | EN55's registered forward test |
+| `ERRATA-20261118.md`, `power_erratum.py`, `power-erratum.json` | Errata after the independent audit (forward calendar and qualification layer, Q28 labels, EN49's candidate list), written before the first forward session |
 | `PLAN5B.md`, `tr01.py`, `en5b.py` | Round 5b: EN41/EN42 on exported TR01 packets plus the Q28 resting-bid fill check, frozen `8737707a`, scored once into `results5b.json` |
 
 **Verification** (`python en_lab5.py`, counts only):
@@ -31,3 +32,4 @@
 - EN41 fired twice on the one eligible session and lost both; EN42 never fired. Both are INCONCLUSIVE.
 - Order flow on 1-second snapshots shows no continuation.
 - Q28: resting bids fill 72% within 10 s and 89% within 60 s; the minute-candle proxy agrees on 97.5% of orders; fills are adversely selected (−2.1% after a fill against +17.6% after a miss).
+- *Relabelled by the errata:* these are a volume-at-bid proxy and a price-through proxy, not nested bounds; the 97.5% is agreement between two models; the −2.1% / +17.6% is a same-clock markout from the initial bid, not a post-fill return.

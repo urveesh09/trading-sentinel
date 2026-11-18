@@ -189,6 +189,7 @@ Every expiry afternoon we hold has now been looked at, so this round can only sc
 
 - **SENSEX:** +2,470 against +2,449, with a smaller worst day.
 - **Caveat:** it came within ₹387 of the brake. Its pieces were chosen on these same days, so it is registered for a forward test on the next 20 expiries per index ([FORWARD5.md](research/simulation/2026-11-18-expiry-en41/FORWARD5.md)). Nothing changes until that test is read.
+- **Correction (Nov 18, before the first session):** the first forward sessions are SENSEX Nov 19 and NIFTY Nov 23 (Nov 24 is an exchange holiday), not Nov 20 and 24. 20 sessions will hold only about 7 NIFTY and 3 SENSEX trades, so they are a comparison only. Qualification now needs the first 40 expiries per index, at least 20 trades, and a profit at normal and bad fills ([ERRATA-20261118.md](research/simulation/2026-11-18-expiry-en41/ERRATA-20261118.md)).
 
 **2. You are right that every expiry swings.** But the managed straddle (EN51: buy the call and the put at 13:00, sell at +25% or −25%) shows the decay usually comes first.
 - NIFTY: it reached +25% first on 42 days and −25% first on 87.
@@ -211,7 +212,7 @@ Every expiry afternoon we hold has now been looked at, so this round can only sc
 | EN46 (does the move pay the option) | Removed winners with losers. With no direction forecast it never buys at all. |
 | EN47 (strike by response) | Under ₹1,250 almost no strike moves enough to pay its spread and order charges. |
 | EN48 (RBI days) | Only one verified RBI decision fell on an expiry. |
-| EN49 (small payoff model) | Over 13,700 real decisions it never forecast a profitable 3-minute trade. Spread plus two order charges are about 5–7% of a cheap expiry option. |
+| EN49 (small payoff model) | Over 13,700 real decisions it never forecast a profitable 3-minute trade. Spread plus two order charges are about 5–7% of a cheap expiry option. *Correction: its candidate list peeked at the next minute's fill and trained on one lot only. It never traded, so no result changed, but it tested one narrow model, not every short trade.* |
 | EN50 (hold-another-minute model) | Changed only 3 trades. |
 
 **My other four:**
@@ -220,7 +221,7 @@ Every expiry afternoon we hold has now been looked at, so this round can only sc
 |---|---|
 | EN51 (straddle bracket) | Lost on both indices. |
 | EN52 (straddle that drops its loser) | Lost: the lottery above. |
-| EN53 (E03.2 with at-the-money options) | Lost, because at-the-money never makes 10×. |
+| EN53 (E03.2 with at-the-money options) | Lost: at-the-money tickets earned less from the few huge winners under that sizing. (At-the-money options can still multiply.) |
 | EN54 (straddle only when cheap) | Lost on NIFTY; too few SENSEX trades to judge. |
 
 **On the ₹30,000 and the 50% profit sweep:**
@@ -237,8 +238,9 @@ Every expiry afternoon we hold has now been looked at, so this round can only sc
 I copied the tick recorder's two finished days out of Production, read-only, and checked every file against its own hashes. Only Nov 17, the one expiry recorded so far, met the auditor's freshness rule.
 - **Order-book pressure (EN41)** fired twice all day, and both trades lost. EN42 never fired.
 - **On this feed (about one futures snapshot a second),** the order book shows nothing that the price doesn't already.
-- **Do patient bids really fill? Yes, mostly:** 72% within 10 seconds and 89% within a minute. That is close to what round 4 assumed.
-- **But they fill on the falling options:** a minute later, filled ones were 2.1% lower, while the ones that didn't fill had run up 17.6%.
+- **Do patient bids really fill? Probably, mostly, but this feed can't prove it.** Two different estimates gave 72–75% within 10 seconds and about 88–89% within a minute. These are model estimates, not confirmed fills: one-second snapshots don't show where each trade happened in the queue.
+- **They seem to fill on the falling options:** a minute after the decision, the options marked filled were 2.1% lower than our bid, and the ones marked unfilled were 17.6% higher. This compares prices at a fixed time after the decision, not returns after an actual fill; round 6 measures it properly.
+- Corrections: [ERRATA-20261118.md](research/simulation/2026-11-18-expiry-en41/ERRATA-20261118.md).
 
 Details are in [ANATOMY5.md](research/simulation/2026-11-18-expiry-en41/ANATOMY5.md), round 5b.
 
