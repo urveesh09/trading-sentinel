@@ -1,0 +1,23 @@
+{
+ "dry_run": true,
+ "note": "rehearsal on seen sessions; never evidence",
+ "eligible": 12,
+ "missing": [
+  {
+   "und": "NIFTY",
+   "day": "2026-11-17",
+   "missing": [
+    "index minutes 0/210",
+    "front-future minutes 0/210"
+   ]
+  }
+ ],
+ "idempotence": "IDEMPOTENT_OK: a second dry run appended nothing; recomputation identical",
+ "cross_check_vs_score": {
+  "arm_days": 72,
+  "mismatches": []
+ },
+ "arms_per_row": 34,
+ "freeze_sha256": "b96aad5da817fde6ce40d7d1e00a40057983306d338b1207482f25daa1fa5418",
+ "code_head": "2689b46b6a80e28b3a469a1676a455b5b4a34e0e"
+}

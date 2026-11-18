@@ -248,6 +248,12 @@ Details are in [ANATOMY5.md](research/simulation/2026-11-18-expiry-en41/ANATOMY5
 
 Frozen before scoring (`7c58df23`), scored once. Details are in [ANATOMY6.md](research/simulation/2026-11-18-expiry-en56/ANATOMY6.md).
 
+> **Corrections (Nov 18, [ERRATA-20261118b](research/simulation/2026-11-18-expiry-en56/ERRATA-20261118b.md)):**
+> - "Right only 49.5% of the time" measured nothing: calls and puts at the same moment were counted together, so it is 50% by construction.
+> - "About one year in three ends at a loss" is withdrawn. The halt shares are resampling estimates, not probabilities.
+> - Paper orders never join the exchange queue, so live paper cannot confirm resting fills either.
+> - The patient-order fill check now needs a trade after our order arrived. Nov 17's result is unchanged.
+
 **No new strategy passed, and E03.2 and EN55 stay as they are.** What we learned:
 
 - **You're right that every expiry has a big opportunity, but only in hindsight.**
@@ -278,6 +284,41 @@ Frozen before scoring (`7c58df23`), scored once. Details are in [ANATOMY6.md](re
 - The recorder's own bars aren't accurate enough yet to stand in (83% of option closes match, against the 95% required).
 - Testing the patient entry honestly needs real resting orders: the live-paper choice you deferred.
 
+## Round 7: the auditor's EN71–EN80 plus my five (Nov 18)
+
+Frozen before scoring (`47a29999`), scored once. Details are in [ANATOMY7.md](research/simulation/2026-11-18-expiry-en71/ANATOMY7.md).
+
+**No new strategy passed, and E03.2 and EN55 stay as they are.** What we learned:
+
+- **The bar a direction forecast has to clear is now measured.**
+  - At an ordinary moment in the afternoon, a forecast has to pick the right side about 61% of the time just to break even after the spread and charges.
+  - With one minute of delay it needs about 70%.
+  - E03.2's own moments are better: even a coin toss earns there. But only in the first minute.
+- **For the first time, something new picked the side better than chance:** what the option market itself is doing.
+  - It works two ways on NIFTY: the price the options imply for the index, and which side option sellers are adding to.
+  - Both beat 90% of random-side versions.
+  - Trading on which side the sellers were adding earned more than trading on the price trend at the same moments, in every year from 2023 to 2026.
+  - **It is still not money.** The option-implied price leads the index only about 56% of the time, below the 61% needed. It loses at worse fills and without its best day (Sep 12, 2024).
+  - The two readings are mostly the same signal.
+- **Everything else lost or had too few trades.**
+  - A model trained on every trading day forecast 8-minute moves no better than an average.
+  - The normal F&O book's signal is close to a coin toss on expiry afternoons.
+  - Its trend filter (ADX of 30 or more) points the wrong way on expiry.
+  - Waiting for the index to catch up with the future is real but rare and too small.
+  - A selector that picks among strategies by past results learned mostly "stay in cash".
+- **Three small protections, not profits:**
+  - buying half first without the patient order;
+  - entering one minute later;
+  - entering only when futures volume is high.
+
+  Each lowered the worst losses a little. Only entering one minute later made more money (+6,393 against +3,006), and its pattern looks like chance.
+- **Honest limit of the testing:** on this history, even a real ₹100-a-trade improvement would usually go unnoticed. Only a large edge can be confirmed quickly on new expiries.
+
+**Ready for the forward test:**
+- Every candidate is registered.
+- A forward runner scores each new expiry once, with code that can't change, and marks any session it can't score as missing.
+- It still needs ICICI index and futures minutes for each expiry (request 7).
+
 ## Data still open
 
 The full list is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md).
@@ -287,6 +328,7 @@ The full list is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/
 3. **1-second data for the cheap strikes E03.2 buys, 2026.** EN11's speed check and EN26's confirmation need it.
 4. **NIFTY 2020–2022 and SENSEX before July 2025.** More history for anything that survives.
 5. **Index and futures minutes for every expiry from Nov 19** (ICICI). EN55's forward test needs them (new, round 6).
+6. **Two recordings you would have to approve first:** the 10 biggest NIFTY stocks' live quotes alongside the index (EN74), and timestamped official news as we receive it (EN77) (new, round 7).
 
 Real bid/ask depth can't be bought. It comes only from our own recorders, which I keep. EN28's fill rate and EN26 can only be settled there.
 

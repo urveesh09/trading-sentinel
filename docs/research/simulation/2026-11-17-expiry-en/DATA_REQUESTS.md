@@ -46,3 +46,14 @@ The full day is needed, because EN13, EN17 and EN23 read the morning.
   - **What:** Breeze 1-minute **index** and **front-future** candles for every NIFTY and SENSEX expiry session from Nov 19, 2026, alongside the expiring chain (12:00–15:29).
   - **Why:** the Breeze database holds no NIFTY futures after Oct 28, 2026. Recorder-built bars did not establish parity (EN70: option closes agree within Rs 0.10 on 83% of bars, with no independent futures or index source).
   - **What happens without it:** a forward session without index and future minutes is UNAVAILABLE.
+
+- **New, from round 7 (Nov 18): two capture contracts, both your decision.** Nothing is built or collected yet: new background collection needs its own scoped change through GitHub.
+  - **Request 8 (EN74, constituent flow).** Each session's previous-close top ten NIFTY constituents, by dated official weight.
+    - Record their fresh quotes and depth on the same receipt clock as the index future and the expiring chain.
+    - Gate: at least 95% of decision windows with quote ages of 2 s or less.
+    - A model needs 60 prior covered sessions first.
+    - The existing 15-minute breadth and Kite daily snapshots are not a substitute.
+  - **Request 9 (EN77, news after receipt).** RBI decisions and the top-ten-weight companies' results releases.
+    - Record the original document, its first public timestamp, our first successful receipt time and any revisions.
+    - A mechanism review needs at least 20 eligible releases on 10 expiries.
+    - A headline retrieved later cannot give an earlier event clock.

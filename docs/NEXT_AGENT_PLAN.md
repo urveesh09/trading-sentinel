@@ -1,3 +1,49 @@
+## November 18 (evening) - Round 7: EN71–EN85 scored once; no strategy passes; option-market flow shows side information that does not pay; fill-estimator v2 erratum (research only, Dev; nothing deployed; Production stays 55b5e942)
+
+**Owner (Nov 18):** run the auditor's EN71–EN80 handoff (`docs/EXPIRY_RESEARCH_EN71_EN80.md`; audit `docs/research/simulation/2026-11-18-expiry-review-en71/AUDIT.md`) plus five slots of mine, aiming to beat E03.2.
+
+**1. Erratum to round 6** (`2026-11-18-expiry-en56/ERRATA-20261118b.md`). All four audit findings were verified and agreed with.
+- **F1, the EN58 price-through fill estimator.** It accepted pre-arrival last trades. It is repaired as estimator v2 in `2026-11-18-expiry-en71/pk7.py` (post-arrival evidence; LOWER / QUEUE / UPPER bounds).
+  - On Nov 17, P0's fills stay at 44/50 under every bound. 16 fill times are later. The conclusion is unchanged.
+- **F2.** 49.5% "direction right" was 50% by construction.
+- **F3.** Live paper cannot confirm queue fills.
+- **F4.** EN60, EN61, EN68, EN69 and EN70 now carry narrower statements.
+
+**2. Round 7** (`docs/research/simulation/2026-11-18-expiry-en71/`):
+- `PLAN7.md` frozen `47a29999`; `score7.py` scored once; `ANATOMY7.md`.
+- **Matched envelope.** ₹2,500 parent and ₹2,500 day room; realised losses consume the room. Two parents a day, decisions 13:00–14:29.
+- **Harness.**
+  - `run_day7` equals `run_day6` on 24,180 arm-days; 222 causal checks; mechanics and known-signal checks.
+  - All-session futures store (`fut7.py`).
+  - The pinned Production N11 source (`55b5e942`) runs in an isolated process (`n11x.py`).
+- **Statistics.** Week-block sign-flip test plus block-bootstrap interval, Holm across 24 hypotheses.
+  - Harness calibration: null rejection 1 of 20; a planted ₹100/trade edge detected 3 of 20 (low power).
+- **Verdicts.** All 19 testable Holm p-values are 1.0.
+  - PROTECTION-LIKE (NIFTY): EN72 scout, EN81 one bar later, EN84 participation gate. None is alpha.
+  - FAIL: EN73 ridge, EN75 synthetic forward, EN76 N11 transfer, EN83 OI flow.
+  - INCONCLUSIVE: EN78, EN79, EN82, and the SENSEX E03-derived cells.
+  - DATA UNAVAILABLE: EN74, EN77, and EN83 on SENSEX.
+- **Findings.**
+  - **EN71.** At an arbitrary 5-minute clock, direction must be right about 61% of the time to break even at bar fills, and about 70% one bar late. E03's own clocks earn even at a coin toss, but only at the next bar.
+  - **EN75 and EN83 (NIFTY)** beat their random-side nulls' 90th percentile, and OI beat the price sign at the same bars in every year. But the two overlap (same side on 81 of 93 sessions), are about 56% right (below the hurdle), lose at adverse fills, and share one hero day.
+  - **EN82.** The ADX ≥ 30 regime is worse on expiry (the inverse made more).
+  - **EN73.** No forward forecast skill (MSE 1.004× the intercept's).
+- **Post-score reporting fixes** (`post7.py`), labelled as such:
+  - EN82's SENSEX gate routing defect (the verdict is unchanged, INCONCLUSIVE);
+  - EN71's paired-side share per session (89.3%, as the audit found).
+- **EN85.** Forward machine `fwd7.py`: an append-only ledger, the frozen code only, MISSING sessions named, a dry run and an idempotence receipt. It needs request 7's downloads.
+
+**Data requests 8 and 9** (`2026-11-17-expiry-en/DATA_REQUESTS.md`): capture contracts for constituent quotes (EN74) and news receipt times (EN77). Both are the owner's decision; nothing is built.
+
+**Verification:** check7.py PARITY_OK 24,180 arm-days / CAUSAL_OK 222 / MECH_OK / KNOWN_OK; score7.py selftest OK; fwd7.py dryrun IDEMPOTENT_OK (72 arm-days equal the score). Engine suite not run: no runtime source changed.
+
+**State:**
+- Dev research files and docs only, pushed to `codex/production-correction-hedge-p0`.
+- No engine, configuration, `.env`, scheduler or Production change; Production checkout read at `55b5e942`.
+- EN55's registration is unchanged.
+- The score's background shell was reaped under memory pressure; the Python process completed on its own, so it was scored once.
+
+
 ## November 18 (night) - Round 6: EN56–EN70 scored once; no strategy passes; forward-test errata published before the first session (research only, Dev; nothing deployed; Production stays 55b5e942)
 
 **Owner (Nov 18):** run the auditor's EN56–EN65 handoff (`docs/EXPIRY_RESEARCH_EN56_EN65.md`), enriched where useful, plus five slots of mine. "I am in no rush, but I need comprehensive thorough testing, which is correct in its nature."

@@ -1,0 +1,226 @@
+{
+ "sensex_sessions_without_adx_in_frozen_run": 63,
+ "E03_env": {
+  "ordinary": {
+   "net": 5166.67,
+   "without_best": -88.1,
+   "without_top2": -1371.61,
+   "worst": -1116.03,
+   "tickets": 7,
+   "sessions": 63,
+   "per_expiry": 82.01,
+   "fees": 396.33,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 5778.53,
+    "2026": -611.86
+   },
+   "worst_marked": -1130.0,
+   "minutes_in": 83,
+   "traded_expiries": 7
+  },
+  "adverse": {
+   "net": 4746.07,
+   "without_best": -372.9,
+   "without_top2": -1590.47,
+   "worst": -1156.01,
+   "tickets": 7,
+   "sessions": 63,
+   "per_expiry": 75.33,
+   "fees": 395.93,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 5594.78,
+    "2026": -848.71
+   },
+   "worst_marked": -1156.01,
+   "minutes_in": 83,
+   "traded_expiries": 7
+  },
+  "wallet|ordinary": {
+   "P": 4501.31,
+   "swept": 2889.26,
+   "wallet": 31612.05,
+   "halted": 0,
+   "first_halt": null,
+   "liq_dd": 1929.73,
+   "close_dd": 1753.38,
+   "combined": 34501.31
+  }
+ },
+ "EN82": {
+  "ordinary": {
+   "net": -141.99,
+   "without_best": -141.99,
+   "without_top2": -141.99,
+   "worst": -141.99,
+   "tickets": 1,
+   "sessions": 63,
+   "per_expiry": -2.25,
+   "fees": 51.99,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 0.0,
+    "2026": -141.99
+   },
+   "worst_marked": -515.28,
+   "minutes_in": 9,
+   "traded_expiries": 1
+  },
+  "adverse": {
+   "net": -193.96,
+   "without_best": -193.96,
+   "without_top2": -193.96,
+   "worst": -193.96,
+   "tickets": 1,
+   "sessions": 63,
+   "per_expiry": -3.08,
+   "fees": 51.96,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 0.0,
+    "2026": -193.96
+   },
+   "worst_marked": -541.3,
+   "minutes_in": 9,
+   "traded_expiries": 1
+  },
+  "wallet|ordinary": {
+   "P": -141.99,
+   "swept": 0.0,
+   "wallet": 29858.01,
+   "halted": 0,
+   "first_halt": null,
+   "liq_dd": 515.28,
+   "close_dd": 141.99,
+   "combined": 29858.01
+  }
+ },
+ "EN82_adx25_diag": {
+  "ordinary": {
+   "net": -141.99,
+   "without_best": -141.99,
+   "without_top2": -141.99,
+   "worst": -141.99,
+   "tickets": 1,
+   "sessions": 63,
+   "per_expiry": -2.25,
+   "fees": 51.99,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 0.0,
+    "2026": -141.99
+   },
+   "worst_marked": -515.28,
+   "minutes_in": 9,
+   "traded_expiries": 1
+  },
+  "adverse": {
+   "net": -193.96,
+   "without_best": -193.96,
+   "without_top2": -193.96,
+   "worst": -193.96,
+   "tickets": 1,
+   "sessions": 63,
+   "per_expiry": -3.08,
+   "fees": 51.96,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 0.0,
+    "2026": -193.96
+   },
+   "worst_marked": -541.3,
+   "minutes_in": 9,
+   "traded_expiries": 1
+  },
+  "wallet|ordinary": {
+   "P": -141.99,
+   "swept": 0.0,
+   "wallet": 29858.01,
+   "halted": 0,
+   "first_halt": null,
+   "liq_dd": 515.28,
+   "close_dd": 141.99,
+   "combined": 29858.01
+  }
+ },
+ "EN82_inv_ctl": {
+  "ordinary": {
+   "net": 5308.66,
+   "without_best": 53.89,
+   "without_top2": -1229.62,
+   "worst": -1116.03,
+   "tickets": 6,
+   "sessions": 63,
+   "per_expiry": 84.26,
+   "fees": 344.34,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 5778.53,
+    "2026": -469.87
+   },
+   "worst_marked": -1130.0,
+   "minutes_in": 74,
+   "traded_expiries": 6
+  },
+  "adverse": {
+   "net": 4940.03,
+   "without_best": -178.94,
+   "without_top2": -1396.51,
+   "worst": -1156.01,
+   "tickets": 6,
+   "sessions": 63,
+   "per_expiry": 78.41,
+   "fees": 343.97,
+   "unresolved": 0,
+   "by_year": {
+    "2025": 5594.78,
+    "2026": -654.75
+   },
+   "worst_marked": -1156.01,
+   "minutes_in": 74,
+   "traded_expiries": 6
+  },
+  "wallet|ordinary": {
+   "P": 4643.3,
+   "swept": 2889.26,
+   "wallet": 31754.04,
+   "halted": 0,
+   "first_halt": null,
+   "liq_dd": 1929.73,
+   "close_dd": 1753.38,
+   "combined": 34643.3
+  }
+ },
+ "paired_vs_E03_env": {
+  "diff_per_session": -84.26,
+  "diff_total": -5308.66,
+  "ci": [
+   -282.23,
+   41.51
+  ],
+  "p_vs_control": 0.7611119444027798,
+  "p_vs_cash": 1.0,
+  "ci_vs_cash": [
+   -6.76,
+   0.0
+  ],
+  "diff_without_top2": -5308.66,
+  "weeks": 63,
+  "tail_wins": 0,
+  "holm_note": "Holm is not recomputed: the frozen family's adjusted values stand; this cell's raw p is shown",
+  "holm": 1.0
+ },
+ "frozen_verdict": "INCONCLUSIVE (support below 20 parents over 10 traded expiries)",
+ "verdict_with_gate": "INCONCLUSIVE (support below 20 parents over 10 traded expiries)",
+ "EN71_paired_side_NIFTY_per_session": {
+  "rows": 25440,
+  "in_pairs": 22716,
+  "share": 0.8929
+ },
+ "EN75_EN83_overlap_NIFTY": {
+  "sessions_both_signal": 93,
+  "sessions_same_side": 81,
+  "net_correlation": 0.605
+ }
+}
