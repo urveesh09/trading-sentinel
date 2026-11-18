@@ -1,0 +1,126 @@
+{
+  "files": {
+    "PLAN7.md": "7e43e135780cab830a5754e06c24913c8e8ed404661d43286196ffc74d634eab",
+    "en_lab7.py": "fa28266d25994d640702e50fe63dcbea700a5cc47400365e54bda0b8073348a9",
+    "prep7.py": "b1d366d6dd15983679cc46a0300a41ee94369488b25724f126419ff6f8f9e984",
+    "fut7.py": "c5cfc7a0371bf0001c9687046072c242be9c8d8224019e98daf4a3d00da6ceb4",
+    "n11x.py": "76a9f8b9f168d4826fe227a93d0fa0591f9e4116e234ecfd5020b22288612c9d",
+    "frontier7.py": "ad30ff9a5f5b8abaef98dc83b9b8f8685a351cc3a862bb372bfa2ab569bdcfba",
+    "alloc7.py": "a183ee34f2b3f90b5fb9b778aec78cf52430bff5e0488b20cb444d930cd0784d",
+    "pk7.py": "22471b2a5f642b4bd20296822ccaa9a4d6a735cef1cc6a39bd6b6df5dcbc3462",
+    "check7.py": "4285de8e87b68c3a7c98a30816917e417a477655a678171dc19a4ffad6d60a6a",
+    "score7.py": "26a6232da11a7fc8e83ab110bb79acc305c3b89f7548069e99408d9257640402",
+    "fwd7.py": "a9bfce7490c2857209115f32a0c8383de9ea5f0b4f7d82c8d972ae2ff9786ec9",
+    "n11-days.json": "1dba73f5e1f89e60429073a5cd8c0acae5e536aae86f63b2acc5574b98a94ccc",
+    "n11-signals.json": "63b2f02584159503bc7cc15e935fbb1d880ee74e23cef107655d83edab7bba3f",
+    "facts7.json": "d2ff379b00375622c261cd66b495185f81f1c2d717de000fe1ddd7826a3618b2",
+    "erratum-en58-v2.json": "c828840a2f734e42f40b5102182fa825b63c4882463f98980011fcd725f90eac",
+    "round6/PLAN6.md": "214f60b6f9ebf0b6d18171672f25e5da8b20ffb1ba6ba0021fa58bd626d9f5b1",
+    "round6/en_lab6.py": "8097197c79582c4c53c74585a7fb3be66fe25c00b456abf33ad461a5b8431d95",
+    "round6/en_ml6.py": "5b06518c9a26363ef931a1a2233ea25c44bfc37dbca7be25fa9fe8d3dd60d6bf",
+    "round6/pk6.py": "cf445b10e37652c4ee502c404d72de5d1647a5269660a139f22b5f247e5a6baa",
+    "round6/en_score6.py": "f25a20fb1070aa151bd209c0a8df820814959dfce032e070162f95a5809b7463",
+    "round6/en_lab4.py": "4b72bf3fc10c1168c56741d898847ca523c1819eb38ee8153ba253e839c65041",
+    "round6/en4_data.py": "3a882f05d4748cb87b3d4a50f1843e50c86b54add4f6c48c88b615decfe9c1ab",
+    "round6/en_lab3.py": "b5d47115edfe41b72e3a1138ef0105f70e03b46160808d8e5c734ebfa4b094ac",
+    "round6/en_lab2.py": "95e9d0d542ce79fcc004234de1eb94a33e6792a926fc774b432fe70c63bd5bcf",
+    "round6/en_lab.py": "cbe87626949ea41fb18b8b903e80b686c10fe82e717f47b381065a6842919417",
+    "round6/en_base.py": "74a0802cec9a6f9978446bbc765c853bb2af5f15471352572358794c955ed09d",
+    "round6/exam2023.py": "2da8639a7d135ff209c6946f46f3395fbd9b3fe94eee29cebb49af81b2fb41e3",
+    "round6/exam2023b.py": "ffa9a97ef2e9008d414a20e27a16b26bc4f0801e107f9a0f10e3027df80b21cb",
+    "round6/data-binding4.json": "9478e69f6588271b3b7a8c2da2e5edc55a8818f927dee921247d955c1a3ea070",
+    "round6/en_lab5.py": "65d38714c0d82b9a9960b19431bec97093069d51ab8171b8e6ba25a6b4409dd5",
+    "round6/tr01.py": "5333e398fa2385c3a6e90a6f8e4a7ae1d05e2e70de1fb5f679b5ca8310db676b",
+    "round6/r8b_lab.py": "1ec605ee00162f5b5dccca5252e6d9715aebbd081369213c377a67a00585ab1c",
+    "round6/e031_lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+    "round6/e03_lab.py": "7cce48426f27e2771179aea72b279edbcc3a63bf2ce9d704d5a10625288f8b38",
+    "round6/e02_lab.py": "6d4d29907fe950b954564ba22224a848dfff8fc23fabac199cf9ccc21ae14ba3",
+    "round6/data.py": "b9d9895ae45309f4b82d0fe34d0796c421cc4ac90be0e739f98928343ac4d295",
+    "round6/expiry_paper.py": "6c6b681082f3782b50fce0185b18173dea68a95ba4a8e3a22581d8ec088db9d9",
+    "round6/cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd",
+    "round6/data-binding.json": "52ac33f5ee24839173a58b3a137a3f0d56112c48e9fdc0518f716ef5cc1eca4b"
+  },
+  "data": {
+    "round6": {
+      "tr01": {
+        "2026-11-16": {
+          "chunks": 401,
+          "records": 10222859,
+          "manifest_sha256": "a0c3acb076a33d5a1902d5146d6e188f0d6e061f4d1ad1ad4929ebff7a616325",
+          "instruments_sha256": "99eec8c95175e891dca3c96cd0b17bd59bb31685ddf67647facf48153e7803ab",
+          "events_sha256": "fa3acb50656bd74c8c1c71da85ba4bfacc71700acbaa9e04ce586da2d2f46184"
+        },
+        "2026-11-17": {
+          "chunks": 401,
+          "records": 10455753,
+          "manifest_sha256": "3ea0a7ad2dc5334f5ff9bfaedadb6df6aaaebc1c587597cc396f99cc3c055eec",
+          "instruments_sha256": "2c4fbf4729924967947e43a551d0eb870a3ba4449bed5382d4546a2b6e3e2f19",
+          "events_sha256": "25360c1798665d08e93c80d6cdf521a686ca2a568adef4d853311414edb96a76"
+        }
+      },
+      "breeze_nov17_options_sha256": "174b12bfa32f62f37b73df03cf294cacfb844f0a74d1853c0e646c8da5715437",
+      "breeze_nov17_option_rows": 8700,
+      "exam2026_sqlite_sha256": "5ba416041cddec916392fc30a3ce2f592bfd8c5bc29a6c99844ae3e80b34cdc0",
+      "sklearn": "1.5.2",
+      "numpy": "1.26.4"
+    },
+    "fut7": {
+      "NIFTY": {
+        "und": "NIFTY",
+        "index_rows": [
+          716210,
+          "2026-11-17 09:16:00"
+        ],
+        "future_rows": [
+          1221694,
+          "2026-10-28 15:30:00"
+        ],
+        "sessions": 1890,
+        "with_front": 1879,
+        "content_sha256": "9432dec8e878c58031511c35ef9a6f674da6bb12a197d345228a3c48723b39ea"
+      },
+      "SENSEX": {
+        "und": "SENSEX",
+        "index_rows": [
+          203710,
+          "2026-11-12 09:16:00"
+        ],
+        "future_rows": [
+          301035,
+          "2026-10-28 15:30:00"
+        ],
+        "sessions": 553,
+        "with_front": 483,
+        "content_sha256": "00b2ab2636605aa90ad24a84174f1f025bef93a46faa40e302b36c1e60d24072"
+      }
+    },
+    "sealed_oi": {
+      "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e02\\_local\\data.sqlite": "ded2fbbb116ad5353f0d95e437dc31668aeb56e052fe5a9d443e7235bde4cb7b",
+      "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-17-expiry-en\\_local\\exam2026.sqlite": "5ba416041cddec916392fc30a3ce2f592bfd8c5bc29a6c99844ae3e80b34cdc0"
+    },
+    "pinned_tree_sha256": "be31474ce7d15e595136f96abe50273834bd17bbf45af63ebd18286b2b1e83a5",
+    "n11_signals_sha256": "63b2f02584159503bc7cc15e935fbb1d880ee74e23cef107655d83edab7bba3f",
+    "facts7_sha256": "d2ff379b00375622c261cd66b495185f81f1c2d717de000fe1ddd7826a3618b2"
+  },
+  "registrations": {
+    "CONTROL": "19ad09eae43c909ed1cdd6adf7c636371bc2f444242be8ed42f4f1537918df54",
+    "EN55": "9d67bfd5a7b284782b25ef6f0eaa94b99fb026147c36729ba6016f498803a54b",
+    "EN60": "de52200f415aa86abb295636fda5a25b6bf72ba254400e50e28de89a1721a46f",
+    "EN71": "42491f91a434099b13032a4d08399dfd2737ff021f4a8f83d0ab1ae040f4bba2",
+    "EN72": "7ecde45eb1d9f7dfa204d57d8cb882ce9af01188ab91a0975319c38a16f58b5d",
+    "EN73": "501c181da771298ca7767e778fa99f6bcf593437fc7e87321fb750505c48a196",
+    "EN74": "f2b4c3c6e547899170d6636fd03f9a47b134af83ff2267c84960c318812e3f59",
+    "EN75": "cbd9075f7f55e6ec10693cd3b3fdc0f67490a0b2c7aeaefe0d480dacce7920cb",
+    "EN76": "0f39e5639d8705bb408c9e765e26e5543acca7800636b802a078c8fbb34483af",
+    "EN77": "63a965c2bc2b5be53b63d58af2bc995863c7c6e0b24bbb66affc5980bbcf2453",
+    "EN78": "1fd72db14dfa6b4dd9287b77f6c226da17013a6c475ef0b06d401e238f7cf550",
+    "EN79": "79cb1df770c0a8918f409f7e062187d7e2c46d40f62ebb76bd59163c29ca2cd3",
+    "EN80": "0b777237ce6f365ca027ebcce4b817f53c54fc914846b2e5ebcc5a98bb8e0f7a",
+    "EN81": "3c418c136ae19ce444fbe50d7b3ea9cf6e616c399ad0c99fd7ce83443e9312dd",
+    "EN82": "e947d77bf827ed10d8baa81e2790951304b74bd4e76fa2d28efc6ace3d110fcd",
+    "EN83": "3a9597f6870f67901f7291a4fa700ff12b327299700fc09f51d4bdbe6e0b6d86",
+    "EN84": "9cd9f3c3d66fa5e7378235d339996da7007696abf2a8e82e19b9b1a2f0bdabb0",
+    "EN85": "08c6f7f7f054c0f404d4262dee1d08361d7585024c570eba6e2f58b23bb8a75d"
+  },
+  "head": "2689b46b6a80e28b3a469a1676a455b5b4a34e0e"
+}

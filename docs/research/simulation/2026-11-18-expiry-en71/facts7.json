@@ -1,0 +1,15 @@
+{
+ "nifty_future_spread": {
+  "day": "2026-11-17",
+  "packets": 5560,
+  "median": 4.4,
+  "p90": 9.4
+ },
+ "oi_timing": {
+  "day": "2026-11-17",
+  "candles": 8700,
+  "equals_oi_at_bar_end": 8530,
+  "seen_before_end_not_last": 170
+ },
+ "sensex_future_in_recorder": 2
+}

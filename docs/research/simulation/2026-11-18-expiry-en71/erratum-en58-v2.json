@@ -1,0 +1,1592 @@
+{
+ "synthetic": {
+  "stale_trade_v1_through_fills": true,
+  "stale_trade_v2": {
+   "LOWER": false,
+   "QUEUE": false,
+   "UPPER": false
+  },
+  "fresh_tradethrough_v2": {
+   "LOWER": true,
+   "QUEUE": true,
+   "UPPER": true
+  },
+  "fresh_trade_at_price_small_v2": {
+   "LOWER": false,
+   "QUEUE": false,
+   "UPPER": true
+  },
+  "ask_touch_v2": {
+   "LOWER": false,
+   "QUEUE": false,
+   "UPPER": true
+  }
+ },
+ "intents": [
+  {
+   "minute": 840,
+   "d": 1,
+   "lots": 1
+  }
+ ],
+ "v1_reproduced": {
+  "EN55|P0|through": true,
+  "EN55|P0|volume": true,
+  "EN55|P2|through": true,
+  "EN55|P2|volume": true,
+  "EN55|P3|through": true,
+  "EN55|P3|volume": true,
+  "GRID|P0|through": true,
+  "GRID|P0|volume": true,
+  "GRID|P2|through": true,
+  "GRID|P2|volume": true,
+  "GRID|P3|through": true,
+  "GRID|P3|volume": true
+ },
+ "policies": {
+  "EN55|P0|ADVERSARIAL": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "PASSIVE": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0031,
+    1
+   ],
+   "fill60": [
+    -0.031,
+    1
+   ],
+   "fill180": [
+    0.0774,
+    1
+   ],
+   "net_8min_sum": 391.47
+  },
+  "EN55|P0|LOWER": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "PASSIVE": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0031,
+    1
+   ],
+   "fill60": [
+    -0.031,
+    1
+   ],
+   "fill180": [
+    0.0774,
+    1
+   ],
+   "net_8min_sum": 391.47
+  },
+  "EN55|P0|QUEUE": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "PASSIVE": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0031,
+    1
+   ],
+   "fill60": [
+    -0.031,
+    1
+   ],
+   "fill180": [
+    0.0588,
+    1
+   ],
+   "net_8min_sum": 391.47
+  },
+  "EN55|P0|UPPER": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "PASSIVE": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0031,
+    1
+   ],
+   "fill60": [
+    -0.031,
+    1
+   ],
+   "fill180": [
+    0.0588,
+    1
+   ],
+   "net_8min_sum": 391.47
+  },
+  "EN55|P0|v1_through": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "PASSIVE": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0031,
+    1
+   ],
+   "fill60": [
+    -0.031,
+    1
+   ],
+   "fill180": [
+    0.0588,
+    1
+   ],
+   "net_8min_sum": 391.47
+  },
+  "EN55|P0|v1_volume": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "PASSIVE": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0031,
+    1
+   ],
+   "fill60": [
+    -0.031,
+    1
+   ],
+   "fill180": [
+    0.0588,
+    1
+   ],
+   "net_8min_sum": 391.47
+  },
+  "EN55|P1|MARKET": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "MARKET": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.037,
+    1
+   ],
+   "fill60": [
+    -0.0595,
+    1
+   ],
+   "fill180": [
+    -0.0357,
+    1
+   ],
+   "net_8min_sum": 349.2
+  },
+  "EN55|P2|ADVERSARIAL": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P2|LOWER": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P2|QUEUE": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P2|UPPER": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P2|v1_through": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P2|v1_volume": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P3|ADVERSARIAL": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P3|LOWER": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P3|QUEUE": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P3|UPPER": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P3|v1_through": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "EN55|P3|v1_volume": {
+   "n": 1,
+   "filled": 1,
+   "how": {
+    "FALLBACK": 1
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0401,
+    1
+   ],
+   "fill60": [
+    -0.0712,
+    1
+   ],
+   "fill180": [
+    0.0089,
+    1
+   ],
+   "net_8min_sum": 345.95
+  },
+  "GRID|P0|ADVERSARIAL": {
+   "n": 50,
+   "filled": 44,
+   "how": {
+    "PASSIVE": 44,
+    "MISSED": 6
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0024,
+    44
+   ],
+   "fill60": [
+    -0.0203,
+    44
+   ],
+   "fill180": [
+    -0.036,
+    43
+   ],
+   "net_8min_sum": -1657.77
+  },
+  "GRID|P0|LOWER": {
+   "n": 50,
+   "filled": 44,
+   "how": {
+    "PASSIVE": 44,
+    "MISSED": 6
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0024,
+    44
+   ],
+   "fill60": [
+    -0.0203,
+    44
+   ],
+   "fill180": [
+    -0.036,
+    43
+   ],
+   "net_8min_sum": -1657.77
+  },
+  "GRID|P0|QUEUE": {
+   "n": 50,
+   "filled": 44,
+   "how": {
+    "PASSIVE": 44,
+    "MISSED": 6
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0024,
+    44
+   ],
+   "fill60": [
+    -0.0187,
+    44
+   ],
+   "fill180": [
+    -0.0362,
+    43
+   ],
+   "net_8min_sum": -1657.77
+  },
+  "GRID|P0|UPPER": {
+   "n": 50,
+   "filled": 44,
+   "how": {
+    "PASSIVE": 44,
+    "MISSED": 6
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0024,
+    44
+   ],
+   "fill60": [
+    -0.0199,
+    43
+   ],
+   "fill180": [
+    -0.0368,
+    42
+   ],
+   "net_8min_sum": -1657.77
+  },
+  "GRID|P0|v1_through": {
+   "n": 50,
+   "filled": 44,
+   "how": {
+    "PASSIVE": 44,
+    "MISSED": 6
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0024,
+    44
+   ],
+   "fill60": [
+    -0.0216,
+    42
+   ],
+   "fill180": [
+    -0.0383,
+    41
+   ],
+   "net_8min_sum": -1657.77
+  },
+  "GRID|P0|v1_volume": {
+   "n": 50,
+   "filled": 42,
+   "how": {
+    "PASSIVE": 42,
+    "MISSED": 8
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0024,
+    42
+   ],
+   "fill60": [
+    -0.0246,
+    40
+   ],
+   "fill180": [
+    -0.0434,
+    40
+   ],
+   "net_8min_sum": -2156.15
+  },
+  "GRID|P1|MARKET": {
+   "n": 50,
+   "filled": 48,
+   "how": {
+    "MARKET": 50
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    -0.0009,
+    48
+   ],
+   "fill60": [
+    0.001,
+    47
+   ],
+   "fill180": [
+    -0.0061,
+    46
+   ],
+   "net_8min_sum": -80.78
+  },
+  "GRID|P2|ADVERSARIAL": {
+   "n": 50,
+   "filled": 39,
+   "how": {
+    "PASSIVE_RACE": 2,
+    "PASSIVE": 30,
+    "MISSED": 11,
+    "FALLBACK": 7
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0031,
+    39
+   ],
+   "fill60": [
+    -0.0223,
+    38
+   ],
+   "fill180": [
+    -0.0639,
+    37
+   ],
+   "net_8min_sum": -2412.68
+  },
+  "GRID|P2|LOWER": {
+   "n": 50,
+   "filled": 38,
+   "how": {
+    "FALLBACK": 8,
+    "PASSIVE": 30,
+    "MISSED": 12
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0031,
+    38
+   ],
+   "fill60": [
+    -0.0211,
+    37
+   ],
+   "fill180": [
+    -0.0574,
+    36
+   ],
+   "net_8min_sum": -2036.34
+  },
+  "GRID|P2|QUEUE": {
+   "n": 50,
+   "filled": 40,
+   "how": {
+    "PASSIVE_RACE": 2,
+    "PASSIVE": 31,
+    "MISSED": 10,
+    "FALLBACK": 7
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.003,
+    40
+   ],
+   "fill60": [
+    -0.0259,
+    39
+   ],
+   "fill180": [
+    -0.0576,
+    38
+   ],
+   "net_8min_sum": -2413.53
+  },
+  "GRID|P2|UPPER": {
+   "n": 50,
+   "filled": 40,
+   "how": {
+    "PASSIVE_RACE": 2,
+    "PASSIVE": 31,
+    "MISSED": 10,
+    "FALLBACK": 7
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.003,
+    40
+   ],
+   "fill60": [
+    -0.0275,
+    38
+   ],
+   "fill180": [
+    -0.0589,
+    37
+   ],
+   "net_8min_sum": -2413.53
+  },
+  "GRID|P2|v1_through": {
+   "n": 50,
+   "filled": 41,
+   "how": {
+    "PASSIVE_RACE": 2,
+    "PASSIVE": 32,
+    "MISSED": 9,
+    "FALLBACK": 7
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0028,
+    41
+   ],
+   "fill60": [
+    -0.0287,
+    39
+   ],
+   "fill180": [
+    -0.0602,
+    38
+   ],
+   "net_8min_sum": -2579.6
+  },
+  "GRID|P2|v1_volume": {
+   "n": 50,
+   "filled": 38,
+   "how": {
+    "PASSIVE_RACE": 2,
+    "PASSIVE": 28,
+    "MISSED": 12,
+    "FALLBACK": 8
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0045,
+    38
+   ],
+   "fill60": [
+    -0.0328,
+    35
+   ],
+   "fill180": [
+    -0.0708,
+    35
+   ],
+   "net_8min_sum": -3088.36
+  },
+  "GRID|P3|ADVERSARIAL": {
+   "n": 50,
+   "filled": 40,
+   "how": {
+    "PASSIVE_RACE": 6,
+    "PASSIVE": 22,
+    "MISSED": 9,
+    "MARKET": 8,
+    "FALLBACK": 5
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0032,
+    40
+   ],
+   "fill60": [
+    -0.0153,
+    40
+   ],
+   "fill180": [
+    -0.0564,
+    38
+   ],
+   "net_8min_sum": -2630.06
+  },
+  "GRID|P3|LOWER": {
+   "n": 50,
+   "filled": 40,
+   "how": {
+    "FALLBACK": 7,
+    "PASSIVE": 21,
+    "MISSED": 9,
+    "MARKET": 8,
+    "PASSIVE_RACE": 5
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0029,
+    40
+   ],
+   "fill60": [
+    -0.0153,
+    40
+   ],
+   "fill180": [
+    -0.0559,
+    38
+   ],
+   "net_8min_sum": -2620.3
+  },
+  "GRID|P3|QUEUE": {
+   "n": 50,
+   "filled": 41,
+   "how": {
+    "PASSIVE_RACE": 6,
+    "PASSIVE": 23,
+    "MISSED": 8,
+    "MARKET": 8,
+    "FALLBACK": 5
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0031,
+    41
+   ],
+   "fill60": [
+    -0.0188,
+    41
+   ],
+   "fill180": [
+    -0.0505,
+    39
+   ],
+   "net_8min_sum": -2630.91
+  },
+  "GRID|P3|UPPER": {
+   "n": 50,
+   "filled": 41,
+   "how": {
+    "PASSIVE_RACE": 6,
+    "PASSIVE": 23,
+    "MISSED": 8,
+    "MARKET": 8,
+    "FALLBACK": 5
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0031,
+    41
+   ],
+   "fill60": [
+    -0.0202,
+    40
+   ],
+   "fill180": [
+    -0.0515,
+    38
+   ],
+   "net_8min_sum": -2630.91
+  },
+  "GRID|P3|v1_through": {
+   "n": 50,
+   "filled": 42,
+   "how": {
+    "PASSIVE_RACE": 6,
+    "PASSIVE": 24,
+    "MISSED": 7,
+    "MARKET": 8,
+    "FALLBACK": 5
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.003,
+    42
+   ],
+   "fill60": [
+    -0.021,
+    41
+   ],
+   "fill180": [
+    -0.053,
+    39
+   ],
+   "net_8min_sum": -2796.98
+  },
+  "GRID|P3|v1_volume": {
+   "n": 50,
+   "filled": 40,
+   "how": {
+    "PASSIVE_RACE": 6,
+    "PASSIVE": 21,
+    "MISSED": 9,
+    "MARKET": 8,
+    "FALLBACK": 6
+   },
+   "partial": 0,
+   "cost_vs_mid": [
+    0.0044,
+    40
+   ],
+   "fill60": [
+    -0.028,
+    39
+   ],
+   "fill180": [
+    -0.0718,
+    37
+   ],
+   "net_8min_sum": -3234.26
+  }
+ },
+ "changed_p0_tickets": [
+  {
+   "tag": "EN55",
+   "s": 50400.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    50419.59408603,
+    391.47
+   ],
+   "v2": [
+    "PASSIVE",
+    50421.097265696,
+    391.47
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 46800.0,
+   "K": 25550.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    46804.341157186,
+    -548.59
+   ],
+   "v2": [
+    "PASSIVE",
+    46806.093100135,
+    -548.59
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48000.0,
+   "K": 25450.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    48007.093424928,
+    -104.57
+   ],
+   "v2": [
+    "PASSIVE",
+    48007.592779145,
+    -104.57
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48000.0,
+   "K": 25450.0,
+   "kind": "CE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    48007.093424928,
+    -104.57
+   ],
+   "v2": [
+    "PASSIVE",
+    48007.592779145,
+    -104.57
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48000.0,
+   "K": 25450.0,
+   "kind": "CE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    48007.093424928,
+    -104.57
+   ],
+   "v2": [
+    "PASSIVE",
+    48007.592779145,
+    -104.57
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48000.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    48001.345246382,
+    -188.87
+   ],
+   "v2": [
+    "PASSIVE",
+    48002.091827754,
+    -188.87
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48000.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    48001.345246382,
+    -188.87
+   ],
+   "v2": [
+    "PASSIVE",
+    48002.091827754,
+    -188.87
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48000.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    48001.345246382,
+    -188.87
+   ],
+   "v2": [
+    "PASSIVE",
+    48002.091827754,
+    -188.87
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48300.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    48304.596484413,
+    -166.07
+   ],
+   "v2": [
+    "PASSIVE",
+    48305.593510045,
+    -166.07
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48300.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    48304.596484413,
+    -166.07
+   ],
+   "v2": [
+    "PASSIVE",
+    48305.593510045,
+    -166.07
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48300.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    48304.596484413,
+    -166.07
+   ],
+   "v2": [
+    "PASSIVE",
+    48305.593510045,
+    -166.07
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48600.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    48605.597941758,
+    -223.88
+   ],
+   "v2": [
+    "PASSIVE",
+    48609.346272129,
+    -223.88
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48600.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    48605.597941758,
+    -223.88
+   ],
+   "v2": [
+    "PASSIVE",
+    48606.095297349,
+    -223.88
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48600.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    48605.597941758,
+    -223.88
+   ],
+   "v2": [
+    "PASSIVE",
+    48606.095297349,
+    -223.88
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48900.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    48903.845641969,
+    -373.09
+   ],
+   "v2": [
+    "PASSIVE",
+    48906.347642187,
+    -373.09
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48900.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    48903.845641969,
+    -373.09
+   ],
+   "v2": [
+    "PASSIVE",
+    48904.352812388,
+    -373.09
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 48900.0,
+   "K": 25300.0,
+   "kind": "PE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    48903.845641969,
+    -373.09
+   ],
+   "v2": [
+    "PASSIVE",
+    48904.352812388,
+    -373.09
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 49500.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    49507.352176714,
+    369.68
+   ],
+   "v2": [
+    "PASSIVE",
+    49511.843274688,
+    369.68
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 49500.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    49507.352176714,
+    369.68
+   ],
+   "v2": [
+    "PASSIVE",
+    49511.843274688,
+    369.68
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 49500.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    49507.352176714,
+    369.68
+   ],
+   "v2": [
+    "PASSIVE",
+    49511.843274688,
+    369.68
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 50400.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    50419.59408603,
+    391.47
+   ],
+   "v2": [
+    "PASSIVE",
+    50421.097265696,
+    391.47
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 50400.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    50402.095108256,
+    -321.4
+   ],
+   "v2": [
+    "PASSIVE",
+    50402.344703671,
+    -321.4
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 50400.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    50402.095108256,
+    -321.4
+   ],
+   "v2": [
+    "PASSIVE",
+    50402.344703671,
+    -321.4
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51300.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    51301.348105079,
+    115.91
+   ],
+   "v2": [
+    "PASSIVE",
+    51302.596203256,
+    115.91
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51300.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    51301.348105079,
+    115.91
+   ],
+   "v2": [
+    "PASSIVE",
+    51302.596203256,
+    115.91
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51300.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    51301.348105079,
+    115.91
+   ],
+   "v2": [
+    "PASSIVE",
+    51302.596203256,
+    115.91
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51300.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    51310.594986084,
+    -149.3
+   ],
+   "v2": [
+    "PASSIVE",
+    51307.348146683,
+    -149.3
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51300.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    51310.594986084,
+    -149.3
+   ],
+   "v2": [
+    "PASSIVE",
+    51307.348146683,
+    -149.3
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51600.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    51601.59520684,
+    -0.85
+   ],
+   "v2": [
+    "PASSIVE",
+    51607.595797664,
+    -0.85
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51600.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    51601.59520684,
+    -0.85
+   ],
+   "v2": [
+    "PASSIVE",
+    51602.601010179,
+    -0.85
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51600.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    51601.59520684,
+    -0.85
+   ],
+   "v2": [
+    "PASSIVE",
+    51602.601010179,
+    -0.85
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 51900.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    51901.597544872,
+    -142.83
+   ],
+   "v2": [
+    "PASSIVE",
+    51903.351475164,
+    -142.83
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 52200.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    52201.847435295,
+    -254.16
+   ],
+   "v2": [
+    "PASSIVE",
+    52202.596049109,
+    -254.16
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 52200.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    52201.847435295,
+    -254.16
+   ],
+   "v2": [
+    "PASSIVE",
+    52202.596049109,
+    -254.16
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 52200.0,
+   "K": 25500.0,
+   "kind": "CE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    52201.847435295,
+    -254.16
+   ],
+   "v2": [
+    "PASSIVE",
+    52202.596049109,
+    -254.16
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 53400.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    53424.59902803,
+    -150.46
+   ],
+   "v2": [
+    "PASSIVE",
+    53425.348511177,
+    -150.46
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 53400.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    53424.59902803,
+    -150.46
+   ],
+   "v2": [
+    "PASSIVE",
+    53423.599346979,
+    -150.46
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 53400.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    53424.59902803,
+    -150.46
+   ],
+   "v2": [
+    "PASSIVE",
+    53423.599346979,
+    -150.46
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 53700.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "LOWER",
+   "v1": [
+    "PASSIVE",
+    53709.853653917,
+    521.5
+   ],
+   "v2": [
+    "PASSIVE",
+    53710.597061887,
+    521.5
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 53700.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "QUEUE",
+   "v1": [
+    "PASSIVE",
+    53709.853653917,
+    521.5
+   ],
+   "v2": [
+    "PASSIVE",
+    53710.597061887,
+    521.5
+   ]
+  },
+  {
+   "tag": "GRID",
+   "s": 53700.0,
+   "K": 25400.0,
+   "kind": "PE",
+   "est": "UPPER",
+   "v1": [
+    "PASSIVE",
+    53709.853653917,
+    521.5
+   ],
+   "v2": [
+    "PASSIVE",
+    53710.597061887,
+    521.5
+   ]
+  }
+ ]
+}

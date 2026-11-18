@@ -1,0 +1,35 @@
+{
+ "slot": "EN85",
+ "arms": {
+  "_definition": {
+   "kind": "forward machine",
+   "code": [
+    "fwd7.py"
+   ],
+   "ledger": "forward7/ledger.jsonl",
+   "review_at": 40,
+   "continue_to": 100
+  }
+ },
+ "cohort": {
+  "start": {
+   "SENSEX": "2026-11-19",
+   "NIFTY": "2026-11-23"
+  },
+  "scheduled_review": "first 40 eligible expiries per index",
+  "continue_to": "100 eligible expiries per index if support is short",
+  "support": "20 executed parents over >= 10 traded expiries per index",
+  "missing": "a session lacking required evidence is MISSING, never a zero no-trade day; coverage sensitivity reported",
+  "classification": [
+   "INCOME CANDIDATE",
+   "TAIL CANDIDATE",
+   "PROTECTION CANDIDATE",
+   "FAIL",
+   "INCONCLUSIVE",
+   "DATA UNAVAILABLE"
+  ],
+  "data": "Breeze index + front future + expiring chain 12:00-15:29 per expiry via the download skill (request 7)"
+ },
+ "plan": "PLAN7.md",
+ "registered_before_any_score": true
+}

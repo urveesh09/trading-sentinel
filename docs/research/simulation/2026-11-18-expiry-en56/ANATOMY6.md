@@ -1,5 +1,12 @@
 # EN56–EN70: where each slot won and lost
 
+> **Erratum (Nov 18, published before round 7):** [`ERRATA-20261118b.md`](ERRATA-20261118b.md).
+> - **F1.** EN58's price-through estimator accepted pre-arrival last trades. It is repaired as version 2 in round 7's `pk7.py`, reported as lower, queue and upper bounds. Nov 17's fill counts and conclusion are unchanged.
+> - **F2.** The 49.5% "direction right" figure was 50% by construction.
+> - **F3.** Live paper cannot confirm queue fills.
+> - **F4.** EN60, EN61, EN68, EN69 and EN70 now carry narrower statements.
+> - Original results are unchanged.
+
 Scored once on Nov 18, 2026 by `en_score6.py` under `PLAN6.md`, which was frozen at `7c58df23` before any score.
 - **Outputs:** `results6.json`, `anatomy6.json`, `results6-started.json`.
 - **Tables:** `ANATOMY6-tables.md`, rendered by `render6.py`.

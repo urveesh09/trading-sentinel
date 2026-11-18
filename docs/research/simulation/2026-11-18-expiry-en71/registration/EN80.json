@@ -1,0 +1,34 @@
+{
+ "slot": "EN80",
+ "arms": {
+  "_definition": {
+   "kind": "integration engine",
+   "code": [
+    "alloc7.py"
+   ],
+   "eligible_now": [],
+   "combined_policy": "EN72-EN78 variants passing forward criteria only; earliest signal, slot number tie-break; one open position; Rs 2,500 room"
+  }
+ },
+ "cohort": {
+  "start": {
+   "SENSEX": "2026-11-19",
+   "NIFTY": "2026-11-23"
+  },
+  "scheduled_review": "first 40 eligible expiries per index",
+  "continue_to": "100 eligible expiries per index if support is short",
+  "support": "20 executed parents over >= 10 traded expiries per index",
+  "missing": "a session lacking required evidence is MISSING, never a zero no-trade day; coverage sensitivity reported",
+  "classification": [
+   "INCOME CANDIDATE",
+   "TAIL CANDIDATE",
+   "PROTECTION CANDIDATE",
+   "FAIL",
+   "INCONCLUSIVE",
+   "DATA UNAVAILABLE"
+  ],
+  "data": "Breeze index + front future + expiring chain 12:00-15:29 per expiry via the download skill (request 7)"
+ },
+ "plan": "PLAN7.md",
+ "registered_before_any_score": true
+}

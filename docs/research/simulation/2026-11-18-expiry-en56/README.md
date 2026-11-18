@@ -1,5 +1,12 @@
 # EN56–EN70 (Nov 18, 2026): the auditor's ten slots plus five of mine
 
+> **Erratum (Nov 18, published before round 7):** [`ERRATA-20261118b.md`](ERRATA-20261118b.md).
+> - **F1.** EN58's price-through estimator accepted pre-arrival last trades. It is repaired as version 2 in round 7's `pk7.py`, reported as lower, queue and upper bounds. Nov 17's fill counts and conclusion are unchanged.
+> - **F2.** The 49.5% "direction right" figure was 50% by construction.
+> - **F3.** Live paper cannot confirm queue fills.
+> - **F4.** EN60, EN61, EN68, EN69 and EN70 now carry narrower statements.
+> - Original results are unchanged.
+
 | File | What it is |
 |---|---|
 | `PLAN6.md` | The plan, frozen before any score |
