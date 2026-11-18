@@ -8,6 +8,7 @@
 | `render5.py` | Renders `ANATOMY5-tables.md` |
 | `ANATOMY5.md` | The write-up: where each slot won and lost |
 | `FORWARD5.md` | EN55's registered forward test |
+| `PLAN5B.md`, `tr01.py`, `en5b.py` | Round 5b: EN41/EN42 on exported TR01 packets plus the Q28 resting-bid fill check, frozen `8737707a`, scored once into `results5b.json` |
 
 **Verification** (`python en_lab5.py`, counts only):
 - results4 reproduced through the dispatchers for E032, EN40, EN35_diag, EN32, EN28 and EN36, on 5 books × 3 fill levels;
@@ -25,3 +26,8 @@
 - Holm-adjusted p = 1.0 for every primary.
 
 **State:** Dev research only. No engine, configuration, `.env` or Production change.
+
+**Round 5b:**
+- EN41 fired twice on the one eligible session and lost both; EN42 never fired. Both are INCONCLUSIVE.
+- Order flow on 1-second snapshots shows no continuation.
+- Q28: resting bids fill 72% within 10 s and 89% within 60 s; the minute-candle proxy agrees on 97.5% of orders; fills are adversely selected (−2.1% after a fill against +17.6% after a miss).

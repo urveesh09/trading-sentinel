@@ -1,3 +1,30 @@
+## November 18 (evening) - Round 5b: TR01 depth exported read-only; EN41/EN42 tested on real order-book packets; resting-bid fills measured (research only, Dev; nothing deployed; Production stays 55b5e942)
+
+**Owner (Nov 18):** "If only data extraction is what you're doing, then sure go ahead. You can export the depth data from production and test it out."
+
+**Export:** TR01 days 2026-11-16 and 2026-11-17 copied with `docker cp` from the Production `python-engine` container (read-only on the source) to `C:/Users/Urveesh/sentinel-operations/tr01-export-20261118`.
+- All 802 chunks re-hashed against the recorder manifests; all match (10.2M and 10.5M packets, no disconnections).
+- Nothing in Production changed.
+- Nov 18 is still recording and is not an expiry, so it was not exported. BANKNIFTY is absent from the recording.
+
+**Plan and score:** `docs/research/simulation/2026-11-18-expiry-en41/PLAN5B.md`, frozen `8737707a`; `en5b.py` scored once into `results5b.json`.
+
+**Coverage:** the 80% one-second rule excludes Nov 16 (75.9%) and admits Nov 17 (81.5%, the only expiry session).
+
+**Results:**
+- **EN41:** 2 events in the day, both losing (−118 at 1 s delay, −147 at 10 s). INCONCLUSIVE by construction (one session).
+- **EN42:** 0 events.
+- **Order flow:** OFI on about one futures snapshot a second shows no continuation (+1.0 ticks at 30 s, t 0.77; −6.3 at 180 s).
+- **Q28 resting bids:** 72% filled within 10 s and 89% within 60 s behind a median 349-lot queue. The minute-candle proxy agrees with the packets on 97.5% of orders. Fills are adversely selected: −2.1% a minute after a fill against +17.6% after a miss.
+
+**Verification:** tr01.verify(): 802 chunks match the recorder manifests; en5b.py selftest OK; score run once, exit 0 (start receipt results5b-started.json). No python-engine source changed, so the engine suite was not rerun and the atlas not regenerated.
+
+**State:**
+- Dev research files and docs only, pushed to `codex/production-correction-hedge-p0`.
+- The export folder lives outside the repo.
+- No engine, configuration, `.env` or Production change.
+- EN55 forward-test mode (replay or live paper) is deferred by the owner.
+
 ## November 18 (late) - EN41–EN55 scored once: none passes; the learned E03.2 (EN55) registered for a forward test (research only, Dev; nothing deployed; Production stays 55b5e942)
 
 **Owner (Nov 18):** run the auditor's EN41–EN50 handoff (`docs/EXPIRY_RESEARCH_EN41_EN50.md`) plus five slots of mine, aiming for the most profit with the most loss control.

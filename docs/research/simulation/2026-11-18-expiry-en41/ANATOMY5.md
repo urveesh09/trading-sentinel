@@ -85,3 +85,28 @@ The opportunity is real, but the time decay comes first two times out of three.
 2. **Fading, retesting and range ideas lose on both indices,** even when their target is hit: EN44, EN45 and EN13 before them.
 3. **The money on expiry afternoons is in the few big directional days.** E03.2's puts, EN52's kept legs and the heroes all come from them. Everything that avoids losses also avoids those days, except the mechanisms in EN55: probe with half, enter patiently, let the runner earn its hold. That combination kept the profit, avoided the halt, and is now the one to prove forward.
 4. **The brakes matter more than any filter.** E03.2's continuous book died in January 2024. EN55's survived by Rs 387.
+
+## Round 5b (Nov 18): EN41 / EN42 on real order-book packets, and a resting-bid fill check
+
+The owner authorised a read-only extraction. TR01's two complete recorded days were copied out of the Production container with `docker cp`; nothing in Production changed.
+- **Export:** `sentinel-operations/tr01-export-20261118`. All 802 chunks were re-hashed against the recorder's manifests and all match.
+- **Plan:** `PLAN5B.md`, frozen at `8737707a`.
+- **Scorer:** `en5b.py`, run once, writing `results5b.json`.
+
+**Coverage:** the auditor's rule needs ≥ 80% of seconds with a fresh futures quote.
+- Nov 16 had 75.9% and is excluded.
+- Nov 17, the only expiry session recorded so far, had 81.5% and 1,556 valid 10-second windows.
+- Kite's "full" feed sends about one futures snapshot a second, so order flow is measured on delivered snapshots, not every exchange event.
+
+| Slot | Result | Where it won / lost |
+|---|---|---|
+| EN41 book pressure | **INCONCLUSIVE** (one session, by construction) | Of 1,391 standardised windows, 91 reached \|z\| ≥ 2, only 9 came as consecutive pairs, and 2 also had the price move. Both were puts, and both lost: −118 at a 1-second delay, −108 at 3 s, −147 at 10 s. In the 30–180 s after each signal the future moved 19–45 ticks against the trade. The random-side median was −95. |
+| EN42 pressure fails | **INCONCLUSIVE** (never fired) | No episode had both a flat price under strong pressure and three replenishments of the defending quote. |
+| Order-flow information (all 1,186 valid windows) | No continuation | +1.0 ticks after 30 s (t = 0.77), +0.1 after 60 s, −6.3 after 180 s. |
+| **Q28: do resting bids fill?** | **Measured** | Over 240 one-lot bids at the best bid (13:00–15:00), behind a median queue of 349 lots: **72% filled within 10 s and 89% within 60 s** (conservative rule). The minute-candle assumption EN28 used (88%) agreed with the packet evidence on 97.5% of orders. **But fills are adversely selected:** a minute later the option's mid was −2.1% after a fill and +17.6% after a miss. The fills you get are the falling ones; the misses are the runaways. |
+
+**What it means:**
+- At the feed we have, pressure on the order book adds nothing that the price doesn't already show.
+- EN28's patient entry fills about as often as round 4 assumed. Its saving of about half a spread comes with a cost: winners are the ones that run away unfilled.
+
+The EN55 learned E03.2 has a capped fallback buy for exactly that case, which is part of what its forward test measures.

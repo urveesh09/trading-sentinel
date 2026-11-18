@@ -232,6 +232,16 @@ Every expiry afternoon we hold has now been looked at, so this round can only sc
 - Every filter that avoids losses also avoids those days, except the learned E03.2's way of cutting losers.
 - That is the one to prove forward.
 
+## Order-book test on the recorder's data (Nov 18, after your go-ahead)
+
+I copied the tick recorder's two finished days out of Production, read-only, and checked every file against its own hashes. Only Nov 17, the one expiry recorded so far, met the auditor's freshness rule.
+- **Order-book pressure (EN41)** fired twice all day, and both trades lost. EN42 never fired.
+- **On this feed (about one futures snapshot a second),** the order book shows nothing that the price doesn't already.
+- **Do patient bids really fill? Yes, mostly:** 72% within 10 seconds and 89% within a minute. That is close to what round 4 assumed.
+- **But they fill on the falling options:** a minute later, filled ones were 2.1% lower, while the ones that didn't fill had run up 17.6%.
+
+Details are in [ANATOMY5.md](research/simulation/2026-11-18-expiry-en41/ANATOMY5.md), round 5b.
+
 ## Data still open
 
 The full list is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md).

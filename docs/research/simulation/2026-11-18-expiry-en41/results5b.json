@@ -1,0 +1,389 @@
+{
+ "day": "2026-11-17",
+ "eligible_sessions": [
+  "2026-11-17"
+ ],
+ "excluded_sessions": {
+  "2026-11-16": "front-future occupied one-second bins 75.9% < 80%"
+ },
+ "valid_windows": 1556,
+ "events": {
+  "EN41": 2,
+  "EN42": 0,
+  "progress": 475,
+  "fade": 0
+ },
+ "EN41": {
+  "delta_1s": {
+   "tickets": 2,
+   "missed": 0,
+   "net": -118.07,
+   "winners": "0",
+   "trades": [
+    {
+     "t": 35230,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25200.0,
+     "lots": 1,
+     "entry": 11.55,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 10.95,
+     "hold_s": 30.0,
+     "net": -87.91
+    },
+    {
+     "t": 36010,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25250.0,
+     "lots": 1,
+     "entry": 15.75,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 16.05,
+     "hold_s": 120.0,
+     "net": -30.16
+    }
+   ]
+  },
+  "delta_3s": {
+   "tickets": 2,
+   "missed": 0,
+   "net": -108.33,
+   "winners": "0",
+   "trades": [
+    {
+     "t": 35230,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25200.0,
+     "lots": 1,
+     "entry": 11.45,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 11.05,
+     "hold_s": 30.0,
+     "net": -74.92
+    },
+    {
+     "t": 36010,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25250.0,
+     "lots": 1,
+     "entry": 15.75,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 16.0,
+     "hold_s": 120.0,
+     "net": -33.41
+    }
+   ]
+  },
+  "delta_10s": {
+   "tickets": 2,
+   "missed": 0,
+   "net": -147.19,
+   "winners": "0",
+   "trades": [
+    {
+     "t": 35230,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25200.0,
+     "lots": 1,
+     "entry": 11.05,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 10.6,
+     "hold_s": 60.3,
+     "net": -78.09
+    },
+    {
+     "t": 36010,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25250.0,
+     "lots": 1,
+     "entry": 15.85,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 15.55,
+     "hold_s": 120.0,
+     "net": -69.1
+    }
+   ]
+  }
+ },
+ "EN42": {
+  "delta_1s": {
+   "tickets": 0,
+   "missed": 0,
+   "net": 0,
+   "winners": 0,
+   "trades": []
+  },
+  "delta_3s": {
+   "tickets": 0,
+   "missed": 0,
+   "net": 0,
+   "winners": 0,
+   "trades": []
+  },
+  "delta_10s": {
+   "tickets": 0,
+   "missed": 0,
+   "net": 0,
+   "winners": 0,
+   "trades": []
+  }
+ },
+ "EN41_progress_only_diag": {
+  "delta_1s": {
+   "tickets": 2,
+   "missed": 0,
+   "net": -247.18,
+   "winners": "0",
+   "trades": [
+    {
+     "t": 35130,
+     "d": 1,
+     "status": "FILLED",
+     "strike": 25500.0,
+     "lots": 1,
+     "entry": 11.55,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 9.85,
+     "hold_s": 90.0,
+     "net": -159.27
+    },
+    {
+     "t": 35230,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25200.0,
+     "lots": 1,
+     "entry": 11.55,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 10.95,
+     "hold_s": 30.0,
+     "net": -87.91
+    }
+   ]
+  },
+  "delta_3s": {
+   "tickets": 2,
+   "missed": 0,
+   "net": -256.91,
+   "winners": "0",
+   "trades": [
+    {
+     "t": 35130,
+     "d": 1,
+     "status": "FILLED",
+     "strike": 25500.0,
+     "lots": 1,
+     "entry": 11.65,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 9.6,
+     "hold_s": 84.3,
+     "net": -181.99
+    },
+    {
+     "t": 35230,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25200.0,
+     "lots": 1,
+     "entry": 11.45,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 11.05,
+     "hold_s": 30.0,
+     "net": -74.92
+    }
+   ]
+  },
+  "delta_10s": {
+   "tickets": 2,
+   "missed": 0,
+   "net": -201.73,
+   "winners": "0",
+   "trades": [
+    {
+     "t": 35130,
+     "d": 1,
+     "status": "FILLED",
+     "strike": 25500.0,
+     "lots": 1,
+     "entry": 11.65,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 9.5,
+     "hold_s": 89.7,
+     "net": -188.48
+    },
+    {
+     "t": 35270,
+     "d": 1,
+     "status": "FILLED",
+     "strike": 25500.0,
+     "lots": 1,
+     "entry": 11.2,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 11.75,
+     "hold_s": 120.0,
+     "net": -13.25
+    }
+   ]
+  }
+ },
+ "EN42_fade_diag": {
+  "delta_1s": {
+   "tickets": 0,
+   "missed": 0,
+   "net": 0,
+   "winners": 0,
+   "trades": []
+  },
+  "delta_3s": {
+   "tickets": 0,
+   "missed": 0,
+   "net": 0,
+   "winners": 0,
+   "trades": []
+  },
+  "delta_10s": {
+   "tickets": 0,
+   "missed": 0,
+   "net": 0,
+   "winners": 0,
+   "trades": []
+  }
+ },
+ "EN41_delayed_diag": {
+  "delta_1s": {
+   "tickets": 2,
+   "missed": 0,
+   "net": -105.02,
+   "winners": "0",
+   "trades": [
+    {
+     "t": 35240,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25200.0,
+     "lots": 1,
+     "entry": 11.05,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 10.7,
+     "hold_s": 50.0,
+     "net": -71.61
+    },
+    {
+     "t": 36020,
+     "d": -1,
+     "status": "FILLED",
+     "strike": 25250.0,
+     "lots": 1,
+     "entry": 15.8,
+     "exit_reason": "OFI_REVERSED",
+     "exit": 16.05,
+     "hold_s": 110.0,
+     "net": -33.41
+    }
+   ]
+  }
+ },
+ "EN41_random_side_diag": {
+  "median_net": -94.76,
+  "seeds": 40
+ },
+ "EN42_random_side_diag": {
+  "median_net": 0.0,
+  "seeds": 40
+ },
+ "mechanism": {
+  "EN41": {
+   "30s": {
+    "n": 2,
+    "mean_ticks": -38.75,
+    "t": null
+   },
+   "60s": {
+    "n": 2,
+    "mean_ticks": -19.25,
+    "t": null
+   },
+   "180s": {
+    "n": 2,
+    "mean_ticks": -45.0,
+    "t": null
+   }
+  },
+  "EN42": {
+   "30s": {
+    "n": 0,
+    "mean_ticks": null,
+    "t": null
+   },
+   "60s": {
+    "n": 0,
+    "mean_ticks": null,
+    "t": null
+   },
+   "180s": {
+    "n": 0,
+    "mean_ticks": null,
+    "t": null
+   }
+  },
+  "progress_only": {
+   "30s": {
+    "n": 475,
+    "mean_ticks": -0.771,
+    "t": -0.34
+   },
+   "60s": {
+    "n": 475,
+    "mean_ticks": 1.591,
+    "t": 0.49
+   },
+   "180s": {
+    "n": 475,
+    "mean_ticks": -4.371,
+    "t": -0.71
+   }
+  },
+  "all_valid_windows_ofi_sign": {
+   "30s": {
+    "n": 1186,
+    "mean_ticks": 1.038,
+    "t": 0.77
+   },
+   "60s": {
+    "n": 1186,
+    "mean_ticks": 0.095,
+    "t": 0.05
+   },
+   "180s": {
+    "n": 1186,
+    "mean_ticks": -6.312,
+    "t": -1.71
+   }
+  }
+ },
+ "Q28": {
+  "orders": 240,
+  "conservative_10s": 0.7208,
+  "optimistic_10s": 0.7542,
+  "conservative_60s": 0.8875,
+  "optimistic_60s": 0.8833,
+  "minute_proxy": 0.8792,
+  "proxy_agrees_with_conservative_60s": 0.975,
+  "proxy_fills_conservative_misses": 2,
+  "median_queue_ahead_lots": 348.5,
+  "mid_move_60s_after_filled": -0.0212,
+  "mid_move_60s_after_unfilled": 0.1762
+ },
+ "status": {
+  "EN41": "INCONCLUSIVE (one eligible expiry session; support floor 30 tickets on 20 expiries)",
+  "EN42": "INCONCLUSIVE (one eligible expiry session; support floor 30 tickets on 20 expiries)",
+  "Q28": "MEASUREMENT"
+ },
+ "freeze_head": "8b3477661fe086220e567b031134dd510290b7c0"
+}
