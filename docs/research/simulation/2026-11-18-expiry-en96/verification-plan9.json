@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "scope": "proposal integrity; no strategy score or engine tests",
+  "base_commit": "cceabe62087b4f774f38427b5171a5830737fea2",
+  "checked_frozen_source_files": 55,
+  "checked_archived_artifacts": 3,
+  "archived_headlines": {
+    "EN87": 6114.14,
+    "E03_env": 3006.43,
+    "EN91": 18686.48
+  },
+  "families": 10,
+  "configurations": 231,
+  "bar_configurations": 219,
+  "packet_configurations": 12,
+  "family_counts": {
+    "EN96": 32,
+    "EN97": 18,
+    "EN98": 12,
+    "EN99": 29,
+    "EN100": 9,
+    "EN101": 18,
+    "EN102": 18,
+    "EN103": 13,
+    "EN104": 18,
+    "EN105": 64
+  },
+  "stable_unique_ids": true,
+  "shared_working_tails_preserved": 4,
+  "key_local_links_checked": true,
+  "runtime_changed": false,
+  "production_edited": false,
+  "scoring_performed": false,
+  "push_performed": false,
+  "deployment_performed": false
+}

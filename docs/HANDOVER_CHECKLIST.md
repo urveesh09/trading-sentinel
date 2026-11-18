@@ -1,3 +1,24 @@
+<!-- EN96_105_FAMILY_SECTION_BEGIN -->
+## November 18 - EN96-EN105 family-search handoff (proposal only)
+
+Owner clarified that each slot explores multiple declared variations and
+parameter checks, with full component anatomy. Developer specification:
+`docs/EXPIRY_RESEARCH_EN96_EN105.md`; plan/inventory/source review:
+`docs/research/simulation/2026-11-18-expiry-en96/`. Ten families contain
+219 bar-policy plus12 packet-execution configurations before controls and
+deduplication. None run or qualified. Prior round8 is saved in a5115893 /
+cceabe62; frozen results and source remain unchanged. All existing history
+is development data. Full search is registered before scoring; at most two
+new champions may then receive separate fresh prospective registrations.
+EN87 is the conditional-information lead; selective continuation, damage
+confirmation and whole-lot sizing target useful parts of failed families.
+Next: implement versioned research adapters/grids, parity and causal checks,
+freeze, score all declared variants, retain every outcome in ANATOMY9 and
+COMPONENTS9. No runtime/config/migration, Production, broker, acquisition or
+existing E03.2/EN55 forward-registration change. Local Dev documentation
+only, not pushed/deployed. Atlas unchanged because source is unchanged.
+<!-- EN96_105_FAMILY_SECTION_END -->
+
 <!-- EN86_95_CODEX_SECTION_BEGIN -->
 ## November 18 - EN86-EN95 developed and scored by Codex; no promotion
 

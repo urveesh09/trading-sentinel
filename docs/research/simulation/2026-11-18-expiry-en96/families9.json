@@ -1,0 +1,365 @@
+{
+  "schema": "sentinel.expiry.family-proposal.v1",
+  "status": "PROPOSAL_NOT_SCORED",
+  "date": "2026-11-18",
+  "base_commit": "cceabe62087b4f774f38427b5171a5830737fea2",
+  "specification": "../../../EXPIRY_RESEARCH_EN96_EN105.md",
+  "unit_of_slot": "strategy family with multiple declared variants, ablations and parameter checks",
+  "search_is_development_only": true,
+  "controls_included_in_count": false,
+  "execution_scenarios_included_in_count": false,
+  "count_before_behavior_dedup": true,
+  "planned_bar_policy_configurations": 219,
+  "planned_packet_configurations": 12,
+  "planned_total_configurations": 231,
+  "family_count": 10,
+  "expansion_rule": "Cartesian product per block; concatenate blocks in declared order; IDs SLOT:block:0001...; preserve duplicate/unavailable rows; deduplicate execution hashes separately",
+  "implementation_order": [
+    "EN96",
+    "EN97",
+    "EN98",
+    "EN104",
+    "EN100",
+    "EN99",
+    "EN101",
+    "EN102",
+    "EN103",
+    "EN105"
+  ],
+  "maximum_new_forward_champions_total": 2,
+  "production_changes_authorized": false,
+  "families": [
+    {
+      "slot": "EN96",
+      "title": "OI agreement range",
+      "base": "E03_env",
+      "blocks": [
+        {
+          "id": "gate",
+          "axes": {
+            "lookback_minutes": [
+              5,
+              10,
+              15,
+              30
+            ],
+            "percentile": [
+              60,
+              70,
+              80,
+              90
+            ],
+            "prior_covered_expiries": [
+              20,
+              40
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 32
+    },
+    {
+      "slot": "EN97",
+      "title": "OI representation and basket stability",
+      "base": "EN87",
+      "blocks": [
+        {
+          "id": "basket",
+          "axes": {
+            "half_width": [
+              1,
+              2,
+              3
+            ],
+            "anchor": [
+              "CURRENT_ATM",
+              "LAG15_ATM",
+              "FROZEN_1300_ATM"
+            ],
+            "aggregation": [
+              "POOLED",
+              "MEDIAN_LEAVE_ONE_PAIR_OUT"
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 18
+    },
+    {
+      "slot": "EN98",
+      "title": "Information conditioned on price extension",
+      "base": "EN87",
+      "blocks": [
+        {
+          "id": "context",
+          "axes": {
+            "max_signed_atr_extension": [
+              0.5,
+              1,
+              2,
+              "UNBOUNDED"
+            ],
+            "min_er10": [
+              0,
+              0.25,
+              0.5
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 12
+    },
+    {
+      "slot": "EN99",
+      "title": "Capped entry timing with adverse-selection controls",
+      "base": "EN87",
+      "blocks": [
+        {
+          "id": "immediate",
+          "fidelity": "BAR_LIFECYCLE",
+          "axes": {
+            "style": [
+              "IMMEDIATE"
+            ]
+          }
+        },
+        {
+          "id": "confirm",
+          "fidelity": "BAR_LIFECYCLE",
+          "axes": {
+            "style": [
+              "CONFIRM"
+            ],
+            "ttl_minutes": [
+              1,
+              3
+            ],
+            "progress_atr": [
+              0.1,
+              0.25
+            ],
+            "ask_multiple": [
+              1.04,
+              1.08
+            ]
+          }
+        },
+        {
+          "id": "reclaim",
+          "fidelity": "BAR_LIFECYCLE",
+          "axes": {
+            "style": [
+              "PULLBACK_RECLAIM"
+            ],
+            "ttl_minutes": [
+              3,
+              5
+            ],
+            "pullback_atr": [
+              0.25,
+              0.5
+            ],
+            "ask_multiple": [
+              1.04,
+              1.08
+            ]
+          }
+        },
+        {
+          "id": "packet",
+          "fidelity": "PACKET_EXECUTION_PROXY",
+          "source_gate": "At least 20 synchronized covered packet expiries; no confirmed queue-fill claim",
+          "axes": {
+            "passive_ttl_seconds": [
+              0,
+              1,
+              3,
+              10
+            ],
+            "catchup_ask_multiple": [
+              1,
+              1.02,
+              1.04
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 29
+    },
+    {
+      "slot": "EN100",
+      "title": "Contract improvement with causal reference eligibility",
+      "base": "EN87_ONE_LOT",
+      "blocks": [
+        {
+          "id": "chooser",
+          "axes": {
+            "chooser": [
+              "LEGACY",
+              "NEAREST_ATM_AFFORDABLE",
+              "MIN_FRICTION_OVER_RESERVE"
+            ],
+            "max_friction_ratio": [
+              0.05,
+              0.1,
+              "UNBOUNDED"
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 9
+    },
+    {
+      "slot": "EN101",
+      "title": "Conditional continuation beyond eight minutes",
+      "base": "EN87",
+      "blocks": [
+        {
+          "id": "continuation",
+          "axes": {
+            "absolute_hold_minutes": [
+              12,
+              16,
+              24
+            ],
+            "permission": [
+              "INFORMATION",
+              "PRICE",
+              "BOTH"
+            ],
+            "activation_net_over_reserve": [
+              0,
+              0.2
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 18
+    },
+    {
+      "slot": "EN102",
+      "title": "Confirmed information-and-damage exit",
+      "base": "EN87",
+      "blocks": [
+        {
+          "id": "damage",
+          "axes": {
+            "opposing_oi_threshold_k": [
+              0,
+              0.5
+            ],
+            "consecutive_observations": [
+              1,
+              2,
+              3
+            ],
+            "price_damage": [
+              "NONE",
+              "ENTRY_DAMAGE",
+              "STRUCTURE_DAMAGE"
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 18
+    },
+    {
+      "slot": "EN103",
+      "title": "Whole-lot scout and conditional add",
+      "base": "EN87",
+      "blocks": [
+        {
+          "id": "full",
+          "axes": {
+            "initial_fraction": [
+              1
+            ]
+          }
+        },
+        {
+          "id": "staged",
+          "axes": {
+            "initial_fraction": [
+              "ONE_THIRD",
+              "ONE_HALF"
+            ],
+            "bid_gain": [
+              0.1,
+              0.2,
+              0.3
+            ],
+            "oi_permission": [
+              "STILL_QUALIFIED",
+              "AT_LEAST_ENTRY_STRENGTH"
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 13
+    },
+    {
+      "slot": "EN104",
+      "title": "Delayed information at an E03 timing event",
+      "base": "EN87_PLUS_DELAYED_ARMS",
+      "blocks": [
+        {
+          "id": "lagged_agreement",
+          "axes": {
+            "ttl_minutes": [
+              1,
+              3,
+              5
+            ],
+            "direction_validity": [
+              "E03_STILL_SAME",
+              "STRUCTURE_HOLDS"
+            ],
+            "delayed_oi_percentile": [
+              70,
+              80,
+              90
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 18
+    },
+    {
+      "slot": "EN105",
+      "title": "Chronologically selected finite component combinations",
+      "base": "EN87",
+      "blocks": [
+        {
+          "id": "genotype",
+          "axes": {
+            "signal_gene": [
+              0,
+              1
+            ],
+            "context_gene": [
+              0,
+              1
+            ],
+            "entry_gene": [
+              0,
+              1
+            ],
+            "contract_gene": [
+              0,
+              1
+            ],
+            "management_gene": [
+              0,
+              1
+            ],
+            "size_gene": [
+              0,
+              1
+            ]
+          }
+        }
+      ],
+      "planned_configurations": 64
+    }
+  ]
+}
