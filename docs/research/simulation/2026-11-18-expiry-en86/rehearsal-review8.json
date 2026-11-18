@@ -1,0 +1,602 @@
+{
+  "E03_env|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 1,
+    "net": {
+      "ordinary": -3.33,
+      "adverse": -490.26
+    },
+    "paired": {
+      "mean": 0.0,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": -3.33,
+      "swept": 0.0,
+      "wallet": 29996.67,
+      "combined": 29996.67,
+      "liq_dd": 626.13,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "E032_native|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 1,
+    "net": {
+      "ordinary": -32.57,
+      "adverse": -194.89
+    },
+    "paired": {
+      "mean": -4.177142857142857,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": -32.57,
+      "swept": 0.0,
+      "wallet": 29967.43,
+      "combined": 29967.43,
+      "liq_dd": 240.17,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN55_native|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 1,
+    "net": {
+      "ordinary": 19.45,
+      "adverse": 6.47
+    },
+    "paired": {
+      "mean": 3.2542857142857144,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 19.45,
+      "swept": 9.72,
+      "wallet": 30009.73,
+      "combined": 30019.45,
+      "liq_dd": 188.15,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN83|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 4,
+    "net": {
+      "ordinary": 2030.08,
+      "adverse": 1757.3
+    },
+    "paired": {
+      "mean": 290.4871428571428,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 2030.08,
+      "swept": 1015.04,
+      "wallet": 31015.04,
+      "combined": 32030.08,
+      "liq_dd": 558.34,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN87|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 1,
+    "net": {
+      "ordinary": -3.33,
+      "adverse": -490.26
+    },
+    "paired": {
+      "mean": 0.0,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": -3.33,
+      "swept": 0.0,
+      "wallet": 29996.67,
+      "combined": 29996.67,
+      "liq_dd": 626.13,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN88|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 8,
+    "net": {
+      "ordinary": 2341.26,
+      "adverse": 1378.35
+    },
+    "paired": {
+      "mean": 334.9414285714285,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 2341.26,
+      "swept": 1170.63,
+      "wallet": 31170.63,
+      "combined": 32341.26,
+      "liq_dd": 571.9,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN89|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": 0,
+      "adverse": 0
+    },
+    "paired": {
+      "mean": 0.4757142857142857,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 0.0,
+      "swept": 0.0,
+      "wallet": 30000.0,
+      "combined": 30000.0,
+      "liq_dd": 0.0,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN90|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 7,
+    "net": {
+      "ordinary": 594.35,
+      "adverse": 233.88
+    },
+    "paired": {
+      "mean": 85.38285714285713,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 594.35,
+      "swept": 297.18,
+      "wallet": 30297.17,
+      "combined": 30594.35,
+      "liq_dd": 1198.49,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN91|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 3,
+    "net": {
+      "ordinary": 1788.43,
+      "adverse": 1577.34
+    },
+    "paired": {
+      "mean": 255.9657142857143,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 1788.43,
+      "swept": 894.22,
+      "wallet": 30894.21,
+      "combined": 31788.43,
+      "liq_dd": 938.68,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN92|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 8,
+    "net": {
+      "ordinary": 1925.3,
+      "adverse": 1574.6
+    },
+    "paired": {
+      "mean": 275.5185714285714,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 1925.3,
+      "swept": 962.65,
+      "wallet": 30962.65,
+      "combined": 31925.3,
+      "liq_dd": 779.7,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN93|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 3,
+    "net": {
+      "ordinary": 1659.76,
+      "adverse": 1445.44
+    },
+    "paired": {
+      "mean": 237.5842857142857,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 1659.76,
+      "swept": 829.88,
+      "wallet": 30829.88,
+      "combined": 31659.76,
+      "liq_dd": 822.44,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN94|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 4,
+    "net": {
+      "ordinary": 2030.08,
+      "adverse": 1757.3
+    },
+    "paired": {
+      "mean": 290.4871428571428,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 2030.08,
+      "swept": 1015.04,
+      "wallet": 31015.04,
+      "combined": 32030.08,
+      "liq_dd": 558.34,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN95|NIFTY": {
+    "eligible": 7,
+    "missing": 1,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": 0,
+      "adverse": 0
+    },
+    "paired": {
+      "mean": 0.4757142857142857,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 0.0,
+      "swept": 0.0,
+      "wallet": 30000.0,
+      "combined": 30000.0,
+      "liq_dd": 0.0,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "E03_env|SENSEX": {
+    "eligible": 2,
+    "missing": 2,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": 0,
+      "adverse": 0
+    },
+    "paired": {
+      "mean": 0.0,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 0.0,
+      "swept": 0.0,
+      "wallet": 30000.0,
+      "combined": 30000.0,
+      "liq_dd": 0.0,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "E032_native|SENSEX": {
+    "eligible": 2,
+    "missing": 2,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": 0,
+      "adverse": 0
+    },
+    "paired": {
+      "mean": 0.0,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 0.0,
+      "swept": 0.0,
+      "wallet": 30000.0,
+      "combined": 30000.0,
+      "liq_dd": 0.0,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN55_native|SENSEX": {
+    "eligible": 2,
+    "missing": 2,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": 0,
+      "adverse": 0
+    },
+    "paired": {
+      "mean": 0.0,
+      "lo": null,
+      "hi": null,
+      "p": 1.0,
+      "groups": 0,
+      "method": "GROUP_T_INSUFFICIENT"
+    },
+    "verdict": "INCONCLUSIVE \u2014 support; no automatic promotion",
+    "wallet": {
+      "P": 0.0,
+      "swept": 0.0,
+      "wallet": 30000.0,
+      "combined": 30000.0,
+      "liq_dd": 0.0,
+      "halted": 0,
+      "first_halt": null
+    },
+    "wallet_note": "repriced over eligible sessions only; any missing session prevents an exact continuous-wallet claim",
+    "qualified": false
+  },
+  "EN83|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN87|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN88|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN89|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN90|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN91|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN92|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN93|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN94|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN95|SENSEX": {
+    "eligible": 0,
+    "missing": 4,
+    "review_due": false,
+    "support": 0,
+    "net": {
+      "ordinary": null,
+      "adverse": null
+    },
+    "verdict": "DATA UNAVAILABLE",
+    "qualified": false
+  }
+}

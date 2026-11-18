@@ -1,24 +1,36 @@
 <!-- EN86_95_CODEX_SECTION_BEGIN -->
-## November 18 - EN86-EN95 implemented; frozen development score pending
+## November 18 - EN86-EN95 developed and scored by Codex; no promotion
 
-Owner authorized Codex to implement and test all ten slots. Research code lives in
-`docs/research/simulation/2026-11-18-expiry-en86/`; proposal
-`docs/EXPIRY_RESEARCH_EN86_EN95.md`; frozen rules `PLAN8.md`/`freeze8.json`.
-Explicit OI-source routing, quantity-correct labels, standalone transactional
-forward receipts and process-scoped offline guards are implemented. E03.2/EN55,
-normal F&O and Production are unchanged (Production checkout 55b5e942).
+Research only, Dev. Rules/source frozen and committed as a5115893 before the
+single full score. Full record: `docs/research/simulation/2026-11-18-expiry-en86/ANATOMY8.md`;
+reviewed practical findings: `LESSONS8.md` in that folder; machine ledgers:
+`results8.json`, `anatomy8.json`, `verification8.json`. Every historical date was
+already studied. E03.2, EN55, normal F&O and Production remain unchanged
+(Production checkout55b5e942); no download or broker/Telegram/scheduler action.
 
-Pre-score checks: 24 mechanics tests, 2,340 control arm-days with equal order
-ledgers, 216 causal signal prefixes, 51 chronological payoff models and6
-forecast-prefix checks, 18-cell serialization smoke; four 1,000-path null cases;
-802 recorder chunks re-hashed. Statistical calibration rejected the initial
-block4 bootstrap before candidate scores were inspected; the long-group t
-method and its limitations are registered. All history is already studied.
+EN87 is the useful unproven development lead: NIFTY +6,114.14 ordinary / +5,840.68
+adverse, matched E03 +3,006.43 / +2,245.82; without best2 +2,644.90; continuous
+30,000-wallet net +5,305.89 and liquidation DD2,448.21. It still loses in2026,
+its paired confidence interval includes zero and Holm18 p=1. It is less active
+(25 parents/197 expiries), likely too sparse to reach20 parents within100 future
+expiries. No qualification or main-book replacement. EN91's +18,686.48 restarted-
+session sum fails continuous-wallet survival (-3,972.02, halt2024-05-23). Other
+primaries fail or lack support; SENSEX OI-dependent cells DATA UNAVAILABLE.
 
-Next: one full development score, independent reconciliation, forward rehearsal,
-and ANATOMY8.md with every slot's wins/losses. No result promoted. Runtime atlas
-scope excludes research helpers; no runtime source declarations changed. No data
-acquisition, remote push, PR, merge or deployment in this task.
+Checks:24 mechanics tests plus3 reporting checks;2,340 control arm-days/equal
+orders;216 causal prefixes;51 chronological models/6 prefix forecasts;196
+financial identities,2,603 parents,5,363 order events and1,773 primary-day replays.
+Forward rehearsal:97 eligible arm-days equal the score; rerun adds zero. Four
+1,000-path null calibrations and802 recorder chunk hashes checked. No full
+engine-suite claim: runtime source untouched; atlas excludes research helpers.
+
+Infrastructure is versioned, not patched into old frozen studies: explicit OI
+snapshot, remaining-quantity liquidation, conditional passive proxies and
+transactional forward receipts. Reporting adapter `review8.py` marks unavailable
+money null and separates the tail-screen label from wallet rejection. No frozen
+strategy/source/result was changed after scoring. Next: prospective source
+validation and unchanged shadow comparisons through the explicit calendar/sealed
+snapshot runner; no automatic production deployment. Local work only, not pushed.
 <!-- EN86_95_CODEX_SECTION_END -->
 
 ## November 18 (evening) - Round 7: EN71–EN85 scored once; no strategy passes; option-market flow shows side information that does not pay; fill-estimator v2 erratum (research only, Dev; nothing deployed; Production stays 55b5e942)

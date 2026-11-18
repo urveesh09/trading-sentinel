@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "financial_checks": 196,
+  "parents": 2603,
+  "order_events": 5363,
+  "primary_day_replays": 1773,
+  "frozen_files": 55,
+  "result_sha256": "20cca144bdb1e6da7ca266a2ecfec4838febd245841dd463c28d3bd3701102a8",
+  "anatomy_sha256": "8018ef56726d7bcb59ffa05c0deb515c97bb6d2191614c5e18c414ad1ff4b678",
+  "limits": "no live fills, no new expiry holdout, no engine-suite claim"
+}

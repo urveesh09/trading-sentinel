@@ -31,7 +31,7 @@ is scored automatically. Example argument structure, with real local paths:
 ```
 runner8.py run --calendar CALENDAR.json --snapshot SNAPSHOT.sqlite --expected-snapshot-sha SHA256 --now 2026-11-24T18:00:00+05:30
 runner8.py status
-runner8.py review
+review8.py --ledger LEDGER.sqlite --out REVIEW.json
 ```
 
 That example clock is not permission to score unfinished/future sessions. Supply
@@ -47,6 +47,11 @@ before the 48-hour deadline and MISSING afterward. A later dataset gets a linked
 sensitivity, never silently replaces a final record. Review reprices eligible
 sessions at changing cash/brakes; gaps prevent an exact continuous-wallet claim.
 This does not append to EN85's old ledger or change EN55's old registration.
+
+Reporting correction after scoring: `review8.py` wraps the archived runner's
+review so cells with zero eligible observations show null money, not zero. It
+also separates a mechanical tail-screen label from continuous-wallet rejection.
+`test_review8.py` checks this reporting adapter. Frozen rules/results are unchanged.
 
 No network, broker, Telegram, scheduler, `.env`, Production or capital changes.
 Process-scoped network audit hooks guard replay entrypoints. Raw inputs and

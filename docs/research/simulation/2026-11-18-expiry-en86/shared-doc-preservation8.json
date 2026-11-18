@@ -10,5 +10,9 @@
   "docs/HANDOVER_CHECKLIST.md": {
     "working_before_sha256": "d13f4e2c0aa26172f6bc057e3e2c6c0f2352bab0c325ee2609074986ea80ea51",
     "head_before_sha256": "8f2f1cd3231421bcc974fabc205c77d80316e23eaee4072493e7c36520bb0b94"
+  },
+  "docs/EXPIRY_RESEARCH_EN.md": {
+    "working_before_sha256": "2983fc1f15b728ea47d950e0d0c496034333d7b27f48eb572a74e0e39592b4e8",
+    "head_before_sha256": "d6cc6a74f40e8bd9fa2429c85f38ba5c997ca2171cd10ed2a4205421ae2f68eb"
   }
 }

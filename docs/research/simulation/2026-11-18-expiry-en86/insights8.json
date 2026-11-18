@@ -1,0 +1,469 @@
+{
+  "EN87": {
+    "control": "E03_env",
+    "removed_count": 30,
+    "removed_net": -2601.1,
+    "removed_winners": 13,
+    "removed_losers": 17,
+    "added_count": 0,
+    "added_net": 0,
+    "matched_count": 25,
+    "matched_delta": 506.61,
+    "worst_changed": [
+      {
+        "day": "2026-09-22",
+        "minute": 858,
+        "d": 1,
+        "candidate": -3.33,
+        "control": -3.33,
+        "delta": 0.0
+      },
+      {
+        "day": "2024-04-04",
+        "minute": 812,
+        "d": 1,
+        "candidate": -726.03,
+        "control": -726.03,
+        "delta": 0.0
+      },
+      {
+        "day": "2025-11-11",
+        "minute": 804,
+        "d": 1,
+        "candidate": 77.7,
+        "control": 77.7,
+        "delta": 0.0
+      }
+    ],
+    "best_changed": [
+      {
+        "day": "2024-07-18",
+        "minute": 798,
+        "d": 1,
+        "candidate": -318.21,
+        "control": -318.21,
+        "delta": 0.0
+      },
+      {
+        "day": "2026-02-24",
+        "minute": 859,
+        "d": 1,
+        "candidate": -1463.85,
+        "control": -1463.85,
+        "delta": 0.0
+      },
+      {
+        "day": "2025-06-12",
+        "minute": 818,
+        "d": -1,
+        "candidate": 966.02,
+        "control": 459.41,
+        "delta": 506.61
+      }
+    ]
+  },
+  "EN88": {
+    "control": "EN83",
+    "removed_count": 127,
+    "removed_net": 2965.79,
+    "removed_winners": 49,
+    "removed_losers": 78,
+    "added_count": 213,
+    "added_net": -12380.95,
+    "matched_count": 39,
+    "matched_delta": -40.93,
+    "worst_changed": [
+      {
+        "day": "2026-02-24",
+        "minute": 813,
+        "d": -1,
+        "candidate": -986.24,
+        "control": -673.22,
+        "delta": -313.02
+      },
+      {
+        "day": "2025-06-26",
+        "minute": 800,
+        "d": 1,
+        "candidate": -746.47,
+        "control": -746.47,
+        "delta": 0.0
+      },
+      {
+        "day": "2024-01-11",
+        "minute": 853,
+        "d": -1,
+        "candidate": 513.04,
+        "control": 513.04,
+        "delta": 0.0
+      }
+    ],
+    "best_changed": [
+      {
+        "day": "2025-09-02",
+        "minute": 803,
+        "d": -1,
+        "candidate": -343.46,
+        "control": -343.46,
+        "delta": 0.0
+      },
+      {
+        "day": "2024-01-25",
+        "minute": 811,
+        "d": -1,
+        "candidate": -150.24,
+        "control": -253.29,
+        "delta": 103.05
+      },
+      {
+        "day": "2025-02-13",
+        "minute": 842,
+        "d": -1,
+        "candidate": 1357.89,
+        "control": 1188.85,
+        "delta": 169.04
+      }
+    ]
+  },
+  "EN89": {
+    "control": "EN83",
+    "removed_count": 166,
+    "removed_net": 4522.41,
+    "removed_winners": 65,
+    "removed_losers": 101,
+    "added_count": 31,
+    "added_net": -3531.18,
+    "matched_count": 0,
+    "matched_delta": 0,
+    "worst_changed": [],
+    "best_changed": []
+  },
+  "EN90": {
+    "control": "EN83",
+    "removed_count": 83,
+    "removed_net": -5165.57,
+    "removed_winners": 32,
+    "removed_losers": 51,
+    "added_count": 103,
+    "added_net": -12885.09,
+    "matched_count": 83,
+    "matched_delta": 169.77,
+    "worst_changed": [
+      {
+        "day": "2026-02-24",
+        "minute": 813,
+        "d": -1,
+        "candidate": -986.24,
+        "control": -673.22,
+        "delta": -313.02
+      },
+      {
+        "day": "2024-12-26",
+        "minute": 830,
+        "d": 1,
+        "candidate": -447.41,
+        "control": -247.3,
+        "delta": -200.11
+      },
+      {
+        "day": "2026-03-24",
+        "minute": 834,
+        "d": -1,
+        "candidate": -344.42,
+        "control": -195.81,
+        "delta": -148.61
+      }
+    ],
+    "best_changed": [
+      {
+        "day": "2025-02-13",
+        "minute": 797,
+        "d": -1,
+        "candidate": -109.69,
+        "control": -109.69,
+        "delta": 0.0
+      },
+      {
+        "day": "2025-07-10",
+        "minute": 848,
+        "d": 1,
+        "candidate": -693.15,
+        "control": -1016.12,
+        "delta": 322.97
+      },
+      {
+        "day": "2024-06-06",
+        "minute": 821,
+        "d": 1,
+        "candidate": -555.75,
+        "control": -1064.29,
+        "delta": 508.54
+      }
+    ]
+  },
+  "EN91": {
+    "control": "EN83",
+    "removed_count": 8,
+    "removed_net": 761.33,
+    "removed_winners": 3,
+    "removed_losers": 5,
+    "added_count": 4,
+    "added_net": -2902.63,
+    "matched_count": 158,
+    "matched_delta": 17828.03,
+    "worst_changed": [
+      {
+        "day": "2026-01-13",
+        "minute": 858,
+        "d": -1,
+        "candidate": -1453.55,
+        "control": 327.28,
+        "delta": -1780.83
+      },
+      {
+        "day": "2025-09-23",
+        "minute": 863,
+        "d": -1,
+        "candidate": -1395.31,
+        "control": -104.3,
+        "delta": -1291.01
+      },
+      {
+        "day": "2024-02-15",
+        "minute": 821,
+        "d": 1,
+        "candidate": -551.28,
+        "control": 674.86,
+        "delta": -1226.14
+      }
+    ],
+    "best_changed": [
+      {
+        "day": "2023-07-13",
+        "minute": 817,
+        "d": -1,
+        "candidate": 5811.35,
+        "control": 524.92,
+        "delta": 5286.43
+      },
+      {
+        "day": "2023-09-07",
+        "minute": 805,
+        "d": 1,
+        "candidate": 7544.26,
+        "control": 668.38,
+        "delta": 6875.88
+      },
+      {
+        "day": "2025-08-07",
+        "minute": 832,
+        "d": 1,
+        "candidate": 12499.93,
+        "control": 414.58,
+        "delta": 12085.35
+      }
+    ]
+  },
+  "EN92": {
+    "control": "EN92_one_ctl",
+    "removed_count": 10,
+    "removed_net": -1021.86,
+    "removed_winners": 3,
+    "removed_losers": 7,
+    "added_count": 34,
+    "added_net": -2244.75,
+    "matched_count": 159,
+    "matched_delta": 963.85,
+    "worst_changed": [
+      {
+        "day": "2024-03-14",
+        "minute": 821,
+        "d": -1,
+        "candidate": -74.72,
+        "control": 978.81,
+        "delta": -1053.53
+      },
+      {
+        "day": "2024-03-21",
+        "minute": 863,
+        "d": 1,
+        "candidate": -813.34,
+        "control": -242.89,
+        "delta": -570.45
+      },
+      {
+        "day": "2025-09-30",
+        "minute": 860,
+        "d": -1,
+        "candidate": -1100.09,
+        "control": -571.59,
+        "delta": -528.5
+      }
+    ],
+    "best_changed": [
+      {
+        "day": "2023-11-30",
+        "minute": 847,
+        "d": -1,
+        "candidate": 1273.18,
+        "control": 402.88,
+        "delta": 870.3
+      },
+      {
+        "day": "2026-05-05",
+        "minute": 783,
+        "d": 1,
+        "candidate": 1897.87,
+        "control": 904.31,
+        "delta": 993.56
+      },
+      {
+        "day": "2025-12-30",
+        "minute": 819,
+        "d": 1,
+        "candidate": 2458.22,
+        "control": 687.44,
+        "delta": 1770.78
+      }
+    ]
+  },
+  "EN93": {
+    "control": "EN83",
+    "removed_count": 157,
+    "removed_net": 4885.1,
+    "removed_winners": 62,
+    "removed_losers": 95,
+    "added_count": 0,
+    "added_net": 0,
+    "matched_count": 9,
+    "matched_delta": -154.25,
+    "worst_changed": [
+      {
+        "day": "2025-12-16",
+        "minute": 859,
+        "d": -1,
+        "candidate": -509.95,
+        "control": -355.7,
+        "delta": -154.25
+      },
+      {
+        "day": "2026-10-27",
+        "minute": 783,
+        "d": -1,
+        "candidate": 2204.93,
+        "control": 2204.93,
+        "delta": 0.0
+      },
+      {
+        "day": "2026-08-04",
+        "minute": 839,
+        "d": -1,
+        "candidate": -222.19,
+        "control": -222.19,
+        "delta": 0.0
+      }
+    ],
+    "best_changed": [
+      {
+        "day": "2026-04-07",
+        "minute": 840,
+        "d": -1,
+        "candidate": -966.63,
+        "control": -966.63,
+        "delta": 0.0
+      },
+      {
+        "day": "2026-08-25",
+        "minute": 789,
+        "d": -1,
+        "candidate": 133.53,
+        "control": 133.53,
+        "delta": 0.0
+      },
+      {
+        "day": "2026-10-27",
+        "minute": 820,
+        "d": -1,
+        "candidate": -174.44,
+        "control": -174.44,
+        "delta": 0.0
+      }
+    ]
+  },
+  "EN94": {
+    "control": "EN83",
+    "removed_count": 1,
+    "removed_net": 844.27,
+    "removed_winners": 1,
+    "removed_losers": 0,
+    "added_count": 0,
+    "added_net": 0,
+    "matched_count": 165,
+    "matched_delta": -1278.03,
+    "worst_changed": [
+      {
+        "day": "2024-09-12",
+        "minute": 842,
+        "d": 1,
+        "candidate": 8649.79,
+        "control": 12058.98,
+        "delta": -3409.19
+      },
+      {
+        "day": "2026-09-01",
+        "minute": 823,
+        "d": -1,
+        "candidate": 2548.07,
+        "control": 2846.49,
+        "delta": -298.42
+      },
+      {
+        "day": "2026-04-07",
+        "minute": 852,
+        "d": -1,
+        "candidate": -205.8,
+        "control": 1.8,
+        "delta": -207.6
+      }
+    ],
+    "best_changed": [
+      {
+        "day": "2025-03-06",
+        "minute": 790,
+        "d": -1,
+        "candidate": -90.25,
+        "control": -661.15,
+        "delta": 570.9
+      },
+      {
+        "day": "2024-04-04",
+        "minute": 829,
+        "d": 1,
+        "candidate": 65.72,
+        "control": -644.66,
+        "delta": 710.38
+      },
+      {
+        "day": "2024-02-08",
+        "minute": 837,
+        "d": -1,
+        "candidate": 4510.75,
+        "control": 2999.15,
+        "delta": 1511.6
+      }
+    ]
+  },
+  "EN95": {
+    "control": "EN95_noentry_ctl",
+    "removed_count": 193,
+    "removed_net": -367.2,
+    "removed_winners": 76,
+    "removed_losers": 117,
+    "added_count": 35,
+    "added_net": -2150.61,
+    "matched_count": 0,
+    "matched_delta": 0,
+    "worst_changed": [],
+    "best_changed": []
+  }
+}

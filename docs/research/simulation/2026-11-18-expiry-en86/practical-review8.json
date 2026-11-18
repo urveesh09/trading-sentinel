@@ -1,0 +1,92 @@
+{
+  "EN87|NIFTY": {
+    "frozen_screen_status": "PROTECTION-LIKE \u2014 development only",
+    "practical_review": "FORWARD COMPARISON ONLY \u2014 positive development economics, unproven edge",
+    "qualified": false
+  },
+  "EN87|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN88|NIFTY": {
+    "frozen_screen_status": "FAIL",
+    "practical_review": "NO PROMOTION",
+    "qualified": false
+  },
+  "EN88|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN89|NIFTY": {
+    "frozen_screen_status": "FAIL",
+    "practical_review": "NO PROMOTION",
+    "qualified": false
+  },
+  "EN89|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN90|NIFTY": {
+    "frozen_screen_status": "FAIL",
+    "practical_review": "NO PROMOTION",
+    "qualified": false
+  },
+  "EN90|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN91|NIFTY": {
+    "frozen_screen_status": "TAIL SCREEN \u2014 SOURCE UNVALIDATED",
+    "practical_review": "REJECT FOR CONTINUOUS WALLET \u2014 drawdown brake reached",
+    "qualified": false
+  },
+  "EN91|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN92|NIFTY": {
+    "frozen_screen_status": "FAIL",
+    "practical_review": "NO PROMOTION",
+    "qualified": false
+  },
+  "EN92|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN93|NIFTY": {
+    "frozen_screen_status": "INCONCLUSIVE \u2014 support",
+    "practical_review": "NO PROMOTION",
+    "qualified": false
+  },
+  "EN93|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN94|NIFTY": {
+    "frozen_screen_status": "FAIL",
+    "practical_review": "NO PROMOTION",
+    "qualified": false
+  },
+  "EN94|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  },
+  "EN95|NIFTY": {
+    "frozen_screen_status": "FAIL",
+    "practical_review": "NO PROMOTION",
+    "qualified": false
+  },
+  "EN95|SENSEX": {
+    "frozen_screen_status": "DATA UNAVAILABLE",
+    "practical_review": "DATA UNAVAILABLE",
+    "qualified": false
+  }
+}

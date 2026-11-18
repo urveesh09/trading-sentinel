@@ -1,0 +1,429 @@
+{
+  "status": "PASS",
+  "dry_run": true,
+  "first": {
+    "new": 97,
+    "unavailable": [
+      [
+        "E03_env",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "E032_native",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN55_native",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN83",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN87",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN88",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN89",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN90",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN91",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN92",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN93",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN94",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN95",
+        "NIFTY",
+        "2026-09-15",
+        "MISSING"
+      ],
+      [
+        "EN83",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN87",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN88",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN89",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN90",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN91",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN92",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN93",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN94",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN95",
+        "SENSEX",
+        "2026-09-17",
+        "MISSING"
+      ],
+      [
+        "EN83",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN87",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN88",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN89",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN90",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN91",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN92",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN93",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN94",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "EN95",
+        "SENSEX",
+        "2026-09-24",
+        "MISSING"
+      ],
+      [
+        "E03_env",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "E032_native",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN55_native",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN83",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN87",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN88",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN89",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN90",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN91",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN92",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN93",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN94",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "EN95",
+        "SENSEX",
+        "2026-10-01",
+        "MISSING"
+      ],
+      [
+        "E03_env",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "E032_native",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN55_native",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN83",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN87",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN88",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN89",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN90",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN91",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN92",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN93",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN94",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ],
+      [
+        "EN95",
+        "SENSEX",
+        "2026-10-08",
+        "MISSING"
+      ]
+    ],
+    "already_final": 0,
+    "dry_run": true
+  },
+  "second": {
+    "new": 0,
+    "unavailable": [],
+    "already_final": 156,
+    "dry_run": true
+  },
+  "matched_arm_days": 97,
+  "receipt_count": 156,
+  "snapshot_sha256": "e950e3435a4c38a74303fd1f0b6238422052e4f5333ae70b11e50b71b934331d",
+  "calendar": {
+    "source": "sealed round7 historical sample; rehearsal only, not an exhaustive exchange calendar",
+    "verified_through": "2026-10-27",
+    "sessions": [
+      {
+        "underlying": "NIFTY",
+        "day": "2026-09-08"
+      },
+      {
+        "underlying": "NIFTY",
+        "day": "2026-09-15"
+      },
+      {
+        "underlying": "NIFTY",
+        "day": "2026-09-22"
+      },
+      {
+        "underlying": "NIFTY",
+        "day": "2026-09-29"
+      },
+      {
+        "underlying": "NIFTY",
+        "day": "2026-10-06"
+      },
+      {
+        "underlying": "NIFTY",
+        "day": "2026-10-13"
+      },
+      {
+        "underlying": "NIFTY",
+        "day": "2026-10-19"
+      },
+      {
+        "underlying": "NIFTY",
+        "day": "2026-10-27"
+      },
+      {
+        "underlying": "SENSEX",
+        "day": "2026-09-17"
+      },
+      {
+        "underlying": "SENSEX",
+        "day": "2026-09-24"
+      },
+      {
+        "underlying": "SENSEX",
+        "day": "2026-10-01"
+      },
+      {
+        "underlying": "SENSEX",
+        "day": "2026-10-08"
+      }
+    ]
+  },
+  "note": "seen dates only; strict coverage may reject some of the 12 days"
+}

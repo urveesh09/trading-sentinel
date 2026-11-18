@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "commit": "a51158931289d5aadb1601195d4faa1fca634d64",
+  "frozen_files": 55,
+  "shared_docs": {
+    "docs/SYSTEM_GUIDE.md": "own prefix committed; previous dirty bytes preserved",
+    "docs/NEXT_AGENT_PLAN.md": "own prefix committed; previous dirty bytes preserved",
+    "docs/HANDOVER_CHECKLIST.md": "own prefix committed; previous dirty bytes preserved"
+  },
+  "atlas": "runtime scopes unchanged; research helpers excluded"
+}

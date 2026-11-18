@@ -1,3 +1,38 @@
+<!-- EN86_95_CODEX_SECTION_BEGIN -->
+## November 18 - EN86-EN95 developed and scored by Codex; no promotion
+
+Research only, Dev. Rules/source frozen and committed as a5115893 before the
+single full score. Full record: `docs/research/simulation/2026-11-18-expiry-en86/ANATOMY8.md`;
+reviewed practical findings: `LESSONS8.md` in that folder; machine ledgers:
+`results8.json`, `anatomy8.json`, `verification8.json`. Every historical date was
+already studied. E03.2, EN55, normal F&O and Production remain unchanged
+(Production checkout55b5e942); no download or broker/Telegram/scheduler action.
+
+EN87 is the useful unproven development lead: NIFTY +6,114.14 ordinary / +5,840.68
+adverse, matched E03 +3,006.43 / +2,245.82; without best2 +2,644.90; continuous
+30,000-wallet net +5,305.89 and liquidation DD2,448.21. It still loses in2026,
+its paired confidence interval includes zero and Holm18 p=1. It is less active
+(25 parents/197 expiries), likely too sparse to reach20 parents within100 future
+expiries. No qualification or main-book replacement. EN91's +18,686.48 restarted-
+session sum fails continuous-wallet survival (-3,972.02, halt2024-05-23). Other
+primaries fail or lack support; SENSEX OI-dependent cells DATA UNAVAILABLE.
+
+Checks:24 mechanics tests plus3 reporting checks;2,340 control arm-days/equal
+orders;216 causal prefixes;51 chronological models/6 prefix forecasts;196
+financial identities,2,603 parents,5,363 order events and1,773 primary-day replays.
+Forward rehearsal:97 eligible arm-days equal the score; rerun adds zero. Four
+1,000-path null calibrations and802 recorder chunk hashes checked. No full
+engine-suite claim: runtime source untouched; atlas excludes research helpers.
+
+Infrastructure is versioned, not patched into old frozen studies: explicit OI
+snapshot, remaining-quantity liquidation, conditional passive proxies and
+transactional forward receipts. Reporting adapter `review8.py` marks unavailable
+money null and separates the tail-screen label from wallet rejection. No frozen
+strategy/source/result was changed after scoring. Next: prospective source
+validation and unchanged shadow comparisons through the explicit calendar/sealed
+snapshot runner; no automatic production deployment. Local work only, not pushed.
+<!-- EN86_95_CODEX_SECTION_END -->
+
 # EN01–EN05: what improved E03.2 and what did not
 
 November 17, 2026.
