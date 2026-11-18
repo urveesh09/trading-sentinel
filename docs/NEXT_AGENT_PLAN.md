@@ -1,3 +1,48 @@
+<!-- EN96_110_RESULTS_SECTION_BEGIN -->
+## November 18 (night) - Round 9: EN96-EN110 families scored once; no strategy qualifies, no champion (research only, Dev; nothing deployed; Production stays 55b5e942)
+
+**Owner (Nov 18):** implement the auditor's family handoff EN96-EN105 (`docs/EXPIRY_RESEARCH_EN96_EN105.md`) plus five families of mine; each slot is a family of variations.
+
+**Work** (`docs/research/simulation/2026-11-18-expiry-en96/`):
+- `IMPL9.md` frozen at `99958d97`, then scored once.
+- Write-ups: `ANATOMY9.md`, `COMPONENTS9.md`, `ANATOMY9-tables.md`.
+- Ledgers: `results9.json`, `anatomy9.json`, `trials9.jsonl`.
+- `verification9.json` PASS; `post9.json` holds labelled post-score diagnostics.
+
+**Scope:**
+- 318 cells (231 auditor + 87 own), 36 controls, 8 references.
+- 286 NIFTY configurations scored (181 distinct ledgers).
+- 268 SENSEX OI cells null; 12 EN99 packet cells source-gated.
+
+**Outcome:**
+- The chronological Stage B selection fell back to EN87 in most folds: EN87 funds 7-10 parents per 60 sessions, below the registered floor of 10.
+- Labels: INCONCLUSIVE - support for 13 families; NO IMPROVEMENT for EN106 and EN109. No champion; `registration9/` is empty.
+
+**Full-grid mechanisms** (descriptive, studied data):
+- OI agreement is robust to the basket: 12 of 18 representations give identical ledgers.
+- A moderate band (p60-70, L10-15) is slightly better than EN87.
+- A nearer one-lot contract gives +5,600 on EN87's 25 clocks, mostly in 2025.
+- A first target of +150% gives +5-6k, from 4 trades. The same trades gain identically in E03_env, so it is not information-specific.
+- Holding 12 minutes gives +9.8/session.
+
+**Inert by construction:**
+- EN98: the extension caps sit below every E03 entry (2.5-7 ATR).
+- EN102: the OI exit never fires.
+- EN103: one-third = one-half under the three-lot cap.
+
+**Rejected:** patient entries, scouts, OI and price-damage exits, second sources, looser timing (even with OI), and graded size. OI on native E03.2 is also rejected: the gate removes its winners, the veto is about native, and the wallet still halts.
+
+**Inference:** descriptive only. The family max-t and Holm over-reject on skewed nulls, and this was calibrated before the score.
+
+**Verification:** parity 15,342 arm-days 0 mismatches; 11 reference reproductions exact; 972 causal prefix checks; 17 mechanics tests; truncated selftest; verify9 PASS (304 ledger identities, 32/32 fresh-process reruns, Stage B re-derived, 268 null SENSEX OI cells). No full engine suite run: research files and docs only.
+
+**Next (owner's decision):** sessions never studied. NIFTY 2020-22 expiry afternoons with OI, through the download skill, could test one registration: EN87 plus target 150% / nearer contract / 12-minute hold. A forward test at EN87's pace needs about 158 expiries.
+
+**State:**
+- Dev research files and docs only; pushed to `codex/production-correction-hedge-p0`. The auditor's local commits `a5115893`/`cceabe62`/`366d0b0d` are included.
+- No engine, configuration, `.env`, scheduler or Production change. Atlas unchanged (no engine source changed).
+<!-- EN96_110_RESULTS_SECTION_END -->
+
 <!-- EN96_105_FAMILY_SECTION_BEGIN -->
 ## November 18 - EN96-EN105 family-search handoff (proposal only)
 

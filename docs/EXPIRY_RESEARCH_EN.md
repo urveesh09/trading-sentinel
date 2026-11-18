@@ -1,3 +1,41 @@
+<!-- EN96_110_RESULTS_SECTION_BEGIN -->
+## Round 9 (Nov 18): the auditor's ten families plus my five, each a family of variations
+
+This round scored 318 variations once, after freezing them: 231 from the auditor and 87 of mine. On the 197 NIFTY expiries already studied, nothing beats the comparison book, and nothing is nominated for a forward test. Full write-up: `docs/research/simulation/2026-11-18-expiry-en96/ANATOMY9.md`; component ledger: `COMPONENTS9.md`.
+
+**Why the selection could not choose.**
+- EN87 trades about once every eight expiries.
+- In any 60-expiry window it funds 7–10 trades, below the 10 the auditor required before a variation may be chosen.
+- So the step-by-step selection mostly kept EN87, and most families end "inconclusive" for lack of trades.
+
+**What the full grids showed** (in the old data, so screening only):
+- **The OI signal is broad, not one strike.** Twelve of 18 ways of measuring it give exactly the same trades.
+- **Three changes made EN87 more money, each from only a few trades:**
+
+  | Change | Result |
+  |---|---|
+  | Sell half at +150% instead of +100% | +₹5,000–6,000, from 4 big days in 2024–25. The same 4 days gain the same amount in plain E03, so this is about exits, not OI. |
+  | One lot of a strike nearer the money | +₹5,600 on the same 25 trades, mostly in 2025 |
+  | Hold 12 minutes instead of 8 | About +₹1,800 |
+
+- **Things that did not work:**
+  - waiting for confirmation or a pullback (the missed trades were winners);
+  - a small first position plus an add;
+  - OI-based or price-damage exits;
+  - a second information source;
+  - looser E03 timing, even with OI;
+  - sizing by OI strength.
+- **On the real E03.2 (my EN106):** requiring OI agreement removes E03.2's best trades. Skipping only strongly opposed trades changes almost nothing, and E03.2's continuous wallet still stops in January 2024.
+- **Three slots could not test their idea:**
+  - the extension limits were set below every E03 entry;
+  - the OI exit never had a signal inside a trade;
+  - two scout sizes were identical with a 3-lot cap.
+
+**What would give a real answer (your decision):** expiries nobody has studied. NIFTY 2020–22 expiry afternoons with option OI, downloaded through the ICICI download skill, could test one frozen version of EN87 with the +150% target, the nearer contract and the 12-minute hold. A forward test at EN87's pace would need about 158 expiries for 20 trades.
+
+Nothing was deployed. E03.2 and EN55 are unchanged, and Production is still `55b5e942`.
+<!-- EN96_110_RESULTS_SECTION_END -->
+
 <!-- EN96_105_FAMILY_SECTION_BEGIN -->
 ## November 18 - EN96-EN105 family-search handoff (proposal only)
 

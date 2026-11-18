@@ -1,0 +1,1315 @@
+{
+ "label": "POST-SCORE DIAGNOSTIC: descriptive, selected after reading the results; no verdict or candidate",
+ "transfer": {
+  "E03_env|NIFTY": {
+   "native": {
+    "ordinary": {
+     "net": 3006.43,
+     "without_best": 507.39,
+     "without_top2": -1298.13,
+     "sessions": 197,
+     "trades": 55,
+     "traded_expiries": 48,
+     "worst": -1463.85,
+     "worst_marked": -1463.85,
+     "fees": 2963.82,
+     "minutes_in": 491,
+     "unresolved": 0,
+     "tail_days": 0,
+     "by_year": {
+      "2023": -3578.33,
+      "2024": 852.28,
+      "2025": 8670.19,
+      "2026": -2937.71
+     },
+     "per_expiry": 15.26,
+     "winners": 25,
+     "avg_win": 727.24,
+     "avg_loss": -505.82,
+     "by_side": {
+      "CALL": -586.98,
+      "PUT": 3593.41
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 12,
+       "net": -9843.95
+      },
+      "STRUCTURE": {
+       "n": 2,
+       "net": -1134.73
+      },
+      "TARGET_BASE": {
+       "n": 5,
+       "net": 7569.74
+      },
+      "TIME": {
+       "n": 34,
+       "net": 6701.48
+      },
+      "TRAIL": {
+       "n": 2,
+       "net": -286.11
+      }
+     }
+    },
+    "adverse": {
+     "net": 2245.82,
+     "without_best": -123.34,
+     "without_top2": -1834.7,
+     "sessions": 197,
+     "trades": 52,
+     "traded_expiries": 45,
+     "worst": -980.68,
+     "worst_marked": -1123.44,
+     "fees": 2807.93,
+     "minutes_in": 464,
+     "unresolved": 0,
+     "tail_days": 0,
+     "by_year": {
+      "2023": -3279.5,
+      "2024": 85.8,
+      "2025": 7705.59,
+      "2026": -2266.07
+     },
+     "per_expiry": 11.4
+    },
+    "halves_ordinary": [
+     -2726.05,
+     5732.48
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": -3445.43,
+      "liq_dd": 3938.99,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": -4034.97,
+      "liq_dd": 4044.7,
+      "halted": 90,
+      "first_halt": "2025-02-13"
+     }
+    }
+   },
+   "target_150": {
+    "ordinary": {
+     "net": 7612.55,
+     "without_best": 4757.98,
+     "without_top2": 1968.11,
+     "sessions": 197,
+     "trades": 56,
+     "traded_expiries": 48,
+     "worst": -1463.85,
+     "worst_marked": -1463.85,
+     "fees": 2953.2,
+     "minutes_in": 459,
+     "unresolved": 0,
+     "tail_days": 3,
+     "by_year": {
+      "2023": -3578.33,
+      "2024": 2833.31,
+      "2025": 11295.28,
+      "2026": -2937.71
+     },
+     "per_expiry": 38.64,
+     "winners": 25,
+     "avg_win": 929.63,
+     "avg_loss": -504.14,
+     "by_side": {
+      "CALL": 1208.27,
+      "PUT": 6404.28
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 12,
+       "net": -9843.95
+      },
+      "STRUCTURE": {
+       "n": 2,
+       "net": -1134.73
+      },
+      "TARGET_BASE": {
+       "n": 2,
+       "net": 4604.88
+      },
+      "TIME": {
+       "n": 38,
+       "net": 14272.46
+      },
+      "TRAIL": {
+       "n": 2,
+       "net": -286.11
+      }
+     }
+    },
+    "adverse": {
+     "net": 6589.14,
+     "without_best": 3818.97,
+     "without_top2": 1113.49,
+     "sessions": 197,
+     "trades": 53,
+     "traded_expiries": 45,
+     "worst": -980.68,
+     "worst_marked": -1123.44,
+     "fees": 2796.86,
+     "minutes_in": 432,
+     "unresolved": 0,
+     "tail_days": 3,
+     "by_year": {
+      "2023": -3279.5,
+      "2024": 1988.93,
+      "2025": 10145.78,
+      "2026": -2266.07
+     },
+     "per_expiry": 33.45
+    },
+    "halves_ordinary": [
+     -745.02,
+     8357.57
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": -3103.14,
+      "liq_dd": 3938.99,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": -4034.97,
+      "liq_dd": 4044.7,
+      "halted": 90,
+      "first_halt": "2025-02-13"
+     }
+    }
+   },
+   "tickets": {
+    "matched": 55,
+    "matched_changed": 4,
+    "matched_net_delta": 5059.69,
+    "matched_gain_on_reference_losers": 0.0,
+    "matched_change_on_reference_winners": 5059.69,
+    "candidate_only": 1,
+    "candidate_only_net": -453.57,
+    "candidate_only_winners": 0,
+    "reference_only": 0,
+    "reference_only_net": 0,
+    "reference_only_winners": 0,
+    "changed_expiries": 4
+   }
+  },
+  "E032_native|NIFTY": {
+   "native": {
+    "ordinary": {
+     "net": 14275.2,
+     "without_best": 2504.48,
+     "without_top2": 652.22,
+     "sessions": 197,
+     "trades": 66,
+     "traded_expiries": 58,
+     "worst": -1281.39,
+     "worst_marked": -1395.29,
+     "fees": 3482.8,
+     "minutes_in": 536,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2023": -3069.4,
+      "2024": 15580.74,
+      "2025": 5936.81,
+      "2026": -4172.95
+     },
+     "per_expiry": 72.46,
+     "winners": 27,
+     "avg_win": 1093.06,
+     "avg_loss": -390.7,
+     "by_side": {
+      "CALL": -568.62,
+      "PUT": 14843.82
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 18,
+       "net": -10810.3
+      },
+      "STRUCTURE": {
+       "n": 2,
+       "net": -578.7
+      },
+      "TARGET": {
+       "n": 3,
+       "net": 3047.85
+      },
+      "TARGET_BASE": {
+       "n": 5,
+       "net": 16393.28
+      },
+      "TIME": {
+       "n": 34,
+       "net": 7046.45
+      },
+      "TRAIL": {
+       "n": 4,
+       "net": -823.38
+      }
+     }
+    },
+    "adverse": {
+     "net": 11586.18,
+     "without_best": 3.65,
+     "without_top2": -1751.19,
+     "sessions": 197,
+     "trades": 65,
+     "traded_expiries": 57,
+     "worst": -1339.86,
+     "worst_marked": -1434.31,
+     "fees": 3432.07,
+     "minutes_in": 519,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2023": -3738.24,
+      "2024": 14629.39,
+      "2025": 5371.36,
+      "2026": -4676.33
+     },
+     "per_expiry": 58.81
+    },
+    "halves_ordinary": [
+     12511.34,
+     1763.86
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": -4122.87,
+      "liq_dd": 4181.26,
+      "halted": 146,
+      "first_halt": "2024-01-18"
+     },
+     "adverse": {
+      "P": -4035.53,
+      "liq_dd": 4217.18,
+      "halted": 164,
+      "first_halt": "2023-09-14"
+     }
+    }
+   },
+   "target_150": {
+    "ordinary": {
+     "net": 19003.43,
+     "without_best": 6116.85,
+     "without_top2": 3262.28,
+     "sessions": 197,
+     "trades": 67,
+     "traded_expiries": 58,
+     "worst": -1281.39,
+     "worst_marked": -1395.29,
+     "fees": 3470.32,
+     "minutes_in": 511,
+     "unresolved": 0,
+     "tail_days": 2,
+     "by_year": {
+      "2023": -3069.4,
+      "2024": 18092.6,
+      "2025": 8153.18,
+      "2026": -4172.95
+     },
+     "per_expiry": 96.46,
+     "winners": 27,
+     "avg_win": 1277.46,
+     "avg_loss": -387.2,
+     "by_side": {
+      "CALL": 4.92,
+      "PUT": 18998.51
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 18,
+       "net": -10810.3
+      },
+      "STRUCTURE": {
+       "n": 2,
+       "net": -578.7
+      },
+      "TARGET": {
+       "n": 2,
+       "net": 2500.43
+      },
+      "TARGET_BASE": {
+       "n": 2,
+       "net": 14036.14
+      },
+      "TIME": {
+       "n": 39,
+       "net": 14679.24
+      },
+      "TRAIL": {
+       "n": 4,
+       "net": -823.38
+      }
+     }
+    },
+    "adverse": {
+     "net": 16077.57,
+     "without_best": 3392.17,
+     "without_top2": 622.0,
+     "sessions": 197,
+     "trades": 66,
+     "traded_expiries": 57,
+     "worst": -1339.86,
+     "worst_marked": -1434.31,
+     "fees": 3419.18,
+     "minutes_in": 494,
+     "unresolved": 0,
+     "tail_days": 2,
+     "by_year": {
+      "2023": -3738.24,
+      "2024": 17086.05,
+      "2025": 7406.09,
+      "2026": -4676.33
+     },
+     "per_expiry": 81.61
+    },
+    "halves_ordinary": [
+     15023.2,
+     3980.23
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": -4122.87,
+      "liq_dd": 4181.26,
+      "halted": 146,
+      "first_halt": "2024-01-18"
+     },
+     "adverse": {
+      "P": -4035.53,
+      "liq_dd": 4217.18,
+      "halted": 164,
+      "first_halt": "2023-09-14"
+     }
+    }
+   },
+   "tickets": {
+    "matched": 66,
+    "matched_changed": 7,
+    "matched_net_delta": 4978.61,
+    "matched_gain_on_reference_losers": 0.0,
+    "matched_change_on_reference_winners": 4978.61,
+    "candidate_only": 1,
+    "candidate_only_net": -250.38,
+    "candidate_only_winners": 0,
+    "reference_only": 0,
+    "reference_only_net": 0,
+    "reference_only_winners": 0,
+    "changed_expiries": 7
+   }
+  },
+  "EN55_native|NIFTY": {
+   "native": {
+    "ordinary": {
+     "net": 13164.7,
+     "without_best": 2841.09,
+     "without_top2": 1044.95,
+     "sessions": 197,
+     "trades": 68,
+     "traded_expiries": 59,
+     "worst": -854.3,
+     "worst_marked": -903.11,
+     "fees": 3771.04,
+     "minutes_in": 488,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2023": -3039.56,
+      "2024": 13205.32,
+      "2025": 5334.4,
+      "2026": -2335.46
+     },
+     "per_expiry": 66.83,
+     "winners": 28,
+     "avg_win": 893.24,
+     "avg_loss": -296.15,
+     "by_side": {
+      "CALL": -361.33,
+      "PUT": 13526.03
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 19,
+       "net": -8340.1
+      },
+      "STRUCTURE": {
+       "n": 2,
+       "net": -411.91
+      },
+      "TARGET": {
+       "n": 6,
+       "net": 6237.75
+      },
+      "TARGET_BASE": {
+       "n": 2,
+       "net": 11790.32
+      },
+      "TIME": {
+       "n": 34,
+       "net": 4265.03
+      },
+      "TRAIL": {
+       "n": 5,
+       "net": -376.39
+      }
+     }
+    },
+    "adverse": {
+     "net": 11056.47,
+     "without_best": 911.3,
+     "without_top2": -813.44,
+     "sessions": 197,
+     "trades": 67,
+     "traded_expiries": 58,
+     "worst": -870.52,
+     "worst_marked": -922.62,
+     "fees": 3692.03,
+     "minutes_in": 479,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2023": -3308.88,
+      "2024": 11992.69,
+      "2025": 4854.12,
+      "2026": -2481.46
+     },
+     "per_expiry": 56.12
+    },
+    "halves_ordinary": [
+     10165.76,
+     2998.94
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 3445.05,
+      "liq_dd": 4006.35,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 11572.87,
+      "liq_dd": 3858.67,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "target_150": {
+    "ordinary": {
+     "net": 13584.06,
+     "without_best": 3260.45,
+     "without_top2": 1464.31,
+     "sessions": 197,
+     "trades": 68,
+     "traded_expiries": 59,
+     "worst": -854.3,
+     "worst_marked": -903.11,
+     "fees": 3748.19,
+     "minutes_in": 492,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2023": -3039.56,
+      "2024": 12946.73,
+      "2025": 6012.35,
+      "2026": -2335.46
+     },
+     "per_expiry": 68.95,
+     "winners": 28,
+     "avg_win": 908.21,
+     "avg_loss": -296.15,
+     "by_side": {
+      "CALL": 105.77,
+      "PUT": 13478.29
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 19,
+       "net": -8340.1
+      },
+      "STRUCTURE": {
+       "n": 2,
+       "net": -411.91
+      },
+      "TARGET": {
+       "n": 3,
+       "net": 2928.79
+      },
+      "TARGET_BASE": {
+       "n": 1,
+       "net": 10323.61
+      },
+      "TIME": {
+       "n": 38,
+       "net": 9460.06
+      },
+      "TRAIL": {
+       "n": 5,
+       "net": -376.39
+      }
+     }
+    },
+    "adverse": {
+     "net": 11472.58,
+     "without_best": 1327.41,
+     "without_top2": -397.33,
+     "sessions": 197,
+     "trades": 67,
+     "traded_expiries": 58,
+     "worst": -870.52,
+     "worst_marked": -922.62,
+     "fees": 3669.17,
+     "minutes_in": 483,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2023": -3308.88,
+      "2024": 11737.34,
+      "2025": 5525.58,
+      "2026": -2481.46
+     },
+     "per_expiry": 58.24
+    },
+    "halves_ordinary": [
+     9907.17,
+     3676.89
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 13676.97,
+      "liq_dd": 4006.35,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 11988.98,
+      "liq_dd": 3858.67,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "tickets": {
+    "matched": 68,
+    "matched_changed": 5,
+    "matched_net_delta": 419.36,
+    "matched_gain_on_reference_losers": 0.0,
+    "matched_change_on_reference_winners": 419.36,
+    "candidate_only": 0,
+    "candidate_only_net": 0,
+    "candidate_only_winners": 0,
+    "reference_only": 0,
+    "reference_only_net": 0,
+    "reference_only_winners": 0,
+    "changed_expiries": 5
+   }
+  },
+  "E03_env|SENSEX": {
+   "native": {
+    "ordinary": {
+     "net": 5166.67,
+     "without_best": -88.1,
+     "without_top2": -1371.61,
+     "sessions": 63,
+     "trades": 7,
+     "traded_expiries": 7,
+     "worst": -1116.03,
+     "worst_marked": -1130.0,
+     "fees": 396.33,
+     "minutes_in": 83,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 5778.53,
+      "2026": -611.86
+     },
+     "per_expiry": 82.01,
+     "winners": 3,
+     "avg_win": 2354.01,
+     "avg_loss": -473.84,
+     "by_side": {
+      "CALL": -1258.02,
+      "PUT": 6424.69
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 1,
+       "net": -1116.03
+      },
+      "STRUCTURE": {
+       "n": 1,
+       "net": -453.56
+      },
+      "TARGET_BASE": {
+       "n": 1,
+       "net": 5254.77
+      },
+      "TIME": {
+       "n": 4,
+       "net": 1481.49
+      }
+     }
+    },
+    "adverse": {
+     "net": 4746.07,
+     "without_best": -372.9,
+     "without_top2": -1590.47,
+     "sessions": 63,
+     "trades": 7,
+     "traded_expiries": 7,
+     "worst": -1156.01,
+     "worst_marked": -1156.01,
+     "fees": 395.93,
+     "minutes_in": 83,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 5594.78,
+      "2026": -848.71
+     },
+     "per_expiry": 75.33
+    },
+    "halves_ordinary": [
+     5166.67,
+     0
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 4501.31,
+      "liq_dd": 1929.73,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 4113.68,
+      "liq_dd": 2061.68,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "target_150": {
+    "ordinary": {
+     "net": 5166.67,
+     "without_best": -88.1,
+     "without_top2": -1371.61,
+     "sessions": 63,
+     "trades": 7,
+     "traded_expiries": 7,
+     "worst": -1116.03,
+     "worst_marked": -1130.0,
+     "fees": 396.33,
+     "minutes_in": 83,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 5778.53,
+      "2026": -611.86
+     },
+     "per_expiry": 82.01,
+     "winners": 3,
+     "avg_win": 2354.01,
+     "avg_loss": -473.84,
+     "by_side": {
+      "CALL": -1258.02,
+      "PUT": 6424.69
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 1,
+       "net": -1116.03
+      },
+      "STRUCTURE": {
+       "n": 1,
+       "net": -453.56
+      },
+      "TARGET_BASE": {
+       "n": 1,
+       "net": 5254.77
+      },
+      "TIME": {
+       "n": 4,
+       "net": 1481.49
+      }
+     }
+    },
+    "adverse": {
+     "net": 4746.07,
+     "without_best": -372.9,
+     "without_top2": -1590.47,
+     "sessions": 63,
+     "trades": 7,
+     "traded_expiries": 7,
+     "worst": -1156.01,
+     "worst_marked": -1156.01,
+     "fees": 395.93,
+     "minutes_in": 83,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 5594.78,
+      "2026": -848.71
+     },
+     "per_expiry": 75.33
+    },
+    "halves_ordinary": [
+     5166.67,
+     0
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 4501.31,
+      "liq_dd": 1929.73,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 4113.68,
+      "liq_dd": 2061.68,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "tickets": {
+    "matched": 7,
+    "matched_changed": 0,
+    "matched_net_delta": 0.0,
+    "matched_gain_on_reference_losers": 0.0,
+    "matched_change_on_reference_winners": 0.0,
+    "candidate_only": 0,
+    "candidate_only_net": 0,
+    "candidate_only_winners": 0,
+    "reference_only": 0,
+    "reference_only_net": 0,
+    "reference_only_winners": 0,
+    "changed_expiries": 0
+   }
+  },
+  "E032_native|SENSEX": {
+   "native": {
+    "ordinary": {
+     "net": 2449.18,
+     "without_best": -2805.59,
+     "without_top2": -4089.1,
+     "sessions": 63,
+     "trades": 12,
+     "traded_expiries": 11,
+     "worst": -1124.54,
+     "worst_marked": -1124.54,
+     "fees": 640.82,
+     "minutes_in": 102,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4844.31,
+      "2026": -2395.13
+     },
+     "per_expiry": 38.88,
+     "winners": 3,
+     "avg_win": 2417.45,
+     "avg_loss": -533.69,
+     "by_side": {
+      "CALL": -2414.68,
+      "PUT": 4863.86
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 6,
+       "net": -4071.23
+      },
+      "STRUCTURE": {
+       "n": 1,
+       "net": -453.56
+      },
+      "TARGET_BASE": {
+       "n": 1,
+       "net": 5254.77
+      },
+      "TIME": {
+       "n": 4,
+       "net": 1719.2
+      }
+     }
+    },
+    "adverse": {
+     "net": 1920.62,
+     "without_best": -3198.35,
+     "without_top2": -4415.92,
+     "sessions": 63,
+     "trades": 12,
+     "traded_expiries": 11,
+     "worst": -1169.52,
+     "worst_marked": -1169.52,
+     "fees": 640.38,
+     "minutes_in": 102,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4599.59,
+      "2026": -2678.97
+     },
+     "per_expiry": 30.49
+    },
+    "halves_ordinary": [
+     2449.18,
+     0
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 1987.0,
+      "liq_dd": 3557.21,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 1516.4,
+      "liq_dd": 3737.16,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "target_150": {
+    "ordinary": {
+     "net": 2449.18,
+     "without_best": -2805.59,
+     "without_top2": -4089.1,
+     "sessions": 63,
+     "trades": 12,
+     "traded_expiries": 11,
+     "worst": -1124.54,
+     "worst_marked": -1124.54,
+     "fees": 640.82,
+     "minutes_in": 102,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4844.31,
+      "2026": -2395.13
+     },
+     "per_expiry": 38.88,
+     "winners": 3,
+     "avg_win": 2417.45,
+     "avg_loss": -533.69,
+     "by_side": {
+      "CALL": -2414.68,
+      "PUT": 4863.86
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 6,
+       "net": -4071.23
+      },
+      "STRUCTURE": {
+       "n": 1,
+       "net": -453.56
+      },
+      "TARGET_BASE": {
+       "n": 1,
+       "net": 5254.77
+      },
+      "TIME": {
+       "n": 4,
+       "net": 1719.2
+      }
+     }
+    },
+    "adverse": {
+     "net": 1920.62,
+     "without_best": -3198.35,
+     "without_top2": -4415.92,
+     "sessions": 63,
+     "trades": 12,
+     "traded_expiries": 11,
+     "worst": -1169.52,
+     "worst_marked": -1169.52,
+     "fees": 640.38,
+     "minutes_in": 102,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4599.59,
+      "2026": -2678.97
+     },
+     "per_expiry": 30.49
+    },
+    "halves_ordinary": [
+     2449.18,
+     0
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 1987.0,
+      "liq_dd": 3557.21,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 1516.4,
+      "liq_dd": 3737.16,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "tickets": {
+    "matched": 12,
+    "matched_changed": 0,
+    "matched_net_delta": 0.0,
+    "matched_gain_on_reference_losers": 0.0,
+    "matched_change_on_reference_winners": 0.0,
+    "candidate_only": 0,
+    "candidate_only_net": 0,
+    "candidate_only_winners": 0,
+    "reference_only": 0,
+    "reference_only_net": 0,
+    "reference_only_winners": 0,
+    "changed_expiries": 0
+   }
+  },
+  "EN55_native|SENSEX": {
+   "native": {
+    "ordinary": {
+     "net": 2470.34,
+     "without_best": -2479.37,
+     "without_top2": -3008.48,
+     "sessions": 63,
+     "trades": 10,
+     "traded_expiries": 9,
+     "worst": -784.45,
+     "worst_marked": -854.32,
+     "fees": 578.66,
+     "minutes_in": 69,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4554.39,
+      "2026": -2084.05
+     },
+     "per_expiry": 39.21,
+     "winners": 3,
+     "avg_win": 1928.97,
+     "avg_loss": -473.79,
+     "by_side": {
+      "CALL": -1728.39,
+      "PUT": 4198.73
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 5,
+       "net": -2880.39
+      },
+      "STRUCTURE": {
+       "n": 1,
+       "net": -253.38
+      },
+      "TARGET_BASE": {
+       "n": 1,
+       "net": 4949.71
+      },
+      "TIME": {
+       "n": 3,
+       "net": 654.4
+      }
+     }
+    },
+    "adverse": {
+     "net": 2236.74,
+     "without_best": -2598.16,
+     "without_top2": -3107.31,
+     "sessions": 63,
+     "trades": 10,
+     "traded_expiries": 9,
+     "worst": -805.41,
+     "worst_marked": -868.29,
+     "fees": 578.26,
+     "minutes_in": 69,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4391.66,
+      "2026": -2154.92
+     },
+     "per_expiry": 35.5
+    },
+    "halves_ordinary": [
+     2470.34,
+     0
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 2470.34,
+      "liq_dd": 2878.55,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 2236.74,
+      "liq_dd": 2929.46,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "target_150": {
+    "ordinary": {
+     "net": 2470.34,
+     "without_best": -2479.37,
+     "without_top2": -3008.48,
+     "sessions": 63,
+     "trades": 10,
+     "traded_expiries": 9,
+     "worst": -784.45,
+     "worst_marked": -854.32,
+     "fees": 578.66,
+     "minutes_in": 69,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4554.39,
+      "2026": -2084.05
+     },
+     "per_expiry": 39.21,
+     "winners": 3,
+     "avg_win": 1928.97,
+     "avg_loss": -473.79,
+     "by_side": {
+      "CALL": -1728.39,
+      "PUT": 4198.73
+     },
+     "by_first_exit": {
+      "STOP": {
+       "n": 5,
+       "net": -2880.39
+      },
+      "STRUCTURE": {
+       "n": 1,
+       "net": -253.38
+      },
+      "TARGET_BASE": {
+       "n": 1,
+       "net": 4949.71
+      },
+      "TIME": {
+       "n": 3,
+       "net": 654.4
+      }
+     }
+    },
+    "adverse": {
+     "net": 2236.74,
+     "without_best": -2598.16,
+     "without_top2": -3107.31,
+     "sessions": 63,
+     "trades": 10,
+     "traded_expiries": 9,
+     "worst": -805.41,
+     "worst_marked": -868.29,
+     "fees": 578.26,
+     "minutes_in": 69,
+     "unresolved": 0,
+     "tail_days": 1,
+     "by_year": {
+      "2025": 4391.66,
+      "2026": -2154.92
+     },
+     "per_expiry": 35.5
+    },
+    "halves_ordinary": [
+     2470.34,
+     0
+    ],
+    "wallet": {
+     "ordinary": {
+      "P": 2470.34,
+      "liq_dd": 2878.55,
+      "halted": 0,
+      "first_halt": null
+     },
+     "adverse": {
+      "P": 2236.74,
+      "liq_dd": 2929.46,
+      "halted": 0,
+      "first_halt": null
+     }
+    }
+   },
+   "tickets": {
+    "matched": 10,
+    "matched_changed": 0,
+    "matched_net_delta": 0.0,
+    "matched_gain_on_reference_losers": 0.0,
+    "matched_change_on_reference_winners": 0.0,
+    "candidate_only": 0,
+    "candidate_only_net": 0,
+    "candidate_only_winners": 0,
+    "reference_only": 0,
+    "reference_only_net": 0,
+    "reference_only_winners": 0,
+    "changed_expiries": 0
+   }
+  }
+ },
+ "EN98_extension_at_EN87_events_ATR10_units": {
+  "n": 38,
+  "min": 2.49,
+  "median": 4.7955,
+  "max": 7.007,
+  "all_E03_env_events_share_at_or_below_2": 0.117
+ },
+ "EN102_min_signed_S15_fixed_basket_during_EN87_holds": {
+  "parents": 25,
+  "negative": 0,
+  "values": [
+   0.038,
+   0.0417,
+   0.0546,
+   0.0547,
+   0.0677,
+   0.0758,
+   0.078,
+   0.0965,
+   0.1145,
+   0.1162,
+   0.1226,
+   0.1269,
+   0.1373,
+   0.1463,
+   0.2096,
+   0.2195,
+   0.2492,
+   0.2547,
+   0.2565,
+   0.257,
+   0.2755,
+   0.29,
+   0.2981,
+   0.3287,
+   0.3335
+  ]
+ },
+ "EN99_arm_outcomes": {
+  "EN99:confirm:0001": {
+   "TRIGGER": 3,
+   "TTL_EXPIRED": 26,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 4
+  },
+  "EN99:confirm:0002": {
+   "TRIGGER": 3,
+   "TTL_EXPIRED": 26,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 4
+  },
+  "EN99:confirm:0003": {
+   "TTL_EXPIRED": 27,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 4,
+   "TRIGGER": 2
+  },
+  "EN99:confirm:0004": {
+   "TTL_EXPIRED": 27,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 4,
+   "TRIGGER": 2
+  },
+  "EN99:confirm:0005": {
+   "TRIGGER": 7,
+   "WINDOW_END": 1,
+   "TTL_EXPIRED": 20,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 4,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:confirm:0006": {
+   "TRIGGER": 8,
+   "WINDOW_END": 1,
+   "TTL_EXPIRED": 19,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 4,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:confirm:0007": {
+   "TRIGGER": 5,
+   "WINDOW_END": 1,
+   "TTL_EXPIRED": 21,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 5,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:confirm:0008": {
+   "TRIGGER": 6,
+   "WINDOW_END": 1,
+   "TTL_EXPIRED": 20,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "ARM_ACTIVE": 5,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:reclaim:0001": {
+   "TTL_EXPIRED": 24,
+   "ARM_ACTIVE": 7,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "INFORMATION_LOST": 1,
+   "TRIGGER": 1
+  },
+  "EN99:reclaim:0002": {
+   "TTL_EXPIRED": 24,
+   "ARM_ACTIVE": 7,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "INFORMATION_LOST": 1,
+   "TRIGGER": 1
+  },
+  "EN99:reclaim:0003": {
+   "TTL_EXPIRED": 25,
+   "ARM_ACTIVE": 7,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:reclaim:0004": {
+   "TTL_EXPIRED": 25,
+   "ARM_ACTIVE": 7,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:reclaim:0005": {
+   "WINDOW_END": 2,
+   "ARM_ACTIVE": 7,
+   "TTL_EXPIRED": 19,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "TRIGGER": 4,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:reclaim:0006": {
+   "WINDOW_END": 2,
+   "ARM_ACTIVE": 7,
+   "TTL_EXPIRED": 19,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "TRIGGER": 4,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:reclaim:0007": {
+   "WINDOW_END": 2,
+   "ARM_ACTIVE": 7,
+   "TTL_EXPIRED": 20,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "TRIGGER": 3,
+   "INFORMATION_LOST": 1
+  },
+  "EN99:reclaim:0008": {
+   "WINDOW_END": 2,
+   "ARM_ACTIVE": 7,
+   "TTL_EXPIRED": 20,
+   "UNAFFORDABLE_AT_EVENT": 5,
+   "TRIGGER": 3,
+   "INFORMATION_LOST": 1
+  }
+ }
+}

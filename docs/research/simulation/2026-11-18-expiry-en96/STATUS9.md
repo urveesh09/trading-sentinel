@@ -1,19 +1,21 @@
 # Round 9 status
 
-PROPOSAL ONLY. Ten family specifications written, with 219 bar-policy and 12
-packet-execution configurations before controls/deduplication. None executed.
+IMPLEMENTED, FROZEN AND SCORED ONCE (development screen on studied sessions). No strategy qualifies; no champion nominated.
 
-The owner explicitly authorized family-level permutations for this new round.
-Earlier one-version freezes and all historical results remain unchanged.
-Historical development search does not create an untouched holdout.
+| Step | Commit / receipt |
+|---|---|
+| Auditor's proposal (EN96–EN105, 231 configurations) | `366d0b0d` (PLAN9.md, SOURCES9.md, families9.json) |
+| Implementation + my families EN106–EN110 (87 configurations), checks, freeze | `99958d97` (IMPL9.md, freeze9.json, parity/reproduce/causal/unit/selftest receipts) |
+| One-shot score | `results9-started.json` (head `99958d97`), `results9.json`, `anatomy9.json`, `trials9.jsonl` |
+| Reconciliation | `verification9.json` PASS |
+| Labelled post-score diagnostics | `post9.json` |
+| Write-up | `ANATOMY9.md`, `COMPONENTS9.md`, `ANATOMY9-tables.md` |
 
-The round-8 work is saved in commits a5115893 and cceabe62. This proposal's
-commit can be resolved with:
-`git log -1 --format=%H -- docs/research/simulation/2026-11-18-expiry-en96/STATUS9.md`.
-This turn creates local Dev documentation only; no push or deployment performed.
-Production behavior was not re-audited for this proposal; its last recorded
-checkout identity in round-8 receipts is 55b5e942, not a new runtime assertion.
+**Why most labels are "INCONCLUSIVE — support".** EN87 funds only 7–10 parents per 60-session window, below the registered selection floor of 10. The chronological selection therefore fell back to EN87 in 3–5 of 5 folds for every EN87-based family. The floor was not lowered.
 
-Read `../../../EXPIRY_RESEARCH_EN96_EN105.md` for exact mechanics, selection,
-acceptance and report contracts. Source review is in SOURCES9.md; this turn's
-document/manifest/integrity checks are in verification-plan9.json.
+**Inference** is descriptive only. The calibration receipts show over-rejection under negatively skewed nulls; this was decided before the score.
+
+**State:**
+- Dev only; pushed to `codex/production-correction-hedge-p0`; not deployed. Production stays `55b5e942`.
+- E03.2, EN55's registration, normal F&O, runtime configuration and capital are unchanged.
+- The EN99 packet block stays source-gated, and SENSEX OI-dependent cells are null.
