@@ -1,0 +1,52 @@
+{
+  "files": {
+    "PLAN6.md": "214f60b6f9ebf0b6d18171672f25e5da8b20ffb1ba6ba0021fa58bd626d9f5b1",
+    "en_lab6.py": "8097197c79582c4c53c74585a7fb3be66fe25c00b456abf33ad461a5b8431d95",
+    "en_ml6.py": "5b06518c9a26363ef931a1a2233ea25c44bfc37dbca7be25fa9fe8d3dd60d6bf",
+    "pk6.py": "cf445b10e37652c4ee502c404d72de5d1647a5269660a139f22b5f247e5a6baa",
+    "en_score6.py": "f25a20fb1070aa151bd209c0a8df820814959dfce032e070162f95a5809b7463",
+    "en_lab4.py": "4b72bf3fc10c1168c56741d898847ca523c1819eb38ee8153ba253e839c65041",
+    "en4_data.py": "3a882f05d4748cb87b3d4a50f1843e50c86b54add4f6c48c88b615decfe9c1ab",
+    "en_lab3.py": "b5d47115edfe41b72e3a1138ef0105f70e03b46160808d8e5c734ebfa4b094ac",
+    "en_lab2.py": "95e9d0d542ce79fcc004234de1eb94a33e6792a926fc774b432fe70c63bd5bcf",
+    "en_lab.py": "cbe87626949ea41fb18b8b903e80b686c10fe82e717f47b381065a6842919417",
+    "en_base.py": "74a0802cec9a6f9978446bbc765c853bb2af5f15471352572358794c955ed09d",
+    "exam2023.py": "2da8639a7d135ff209c6946f46f3395fbd9b3fe94eee29cebb49af81b2fb41e3",
+    "exam2023b.py": "ffa9a97ef2e9008d414a20e27a16b26bc4f0801e107f9a0f10e3027df80b21cb",
+    "data-binding4.json": "9478e69f6588271b3b7a8c2da2e5edc55a8818f927dee921247d955c1a3ea070",
+    "en_lab5.py": "65d38714c0d82b9a9960b19431bec97093069d51ab8171b8e6ba25a6b4409dd5",
+    "tr01.py": "5333e398fa2385c3a6e90a6f8e4a7ae1d05e2e70de1fb5f679b5ca8310db676b",
+    "r8b_lab.py": "1ec605ee00162f5b5dccca5252e6d9715aebbd081369213c377a67a00585ab1c",
+    "e031_lab.py": "8602a773461a1ad09f88e84fa8403563e01d856d2a428435e7a5730b618224b6",
+    "e03_lab.py": "7cce48426f27e2771179aea72b279edbcc3a63bf2ce9d704d5a10625288f8b38",
+    "e02_lab.py": "6d4d29907fe950b954564ba22224a848dfff8fc23fabac199cf9ccc21ae14ba3",
+    "data.py": "b9d9895ae45309f4b82d0fe34d0796c421cc4ac90be0e739f98928343ac4d295",
+    "expiry_paper.py": "6c6b681082f3782b50fce0185b18173dea68a95ba4a8e3a22581d8ec088db9d9",
+    "cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd",
+    "data-binding.json": "52ac33f5ee24839173a58b3a137a3f0d56112c48e9fdc0518f716ef5cc1eca4b"
+  },
+  "data": {
+    "tr01": {
+      "2026-11-16": {
+        "chunks": 401,
+        "records": 10222859,
+        "manifest_sha256": "a0c3acb076a33d5a1902d5146d6e188f0d6e061f4d1ad1ad4929ebff7a616325",
+        "instruments_sha256": "99eec8c95175e891dca3c96cd0b17bd59bb31685ddf67647facf48153e7803ab",
+        "events_sha256": "fa3acb50656bd74c8c1c71da85ba4bfacc71700acbaa9e04ce586da2d2f46184"
+      },
+      "2026-11-17": {
+        "chunks": 401,
+        "records": 10455753,
+        "manifest_sha256": "3ea0a7ad2dc5334f5ff9bfaedadb6df6aaaebc1c587597cc396f99cc3c055eec",
+        "instruments_sha256": "2c4fbf4729924967947e43a551d0eb870a3ba4449bed5382d4546a2b6e3e2f19",
+        "events_sha256": "25360c1798665d08e93c80d6cdf521a686ca2a568adef4d853311414edb96a76"
+      }
+    },
+    "breeze_nov17_options_sha256": "174b12bfa32f62f37b73df03cf294cacfb844f0a74d1853c0e646c8da5715437",
+    "breeze_nov17_option_rows": 8700,
+    "exam2026_sqlite_sha256": "5ba416041cddec916392fc30a3ce2f592bfd8c5bc29a6c99844ae3e80b34cdc0",
+    "sklearn": "1.5.2",
+    "numpy": "1.26.4"
+  },
+  "head": "e16bee2f234191bbb0d266f420f6f61045a5562b"
+}
