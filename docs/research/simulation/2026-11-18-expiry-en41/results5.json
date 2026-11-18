@@ -1,0 +1,4480 @@
+{
+ "freeze_head": "ee25a1135fd24c85ed753ca591498a5ab45ed16a",
+ "sessions": {
+  "NIFTY": 197,
+  "SENSEX": 63
+ },
+ "status": {
+  "EN44": "FAIL",
+  "EN45": "FAIL",
+  "EN49": "INCONCLUSIVE",
+  "EN51": "FAIL",
+  "EN52": "FAIL",
+  "EN54": "FAIL",
+  "EN46": "FAIL",
+  "EN47": "FAIL",
+  "EN50": "INCONCLUSIVE",
+  "EN53": "FAIL",
+  "EN41": "DATA_UNAVAILABLE",
+  "EN42": "DATA_UNAVAILABLE",
+  "EN43": "DATA_UNAVAILABLE",
+  "EN48": "INCONCLUSIVE",
+  "EN55": "FORWARD-ONLY"
+ },
+ "E032_25k": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 14275.2,
+    "without_top2": 652.22,
+    "worst": -1281.39,
+    "tickets": 66,
+    "expiries": 58,
+    "winners": 27,
+    "profit_factor": 1.993,
+    "by_year": {
+     "2023": -3069.4,
+     "2024": 15580.74,
+     "2025": 5936.81,
+     "2026": -4172.95
+    },
+    "unresolved": 0,
+    "fees": 3482.8
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 11586.18,
+    "without_top2": -1751.19,
+    "worst": -1339.86,
+    "tickets": 65,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.745,
+    "by_year": {
+     "2023": -3738.24,
+     "2024": 14629.39,
+     "2025": 5371.36,
+     "2026": -4676.33
+    },
+    "unresolved": 0,
+    "fees": 3432.07
+   },
+   "NIFTY|catastrophe": {
+    "net": -12347.32,
+    "without_top2": -13711.77,
+    "worst": -1278.8,
+    "tickets": 32,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.152,
+    "by_year": {
+     "2023": -5963.85,
+     "2024": -2582.43,
+     "2025": 144.73,
+     "2026": -3945.77
+    },
+    "unresolved": 0,
+    "fees": 1593.07
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4122.87,
+    "swept": 0.0,
+    "wallet": 20877.13,
+    "halted": 146,
+    "first_halt": "2024-01-18",
+    "drawdown": 4122.87,
+    "worst": -1161.74,
+    "trades": 18
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4035.53,
+    "swept": 0.0,
+    "wallet": 20964.47,
+    "halted": 164,
+    "first_halt": "2023-09-14",
+    "drawdown": 4035.53,
+    "worst": -1220.22,
+    "trades": 14
+   },
+   "SENSEX|ordinary": {
+    "net": 2449.18,
+    "without_top2": -4089.1,
+    "worst": -1124.54,
+    "tickets": 12,
+    "expiries": 11,
+    "winners": 3,
+    "profit_factor": 1.51,
+    "by_year": {
+     "2025": 4844.31,
+     "2026": -2395.13
+    },
+    "unresolved": 0,
+    "fees": 640.82
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 1920.62,
+    "without_top2": -4415.92,
+    "worst": -1169.52,
+    "tickets": 12,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.379,
+    "by_year": {
+     "2025": 4599.59,
+     "2026": -2678.97
+    },
+    "unresolved": 0,
+    "fees": 640.38
+   },
+   "SENSEX|catastrophe": {
+    "net": -4598.78,
+    "without_top2": -4598.78,
+    "worst": -1382.1,
+    "tickets": 6,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -2245.1,
+     "2026": -2353.68
+    },
+    "unresolved": 0,
+    "fees": 300.78
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 1987.0,
+    "swept": 0.0,
+    "wallet": 26987.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3380.86,
+    "worst": -1124.54,
+    "trades": 12
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 1516.4,
+    "swept": 0.0,
+    "wallet": 26516.4,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3547.8,
+    "worst": -1169.52,
+    "trades": 12
+   }
+  }
+ },
+ "E032_30k": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 14275.2,
+    "without_top2": 652.22,
+    "worst": -1281.39,
+    "tickets": 66,
+    "expiries": 58,
+    "winners": 27,
+    "profit_factor": 1.993,
+    "by_year": {
+     "2023": -3069.4,
+     "2024": 15580.74,
+     "2025": 5936.81,
+     "2026": -4172.95
+    },
+    "unresolved": 0,
+    "fees": 3482.8
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 11586.18,
+    "without_top2": -1751.19,
+    "worst": -1339.86,
+    "tickets": 65,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.745,
+    "by_year": {
+     "2023": -3738.24,
+     "2024": 14629.39,
+     "2025": 5371.36,
+     "2026": -4676.33
+    },
+    "unresolved": 0,
+    "fees": 3432.07
+   },
+   "NIFTY|catastrophe": {
+    "net": -12347.32,
+    "without_top2": -13711.77,
+    "worst": -1278.8,
+    "tickets": 32,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.152,
+    "by_year": {
+     "2023": -5963.85,
+     "2024": -2582.43,
+     "2025": 144.73,
+     "2026": -3945.77
+    },
+    "unresolved": 0,
+    "fees": 1593.07
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4122.87,
+    "swept": 0.0,
+    "wallet": 25877.13,
+    "halted": 146,
+    "first_halt": "2024-01-18",
+    "drawdown": 4122.87,
+    "worst": -1161.74,
+    "trades": 18
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4035.53,
+    "swept": 0.0,
+    "wallet": 25964.47,
+    "halted": 164,
+    "first_halt": "2023-09-14",
+    "drawdown": 4035.53,
+    "worst": -1220.22,
+    "trades": 14
+   },
+   "SENSEX|ordinary": {
+    "net": 2449.18,
+    "without_top2": -4089.1,
+    "worst": -1124.54,
+    "tickets": 12,
+    "expiries": 11,
+    "winners": 3,
+    "profit_factor": 1.51,
+    "by_year": {
+     "2025": 4844.31,
+     "2026": -2395.13
+    },
+    "unresolved": 0,
+    "fees": 640.82
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 1920.62,
+    "without_top2": -4415.92,
+    "worst": -1169.52,
+    "tickets": 12,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.379,
+    "by_year": {
+     "2025": 4599.59,
+     "2026": -2678.97
+    },
+    "unresolved": 0,
+    "fees": 640.38
+   },
+   "SENSEX|catastrophe": {
+    "net": -4598.78,
+    "without_top2": -4598.78,
+    "worst": -1382.1,
+    "tickets": 6,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -2245.1,
+     "2026": -2353.68
+    },
+    "unresolved": 0,
+    "fees": 300.78
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 1987.0,
+    "swept": 2422.16,
+    "wallet": 29564.84,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3380.86,
+    "worst": -1124.54,
+    "trades": 12
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 1516.4,
+    "swept": 2299.8,
+    "wallet": 29216.6,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3547.8,
+    "worst": -1169.52,
+    "trades": 12
+   }
+  }
+ },
+ "E032_sym": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 7174.11,
+    "without_top2": 11.2,
+    "worst": -792.52,
+    "tickets": 68,
+    "expiries": 59,
+    "winners": 27,
+    "profit_factor": 1.654,
+    "by_year": {
+     "2023": -2570.38,
+     "2024": 8897.97,
+     "2025": 3528.74,
+     "2026": -2682.22
+    },
+    "unresolved": 0,
+    "fees": 3424.14
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 5439.79,
+    "without_top2": -1586.82,
+    "worst": -831.5,
+    "tickets": 67,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.458,
+    "by_year": {
+     "2023": -2998.87,
+     "2024": 8271.27,
+     "2025": 3226.33,
+     "2026": -3058.94
+    },
+    "unresolved": 0,
+    "fees": 3374.21
+   },
+   "NIFTY|catastrophe": {
+    "net": -8277.41,
+    "without_top2": -9427.32,
+    "worst": -663.0,
+    "tickets": 31,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.165,
+    "by_year": {
+     "2023": -3864.66,
+     "2024": -2436.44,
+     "2025": -49.39,
+     "2026": -1926.92
+    },
+    "unresolved": 0,
+    "fees": 1517.41
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4244.59,
+    "swept": 0.0,
+    "wallet": 25755.41,
+    "halted": 86,
+    "first_halt": "2025-03-13",
+    "drawdown": 4244.59,
+    "worst": -604.47,
+    "trades": 32
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4198.51,
+    "swept": 0.0,
+    "wallet": 25801.49,
+    "halted": 86,
+    "first_halt": "2025-03-13",
+    "drawdown": 4198.51,
+    "worst": -633.71,
+    "trades": 30
+   },
+   "SENSEX|ordinary": {
+    "net": -758.97,
+    "without_top2": -3074.84,
+    "worst": -599.66,
+    "tickets": 11,
+    "expiries": 11,
+    "winners": 3,
+    "profit_factor": 0.777,
+    "by_year": {
+     "2025": 1624.85,
+     "2026": -2383.82
+    },
+    "unresolved": 0,
+    "fees": 543.97
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -1028.78,
+    "without_top2": -3266.74,
+    "worst": -619.66,
+    "tickets": 11,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.712,
+    "by_year": {
+     "2025": 1532.94,
+     "2026": -2561.72
+    },
+    "unresolved": 0,
+    "fees": 543.78
+   },
+   "SENSEX|catastrophe": {
+    "net": -2853.56,
+    "without_top2": -2853.56,
+    "worst": -728.43,
+    "tickets": 6,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -947.27,
+     "2026": -1906.29
+    },
+    "unresolved": 0,
+    "fees": 292.56
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -758.97,
+    "swept": 812.42,
+    "wallet": 28428.61,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2907.37,
+    "worst": -599.66,
+    "trades": 11
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -1477.3,
+    "swept": 766.47,
+    "wallet": 27756.23,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3026.33,
+    "worst": -619.66,
+    "trades": 11
+   }
+  }
+ },
+ "EN44": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -4297.74,
+    "without_top2": -5823.86,
+    "worst": -513.23,
+    "tickets": 43,
+    "expiries": 41,
+    "winners": 10,
+    "profit_factor": 0.417,
+    "by_year": {
+     "2023": -983.59,
+     "2024": -1571.52,
+     "2025": -1742.63,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 2120.24
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -5213.57,
+    "without_top2": -6665.0,
+    "worst": -520.28,
+    "tickets": 39,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.313,
+    "by_year": {
+     "2023": -1449.04,
+     "2024": -1944.99,
+     "2025": -1819.54,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 1921.32
+   },
+   "NIFTY|catastrophe": {
+    "net": -3510.73,
+    "without_top2": -3932.05,
+    "worst": -717.6,
+    "tickets": 15,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.107,
+    "by_year": {
+     "2023": -1203.75,
+     "2024": -1835.44,
+     "2025": -471.54,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 735.23
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -3199.2,
+    "swept": 0.0,
+    "wallet": 26800.8,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3485.25,
+    "worst": -513.23,
+    "trades": 36
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3222.93,
+    "swept": 0.0,
+    "wallet": 26777.07,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3457.0,
+    "worst": -520.28,
+    "trades": 31
+   },
+   "SENSEX|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true,
+     "above_null": false
+    },
+    "support": {
+     "tickets": 43,
+     "expiries": 41
+    },
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "verdict": "DATA_UNAVAILABLE"
+   }
+  },
+  "dev": "FAIL"
+ },
+ "EN44_now_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -5987.34,
+    "without_top2": -7668.99,
+    "worst": -621.54,
+    "tickets": 112,
+    "expiries": 102,
+    "winners": 33,
+    "profit_factor": 0.619,
+    "by_year": {
+     "2023": -2123.47,
+     "2024": -3000.36,
+     "2025": -863.51,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 5532.34
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -9361.78,
+    "without_top2": -10838.55,
+    "worst": -676.77,
+    "tickets": 96,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.388,
+    "by_year": {
+     "2023": -3042.41,
+     "2024": -4379.55,
+     "2025": -1939.82,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 4737.03
+   },
+   "NIFTY|catastrophe": {
+    "net": -8318.5,
+    "without_top2": -9019.74,
+    "worst": -561.76,
+    "tickets": 35,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.082,
+    "by_year": {
+     "2023": -3281.63,
+     "2024": -3262.78,
+     "2025": -1774.09,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 1721.0
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4017.63,
+    "swept": 0.0,
+    "wallet": 25982.37,
+    "halted": 92,
+    "first_halt": "2025-01-30",
+    "drawdown": 4017.63,
+    "worst": -621.54,
+    "trades": 59
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3927.7,
+    "swept": 116.22,
+    "wallet": 25956.08,
+    "halted": 114,
+    "first_halt": "2024-08-29",
+    "drawdown": 4160.14,
+    "worst": -676.77,
+    "trades": 38
+   },
+   "SENSEX|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   }
+  }
+ },
+ "EN44_noon_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -3487.3,
+    "without_top2": -5834.47,
+    "worst": -465.0,
+    "tickets": 63,
+    "expiries": 62,
+    "winners": 20,
+    "profit_factor": 0.618,
+    "by_year": {
+     "2023": -2618.23,
+     "2024": -501.3,
+     "2025": 633.07,
+     "2026": -1000.84
+    },
+    "unresolved": 0,
+    "fees": 3103.8
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -4662.92,
+    "without_top2": -6928.92,
+    "worst": -490.99,
+    "tickets": 56,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.486,
+    "by_year": {
+     "2023": -2804.5,
+     "2024": -906.82,
+     "2025": -306.92,
+     "2026": -644.68
+    },
+    "unresolved": 0,
+    "fees": 2755.17
+   },
+   "NIFTY|catastrophe": {
+    "net": -5561.71,
+    "without_top2": -5999.65,
+    "worst": -662.9,
+    "tickets": 22,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.073,
+    "by_year": {
+     "2023": -2075.0,
+     "2024": -670.49,
+     "2025": -2565.31,
+     "2026": -250.91
+    },
+    "unresolved": 0,
+    "fees": 1076.71
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -3781.19,
+    "swept": 7.87,
+    "wallet": 26210.94,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3796.93,
+    "worst": -465.0,
+    "trades": 34
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3967.84,
+    "swept": 0.0,
+    "wallet": 26032.16,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3967.84,
+    "worst": -490.99,
+    "trades": 27
+   },
+   "SENSEX|ordinary": {
+    "net": 233.3,
+    "without_top2": -632.55,
+    "worst": -317.34,
+    "tickets": 12,
+    "expiries": 12,
+    "winners": 4,
+    "profit_factor": 1.22,
+    "by_year": {
+     "2025": 63.67,
+     "2026": 169.63
+    },
+    "unresolved": 0,
+    "fees": 593.7
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -14.42,
+    "without_top2": -828.33,
+    "worst": -332.33,
+    "tickets": 11,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.988,
+    "by_year": {
+     "2025": -68.15,
+     "2026": 53.73
+    },
+    "unresolved": 0,
+    "fees": 543.42
+   },
+   "SENSEX|catastrophe": {
+    "net": -460.84,
+    "without_top2": -460.84,
+    "worst": -363.29,
+    "tickets": 2,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -97.55,
+     "2026": -363.29
+    },
+    "unresolved": 0,
+    "fees": 97.84
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 233.3,
+    "swept": 201.28,
+    "wallet": 30032.02,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 656.22,
+    "worst": -317.34,
+    "trades": 12
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -14.42,
+    "swept": 169.34,
+    "wallet": 29816.24,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 739.15,
+    "worst": -332.33,
+    "trades": 11
+   }
+  }
+ },
+ "EN45": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -10898.2,
+    "without_top2": -11982.91,
+    "worst": -618.56,
+    "tickets": 136,
+    "expiries": 95,
+    "winners": 34,
+    "profit_factor": 0.182,
+    "by_year": {
+     "2023": -2274.53,
+     "2024": -2516.05,
+     "2025": -4745.79,
+     "2026": -1361.83
+    },
+    "unresolved": 0,
+    "fees": 6702.45
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -14180.04,
+    "without_top2": -15164.08,
+    "worst": -677.02,
+    "tickets": 134,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.117,
+    "by_year": {
+     "2023": -3056.45,
+     "2024": -3435.12,
+     "2025": -5842.73,
+     "2026": -1845.74
+    },
+    "unresolved": 0,
+    "fees": 6601.04
+   },
+   "NIFTY|catastrophe": {
+    "net": -14598.73,
+    "without_top2": -15132.56,
+    "worst": -706.19,
+    "tickets": 76,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.041,
+    "by_year": {
+     "2023": -4441.81,
+     "2024": -3583.79,
+     "2025": -4968.62,
+     "2026": -1604.51
+    },
+    "unresolved": 0,
+    "fees": 3733.98
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -3437.28,
+    "swept": 291.24,
+    "wallet": 26271.48,
+    "halted": 69,
+    "first_halt": "2025-07-10",
+    "drawdown": 4019.75,
+    "worst": -367.78,
+    "trades": 56
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3533.42,
+    "swept": 260.38,
+    "wallet": 26206.2,
+    "halted": 105,
+    "first_halt": "2024-10-31",
+    "drawdown": 4054.18,
+    "worst": -422.99,
+    "trades": 38
+   },
+   "SENSEX|ordinary": {
+    "net": -2270.4,
+    "without_top2": -2940.42,
+    "worst": -553.37,
+    "tickets": 24,
+    "expiries": 18,
+    "winners": 8,
+    "profit_factor": 0.314,
+    "by_year": {
+     "2025": -1331.55,
+     "2026": -938.85
+    },
+    "unresolved": 0,
+    "fees": 1182.4
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -2815.8,
+    "without_top2": -3405.9,
+    "worst": -601.35,
+    "tickets": 25,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.229,
+    "by_year": {
+     "2025": -1527.4,
+     "2026": -1288.4
+    },
+    "unresolved": 0,
+    "fees": 1230.8
+   },
+   "SENSEX|catastrophe": {
+    "net": -2635.07,
+    "without_top2": -2853.25,
+    "worst": -536.48,
+    "tickets": 12,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.076,
+    "by_year": {
+     "2025": -1464.49,
+     "2026": -1170.58
+    },
+    "unresolved": 0,
+    "fees": 589.07
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -2643.58,
+    "swept": 0.0,
+    "wallet": 27356.42,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2833.19,
+    "worst": -553.37,
+    "trades": 20
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -3027.76,
+    "swept": 0.0,
+    "wallet": 26972.24,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3083.31,
+    "worst": -601.35,
+    "trades": 20
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true,
+     "above_null": false
+    },
+    "support": {
+     "tickets": 136,
+     "expiries": 95
+    },
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true,
+     "above_null": false
+    },
+    "support": {
+     "tickets": 24,
+     "expiries": 18
+    },
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "dev": "FAIL"
+ },
+ "EN45_now_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -17078.98,
+    "without_top2": -18500.53,
+    "worst": -702.86,
+    "tickets": 265,
+    "expiries": 150,
+    "winners": 65,
+    "profit_factor": 0.226,
+    "by_year": {
+     "2023": -4607.65,
+     "2024": -5703.55,
+     "2025": -4851.98,
+     "2026": -1915.8
+    },
+    "unresolved": 0,
+    "fees": 13078.23
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -24167.26,
+    "without_top2": -25465.41,
+    "worst": -533.87,
+    "tickets": 262,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.127,
+    "by_year": {
+     "2023": -5741.95,
+     "2024": -7593.67,
+     "2025": -7397.35,
+     "2026": -3434.29
+    },
+    "unresolved": 0,
+    "fees": 12922.26
+   },
+   "NIFTY|catastrophe": {
+    "net": -31518.77,
+    "without_top2": -31964.38,
+    "worst": -803.55,
+    "tickets": 165,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.015,
+    "by_year": {
+     "2023": -10723.9,
+     "2024": -8077.15,
+     "2025": -8999.52,
+     "2026": -3718.2
+    },
+    "unresolved": 0,
+    "fees": 8102.52
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -3711.01,
+    "swept": 168.31,
+    "wallet": 26120.68,
+    "halted": 147,
+    "first_halt": "2024-01-11",
+    "drawdown": 4047.62,
+    "worst": -341.41,
+    "trades": 56
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3688.89,
+    "swept": 172.64,
+    "wallet": 26138.47,
+    "halted": 155,
+    "first_halt": "2023-11-16",
+    "drawdown": 4034.17,
+    "worst": -380.39,
+    "trades": 46
+   },
+   "SENSEX|ordinary": {
+    "net": -871.5,
+    "without_top2": -2672.06,
+    "worst": -648.52,
+    "tickets": 62,
+    "expiries": 38,
+    "winners": 20,
+    "profit_factor": 0.82,
+    "by_year": {
+     "2025": 1073.37,
+     "2026": -1944.87
+    },
+    "unresolved": 0,
+    "fees": 3062.5
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -2275.49,
+    "without_top2": -3970.17,
+    "worst": -685.49,
+    "tickets": 62,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.601,
+    "by_year": {
+     "2025": 516.8,
+     "2026": -2792.29
+    },
+    "unresolved": 0,
+    "fees": 3061.49
+   },
+   "SENSEX|catastrophe": {
+    "net": -6481.85,
+    "without_top2": -6575.06,
+    "worst": -834.2,
+    "tickets": 33,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.014,
+    "by_year": {
+     "2025": -2054.51,
+     "2026": -4427.34
+    },
+    "unresolved": 0,
+    "fees": 1617.85
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -189.38,
+    "swept": 649.87,
+    "wallet": 29160.75,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1587.92,
+    "worst": -648.52,
+    "trades": 59
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -894.27,
+    "swept": 378.58,
+    "wallet": 28727.15,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1701.28,
+    "worst": -685.49,
+    "trades": 56
+   }
+  }
+ },
+ "EN46": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 1202.37,
+    "without_top2": -1354.84,
+    "worst": -792.52,
+    "tickets": 28,
+    "expiries": 27,
+    "winners": 12,
+    "profit_factor": 1.225,
+    "by_year": {
+     "2023": -480.57,
+     "2024": 1416.13,
+     "2025": 2041.61,
+     "2026": -1774.8
+    },
+    "unresolved": 0,
+    "fees": 1387.88
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 663.1,
+    "without_top2": -1806.46,
+    "worst": -831.5,
+    "tickets": 27,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.118,
+    "by_year": {
+     "2023": -600.5,
+     "2024": 1211.54,
+     "2025": 2128.86,
+     "2026": -2076.8
+    },
+    "unresolved": 0,
+    "fees": 1338.9
+   },
+   "NIFTY|catastrophe": {
+    "net": -2496.31,
+    "without_top2": -3646.22,
+    "worst": -646.89,
+    "tickets": 12,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.337,
+    "by_year": {
+     "2023": -984.4,
+     "2024": -902.76,
+     "2025": 622.29,
+     "2026": -1231.44
+    },
+    "unresolved": 0,
+    "fees": 588.56
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": 1202.37,
+    "swept": 1611.23,
+    "wallet": 29591.14,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2020.1,
+    "worst": -792.52,
+    "trades": 28
+   },
+   "NIFTY|wallet_adverse": {
+    "P": 663.1,
+    "swept": 1521.83,
+    "wallet": 29141.27,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2380.56,
+    "worst": -831.5,
+    "trades": 27
+   },
+   "SENSEX|ordinary": {
+    "net": -413.99,
+    "without_top2": -2729.86,
+    "worst": -599.66,
+    "tickets": 9,
+    "expiries": 9,
+    "winners": 3,
+    "profit_factor": 0.865,
+    "by_year": {
+     "2025": 1624.85,
+     "2026": -2038.84
+    },
+    "unresolved": 0,
+    "fees": 444.99
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -632.84,
+    "without_top2": -2870.8,
+    "worst": -619.66,
+    "tickets": 9,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.801,
+    "by_year": {
+     "2025": 1532.94,
+     "2026": -2165.78
+    },
+    "unresolved": 0,
+    "fees": 444.84
+   },
+   "SENSEX|catastrophe": {
+    "net": -2520.27,
+    "without_top2": -2520.27,
+    "worst": -728.43,
+    "tickets": 5,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -947.27,
+     "2026": -1573.0
+    },
+    "unresolved": 0,
+    "fees": 243.27
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -413.99,
+    "swept": 812.42,
+    "wallet": 28773.59,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2656.99,
+    "worst": -599.66,
+    "trades": 9
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -632.84,
+    "swept": 766.47,
+    "wallet": 28600.69,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2750.96,
+    "worst": -619.66,
+    "trades": 9
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_top2": false,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "protection": false,
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_top2": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "protection": true,
+    "verdict": "FAIL"
+   }
+  },
+  "support": {
+   "affected": 46,
+   "expiries": 40
+  },
+  "dev": "FAIL",
+  "protection": false
+ },
+ "EN46_zero_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "NIFTY|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   }
+  }
+ },
+ "EN36_sym_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 1537.68,
+    "without_top2": -819.48,
+    "worst": -478.01,
+    "tickets": 35,
+    "expiries": 34,
+    "winners": 12,
+    "profit_factor": 1.249,
+    "by_year": {
+     "2023": -682.54,
+     "2024": 1038.25,
+     "2025": 1829.74,
+     "2026": -647.77
+    },
+    "unresolved": 0,
+    "fees": 1735.07
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 553.52,
+    "without_top2": -1812.72,
+    "worst": -504.0,
+    "tickets": 35,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.081,
+    "by_year": {
+     "2023": -848.19,
+     "2024": 648.51,
+     "2025": 1644.49,
+     "2026": -891.29
+    },
+    "unresolved": 0,
+    "fees": 1734.48
+   },
+   "NIFTY|catastrophe": {
+    "net": -3833.71,
+    "without_top2": -4983.62,
+    "worst": -568.73,
+    "tickets": 17,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.231,
+    "by_year": {
+     "2023": -1667.48,
+     "2024": -1683.42,
+     "2025": 216.21,
+     "2026": -699.02
+    },
+    "unresolved": 0,
+    "fees": 833.96
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": 1537.68,
+    "swept": 1179.71,
+    "wallet": 30357.97,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1591.7,
+    "worst": -478.01,
+    "trades": 35
+   },
+   "NIFTY|wallet_adverse": {
+    "P": 553.52,
+    "swept": 840.24,
+    "wallet": 29713.28,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1747.65,
+    "worst": -504.0,
+    "trades": 35
+   },
+   "SENSEX|ordinary": {
+    "net": -27.49,
+    "without_top2": -1992.31,
+    "worst": -599.66,
+    "tickets": 8,
+    "expiries": 8,
+    "winners": 3,
+    "profit_factor": 0.988,
+    "by_year": {
+     "2025": 1680.11,
+     "2026": -1707.6
+    },
+    "unresolved": 0,
+    "fees": 397.49
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -239.35,
+    "without_top2": -2123.25,
+    "worst": -619.66,
+    "tickets": 8,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.901,
+    "by_year": {
+     "2025": 1600.19,
+     "2026": -1839.54
+    },
+    "unresolved": 0,
+    "fees": 397.35
+   },
+   "SENSEX|catastrophe": {
+    "net": -1632.96,
+    "without_top2": -1632.96,
+    "worst": -636.07,
+    "tickets": 4,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -455.1,
+     "2026": -1177.86
+    },
+    "unresolved": 0,
+    "fees": 195.96
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -27.49,
+    "swept": 840.05,
+    "wallet": 29132.46,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2325.75,
+    "worst": -599.66,
+    "trades": 8
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -239.35,
+    "swept": 800.1,
+    "wallet": 28960.55,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2424.72,
+    "worst": -619.66,
+    "trades": 8
+   }
+  }
+ },
+ "EN47": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -1071.11,
+    "without_top2": -1204.02,
+    "worst": -477.21,
+    "tickets": 4,
+    "expiries": 4,
+    "winners": 1,
+    "profit_factor": 0.11,
+    "by_year": {
+     "2023": 132.91,
+     "2024": 0.0,
+     "2025": -1204.02,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 193.61
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -1145.81,
+    "without_top2": -1255.98,
+    "worst": -496.69,
+    "tickets": 4,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.088,
+    "by_year": {
+     "2023": 110.17,
+     "2024": 0.0,
+     "2025": -1255.98,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 193.56
+   },
+   "NIFTY|catastrophe": {
+    "net": -791.87,
+    "without_top2": -807.92,
+    "worst": -503.1,
+    "tickets": 3,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.02,
+    "by_year": {
+     "2023": 16.05,
+     "2024": 0.0,
+     "2025": -807.92,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 145.12
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -1071.11,
+    "swept": 66.45,
+    "wallet": 28862.44,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1204.02,
+    "worst": -477.21,
+    "trades": 4
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -1145.81,
+    "swept": 55.09,
+    "wallet": 28799.1,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1255.98,
+    "worst": -496.69,
+    "trades": 4
+   },
+   "SENSEX|ordinary": {
+    "net": -542.67,
+    "without_top2": -542.67,
+    "worst": -542.67,
+    "tickets": 1,
+    "expiries": 1,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": 0.0,
+     "2026": -542.67
+    },
+    "unresolved": 0,
+    "fees": 48.67
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -562.67,
+    "without_top2": -562.67,
+    "worst": -562.67,
+    "tickets": 1,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": 0.0,
+     "2026": -562.67
+    },
+    "unresolved": 0,
+    "fees": 48.67
+   },
+   "SENSEX|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -542.67,
+    "swept": 0.0,
+    "wallet": 29457.33,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 542.67,
+    "worst": -542.67,
+    "trades": 1
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -562.67,
+    "swept": 0.0,
+    "wallet": 29437.33,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 562.67,
+    "worst": -562.67,
+    "trades": 1
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_top2": false,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "protection": false,
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_top2": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "protection": true,
+    "verdict": "FAIL"
+   }
+  },
+  "support": {
+   "affected": 82,
+   "expiries": 72
+  },
+  "dev": "FAIL",
+  "protection": false
+ },
+ "EN47_native1_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 2648.64,
+    "without_top2": 91.43,
+    "worst": -577.77,
+    "tickets": 69,
+    "expiries": 59,
+    "winners": 27,
+    "profit_factor": 1.299,
+    "by_year": {
+     "2023": -2370.67,
+     "2024": 3844.64,
+     "2025": 3493.62,
+     "2026": -2318.95
+    },
+    "unresolved": 0,
+    "fees": 3393.11
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 1138.47,
+    "without_top2": -1331.09,
+    "worst": -610.26,
+    "tickets": 68,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.117,
+    "by_year": {
+     "2023": -2692.02,
+     "2024": 3373.77,
+     "2025": 3132.9,
+     "2026": -2676.18
+    },
+    "unresolved": 0,
+    "fees": 3343.28
+   },
+   "NIFTY|catastrophe": {
+    "net": -7880.2,
+    "without_top2": -9030.11,
+    "worst": -646.89,
+    "tickets": 32,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.147,
+    "by_year": {
+     "2023": -3204.76,
+     "2024": -2702.38,
+     "2025": -326.75,
+     "2026": -1646.31
+    },
+    "unresolved": 0,
+    "fees": 1558.95
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": 2648.64,
+    "swept": 2483.8,
+    "wallet": 30164.84,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2633.15,
+    "worst": -577.77,
+    "trades": 69
+   },
+   "NIFTY|wallet_adverse": {
+    "P": 1138.47,
+    "swept": 1907.33,
+    "wallet": 29231.14,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2964.24,
+    "worst": -610.26,
+    "trades": 68
+   },
+   "SENSEX|ordinary": {
+    "net": -949.29,
+    "without_top2": -3265.16,
+    "worst": -599.66,
+    "tickets": 11,
+    "expiries": 11,
+    "winners": 3,
+    "profit_factor": 0.721,
+    "by_year": {
+     "2025": 1434.53,
+     "2026": -2383.82
+    },
+    "unresolved": 0,
+    "fees": 542.29
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -1203.11,
+    "without_top2": -3441.07,
+    "worst": -619.66,
+    "tickets": 11,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.663,
+    "by_year": {
+     "2025": 1358.61,
+     "2026": -2561.72
+    },
+    "unresolved": 0,
+    "fees": 542.11
+   },
+   "SENSEX|catastrophe": {
+    "net": -2853.56,
+    "without_top2": -2853.56,
+    "worst": -728.43,
+    "tickets": 6,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -947.27,
+     "2026": -1906.29
+    },
+    "unresolved": 0,
+    "fees": 292.56
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -949.29,
+    "swept": 717.26,
+    "wallet": 28333.45,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2907.37,
+    "worst": -599.66,
+    "trades": 11
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -1651.63,
+    "swept": 679.3,
+    "wallet": 27669.07,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3026.33,
+    "worst": -619.66,
+    "trades": 11
+   }
+  }
+ },
+ "EN49": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "NIFTY|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true,
+     "above_null": false
+    },
+    "support": {
+     "tickets": 0,
+     "expiries": 0
+    },
+    "verdict": "INCONCLUSIVE"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true,
+     "above_null": false
+    },
+    "support": {
+     "tickets": 0,
+     "expiries": 0
+    },
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "dev": "INCONCLUSIVE"
+ },
+ "EN49_icpt_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "NIFTY|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|ordinary": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|catastrophe": {
+    "net": 0,
+    "without_top2": 0,
+    "worst": 0,
+    "tickets": 0,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": null,
+    "by_year": {
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "unresolved": 0,
+    "fees": 0
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 0.0,
+    "swept": 0.0,
+    "wallet": 30000.0,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 0.0,
+    "worst": 0,
+    "trades": 0
+   }
+  }
+ },
+ "EN49_trend_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -19596.55,
+    "without_top2": -21205.15,
+    "worst": -849.11,
+    "tickets": 392,
+    "expiries": 196,
+    "winners": 121,
+    "profit_factor": 0.416,
+    "by_year": {
+     "2023": -4309.5,
+     "2024": -5170.83,
+     "2025": -4544.34,
+     "2026": -5571.88
+    },
+    "unresolved": 0,
+    "fees": 19375.55
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -27808.86,
+    "without_top2": -30816.87,
+    "worst": -729.01,
+    "tickets": 392,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.304,
+    "by_year": {
+     "2023": -7158.2,
+     "2024": -4608.41,
+     "2025": -8832.76,
+     "2026": -7209.49
+    },
+    "unresolved": 0,
+    "fees": 19368.61
+   },
+   "NIFTY|catastrophe": {
+    "net": -73816.55,
+    "without_top2": -74692.48,
+    "worst": -1137.29,
+    "tickets": 380,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.017,
+    "by_year": {
+     "2023": -14939.3,
+     "2024": -21376.8,
+     "2025": -19974.13,
+     "2026": -17526.32
+    },
+    "unresolved": 0,
+    "fees": 18677.05
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4124.58,
+    "swept": 0.0,
+    "wallet": 25875.42,
+    "halted": 146,
+    "first_halt": "2024-01-18",
+    "drawdown": 4124.58,
+    "worst": -849.11,
+    "trades": 74
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4026.53,
+    "swept": 0.0,
+    "wallet": 25973.47,
+    "halted": 153,
+    "first_halt": "2023-11-30",
+    "drawdown": 4026.53,
+    "worst": -556.71,
+    "trades": 62
+   },
+   "SENSEX|ordinary": {
+    "net": -7768.56,
+    "without_top2": -8721.11,
+    "worst": -710.58,
+    "tickets": 122,
+    "expiries": 62,
+    "winners": 41,
+    "profit_factor": 0.303,
+    "by_year": {
+     "2025": -2654.85,
+     "2026": -5113.71
+    },
+    "unresolved": 0,
+    "fees": 6035.56
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -9504.02,
+    "without_top2": -10343.67,
+    "worst": -758.56,
+    "tickets": 121,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.234,
+    "by_year": {
+     "2025": -3593.74,
+     "2026": -5910.28
+    },
+    "unresolved": 0,
+    "fees": 5982.02
+   },
+   "SENSEX|catastrophe": {
+    "net": -20683.49,
+    "without_top2": -21129.0,
+    "worst": -1009.41,
+    "tickets": 112,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.023,
+    "by_year": {
+     "2025": -8941.76,
+     "2026": -11741.73
+    },
+    "unresolved": 0,
+    "fees": 5502.49
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -1603.59,
+    "swept": 323.83,
+    "wallet": 28072.58,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3465.9,
+    "worst": -631.09,
+    "trades": 78
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -3160.49,
+    "swept": 173.46,
+    "wallet": 26666.05,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3865.53,
+    "worst": -673.05,
+    "trades": 69
+   }
+  }
+ },
+ "EN50": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 6226.93,
+    "without_top2": -935.98,
+    "worst": -792.52,
+    "tickets": 68,
+    "expiries": 59,
+    "winners": 24,
+    "profit_factor": 1.554,
+    "by_year": {
+     "2023": -2570.38,
+     "2024": 8897.97,
+     "2025": 2766.46,
+     "2026": -2867.12
+    },
+    "unresolved": 0,
+    "fees": 3422.32
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 4563.96,
+    "without_top2": -2462.65,
+    "worst": -831.5,
+    "tickets": 67,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.373,
+    "by_year": {
+     "2023": -2998.87,
+     "2024": 8271.27,
+     "2025": 2610.0,
+     "2026": -3318.44
+    },
+    "unresolved": 0,
+    "fees": 3372.54
+   },
+   "NIFTY|catastrophe": {
+    "net": -8436.35,
+    "without_top2": -9586.26,
+    "worst": -663.0,
+    "tickets": 31,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.163,
+    "by_year": {
+     "2023": -3864.66,
+     "2024": -2436.44,
+     "2025": -49.39,
+     "2026": -2085.86
+    },
+    "unresolved": 0,
+    "fees": 1517.1
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4244.59,
+    "swept": 0.0,
+    "wallet": 25755.41,
+    "halted": 86,
+    "first_halt": "2025-03-13",
+    "drawdown": 4244.59,
+    "worst": -604.47,
+    "trades": 32
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4198.51,
+    "swept": 0.0,
+    "wallet": 25801.49,
+    "halted": 86,
+    "first_halt": "2025-03-13",
+    "drawdown": 4198.51,
+    "worst": -633.71,
+    "trades": 30
+   },
+   "SENSEX|ordinary": {
+    "net": -758.97,
+    "without_top2": -3074.84,
+    "worst": -599.66,
+    "tickets": 11,
+    "expiries": 11,
+    "winners": 3,
+    "profit_factor": 0.777,
+    "by_year": {
+     "2025": 1624.85,
+     "2026": -2383.82
+    },
+    "unresolved": 0,
+    "fees": 543.97
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -1028.78,
+    "without_top2": -3266.74,
+    "worst": -619.66,
+    "tickets": 11,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.712,
+    "by_year": {
+     "2025": 1532.94,
+     "2026": -2561.72
+    },
+    "unresolved": 0,
+    "fees": 543.78
+   },
+   "SENSEX|catastrophe": {
+    "net": -2853.56,
+    "without_top2": -2853.56,
+    "worst": -728.43,
+    "tickets": 6,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -947.27,
+     "2026": -1906.29
+    },
+    "unresolved": 0,
+    "fees": 292.56
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -758.97,
+    "swept": 812.42,
+    "wallet": 28428.61,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2907.37,
+    "worst": -599.66,
+    "trades": 11
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -1477.3,
+    "swept": 766.47,
+    "wallet": 27756.23,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3026.33,
+    "worst": -619.66,
+    "trades": 11
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_top2": false,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "protection": true,
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_top2": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "protection": true,
+    "verdict": "FAIL"
+   }
+  },
+  "support": {
+   "affected": 3,
+   "expiries": 3
+  },
+  "dev": "INCONCLUSIVE",
+  "protection": true
+ },
+ "EN50_3min_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -979.8,
+    "without_top2": -3159.54,
+    "worst": -537.46,
+    "tickets": 68,
+    "expiries": 59,
+    "winners": 25,
+    "profit_factor": 0.877,
+    "by_year": {
+     "2023": -1058.79,
+     "2024": 1506.36,
+     "2025": 388.76,
+     "2026": -1816.13
+    },
+    "unresolved": 0,
+    "fees": 3384.8
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": -3061.19,
+    "without_top2": -5127.3,
+    "worst": -599.18,
+    "tickets": 67,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.67,
+    "by_year": {
+     "2023": -1441.86,
+     "2024": 963.99,
+     "2025": -306.12,
+     "2026": -2277.2
+    },
+    "unresolved": 0,
+    "fees": 3334.19
+   },
+   "NIFTY|catastrophe": {
+    "net": -10233.38,
+    "without_top2": -10233.38,
+    "worst": -646.89,
+    "tickets": 31,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2023": -3018.03,
+     "2024": -2407.24,
+     "2025": -2670.36,
+     "2026": -2137.75
+    },
+    "unresolved": 0,
+    "fees": 1513.63
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -979.8,
+    "swept": 421.95,
+    "wallet": 28598.25,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1913.81,
+    "worst": -537.46,
+    "trades": 68
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3075.63,
+    "swept": 0.0,
+    "wallet": 26924.37,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3075.63,
+    "worst": -599.18,
+    "trades": 65
+   },
+   "SENSEX|ordinary": {
+    "net": -1250.82,
+    "without_top2": -2210.47,
+    "worst": -596.13,
+    "tickets": 12,
+    "expiries": 11,
+    "winners": 5,
+    "profit_factor": 0.51,
+    "by_year": {
+     "2025": 429.32,
+     "2026": -1680.14
+    },
+    "unresolved": 0,
+    "fees": 592.82
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -1532.66,
+    "without_top2": -2411.36,
+    "worst": -611.13,
+    "tickets": 12,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.436,
+    "by_year": {
+     "2025": 332.38,
+     "2026": -1865.04
+    },
+    "unresolved": 0,
+    "fees": 592.66
+   },
+   "SENSEX|catastrophe": {
+    "net": -1902.36,
+    "without_top2": -1902.36,
+    "worst": -636.07,
+    "tickets": 6,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -523.07,
+     "2026": -1379.29
+    },
+    "unresolved": 0,
+    "fees": 294.36
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -1250.82,
+    "swept": 217.26,
+    "wallet": 28531.92,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 1920.44,
+    "worst": -596.13,
+    "trades": 12
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -1532.66,
+    "swept": 166.19,
+    "wallet": 28301.15,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2045.18,
+    "worst": -611.13,
+    "trades": 12
+   }
+  }
+ },
+ "EN29_sym_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 7021.65,
+    "without_top2": -141.26,
+    "worst": -792.52,
+    "tickets": 68,
+    "expiries": 59,
+    "winners": 27,
+    "profit_factor": 1.64,
+    "by_year": {
+     "2023": -2570.38,
+     "2024": 8745.51,
+     "2025": 3528.74,
+     "2026": -2682.22
+    },
+    "unresolved": 0,
+    "fees": 3423.85
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 5287.33,
+    "without_top2": -1739.28,
+    "worst": -831.5,
+    "tickets": 67,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.446,
+    "by_year": {
+     "2023": -2998.87,
+     "2024": 8118.81,
+     "2025": 3226.33,
+     "2026": -3058.94
+    },
+    "unresolved": 0,
+    "fees": 3373.92
+   },
+   "NIFTY|catastrophe": {
+    "net": -8277.41,
+    "without_top2": -9427.32,
+    "worst": -663.0,
+    "tickets": 31,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.165,
+    "by_year": {
+     "2023": -3864.66,
+     "2024": -2436.44,
+     "2025": -49.39,
+     "2026": -1926.92
+    },
+    "unresolved": 0,
+    "fees": 1517.41
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4244.59,
+    "swept": 0.0,
+    "wallet": 25755.41,
+    "halted": 86,
+    "first_halt": "2025-03-13",
+    "drawdown": 4244.59,
+    "worst": -604.47,
+    "trades": 32
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4198.51,
+    "swept": 0.0,
+    "wallet": 25801.49,
+    "halted": 86,
+    "first_halt": "2025-03-13",
+    "drawdown": 4198.51,
+    "worst": -633.71,
+    "trades": 30
+   },
+   "SENSEX|ordinary": {
+    "net": -758.97,
+    "without_top2": -3074.84,
+    "worst": -599.66,
+    "tickets": 11,
+    "expiries": 11,
+    "winners": 3,
+    "profit_factor": 0.777,
+    "by_year": {
+     "2025": 1624.85,
+     "2026": -2383.82
+    },
+    "unresolved": 0,
+    "fees": 543.97
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -1028.78,
+    "without_top2": -3266.74,
+    "worst": -619.66,
+    "tickets": 11,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.712,
+    "by_year": {
+     "2025": 1532.94,
+     "2026": -2561.72
+    },
+    "unresolved": 0,
+    "fees": 543.78
+   },
+   "SENSEX|catastrophe": {
+    "net": -2853.56,
+    "without_top2": -2853.56,
+    "worst": -728.43,
+    "tickets": 6,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -947.27,
+     "2026": -1906.29
+    },
+    "unresolved": 0,
+    "fees": 292.56
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -758.97,
+    "swept": 812.42,
+    "wallet": 28428.61,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2907.37,
+    "worst": -599.66,
+    "trades": 11
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -1477.3,
+    "swept": 766.47,
+    "wallet": 27756.23,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3026.33,
+    "worst": -619.66,
+    "trades": 11
+   }
+  }
+ },
+ "EN51": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -17538.51,
+    "without_top2": -32481.77,
+    "worst": -1376.79,
+    "tickets": 134,
+    "expiries": 134,
+    "winners": 44,
+    "profit_factor": 0.775,
+    "by_year": {
+     "2023": -10795.99,
+     "2024": 6684.34,
+     "2025": -10623.46,
+     "2026": -2803.4
+    },
+    "unresolved": 0,
+    "fees": 13648.26
+   },
+   "NIFTY|refusals": {
+    "no_atm_pair": 1,
+    "reserve": 62
+   },
+   "NIFTY|adverse": {
+    "net": -28976.93,
+    "without_top2": -43556.69,
+    "worst": -2071.16,
+    "tickets": 134,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.65,
+    "by_year": {
+     "2023": -13328.27,
+     "2024": 1870.9,
+     "2025": -11039.12,
+     "2026": -6480.44
+    },
+    "unresolved": 1,
+    "fees": 13415.93
+   },
+   "NIFTY|catastrophe": {
+    "net": -27275.55,
+    "without_top2": -37281.88,
+    "worst": -1661.99,
+    "tickets": 111,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.268,
+    "by_year": {
+     "2023": -11701.37,
+     "2024": 1201.06,
+     "2025": -10435.82,
+     "2026": -6339.42
+    },
+    "unresolved": 0,
+    "fees": 6228.55
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -2145.39,
+    "swept": 456.25,
+    "wallet": 27398.36,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3057.89,
+    "worst": -1018.16,
+    "trades": 5
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -2440.41,
+    "swept": 503.23,
+    "wallet": 27056.36,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3446.87,
+    "worst": -1105.85,
+    "trades": 7
+   },
+   "SENSEX|ordinary": {
+    "net": -4932.18,
+    "without_top2": -7956.1,
+    "worst": -1248.36,
+    "tickets": 36,
+    "expiries": 36,
+    "winners": 14,
+    "profit_factor": 0.77,
+    "by_year": {
+     "2025": 362.36,
+     "2026": -5294.54
+    },
+    "unresolved": 0,
+    "fees": 3661.18
+   },
+   "SENSEX|refusals": {
+    "reserve": 27
+   },
+   "SENSEX|adverse": {
+    "net": -10007.22,
+    "without_top2": -13059.58,
+    "worst": -1290.48,
+    "tickets": 36,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.576,
+    "by_year": {
+     "2025": -1906.99,
+     "2026": -8100.23
+    },
+    "unresolved": 0,
+    "fees": 3605.22
+   },
+   "SENSEX|catastrophe": {
+    "net": -9239.34,
+    "without_top2": -9239.34,
+    "worst": -1281.08,
+    "tickets": 29,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -4399.77,
+     "2026": -4839.57
+    },
+    "unresolved": 0,
+    "fees": 1535.34
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -1226.04,
+    "swept": 454.19,
+    "wallet": 28319.77,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2134.43,
+    "worst": -1196.52,
+    "trades": 4
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -1454.98,
+    "swept": 412.75,
+    "wallet": 28132.27,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2280.47,
+    "worst": -1290.48,
+    "trades": 4
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true
+    },
+    "support": {
+     "tickets": 134,
+     "expiries": 134
+    },
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true
+    },
+    "support": {
+     "tickets": 36,
+     "expiries": 36
+    },
+    "verdict": "FAIL"
+   }
+  },
+  "dev": "FAIL"
+ },
+ "EN51_hold_diag": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -45581.39,
+    "without_top2": -75221.36,
+    "worst": -4372.98,
+    "tickets": 134,
+    "expiries": 134,
+    "winners": 44,
+    "profit_factor": 0.75,
+    "by_year": {
+     "2023": -20675.77,
+     "2024": -16836.11,
+     "2025": -3754.54,
+     "2026": -4314.97
+    },
+    "unresolved": 7,
+    "fees": 13357.64
+   },
+   "NIFTY|refusals": {
+    "no_atm_pair": 1,
+    "reserve": 62
+   },
+   "NIFTY|adverse": {
+    "net": -48597.81,
+    "without_top2": -77699.96,
+    "worst": -4434.75,
+    "tickets": 134,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.73,
+    "by_year": {
+     "2023": -19417.07,
+     "2024": -19119.19,
+     "2025": -4248.74,
+     "2026": -5812.81
+    },
+    "unresolved": 18,
+    "fees": 12929.06
+   },
+   "NIFTY|catastrophe": {
+    "net": -29761.72,
+    "without_top2": -46792.88,
+    "worst": -4613.39,
+    "tickets": 111,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.372,
+    "by_year": {
+     "2023": -14155.98,
+     "2024": 4941.99,
+     "2025": -12226.37,
+     "2026": -8321.36
+    },
+    "unresolved": 2,
+    "fees": 6176.47
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4348.5,
+    "swept": 0.0,
+    "wallet": 25651.5,
+    "halted": 193,
+    "first_halt": "2023-02-23",
+    "drawdown": 4348.5,
+    "worst": -3509.37,
+    "trades": 2
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4461.36,
+    "swept": 0.0,
+    "wallet": 25538.64,
+    "halted": 193,
+    "first_halt": "2023-02-23",
+    "drawdown": 4461.36,
+    "worst": -3564.62,
+    "trades": 2
+   },
+   "SENSEX|ordinary": {
+    "net": -6449.32,
+    "without_top2": -19422.76,
+    "worst": -3461.05,
+    "tickets": 36,
+    "expiries": 36,
+    "winners": 13,
+    "profit_factor": 0.845,
+    "by_year": {
+     "2025": 8019.92,
+     "2026": -14469.24
+    },
+    "unresolved": 0,
+    "fees": 3658.32
+   },
+   "SENSEX|refusals": {
+    "reserve": 27
+   },
+   "SENSEX|adverse": {
+    "net": -9102.93,
+    "without_top2": -21722.79,
+    "worst": -3520.07,
+    "tickets": 36,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.787,
+    "by_year": {
+     "2025": 6881.41,
+     "2026": -15984.34
+    },
+    "unresolved": 0,
+    "fees": 3606.93
+   },
+   "SENSEX|catastrophe": {
+    "net": -11509.06,
+    "without_top2": -11509.06,
+    "worst": -3550.8,
+    "tickets": 29,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -4399.77,
+     "2026": -7109.29
+    },
+    "unresolved": 0,
+    "fees": 1531.06
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 2748.75,
+    "swept": 2444.94,
+    "wallet": 30303.81,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2141.13,
+    "worst": -2141.13,
+    "trades": 2
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 2565.91,
+    "swept": 2384.01,
+    "wallet": 30181.9,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2202.12,
+    "worst": -2202.12,
+    "trades": 2
+   }
+  }
+ },
+ "EN52": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 16553.51,
+    "without_top2": -8587.84,
+    "worst": -2080.75,
+    "tickets": 134,
+    "expiries": 134,
+    "winners": 28,
+    "profit_factor": 1.178,
+    "by_year": {
+     "2023": -3860.83,
+     "2024": 8257.61,
+     "2025": 11473.07,
+     "2026": 683.66
+    },
+    "unresolved": 0,
+    "fees": 13713.74
+   },
+   "NIFTY|refusals": {
+    "no_atm_pair": 1,
+    "reserve": 62
+   },
+   "NIFTY|adverse": {
+    "net": 3657.61,
+    "without_top2": -21425.13,
+    "worst": -2171.72,
+    "tickets": 134,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.037,
+    "by_year": {
+     "2023": -5420.91,
+     "2024": 1673.01,
+     "2025": 8251.56,
+     "2026": -846.05
+    },
+    "unresolved": 0,
+    "fees": 13502.39
+   },
+   "NIFTY|catastrophe": {
+    "net": -32961.86,
+    "without_top2": -36999.67,
+    "worst": -1519.74,
+    "tickets": 111,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.109,
+    "by_year": {
+     "2023": -11331.58,
+     "2024": -4855.04,
+     "2025": -10435.82,
+     "2026": -6339.42
+    },
+    "unresolved": 0,
+    "fees": 6217.61
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -3614.77,
+    "swept": 0.0,
+    "wallet": 26385.23,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3614.77,
+    "worst": -1138.18,
+    "trades": 5
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3112.91,
+    "swept": 0.0,
+    "wallet": 26887.09,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3112.91,
+    "worst": -1222.63,
+    "trades": 6
+   },
+   "SENSEX|ordinary": {
+    "net": -8350.71,
+    "without_top2": -16729.11,
+    "worst": -1831.32,
+    "tickets": 36,
+    "expiries": 36,
+    "winners": 10,
+    "profit_factor": 0.68,
+    "by_year": {
+     "2025": 3992.51,
+     "2026": -12343.22
+    },
+    "unresolved": 0,
+    "fees": 3654.71
+   },
+   "SENSEX|refusals": {
+    "reserve": 27
+   },
+   "SENSEX|adverse": {
+    "net": -16355.23,
+    "without_top2": -23426.8,
+    "worst": -1910.3,
+    "tickets": 36,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.442,
+    "by_year": {
+     "2025": -957.79,
+     "2026": -15397.44
+    },
+    "unresolved": 0,
+    "fees": 3593.23
+   },
+   "SENSEX|catastrophe": {
+    "net": -9239.34,
+    "without_top2": -9239.34,
+    "worst": -1281.08,
+    "tickets": 29,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -4399.77,
+     "2026": -4839.57
+    },
+    "unresolved": 0,
+    "fees": 1535.34
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 2975.04,
+    "swept": 2792.28,
+    "wallet": 30182.76,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2609.53,
+    "worst": -1831.32,
+    "trades": 4
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 2623.32,
+    "swept": 2727.37,
+    "wallet": 29895.95,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2831.42,
+    "worst": -1910.3,
+    "trades": 4
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary_positive": true,
+     "adverse_positive": true,
+     "without_top2_positive": false,
+     "worst_day": true
+    },
+    "support": {
+     "tickets": 134,
+     "expiries": 134
+    },
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true
+    },
+    "support": {
+     "tickets": 36,
+     "expiries": 36
+    },
+    "verdict": "FAIL"
+   }
+  },
+  "dev": "FAIL"
+ },
+ "EN53": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 5273.27,
+    "without_top2": -285.24,
+    "worst": -1179.13,
+    "tickets": 64,
+    "expiries": 55,
+    "winners": 24,
+    "profit_factor": 1.341,
+    "by_year": {
+     "2023": -4766.68,
+     "2024": 6449.52,
+     "2025": 6654.84,
+     "2026": -3064.41
+    },
+    "unresolved": 1,
+    "fees": 3251.48
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 2021.31,
+    "without_top2": -3306.7,
+    "worst": -1253.83,
+    "tickets": 62,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.118,
+    "by_year": {
+     "2023": -6055.37,
+     "2024": 5913.65,
+     "2025": 5729.45,
+     "2026": -3566.42
+    },
+    "unresolved": 1,
+    "fees": 3142.94
+   },
+   "NIFTY|catastrophe": {
+    "net": -9847.17,
+    "without_top2": -11887.26,
+    "worst": -1344.71,
+    "tickets": 30,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.211,
+    "by_year": {
+     "2023": -6517.02,
+     "2024": -1800.95,
+     "2025": 146.47,
+     "2026": -1675.67
+    },
+    "unresolved": 0,
+    "fees": 1510.92
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -4156.84,
+    "swept": 0.0,
+    "wallet": 25843.16,
+    "halted": 151,
+    "first_halt": "2023-12-14",
+    "drawdown": 4156.84,
+    "worst": -847.45,
+    "trades": 15
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -4169.36,
+    "swept": 0.0,
+    "wallet": 25830.64,
+    "halted": 159,
+    "first_halt": "2023-10-19",
+    "drawdown": 4169.36,
+    "worst": -1231.76,
+    "trades": 9
+   },
+   "SENSEX|ordinary": {
+    "net": 258.67,
+    "without_top2": -3159.91,
+    "worst": -1350.59,
+    "tickets": 7,
+    "expiries": 7,
+    "winners": 3,
+    "profit_factor": 1.07,
+    "by_year": {
+     "2025": 1653.92,
+     "2026": -1395.25
+    },
+    "unresolved": 0,
+    "fees": 362.33
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": -99.08,
+    "without_top2": -3390.8,
+    "worst": -1374.59,
+    "tickets": 7,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.974,
+    "by_year": {
+     "2025": 1493.05,
+     "2026": -1592.13
+    },
+    "unresolved": 0,
+    "fees": 362.08
+   },
+   "SENSEX|catastrophe": {
+    "net": -9.05,
+    "without_top2": -1523.4,
+    "worst": -748.32,
+    "tickets": 4,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.994,
+    "by_year": {
+     "2025": 766.03,
+     "2026": -775.08
+    },
+    "unresolved": 0,
+    "fees": 205.05
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 258.67,
+    "swept": 826.96,
+    "wallet": 29431.71,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2346.01,
+    "worst": -1350.59,
+    "trades": 7
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -99.08,
+    "swept": 746.52,
+    "wallet": 29154.4,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2482.95,
+    "worst": -1374.59,
+    "trades": 7
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_top2": false,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "protection": false,
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_top2": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "protection": false,
+    "verdict": "FAIL"
+   }
+  },
+  "support": {
+   "affected": 92,
+   "expiries": 79
+  },
+  "dev": "FAIL",
+  "protection": false
+ },
+ "EN54": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": -15220.07,
+    "without_top2": -22110.59,
+    "worst": -1376.79,
+    "tickets": 71,
+    "expiries": 71,
+    "winners": 19,
+    "profit_factor": 0.617,
+    "by_year": {
+     "2023": -7437.19,
+     "2024": -3499.77,
+     "2025": -4015.33,
+     "2026": -267.78
+    },
+    "unresolved": 0,
+    "fees": 7150.32
+   },
+   "NIFTY|refusals": {
+    "no_atm_pair": 1,
+    "not_cheap": 109,
+    "reserve": 16
+   },
+   "NIFTY|adverse": {
+    "net": -22030.57,
+    "without_top2": -28680.85,
+    "worst": -2071.16,
+    "tickets": 71,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.493,
+    "by_year": {
+     "2023": -6509.3,
+     "2024": -7579.3,
+     "2025": -4302.84,
+     "2026": -3639.13
+    },
+    "unresolved": 0,
+    "fees": 6996.07
+   },
+   "NIFTY|catastrophe": {
+    "net": -17331.05,
+    "without_top2": -17331.05,
+    "worst": -1451.76,
+    "tickets": 58,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2023": -2383.77,
+     "2024": -4816.5,
+     "2025": -6373.78,
+     "2026": -3757.0
+    },
+    "unresolved": 0,
+    "fees": 3096.05
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": -3323.83,
+    "swept": 0.0,
+    "wallet": 26676.17,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3323.83,
+    "worst": -994.7,
+    "trades": 5
+   },
+   "NIFTY|wallet_adverse": {
+    "P": -3130.11,
+    "swept": 0.0,
+    "wallet": 26869.89,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3130.11,
+    "worst": -1075.89,
+    "trades": 6
+   },
+   "SENSEX|ordinary": {
+    "net": 629.92,
+    "without_top2": -2394.0,
+    "worst": -1248.36,
+    "tickets": 24,
+    "expiries": 24,
+    "winners": 11,
+    "profit_factor": 1.049,
+    "by_year": {
+     "2025": 1426.29,
+     "2026": -796.37
+    },
+    "unresolved": 0,
+    "fees": 2479.08
+   },
+   "SENSEX|refusals": {
+    "not_cheap": 23,
+    "reserve": 16
+   },
+   "SENSEX|adverse": {
+    "net": -1873.57,
+    "without_top2": -4925.93,
+    "worst": -1290.48,
+    "tickets": 24,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.861,
+    "by_year": {
+     "2025": -510.09,
+     "2026": -1363.48
+    },
+    "unresolved": 0,
+    "fees": 2426.57
+   },
+   "SENSEX|catastrophe": {
+    "net": -6871.39,
+    "without_top2": -6871.39,
+    "worst": -1281.08,
+    "tickets": 20,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.0,
+    "by_year": {
+     "2025": -3580.09,
+     "2026": -3291.3
+    },
+    "unresolved": 0,
+    "fees": 1071.39
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": -2039.68,
+    "swept": 0.0,
+    "wallet": 27960.32,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2039.68,
+    "worst": -1196.52,
+    "trades": 2
+   },
+   "SENSEX|wallet_adverse": {
+    "P": -2198.59,
+    "swept": 0.0,
+    "wallet": 27801.41,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2198.59,
+    "worst": -1290.48,
+    "trades": 2
+   }
+  },
+  "books": {
+   "NIFTY": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true
+    },
+    "support": {
+     "tickets": 71,
+     "expiries": 71
+    },
+    "verdict": "FAIL"
+   },
+   "SENSEX": {
+    "checks": {
+     "ordinary_positive": true,
+     "adverse_positive": false,
+     "without_top2_positive": false,
+     "worst_day": true
+    },
+    "support": {
+     "tickets": 24,
+     "expiries": 24
+    },
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "dev": "FAIL"
+ },
+ "EN55": {
+  "summary": {
+   "NIFTY|ordinary": {
+    "net": 13164.7,
+    "without_top2": 1044.95,
+    "worst": -854.3,
+    "tickets": 68,
+    "expiries": 59,
+    "winners": 28,
+    "profit_factor": 2.179,
+    "by_year": {
+     "2023": -3039.56,
+     "2024": 13205.32,
+     "2025": 5334.4,
+     "2026": -2335.46
+    },
+    "unresolved": 0,
+    "fees": 3771.04
+   },
+   "NIFTY|refusals": {},
+   "NIFTY|adverse": {
+    "net": 11056.47,
+    "without_top2": -813.44,
+    "worst": -870.52,
+    "tickets": 67,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.95,
+    "by_year": {
+     "2023": -3308.88,
+     "2024": 11992.69,
+     "2025": 4854.12,
+     "2026": -2481.46
+    },
+    "unresolved": 0,
+    "fees": 3692.03
+   },
+   "NIFTY|catastrophe": {
+    "net": 991.29,
+    "without_top2": -5915.15,
+    "worst": -924.87,
+    "tickets": 66,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.074,
+    "by_year": {
+     "2023": -3692.97,
+     "2024": 5638.41,
+     "2025": 2272.87,
+     "2026": -3227.02
+    },
+    "unresolved": 0,
+    "fees": 3415.71
+   },
+   "NIFTY|wallet_ordinary": {
+    "P": 3445.05,
+    "swept": 2890.26,
+    "wallet": 30554.79,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3613.14,
+    "worst": -854.3,
+    "trades": 68
+   },
+   "NIFTY|wallet_adverse": {
+    "P": 11572.87,
+    "swept": 7027.17,
+    "wallet": 34545.7,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 3465.46,
+    "worst": -870.52,
+    "trades": 67
+   },
+   "SENSEX|ordinary": {
+    "net": 2470.34,
+    "without_top2": -3008.48,
+    "worst": -784.45,
+    "tickets": 10,
+    "expiries": 9,
+    "winners": 3,
+    "profit_factor": 1.745,
+    "by_year": {
+     "2025": 4554.39,
+     "2026": -2084.05
+    },
+    "unresolved": 0,
+    "fees": 578.66
+   },
+   "SENSEX|refusals": {},
+   "SENSEX|adverse": {
+    "net": 2236.74,
+    "without_top2": -3107.31,
+    "worst": -805.41,
+    "tickets": 10,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 1.662,
+    "by_year": {
+     "2025": 4391.66,
+     "2026": -2154.92
+    },
+    "unresolved": 0,
+    "fees": 578.26
+   },
+   "SENSEX|catastrophe": {
+    "net": -1605.55,
+    "without_top2": -4201.77,
+    "worst": -976.88,
+    "tickets": 10,
+    "expiries": 0,
+    "winners": 0,
+    "profit_factor": 0.618,
+    "by_year": {
+     "2025": 1619.34,
+     "2026": -3224.89
+    },
+    "unresolved": 0,
+    "fees": 545.55
+   },
+   "SENSEX|wallet_ordinary": {
+    "P": 2470.34,
+    "swept": 2277.2,
+    "wallet": 30193.14,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2613.16,
+    "worst": -784.45,
+    "trades": 10
+   },
+   "SENSEX|wallet_adverse": {
+    "P": 2236.74,
+    "swept": 2195.83,
+    "wallet": 30040.91,
+    "halted": 0,
+    "first_halt": null,
+    "drawdown": 2664.07,
+    "worst": -805.41,
+    "trades": 10
+   }
+  },
+  "dev": "FORWARD-ONLY (configuration selected on these sessions)"
+ },
+ "nulls": {
+  "EN44": {
+   "NIFTY": -3693.69,
+   "SENSEX": 0.0
+  },
+  "EN45": {
+   "NIFTY": -8405.44,
+   "SENSEX": -636.38
+  },
+  "EN49": {
+   "NIFTY": 0.0,
+   "SENSEX": 0.0
+  }
+ },
+ "tests": {
+  "raw": {
+   "EN44": 0.9862,
+   "EN45": 1.0,
+   "EN49": 1.0,
+   "EN51": 0.9045,
+   "EN52": 0.395,
+   "EN54": 0.9192,
+   "EN46": 0.7318,
+   "EN47": 0.8387,
+   "EN50": 1.0,
+   "EN53": 0.7867
+  },
+  "holm": {
+   "EN52": 1.0,
+   "EN46": 1.0,
+   "EN53": 1.0,
+   "EN47": 1.0,
+   "EN51": 1.0,
+   "EN54": 1.0,
+   "EN44": 1.0,
+   "EN45": 1.0,
+   "EN49": 1.0,
+   "EN50": 1.0
+  }
+ },
+ "no_data": {
+  "EN41": "Needs receipt-clock futures depth packets. TR01 (Production Docker volume, since Nov 13) holds at most two expiry sessions and has not been exported or sealed; its export is a separate, owner-authorised task.",
+  "EN42": "Same data as EN41.",
+  "EN43": "Needs dated NIFTY/SENSEX weights and sub-minute constituent prices; only Kite 15-minute bars (Jan-Jul 2026, current basket) are held.",
+  "EN48": "Officially verified RBI decision dates in the scored history: Aug 8 2024 (2024-25 schedule, RBI press release of Mar 27 2024) is the only one on a NIFTY expiry session; far below 30 tickets on 20 expiries. The 2023-24 schedule was not verified in this round."
+ },
+ "capital": {
+  "E032_25k": {
+   "NIFTY": {
+    "ordinary": {
+     "P": -4122.87,
+     "swept": 0.0,
+     "wallet": 20877.13,
+     "halted": 146,
+     "first_halt": "2024-01-18",
+     "drawdown": 4122.87,
+     "worst": -1161.74,
+     "trades": 18
+    },
+    "adverse": {
+     "P": -4035.53,
+     "swept": 0.0,
+     "wallet": 20964.47,
+     "halted": 164,
+     "first_halt": "2023-09-14",
+     "drawdown": 4035.53,
+     "worst": -1220.22,
+     "trades": 14
+    }
+   },
+   "SENSEX": {
+    "ordinary": {
+     "P": 1987.0,
+     "swept": 0.0,
+     "wallet": 26987.0,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 3380.86,
+     "worst": -1124.54,
+     "trades": 12
+    },
+    "adverse": {
+     "P": 1516.4,
+     "swept": 0.0,
+     "wallet": 26516.4,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 3547.8,
+     "worst": -1169.52,
+     "trades": 12
+    }
+   }
+  },
+  "E032_30k": {
+   "NIFTY": {
+    "ordinary": {
+     "P": -4122.87,
+     "swept": 0.0,
+     "wallet": 25877.13,
+     "halted": 146,
+     "first_halt": "2024-01-18",
+     "drawdown": 4122.87,
+     "worst": -1161.74,
+     "trades": 18
+    },
+    "adverse": {
+     "P": -4035.53,
+     "swept": 0.0,
+     "wallet": 25964.47,
+     "halted": 164,
+     "first_halt": "2023-09-14",
+     "drawdown": 4035.53,
+     "worst": -1220.22,
+     "trades": 14
+    }
+   },
+   "SENSEX": {
+    "ordinary": {
+     "P": 1987.0,
+     "swept": 2422.16,
+     "wallet": 29564.84,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 3380.86,
+     "worst": -1124.54,
+     "trades": 12
+    },
+    "adverse": {
+     "P": 1516.4,
+     "swept": 2299.8,
+     "wallet": 29216.6,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 3547.8,
+     "worst": -1169.52,
+     "trades": 12
+    }
+   }
+  },
+  "E032_sym": {
+   "NIFTY": {
+    "ordinary": {
+     "P": -4244.59,
+     "swept": 0.0,
+     "wallet": 25755.41,
+     "halted": 86,
+     "first_halt": "2025-03-13",
+     "drawdown": 4244.59,
+     "worst": -604.47,
+     "trades": 32
+    },
+    "adverse": {
+     "P": -4198.51,
+     "swept": 0.0,
+     "wallet": 25801.49,
+     "halted": 86,
+     "first_halt": "2025-03-13",
+     "drawdown": 4198.51,
+     "worst": -633.71,
+     "trades": 30
+    }
+   },
+   "SENSEX": {
+    "ordinary": {
+     "P": -758.97,
+     "swept": 812.42,
+     "wallet": 28428.61,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 2907.37,
+     "worst": -599.66,
+     "trades": 11
+    },
+    "adverse": {
+     "P": -1477.3,
+     "swept": 766.47,
+     "wallet": 27756.23,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 3026.33,
+     "worst": -619.66,
+     "trades": 11
+    }
+   }
+  },
+  "EN55": {
+   "NIFTY": {
+    "ordinary": {
+     "P": 3445.05,
+     "swept": 2890.26,
+     "wallet": 30554.79,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 3613.14,
+     "worst": -854.3,
+     "trades": 68
+    },
+    "adverse": {
+     "P": 11572.87,
+     "swept": 7027.17,
+     "wallet": 34545.7,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 3465.46,
+     "worst": -870.52,
+     "trades": 67
+    }
+   },
+   "SENSEX": {
+    "ordinary": {
+     "P": 2470.34,
+     "swept": 2277.2,
+     "wallet": 30193.14,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 2613.16,
+     "worst": -784.45,
+     "trades": 10
+    },
+    "adverse": {
+     "P": 2236.74,
+     "swept": 2195.83,
+     "wallet": 30040.91,
+     "halted": 0,
+     "first_halt": null,
+     "drawdown": 2664.07,
+     "worst": -805.41,
+     "trades": 10
+    }
+   }
+  }
+ },
+ "diagnostics": {
+  "EN49_NIFTY": {
+   "rows": 12632,
+   "mean_label": -0.069,
+   "share_mu_pos": 0.0,
+   "share_mu_and_p5_pos": 0.0,
+   "max_mu": -0.0408,
+   "calibration_top_decile": {
+    "bottom_decile_label": -0.0994,
+    "top_decile_label": -0.0558
+   }
+  },
+  "EN49_SENSEX": {
+   "rows": 1067,
+   "mean_label": -0.0538,
+   "share_mu_pos": 0.0,
+   "share_mu_and_p5_pos": 0.0,
+   "max_mu": -0.0166,
+   "calibration_top_decile": {
+    "bottom_decile_label": -0.0508,
+    "top_decile_label": -0.036
+   }
+  },
+  "EN46_gate": {
+   "NIFTY|drift|pays": 34,
+   "NIFTY|drift|refused": 46,
+   "NIFTY|drift|no_contract": 24,
+   "SENSEX|drift|pays": 12,
+   "SENSEX|drift|no_contract": 5,
+   "SENSEX|drift|refused": 2,
+   "NIFTY|zero|refused": 80,
+   "NIFTY|zero|no_contract": 24,
+   "SENSEX|zero|refused": 14,
+   "SENSEX|zero|no_contract": 5
+  },
+  "EN47_NIFTY": {
+   "common": 0,
+   "different_strike": 0,
+   "common_net": 0,
+   "native1_common_net": 0
+  },
+  "EN50_NIFTY_exits": {
+   "MODEL_EXIT": {
+    "tickets": 3,
+    "winners": 0,
+    "net": -258.54
+   },
+   "STOP": {
+    "tickets": 19,
+    "winners": 0,
+    "net": -7844.98
+   },
+   "STRUCTURE": {
+    "tickets": 2,
+    "winners": 0,
+    "net": -578.7
+   },
+   "TARGET": {
+    "tickets": 6,
+    "winners": 6,
+    "net": 6531.4
+   },
+   "TARGET_BASE+HERO_TARGET": {
+    "tickets": 1,
+    "winners": 1,
+    "net": 5849.96
+   },
+   "TARGET_BASE+RUNNER_TRAIL": {
+    "tickets": 1,
+    "winners": 1,
+    "net": 1149.56
+   },
+   "TIME": {
+    "tickets": 32,
+    "winners": 15,
+    "net": 2201.61
+   },
+   "TRAIL": {
+    "tickets": 4,
+    "winners": 1,
+    "net": -823.38
+   }
+  },
+  "EN51_NIFTY_exits": {
+   "FLAT_TIME+FLAT_TIME": {
+    "tickets": 4,
+    "winners": 2,
+    "net": -258.63
+   },
+   "ONE_LEG": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -59.99
+   },
+   "STOP+STOP": {
+    "tickets": 87,
+    "winners": 0,
+    "net": -76633.69
+   },
+   "TARGET+TARGET": {
+    "tickets": 42,
+    "winners": 42,
+    "net": 59413.8
+   }
+  },
+  "EN52_NIFTY_exits": {
+   "FLAT_TIME+FLAT_TIME": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -554.1
+   },
+   "FLAT_TIME+LEG_OUT": {
+    "tickets": 7,
+    "winners": 7,
+    "net": 24289.58
+   },
+   "HERO_TARGET+LEG_OUT": {
+    "tickets": 1,
+    "winners": 1,
+    "net": 13977.49
+   },
+   "LEG_OUT+FLAT_TIME": {
+    "tickets": 13,
+    "winners": 12,
+    "net": 45030.88
+   },
+   "LEG_OUT+HERO_TARGET": {
+    "tickets": 2,
+    "winners": 2,
+    "net": 16480.24
+   },
+   "LEG_OUT+RUNNER_TRAIL": {
+    "tickets": 30,
+    "winners": 4,
+    "net": -18407.24
+   },
+   "ONE_LEG": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -59.99
+   },
+   "RUNNER_TRAIL+LEG_OUT": {
+    "tickets": 35,
+    "winners": 2,
+    "net": -27878.61
+   },
+   "STOP+STOP": {
+    "tickets": 44,
+    "winners": 0,
+    "net": -36324.74
+   }
+  },
+  "EN54_NIFTY_exits": {
+   "FLAT_TIME+FLAT_TIME": {
+    "tickets": 3,
+    "winners": 1,
+    "net": -1048.65
+   },
+   "ONE_LEG": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -59.99
+   },
+   "STOP+STOP": {
+    "tickets": 49,
+    "winners": 0,
+    "net": -38529.59
+   },
+   "TARGET+TARGET": {
+    "tickets": 18,
+    "winners": 18,
+    "net": 24418.16
+   }
+  },
+  "EN44_NIFTY_exits": {
+   "FSTOP": {
+    "tickets": 18,
+    "winners": 0,
+    "net": -3285.27
+   },
+   "STOP": {
+    "tickets": 7,
+    "winners": 0,
+    "net": -2912.38
+   },
+   "TARGET": {
+    "tickets": 1,
+    "winners": 1,
+    "net": 800.7
+   },
+   "TIME": {
+    "tickets": 17,
+    "winners": 9,
+    "net": 1099.21
+   }
+  },
+  "EN45_NIFTY_exits": {
+   "FSTOP": {
+    "tickets": 38,
+    "winners": 0,
+    "net": -7747.69
+   },
+   "FTARGET": {
+    "tickets": 32,
+    "winners": 17,
+    "net": 1550.94
+   },
+   "STOP": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -439.04
+   },
+   "TIME": {
+    "tickets": 65,
+    "winners": 17,
+    "net": -4262.41
+   }
+  },
+  "EN51_NIFTY_refusals": {
+   "no_atm_pair": 1,
+   "reserve": 62
+  },
+  "EN54_NIFTY_refusals": {
+   "no_atm_pair": 1,
+   "not_cheap": 109,
+   "reserve": 16
+  },
+  "EN47_SENSEX": {
+   "common": 1,
+   "different_strike": 0,
+   "common_net": -542.67,
+   "native1_common_net": -542.67
+  },
+  "EN50_SENSEX_exits": {
+   "STOP": {
+    "tickets": 6,
+    "winners": 0,
+    "net": -3063.3
+   },
+   "STRUCTURE": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -250.38
+   },
+   "TARGET": {
+    "tickets": 1,
+    "winners": 1,
+    "net": 1697.72
+   },
+   "TIME": {
+    "tickets": 3,
+    "winners": 2,
+    "net": 856.99
+   }
+  },
+  "EN51_SENSEX_exits": {
+   "FLAT_TIME+FLAT_TIME": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -498.68
+   },
+   "ONE_LEG": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -74.36
+   },
+   "STOP+STOP": {
+    "tickets": 20,
+    "winners": 0,
+    "net": -20874.47
+   },
+   "TARGET+TARGET": {
+    "tickets": 14,
+    "winners": 14,
+    "net": 16515.33
+   }
+  },
+  "EN52_SENSEX_exits": {
+   "FLAT_TIME+FLAT_TIME": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -498.68
+   },
+   "FLAT_TIME+LEG_OUT": {
+    "tickets": 3,
+    "winners": 3,
+    "net": 8859.17
+   },
+   "LEG_OUT+FLAT_TIME": {
+    "tickets": 4,
+    "winners": 4,
+    "net": 6489.11
+   },
+   "LEG_OUT+RUNNER_TRAIL": {
+    "tickets": 10,
+    "winners": 3,
+    "net": -5869.73
+   },
+   "ONE_LEG": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -74.36
+   },
+   "RUNNER_TRAIL+LEG_OUT": {
+    "tickets": 5,
+    "winners": 0,
+    "net": -4934.17
+   },
+   "STOP+STOP": {
+    "tickets": 12,
+    "winners": 0,
+    "net": -12322.05
+   }
+  },
+  "EN54_SENSEX_exits": {
+   "FLAT_TIME+FLAT_TIME": {
+    "tickets": 1,
+    "winners": 0,
+    "net": -498.68
+   },
+   "STOP+STOP": {
+    "tickets": 12,
+    "winners": 0,
+    "net": -12310.6
+   },
+   "TARGET+TARGET": {
+    "tickets": 11,
+    "winners": 11,
+    "net": 13439.2
+   }
+  },
+  "EN44_SENSEX_exits": {},
+  "EN45_SENSEX_exits": {
+   "FSTOP": {
+    "tickets": 4,
+    "winners": 1,
+    "net": -481.38
+   },
+   "FTARGET": {
+    "tickets": 9,
+    "winners": 5,
+    "net": 513.33
+   },
+   "STOP": {
+    "tickets": 6,
+    "winners": 0,
+    "net": -2417.62
+   },
+   "TIME": {
+    "tickets": 5,
+    "winners": 2,
+    "net": 115.27
+   }
+  },
+  "EN51_SENSEX_refusals": {
+   "reserve": 27
+  },
+  "EN54_SENSEX_refusals": {
+   "not_cheap": 23,
+   "reserve": 16
+  }
+ }
+}

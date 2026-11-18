@@ -1,3 +1,42 @@
+## November 18 (late) - EN41–EN55 scored once: none passes; the learned E03.2 (EN55) registered for a forward test (research only, Dev; nothing deployed; Production stays 55b5e942)
+
+**Owner (Nov 18):** run the auditor's EN41–EN50 handoff (`docs/EXPIRY_RESEARCH_EN41_EN50.md`) plus five slots of mine, aiming for the most profit with the most loss control.
+- Plan `docs/research/simulation/2026-11-18-expiry-en41/PLAN5.md`, frozen `4376ba80` before any score.
+- Scored once by `en_score5.py` into `results5.json`, `anatomy5.json` and `results5-started.json`.
+- Write-up `ANATOMY5.md`. Forward registration `FORWARD5.md`. Plain report `docs/EXPIRY_RESEARCH_EN.md`.
+
+**Scope:** every held expiry afternoon is seen (NIFTY 197 sessions 2023 – Oct 2026, SENSEX 63), and no NIFTY 2020–22 expiry chains exist. This round is development screening only.
+
+**Lab:** `en_lab5.py` builds on the immutable round-4 lab through four dispatchers that stay inert when off.
+- results4 reproduced for 6 arms × 5 books × 3 fills.
+- Synthetic checks for ridge, retention and straddles; 285 truncation-invariant decisions.
+- Rs 30,000 wallets with 50% profit sweeps; brakes on the trading high-water, never reset.
+
+**Results:**
+- **DATA_UNAVAILABLE:** EN41/EN42 (no sealed depth packets; TR01 holds at most 2 expiries, unexported) and EN43 (no dated weights).
+- **INCONCLUSIVE:**
+  - EN48: one verified RBI decision on an expiry.
+  - EN49: the ridge model's highest forecast 3-minute net was −4.1%; it abstained on all 13,699 rows.
+  - EN50: changed 3 tickets.
+- **FAIL:** EN44 (−4,298), EN45 (−10,898 NIFTY), EN46, EN47 (4 affordable responsive strikes), EN51 straddle bracket, EN52 (NIFTY +16,554 but −8,588 without its top 2 and −32,962 severe; SENSEX −8,351), EN53 at-the-money, EN54.
+- **Tests:** Holm-adjusted p = 1.0 for all ten primaries.
+- **EN55 (E03.2 + patient entry + scout + stall runner): FORWARD-ONLY.**
+  - NIFTY fixed-cap +13,165 against E03.2's +14,275; severe +991 against −12,347.
+  - Continuous Rs 30k wallet **+3,445, never halted**, against E03.2's −4,123, halted from Jan 18 2024. It came within Rs 387 of the halt.
+  - Registered for the first 20 expiries per index after Nov 18.
+
+**Capital:** the extra Rs 5,000 changes nothing for NIFTY (the brakes are rupee amounts). The sweep banked Rs 2,422 on SENSEX.
+
+**Verification:** en_lab5.py check OK (dispatchers inert: results4 reproduced for E032/EN40/EN35_diag/EN32/EN28/EN36 x 5 books x 3 fills; RIDGE_OK RETENTION_OK STRADDLE_SYNTHETIC_OK; TRUNCATION_OK 285 decisions); en_score5.py selftest OK; score run once, exit 0 (start receipt results5-started.json). No python-engine source changed, so the engine suite was not rerun and the atlas not regenerated.
+
+**State:**
+- Dev research files and docs only, pushed to `codex/production-correction-hedge-p0`.
+- No engine, configuration, `.env` or Production change; no migration. Nothing promoted, and tests are not profitable strategies.
+- The auditor's EN41–EN50 doc and review folder stay untracked (theirs).
+- **Owner's calls:**
+  - whether to export TR01 depth for EN41/EN42;
+  - whether EN55's forward test runs as replay or live paper (a GitHub-path implementation on the owner's word).
+
 ## November 18 - EN26–EN40 + the first fresh exam of E03.2 (NIFTY 2026, SENSEX): none passes, E03.2 unchanged (research only, Dev; nothing deployed; Production stays 55b5e942)
 
 **Owner (Nov 18):** run the auditor's EN26–EN35 handoff (`docs/EXPIRY_RESEARCH_EN26_EN35.md`) plus five slots of mine, on today's Breeze download (NIFTY 2026 and SENSEX Jul 2025 – Nov 2026 expiry afternoons).

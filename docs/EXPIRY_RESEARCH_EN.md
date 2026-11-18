@@ -172,6 +172,66 @@ The four parts held over from the last round (EN21, EN25, EN14, EN12) did not ho
 - E03.2 stays on paper exactly as it is, and nothing is deployed.
 - Whether it remains the paper main on NIFTY after failing this test is your call.
 
+## Round 5 (Nov 18): fifteen more slots, ten from the auditor and five of mine
+
+Every expiry afternoon we hold has now been looked at, so this round can only screen ideas. Anything that survives must prove itself on the next expiries. Every slot's wins and losses are in [ANATOMY5.md](research/simulation/2026-11-18-expiry-en41/ANATOMY5.md).
+
+**Nothing passed.** The three things that matter:
+
+**1. The "learned E03.2" (EN55) is the only version that survives one continuous ₹30,000 wallet.** It is E03.2 plus waiting at the bid, buying half first and adding only when it proves itself, and selling the leftover when the move stalls. Each of these was learned in earlier rounds.
+
+| NIFTY, 197 expiries | E03.2 | Learned E03.2 |
+|---|---:|---:|
+| Profit, each expiry on its own | +14,275 | +13,165 |
+| With bad fills | −12,347 | **+991** |
+| Worst expiry | −1,281 | −854 |
+| **One continuous ₹30,000 wallet** | **−4,123, stopped by the brake from Jan 2024** | **+3,445, never stopped** |
+
+- **SENSEX:** +2,470 against +2,449, with a smaller worst day.
+- **Caveat:** it came within ₹387 of the brake. Its pieces were chosen on these same days, so it is registered for a forward test on the next 20 expiries per index ([FORWARD5.md](research/simulation/2026-11-18-expiry-en41/FORWARD5.md)). Nothing changes until that test is read.
+
+**2. You are right that every expiry swings.** But the managed straddle (EN51: buy the call and the put at 13:00, sell at +25% or −25%) shows the decay usually comes first.
+- NIFTY: it reached +25% first on 42 days and −25% first on 87.
+- SENSEX: 14 against 20.
+- It lost on both indices.
+
+**3. The straddle that drops its losing leg (EN52) made the most on NIFTY (+16,554).** But it is the same lottery:
+- −8,588 without its two best days;
+- −32,962 with bad fills;
+- −8,351 on SENSEX.
+
+**The auditor's ten:**
+
+| Slot | What happened |
+|---|---|
+| EN41, EN42 (order-book pressure) | Need depth data our recorder has only for two expiries, and not exported. |
+| EN43 (weighted stocks) | No dated weights or second-level stock data. |
+| EN44 (opening-range retest) | Lost on NIFTY mornings (−4,298), below random. |
+| EN45 (failed break back to VWAP) | Lost on both indices (NIFTY −10,898). |
+| EN46 (does the move pay the option) | Removed winners with losers. With no direction forecast it never buys at all. |
+| EN47 (strike by response) | Under ₹1,250 almost no strike moves enough to pay its spread and order charges. |
+| EN48 (RBI days) | Only one verified RBI decision fell on an expiry. |
+| EN49 (small payoff model) | Over 13,700 real decisions it never forecast a profitable 3-minute trade. Spread plus two order charges are about 5–7% of a cheap expiry option. |
+| EN50 (hold-another-minute model) | Changed only 3 trades. |
+
+**My other four:**
+
+| Slot | What happened |
+|---|---|
+| EN51 (straddle bracket) | Lost on both indices. |
+| EN52 (straddle that drops its loser) | Lost: the lottery above. |
+| EN53 (E03.2 with at-the-money options) | Lost, because at-the-money never makes 10×. |
+| EN54 (straddle only when cheap) | Lost on NIFTY; too few SENSEX trades to judge. |
+
+**On the ₹30,000 and the 50% profit sweep:**
+- The extra ₹5,000 changes nothing for NIFTY, because the brakes are rupee amounts.
+- The sweep works: on SENSEX it banked ₹2,422 at the peak. Later losses reduce the wallet, and the swept money stays out.
+
+**Bottom line:**
+- The money on expiry afternoons is in a few big directional days.
+- Every filter that avoids losses also avoids those days, except the learned E03.2's way of cutting losers.
+- That is the one to prove forward.
+
 ## Data still open
 
 The full list is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md).
