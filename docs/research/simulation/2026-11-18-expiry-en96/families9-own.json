@@ -1,0 +1,28 @@
+{
+  "schema": "sentinel.expiry.family-proposal.v1",
+  "status": "OWN_FAMILIES_REGISTERED_BEFORE_SCORE",
+  "date": "2026-11-18",
+  "author_note": "Developer's own five slots (owner: five slots of mine). Same unit as EN96-EN105: a family of declared variations; IMPL9.md section 4 gives the rules.",
+  "expansion_rule": "Cartesian product per block in the listed axis order; concatenate blocks in declared order; IDs SLOT:block:0001...",
+  "families": [
+    {"slot": "EN106", "title": "EN87's information layer on native E03.2 (and EN55): can it beat E03.2 itself?", "base": "E032_native",
+     "blocks": [
+       {"id": "native", "axes": {"mode": ["GATE", "VETO", "TILT"], "percentile": [60, 70, 80, 90]}},
+       {"id": "bridge", "axes": {"window_end": [870, 900], "put_mult": [1, 2], "money": ["MATCHED", "NATIVE"]}},
+       {"id": "en55", "axes": {"mode": ["GATE", "VETO", "TILT"]}}],
+     "planned_configurations": 23},
+    {"slot": "EN107", "title": "Second information sources at E03 clocks (synthetic forward, futures basis)", "base": "E03_env",
+     "blocks": [{"id": "sources", "axes": {"combination": ["SYN", "BASIS", "OI_OR_SYN", "OI_AND_SYN", "OI_OR_BASIS", "OI_AND_BASIS", "SYN_OR_BASIS", "VOTE2"], "percentile": [70, 80]}}],
+     "planned_configurations": 16},
+    {"slot": "EN108", "title": "Looser E03 timing with stronger information", "base": "EN87",
+     "blocks": [{"id": "timing", "axes": {"efficiency": [0.5, 0.6, 0.7], "premium_high": [20, 30], "percentile": [70, 80, 90]}}],
+     "planned_configurations": 18},
+    {"slot": "EN109", "title": "Information-graded sizing (dose-response)", "base": "EN87",
+     "blocks": [{"id": "grade", "axes": {"weak_lots": [0, 1], "agree_lots": [1, 2, 3], "strong_z": [1.5, 2.0]}}],
+     "planned_configurations": 12},
+    {"slot": "EN110", "title": "Exit geometry for information-confirmed parents", "base": "EN87",
+     "blocks": [{"id": "geometry", "axes": {"stop": [0.25, 0.35, 0.5], "target": [0.6, 1.0, 1.5], "runner_keep": [0.5, 0.7]}}],
+     "planned_configurations": 18}
+  ],
+  "planned_configurations": 87
+}

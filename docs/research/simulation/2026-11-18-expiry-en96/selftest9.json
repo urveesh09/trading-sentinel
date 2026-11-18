@@ -1,0 +1,24 @@
+{
+ "status": "PASS",
+ "configs": 99,
+ "unavailable": 73,
+ "families": 15,
+ "boundaries": [
+  40,
+  50,
+  60
+ ],
+ "en105_folds": 4,
+ "labels": 15,
+ "dedup": {
+  "NIFTY": {
+   "configs": 86,
+   "distinct": 48
+  },
+  "SENSEX": {
+   "configs": 13,
+   "distinct": 9
+  }
+ },
+ "note": "truncated registry/calendar; no money printed or used"
+}

@@ -1,0 +1,22 @@
+{
+ "gaussian": {
+  "single_rate": 0.048,
+  "holm30_family_rate": 0.045
+ },
+ "skewed": {
+  "single_rate": 0.066,
+  "holm30_family_rate": 0.088
+ },
+ "skewed_positive": {
+  "single_rate": 0.037,
+  "holm30_family_rate": 0.026
+ },
+ "heavy_tail": {
+  "single_rate": 0.051,
+  "holm30_family_rate": 0.034
+ },
+ "dependent": {
+  "single_rate": 0.056,
+  "holm30_family_rate": 0.043
+ }
+}

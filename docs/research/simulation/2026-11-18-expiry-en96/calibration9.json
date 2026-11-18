@@ -1,0 +1,50 @@
+{
+ "cases": {
+  "gaussian": {
+   "paths": 1000,
+   "rejections": 51,
+   "rate": 0.051,
+   "binomial_95": [
+    0.03820523677468615,
+    0.06651346159493483
+   ],
+   "planted_100_per_active_session_detected": 0.076
+  },
+  "skewed": {
+   "paths": 1000,
+   "rejections": 97,
+   "rate": 0.097,
+   "binomial_95": [
+    0.0793644718293639,
+    0.11704784398028709
+   ],
+   "planted_100_per_active_session_detected": 0.106
+  },
+  "heavy_tail": {
+   "paths": 1000,
+   "rejections": 44,
+   "rate": 0.044,
+   "binomial_95": [
+    0.032149497010871435,
+    0.05862041920633091
+   ],
+   "planted_100_per_active_session_detected": 0.106
+  },
+  "dependent": {
+   "paths": 1000,
+   "rejections": 71,
+   "rate": 0.071,
+   "binomial_95": [
+    0.05586464824989752,
+    0.08871644088678735
+   ],
+   "planted_100_per_active_session_detected": 0.041
+  }
+ },
+ "configs": 30,
+ "sessions": 197,
+ "method": "exact 2^8 sign flips of eight chronological group means, max studentised",
+ "size_ok": false,
+ "note": "finite Monte Carlo diagnostic; group independence and sign symmetry are assumptions",
+ "calendar": "NIFTY 197 sessions (freeze8 data.sessions)"
+}

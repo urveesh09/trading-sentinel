@@ -1,0 +1,109 @@
+{
+ "status": "PASS",
+ "gate_array_equals_round8": true,
+ "reference_threshold_equals_round8": true,
+ "checks": {
+  "EN96:gate:0021 == REF:EN87": {
+   "settings": {
+    "lookback_minutes": 15,
+    "percentile": 80,
+    "prior_covered_expiries": 20
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN97:basket:0007 == REF:EN87": {
+   "settings": {
+    "half_width": 2,
+    "anchor": "CURRENT_ATM",
+    "aggregation": "POOLED"
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN99:immediate:0001 == REF:EN87": {
+   "settings": {
+    "style": "IMMEDIATE"
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN100:chooser:0003 == REF:EN87_ONE_LOT": {
+   "settings": {
+    "chooser": "LEGACY",
+    "max_friction_ratio": "UNBOUNDED"
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN103:full:0001 == REF:EN87": {
+   "settings": {
+    "initial_fraction": 1
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN106:bridge:0001 == REF:EN87": {
+   "settings": {
+    "window_end": 870,
+    "put_mult": 1,
+    "money": "MATCHED"
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN108:timing:0014 == REF:EN87": {
+   "settings": {
+    "efficiency": 0.7,
+    "premium_high": 20,
+    "percentile": 80
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN109:grade:0005 == REF:EN87": {
+   "settings": {
+    "weak_lots": 0,
+    "agree_lots": 3,
+    "strong_z": 1.5
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN109:grade:0006 == REF:EN87": {
+   "settings": {
+    "weak_lots": 0,
+    "agree_lots": 3,
+    "strong_z": 2.0
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN110:geometry:0009 == REF:EN87": {
+   "settings": {
+    "stop": 0.35,
+    "target": 1.0,
+    "runner_keep": 0.5
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN106:native:0003 == EN106:bridge:0008": {
+   "settings": {
+    "mode": "GATE",
+    "percentile": 80
+   },
+   "equal": true,
+   "differing_sessions": []
+  },
+  "EN98 unbounded/0 vs EN87": {
+   "settings": {
+    "max_signed_atr_extension": "UNBOUNDED",
+    "min_er10": 0
+   },
+   "sessions_differing": 0,
+   "events_without_valid_features": 0,
+   "note": "equal except where X or ER10 is unavailable at an EN87 clock"
+  }
+ }
+}
