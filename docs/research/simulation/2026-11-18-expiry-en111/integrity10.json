@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "frozen_files": 70,
+  "data_files": 2,
+  "dates": {
+    "NIFTY": 197,
+    "SENSEX": 63
+  },
+  "freeze_sha256": "814a645ffb1041126403b32e3d01364ea5849c284dc5eabb4b3c2b9098fe9bcc"
+}

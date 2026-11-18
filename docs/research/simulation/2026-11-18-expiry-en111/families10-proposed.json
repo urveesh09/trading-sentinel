@@ -1,0 +1,1355 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_A_SCORE_FREEZE",
+  "policy_cells": 138,
+  "bar_cells": 126,
+  "packet_cells": 12,
+  "spec_sha256": "0503e66f63cab1dbf2229cd90f047ecbc82477ba1fbcf571ad11e12d8cbfd0d4",
+  "note": "Controls/ablations and capability sets must be expanded in developer IMPL10 before scoring.",
+  "families": [
+    {
+      "slot": "EN111",
+      "axes": {
+        "contract": [
+          "LEGACY_UP_TO_3",
+          "NEARER_ONE_LOT"
+        ],
+        "target": [
+          1,
+          1.25,
+          1.5
+        ],
+        "hold": [
+          8,
+          10,
+          12
+        ]
+      },
+      "count": 18,
+      "cells": [
+        {
+          "id": "EN111:0001",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1,
+            "hold": 8
+          }
+        },
+        {
+          "id": "EN111:0002",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1,
+            "hold": 10
+          }
+        },
+        {
+          "id": "EN111:0003",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1,
+            "hold": 12
+          }
+        },
+        {
+          "id": "EN111:0004",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1.25,
+            "hold": 8
+          }
+        },
+        {
+          "id": "EN111:0005",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1.25,
+            "hold": 10
+          }
+        },
+        {
+          "id": "EN111:0006",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1.25,
+            "hold": 12
+          }
+        },
+        {
+          "id": "EN111:0007",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1.5,
+            "hold": 8
+          }
+        },
+        {
+          "id": "EN111:0008",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1.5,
+            "hold": 10
+          }
+        },
+        {
+          "id": "EN111:0009",
+          "settings": {
+            "contract": "LEGACY_UP_TO_3",
+            "target": 1.5,
+            "hold": 12
+          }
+        },
+        {
+          "id": "EN111:0010",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1,
+            "hold": 8
+          }
+        },
+        {
+          "id": "EN111:0011",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1,
+            "hold": 10
+          }
+        },
+        {
+          "id": "EN111:0012",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1,
+            "hold": 12
+          }
+        },
+        {
+          "id": "EN111:0013",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1.25,
+            "hold": 8
+          }
+        },
+        {
+          "id": "EN111:0014",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1.25,
+            "hold": 10
+          }
+        },
+        {
+          "id": "EN111:0015",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1.25,
+            "hold": 12
+          }
+        },
+        {
+          "id": "EN111:0016",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1.5,
+            "hold": 8
+          }
+        },
+        {
+          "id": "EN111:0017",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1.5,
+            "hold": 10
+          }
+        },
+        {
+          "id": "EN111:0018",
+          "settings": {
+            "contract": "NEARER_ONE_LOT",
+            "target": 1.5,
+            "hold": 12
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN112",
+      "axes": {
+        "context": [
+          "EXTENSION_RANK",
+          "ACCELERATION",
+          "BOTH"
+        ],
+        "assignment": [
+          "FRESH_GETS_ROOM",
+          "MATURE_GETS_ROOM"
+        ],
+        "profile": [
+          "TARGET_ONLY",
+          "HOLD_ONLY",
+          "BOTH"
+        ]
+      },
+      "count": 18,
+      "cells": [
+        {
+          "id": "EN112:0001",
+          "settings": {
+            "context": "EXTENSION_RANK",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "TARGET_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0002",
+          "settings": {
+            "context": "EXTENSION_RANK",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "HOLD_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0003",
+          "settings": {
+            "context": "EXTENSION_RANK",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "BOTH"
+          }
+        },
+        {
+          "id": "EN112:0004",
+          "settings": {
+            "context": "EXTENSION_RANK",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "TARGET_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0005",
+          "settings": {
+            "context": "EXTENSION_RANK",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "HOLD_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0006",
+          "settings": {
+            "context": "EXTENSION_RANK",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "BOTH"
+          }
+        },
+        {
+          "id": "EN112:0007",
+          "settings": {
+            "context": "ACCELERATION",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "TARGET_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0008",
+          "settings": {
+            "context": "ACCELERATION",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "HOLD_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0009",
+          "settings": {
+            "context": "ACCELERATION",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "BOTH"
+          }
+        },
+        {
+          "id": "EN112:0010",
+          "settings": {
+            "context": "ACCELERATION",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "TARGET_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0011",
+          "settings": {
+            "context": "ACCELERATION",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "HOLD_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0012",
+          "settings": {
+            "context": "ACCELERATION",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "BOTH"
+          }
+        },
+        {
+          "id": "EN112:0013",
+          "settings": {
+            "context": "BOTH",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "TARGET_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0014",
+          "settings": {
+            "context": "BOTH",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "HOLD_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0015",
+          "settings": {
+            "context": "BOTH",
+            "assignment": "FRESH_GETS_ROOM",
+            "profile": "BOTH"
+          }
+        },
+        {
+          "id": "EN112:0016",
+          "settings": {
+            "context": "BOTH",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "TARGET_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0017",
+          "settings": {
+            "context": "BOTH",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "HOLD_ONLY"
+          }
+        },
+        {
+          "id": "EN112:0018",
+          "settings": {
+            "context": "BOTH",
+            "assignment": "MATURE_GETS_ROOM",
+            "profile": "BOTH"
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN113",
+      "axes": {
+        "lag": [
+          1,
+          3,
+          5
+        ],
+        "percentile": [
+          80,
+          90
+        ],
+        "response": [
+          "DENY_EXTENSION",
+          "EXIT_WITH_GIVEBACK"
+        ]
+      },
+      "count": 12,
+      "cells": [
+        {
+          "id": "EN113:0001",
+          "settings": {
+            "lag": 1,
+            "percentile": 80,
+            "response": "DENY_EXTENSION"
+          }
+        },
+        {
+          "id": "EN113:0002",
+          "settings": {
+            "lag": 1,
+            "percentile": 80,
+            "response": "EXIT_WITH_GIVEBACK"
+          }
+        },
+        {
+          "id": "EN113:0003",
+          "settings": {
+            "lag": 1,
+            "percentile": 90,
+            "response": "DENY_EXTENSION"
+          }
+        },
+        {
+          "id": "EN113:0004",
+          "settings": {
+            "lag": 1,
+            "percentile": 90,
+            "response": "EXIT_WITH_GIVEBACK"
+          }
+        },
+        {
+          "id": "EN113:0005",
+          "settings": {
+            "lag": 3,
+            "percentile": 80,
+            "response": "DENY_EXTENSION"
+          }
+        },
+        {
+          "id": "EN113:0006",
+          "settings": {
+            "lag": 3,
+            "percentile": 80,
+            "response": "EXIT_WITH_GIVEBACK"
+          }
+        },
+        {
+          "id": "EN113:0007",
+          "settings": {
+            "lag": 3,
+            "percentile": 90,
+            "response": "DENY_EXTENSION"
+          }
+        },
+        {
+          "id": "EN113:0008",
+          "settings": {
+            "lag": 3,
+            "percentile": 90,
+            "response": "EXIT_WITH_GIVEBACK"
+          }
+        },
+        {
+          "id": "EN113:0009",
+          "settings": {
+            "lag": 5,
+            "percentile": 80,
+            "response": "DENY_EXTENSION"
+          }
+        },
+        {
+          "id": "EN113:0010",
+          "settings": {
+            "lag": 5,
+            "percentile": 80,
+            "response": "EXIT_WITH_GIVEBACK"
+          }
+        },
+        {
+          "id": "EN113:0011",
+          "settings": {
+            "lag": 5,
+            "percentile": 90,
+            "response": "DENY_EXTENSION"
+          }
+        },
+        {
+          "id": "EN113:0012",
+          "settings": {
+            "lag": 5,
+            "percentile": 90,
+            "response": "EXIT_WITH_GIVEBACK"
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN114",
+      "axes": {
+        "activity": [
+          4,
+          8,
+          12
+        ],
+        "wall": [
+          8,
+          12,
+          16
+        ],
+        "scope": [
+          "BASE_ONLY",
+          "BASE_AND_RUNNER"
+        ]
+      },
+      "count": 18,
+      "cells": [
+        {
+          "id": "EN114:0001",
+          "settings": {
+            "activity": 4,
+            "wall": 8,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0002",
+          "settings": {
+            "activity": 4,
+            "wall": 8,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0003",
+          "settings": {
+            "activity": 4,
+            "wall": 12,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0004",
+          "settings": {
+            "activity": 4,
+            "wall": 12,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0005",
+          "settings": {
+            "activity": 4,
+            "wall": 16,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0006",
+          "settings": {
+            "activity": 4,
+            "wall": 16,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0007",
+          "settings": {
+            "activity": 8,
+            "wall": 8,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0008",
+          "settings": {
+            "activity": 8,
+            "wall": 8,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0009",
+          "settings": {
+            "activity": 8,
+            "wall": 12,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0010",
+          "settings": {
+            "activity": 8,
+            "wall": 12,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0011",
+          "settings": {
+            "activity": 8,
+            "wall": 16,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0012",
+          "settings": {
+            "activity": 8,
+            "wall": 16,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0013",
+          "settings": {
+            "activity": 12,
+            "wall": 8,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0014",
+          "settings": {
+            "activity": 12,
+            "wall": 8,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0015",
+          "settings": {
+            "activity": 12,
+            "wall": 12,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0016",
+          "settings": {
+            "activity": 12,
+            "wall": 12,
+            "scope": "BASE_AND_RUNNER"
+          }
+        },
+        {
+          "id": "EN114:0017",
+          "settings": {
+            "activity": 12,
+            "wall": 16,
+            "scope": "BASE_ONLY"
+          }
+        },
+        {
+          "id": "EN114:0018",
+          "settings": {
+            "activity": 12,
+            "wall": 16,
+            "scope": "BASE_AND_RUNNER"
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN115",
+      "axes": {
+        "window": [
+          20,
+          40,
+          60
+        ],
+        "ridge": [
+          1,
+          10
+        ],
+        "residual_penalty": [
+          0,
+          1
+        ]
+      },
+      "count": 12,
+      "cells": [
+        {
+          "id": "EN115:0001",
+          "settings": {
+            "window": 20,
+            "ridge": 1,
+            "residual_penalty": 0
+          }
+        },
+        {
+          "id": "EN115:0002",
+          "settings": {
+            "window": 20,
+            "ridge": 1,
+            "residual_penalty": 1
+          }
+        },
+        {
+          "id": "EN115:0003",
+          "settings": {
+            "window": 20,
+            "ridge": 10,
+            "residual_penalty": 0
+          }
+        },
+        {
+          "id": "EN115:0004",
+          "settings": {
+            "window": 20,
+            "ridge": 10,
+            "residual_penalty": 1
+          }
+        },
+        {
+          "id": "EN115:0005",
+          "settings": {
+            "window": 40,
+            "ridge": 1,
+            "residual_penalty": 0
+          }
+        },
+        {
+          "id": "EN115:0006",
+          "settings": {
+            "window": 40,
+            "ridge": 1,
+            "residual_penalty": 1
+          }
+        },
+        {
+          "id": "EN115:0007",
+          "settings": {
+            "window": 40,
+            "ridge": 10,
+            "residual_penalty": 0
+          }
+        },
+        {
+          "id": "EN115:0008",
+          "settings": {
+            "window": 40,
+            "ridge": 10,
+            "residual_penalty": 1
+          }
+        },
+        {
+          "id": "EN115:0009",
+          "settings": {
+            "window": 60,
+            "ridge": 1,
+            "residual_penalty": 0
+          }
+        },
+        {
+          "id": "EN115:0010",
+          "settings": {
+            "window": 60,
+            "ridge": 1,
+            "residual_penalty": 1
+          }
+        },
+        {
+          "id": "EN115:0011",
+          "settings": {
+            "window": 60,
+            "ridge": 10,
+            "residual_penalty": 0
+          }
+        },
+        {
+          "id": "EN115:0012",
+          "settings": {
+            "window": 60,
+            "ridge": 10,
+            "residual_penalty": 1
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN116",
+      "axes": {
+        "states": [
+          2,
+          3
+        ],
+        "refit": [
+          1,
+          5
+        ],
+        "persistence": [
+          "IMMEDIATE",
+          "TWO_BAR_HYSTERESIS"
+        ]
+      },
+      "count": 8,
+      "cells": [
+        {
+          "id": "EN116:0001",
+          "settings": {
+            "states": 2,
+            "refit": 1,
+            "persistence": "IMMEDIATE"
+          }
+        },
+        {
+          "id": "EN116:0002",
+          "settings": {
+            "states": 2,
+            "refit": 1,
+            "persistence": "TWO_BAR_HYSTERESIS"
+          }
+        },
+        {
+          "id": "EN116:0003",
+          "settings": {
+            "states": 2,
+            "refit": 5,
+            "persistence": "IMMEDIATE"
+          }
+        },
+        {
+          "id": "EN116:0004",
+          "settings": {
+            "states": 2,
+            "refit": 5,
+            "persistence": "TWO_BAR_HYSTERESIS"
+          }
+        },
+        {
+          "id": "EN116:0005",
+          "settings": {
+            "states": 3,
+            "refit": 1,
+            "persistence": "IMMEDIATE"
+          }
+        },
+        {
+          "id": "EN116:0006",
+          "settings": {
+            "states": 3,
+            "refit": 1,
+            "persistence": "TWO_BAR_HYSTERESIS"
+          }
+        },
+        {
+          "id": "EN116:0007",
+          "settings": {
+            "states": 3,
+            "refit": 5,
+            "persistence": "IMMEDIATE"
+          }
+        },
+        {
+          "id": "EN116:0008",
+          "settings": {
+            "states": 3,
+            "refit": 5,
+            "persistence": "TWO_BAR_HYSTERESIS"
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN117",
+      "axes": {
+        "excursion": [
+          0,
+          0.25
+        ],
+        "target": [
+          "MIDPOINT",
+          "OPPOSITE_QUARTILE"
+        ],
+        "stop_buffer": [
+          0.25,
+          0.5
+        ],
+        "cost_coverage": [
+          1,
+          2
+        ]
+      },
+      "count": 16,
+      "cells": [
+        {
+          "id": "EN117:0001",
+          "settings": {
+            "excursion": 0,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.25,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0002",
+          "settings": {
+            "excursion": 0,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.25,
+            "cost_coverage": 2
+          }
+        },
+        {
+          "id": "EN117:0003",
+          "settings": {
+            "excursion": 0,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.5,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0004",
+          "settings": {
+            "excursion": 0,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.5,
+            "cost_coverage": 2
+          }
+        },
+        {
+          "id": "EN117:0005",
+          "settings": {
+            "excursion": 0,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.25,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0006",
+          "settings": {
+            "excursion": 0,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.25,
+            "cost_coverage": 2
+          }
+        },
+        {
+          "id": "EN117:0007",
+          "settings": {
+            "excursion": 0,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.5,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0008",
+          "settings": {
+            "excursion": 0,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.5,
+            "cost_coverage": 2
+          }
+        },
+        {
+          "id": "EN117:0009",
+          "settings": {
+            "excursion": 0.25,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.25,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0010",
+          "settings": {
+            "excursion": 0.25,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.25,
+            "cost_coverage": 2
+          }
+        },
+        {
+          "id": "EN117:0011",
+          "settings": {
+            "excursion": 0.25,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.5,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0012",
+          "settings": {
+            "excursion": 0.25,
+            "target": "MIDPOINT",
+            "stop_buffer": 0.5,
+            "cost_coverage": 2
+          }
+        },
+        {
+          "id": "EN117:0013",
+          "settings": {
+            "excursion": 0.25,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.25,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0014",
+          "settings": {
+            "excursion": 0.25,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.25,
+            "cost_coverage": 2
+          }
+        },
+        {
+          "id": "EN117:0015",
+          "settings": {
+            "excursion": 0.25,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.5,
+            "cost_coverage": 1
+          }
+        },
+        {
+          "id": "EN117:0016",
+          "settings": {
+            "excursion": 0.25,
+            "target": "OPPOSITE_QUARTILE",
+            "stop_buffer": 0.5,
+            "cost_coverage": 2
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN118",
+      "axes": {
+        "learner": [
+          "RIDGE",
+          "STUMP"
+        ],
+        "regularization": [
+          "LIGHT",
+          "HEAVY"
+        ],
+        "k": [
+          0,
+          1,
+          2
+        ]
+      },
+      "count": 12,
+      "cells": [
+        {
+          "id": "EN118:0001",
+          "settings": {
+            "learner": "RIDGE",
+            "regularization": "LIGHT",
+            "k": 0
+          }
+        },
+        {
+          "id": "EN118:0002",
+          "settings": {
+            "learner": "RIDGE",
+            "regularization": "LIGHT",
+            "k": 1
+          }
+        },
+        {
+          "id": "EN118:0003",
+          "settings": {
+            "learner": "RIDGE",
+            "regularization": "LIGHT",
+            "k": 2
+          }
+        },
+        {
+          "id": "EN118:0004",
+          "settings": {
+            "learner": "RIDGE",
+            "regularization": "HEAVY",
+            "k": 0
+          }
+        },
+        {
+          "id": "EN118:0005",
+          "settings": {
+            "learner": "RIDGE",
+            "regularization": "HEAVY",
+            "k": 1
+          }
+        },
+        {
+          "id": "EN118:0006",
+          "settings": {
+            "learner": "RIDGE",
+            "regularization": "HEAVY",
+            "k": 2
+          }
+        },
+        {
+          "id": "EN118:0007",
+          "settings": {
+            "learner": "STUMP",
+            "regularization": "LIGHT",
+            "k": 0
+          }
+        },
+        {
+          "id": "EN118:0008",
+          "settings": {
+            "learner": "STUMP",
+            "regularization": "LIGHT",
+            "k": 1
+          }
+        },
+        {
+          "id": "EN118:0009",
+          "settings": {
+            "learner": "STUMP",
+            "regularization": "LIGHT",
+            "k": 2
+          }
+        },
+        {
+          "id": "EN118:0010",
+          "settings": {
+            "learner": "STUMP",
+            "regularization": "HEAVY",
+            "k": 0
+          }
+        },
+        {
+          "id": "EN118:0011",
+          "settings": {
+            "learner": "STUMP",
+            "regularization": "HEAVY",
+            "k": 1
+          }
+        },
+        {
+          "id": "EN118:0012",
+          "settings": {
+            "learner": "STUMP",
+            "regularization": "HEAVY",
+            "k": 2
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    },
+    {
+      "slot": "EN119",
+      "axes": {
+        "wait_seconds": [
+          1,
+          3
+        ],
+        "urgency": [
+          1,
+          2
+        ],
+        "ceiling": [
+          1.02,
+          1.04,
+          1.08
+        ]
+      },
+      "count": 12,
+      "cells": [
+        {
+          "id": "EN119:0001",
+          "settings": {
+            "wait_seconds": 1,
+            "urgency": 1,
+            "ceiling": 1.02
+          }
+        },
+        {
+          "id": "EN119:0002",
+          "settings": {
+            "wait_seconds": 1,
+            "urgency": 1,
+            "ceiling": 1.04
+          }
+        },
+        {
+          "id": "EN119:0003",
+          "settings": {
+            "wait_seconds": 1,
+            "urgency": 1,
+            "ceiling": 1.08
+          }
+        },
+        {
+          "id": "EN119:0004",
+          "settings": {
+            "wait_seconds": 1,
+            "urgency": 2,
+            "ceiling": 1.02
+          }
+        },
+        {
+          "id": "EN119:0005",
+          "settings": {
+            "wait_seconds": 1,
+            "urgency": 2,
+            "ceiling": 1.04
+          }
+        },
+        {
+          "id": "EN119:0006",
+          "settings": {
+            "wait_seconds": 1,
+            "urgency": 2,
+            "ceiling": 1.08
+          }
+        },
+        {
+          "id": "EN119:0007",
+          "settings": {
+            "wait_seconds": 3,
+            "urgency": 1,
+            "ceiling": 1.02
+          }
+        },
+        {
+          "id": "EN119:0008",
+          "settings": {
+            "wait_seconds": 3,
+            "urgency": 1,
+            "ceiling": 1.04
+          }
+        },
+        {
+          "id": "EN119:0009",
+          "settings": {
+            "wait_seconds": 3,
+            "urgency": 1,
+            "ceiling": 1.08
+          }
+        },
+        {
+          "id": "EN119:0010",
+          "settings": {
+            "wait_seconds": 3,
+            "urgency": 2,
+            "ceiling": 1.02
+          }
+        },
+        {
+          "id": "EN119:0011",
+          "settings": {
+            "wait_seconds": 3,
+            "urgency": 2,
+            "ceiling": 1.04
+          }
+        },
+        {
+          "id": "EN119:0012",
+          "settings": {
+            "wait_seconds": 3,
+            "urgency": 2,
+            "ceiling": 1.08
+          }
+        }
+      ],
+      "fidelity": "PACKET_SOURCE_GATED"
+    },
+    {
+      "slot": "EN120",
+      "axes": {
+        "depth": [
+          1,
+          2
+        ],
+        "refit": [
+          5,
+          20
+        ],
+        "switch_margin": [
+          0,
+          0.1,
+          0.25
+        ]
+      },
+      "count": 12,
+      "cells": [
+        {
+          "id": "EN120:0001",
+          "settings": {
+            "depth": 1,
+            "refit": 5,
+            "switch_margin": 0
+          }
+        },
+        {
+          "id": "EN120:0002",
+          "settings": {
+            "depth": 1,
+            "refit": 5,
+            "switch_margin": 0.1
+          }
+        },
+        {
+          "id": "EN120:0003",
+          "settings": {
+            "depth": 1,
+            "refit": 5,
+            "switch_margin": 0.25
+          }
+        },
+        {
+          "id": "EN120:0004",
+          "settings": {
+            "depth": 1,
+            "refit": 20,
+            "switch_margin": 0
+          }
+        },
+        {
+          "id": "EN120:0005",
+          "settings": {
+            "depth": 1,
+            "refit": 20,
+            "switch_margin": 0.1
+          }
+        },
+        {
+          "id": "EN120:0006",
+          "settings": {
+            "depth": 1,
+            "refit": 20,
+            "switch_margin": 0.25
+          }
+        },
+        {
+          "id": "EN120:0007",
+          "settings": {
+            "depth": 2,
+            "refit": 5,
+            "switch_margin": 0
+          }
+        },
+        {
+          "id": "EN120:0008",
+          "settings": {
+            "depth": 2,
+            "refit": 5,
+            "switch_margin": 0.1
+          }
+        },
+        {
+          "id": "EN120:0009",
+          "settings": {
+            "depth": 2,
+            "refit": 5,
+            "switch_margin": 0.25
+          }
+        },
+        {
+          "id": "EN120:0010",
+          "settings": {
+            "depth": 2,
+            "refit": 20,
+            "switch_margin": 0
+          }
+        },
+        {
+          "id": "EN120:0011",
+          "settings": {
+            "depth": 2,
+            "refit": 20,
+            "switch_margin": 0.1
+          }
+        },
+        {
+          "id": "EN120:0012",
+          "settings": {
+            "depth": 2,
+            "refit": 20,
+            "switch_margin": 0.25
+          }
+        }
+      ],
+      "fidelity": "BAR_POLICY_PROPOSAL"
+    }
+  ]
+}

@@ -1,0 +1,937 @@
+{
+  "scope": "archived evidence reconciliation; no new score",
+  "registry": {
+    "cells": 318,
+    "bar": 306,
+    "packet": 12,
+    "by_family": {
+      "EN96": 32,
+      "EN97": 18,
+      "EN98": 12,
+      "EN99": 29,
+      "EN100": 9,
+      "EN101": 18,
+      "EN102": 18,
+      "EN103": 13,
+      "EN104": 18,
+      "EN105": 64,
+      "EN106": 23,
+      "EN107": 16,
+      "EN108": 18,
+      "EN109": 12,
+      "EN110": 18
+    },
+    "controls": 36,
+    "references": 8
+  },
+  "scored": {
+    "NIFTY": {
+      "configs": 286,
+      "distinct": 181
+    },
+    "SENSEX": {
+      "configs": 18,
+      "distinct": 9
+    }
+  },
+  "champions": [],
+  "labels": {
+    "EN96": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": "EN96:gate:0002",
+      "fold_picks": [
+        null,
+        null,
+        null,
+        "EN96:gate:0002",
+        "EN96:gate:0002"
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.258,
+      "grid_median_adverse_gain": -4.85,
+      "plateau": {
+        "cell": "EN96:gate:0002",
+        "neighbours": [
+          "EN96:gate:0010",
+          "EN96:gate:0004",
+          "EN96:gate:0001"
+        ],
+        "positive": 1,
+        "share": 0.333
+      },
+      "stitched_gain_adverse": 130.06
+    },
+    "EN97": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": null,
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": -5.235,
+      "plateau": null,
+      "stitched_gain_adverse": 0.0
+    },
+    "EN98": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": null,
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": -29.648,
+      "plateau": null,
+      "stitched_gain_adverse": 0.0
+    },
+    "EN99": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": null,
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": -26.117,
+      "plateau": null,
+      "stitched_gain_adverse": 0.0
+    },
+    "EN100": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": "EN100:chooser:0005",
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        "EN100:chooser:0005"
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.875,
+      "grid_median_adverse_gain": 24.627,
+      "plateau": {
+        "cell": "EN100:chooser:0005",
+        "neighbours": [
+          "EN100:chooser:0004",
+          "EN100:chooser:0006"
+        ],
+        "positive": 2,
+        "share": 1.0
+      },
+      "stitched_gain_adverse": 661.55
+    },
+    "EN101": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": "EN101:continuation:0002",
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        "EN101:continuation:0002"
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.611,
+      "grid_median_adverse_gain": 3.498,
+      "plateau": {
+        "cell": "EN101:continuation:0002",
+        "neighbours": [
+          "EN101:continuation:0008",
+          "EN101:continuation:0001"
+        ],
+        "positive": 2,
+        "share": 1.0
+      },
+      "stitched_gain_adverse": 0.0
+    },
+    "EN102": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": null,
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": 0.0,
+      "plateau": null,
+      "stitched_gain_adverse": 0.0
+    },
+    "EN103": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": null,
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": -10.627,
+      "plateau": null,
+      "stitched_gain_adverse": 0.0
+    },
+    "EN104": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": "EN104:lagged_agreement:0004",
+      "fold_picks": [
+        null,
+        null,
+        null,
+        "EN104:lagged_agreement:0004",
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.5,
+      "grid_median_adverse_gain": 0.103,
+      "plateau": {
+        "cell": "EN104:lagged_agreement:0004",
+        "neighbours": [
+          "EN104:lagged_agreement:0010",
+          "EN104:lagged_agreement:0005"
+        ],
+        "positive": 0,
+        "share": 0.0
+      },
+      "stitched_gain_adverse": 0.0
+    },
+    "EN105": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": "EN105|s160|100000",
+      "fold_picks": [
+        null,
+        null,
+        null,
+        "EN105|s160|100000",
+        "EN105|s180|100110"
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": 0.0,
+      "plateau": null,
+      "stitched_gain_adverse": 1572.84
+    },
+    "EN106": {
+      "label": "NO IMPROVEMENT",
+      "most_selected": "EN106:native:0005",
+      "fold_picks": [
+        "EN106:native:0005",
+        "EN106:native:0005",
+        "EN106:native:0005",
+        "EN106:native:0005",
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.136,
+      "grid_median_adverse_gain": -35.386,
+      "plateau": {
+        "cell": "EN106:native:0005",
+        "neighbours": [
+          "EN106:native:0006"
+        ],
+        "positive": 1,
+        "share": 1.0
+      },
+      "stitched_gain_adverse": 292.8
+    },
+    "EN107": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": "EN107:sources:0009",
+      "fold_picks": [
+        null,
+        null,
+        null,
+        "EN107:sources:0009",
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.062,
+      "grid_median_adverse_gain": -20.946,
+      "plateau": {
+        "cell": "EN107:sources:0009",
+        "neighbours": [
+          "EN107:sources:0010"
+        ],
+        "positive": 0,
+        "share": 0.0
+      },
+      "stitched_gain_adverse": 0.0
+    },
+    "EN108": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": "EN108:timing:0007",
+      "fold_picks": [
+        null,
+        null,
+        "EN108:timing:0007",
+        "EN108:timing:0011",
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": -25.85,
+      "plateau": {
+        "cell": "EN108:timing:0007",
+        "neighbours": [
+          "EN108:timing:0001",
+          "EN108:timing:0013",
+          "EN108:timing:0010",
+          "EN108:timing:0008"
+        ],
+        "positive": 0,
+        "share": 0.0
+      },
+      "stitched_gain_adverse": -1419.85
+    },
+    "EN109": {
+      "label": "NO IMPROVEMENT",
+      "most_selected": "EN109:grade:0008",
+      "fold_picks": [
+        null,
+        null,
+        "EN109:grade:0008",
+        "EN109:grade:0011",
+        "EN109:grade:0008"
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.0,
+      "grid_median_adverse_gain": -9.196,
+      "plateau": {
+        "cell": "EN109:grade:0008",
+        "neighbours": [
+          "EN109:grade:0002",
+          "EN109:grade:0010",
+          "EN109:grade:0007"
+        ],
+        "positive": 0,
+        "share": 0.0
+      },
+      "stitched_gain_adverse": -54.09
+    },
+    "EN110": {
+      "label": "INCONCLUSIVE \u2014 selection support (no candidate passed in >=3 of 5 folds)",
+      "most_selected": null,
+      "fold_picks": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "final_pick": null,
+      "grid_share_positive": 0.588,
+      "grid_median_adverse_gain": 3.754,
+      "plateau": null,
+      "stitched_gain_adverse": 0.0
+    }
+  },
+  "random_retention": {
+    "ordinary": {
+      "seeds": 40,
+      "median": 4586.57,
+      "p90": 6895.74,
+      "en87": 6114.14,
+      "en87_rank": 31
+    },
+    "adverse": {
+      "seeds": 40,
+      "median": 4168.84,
+      "p90": 6455.89,
+      "en87": 5840.68,
+      "en87_rank": 31
+    },
+    "eligible_signals": 68,
+    "kept_signals": 38
+  },
+  "extension": {
+    "n": 38,
+    "min": 2.49,
+    "median": 4.7955,
+    "max": 7.007,
+    "all_E03_env_events_share_at_or_below_2": 0.117
+  },
+  "fast_opposition": {
+    "parents": 25,
+    "negative": 0,
+    "values": [
+      0.038,
+      0.0417,
+      0.0546,
+      0.0547,
+      0.0677,
+      0.0758,
+      0.078,
+      0.0965,
+      0.1145,
+      0.1162,
+      0.1226,
+      0.1269,
+      0.1373,
+      0.1463,
+      0.2096,
+      0.2195,
+      0.2492,
+      0.2547,
+      0.2565,
+      0.257,
+      0.2755,
+      0.29,
+      0.2981,
+      0.3287,
+      0.3335
+    ]
+  },
+  "inner_constraint_counts": {
+    "EN96": {
+      "records": 160,
+      "failures": {
+        "wallet_positive": 16,
+        "without_best_two": 78,
+        "median_block_improvement": 19,
+        "support": 115
+      },
+      "pass_all": 11,
+      "support_only_failure": 65
+    },
+    "EN97": {
+      "records": 90,
+      "failures": {
+        "support": 74,
+        "without_best_two": 40
+      },
+      "pass_all": 0,
+      "support_only_failure": 50
+    },
+    "EN98": {
+      "records": 60,
+      "failures": {
+        "support": 58,
+        "wallet_positive": 45,
+        "median_block_improvement": 45,
+        "without_best_two": 6
+      },
+      "pass_all": 0,
+      "support_only_failure": 9
+    },
+    "EN99": {
+      "records": 85,
+      "failures": {
+        "support": 84,
+        "without_best_two": 32,
+        "wallet_positive": 64,
+        "median_block_improvement": 80
+      },
+      "pass_all": 0,
+      "support_only_failure": 3
+    },
+    "EN100": {
+      "records": 45,
+      "failures": {
+        "support": 39,
+        "without_best_two": 19,
+        "median_block_improvement": 2
+      },
+      "pass_all": 4,
+      "support_only_failure": 21
+    },
+    "EN101": {
+      "records": 90,
+      "failures": {
+        "support": 72,
+        "without_best_two": 54,
+        "wallet_positive": 2
+      },
+      "pass_all": 3,
+      "support_only_failure": 33
+    },
+    "EN102": {
+      "records": 90,
+      "failures": {
+        "support": 72,
+        "without_best_two": 36
+      },
+      "pass_all": 0,
+      "support_only_failure": 54
+    },
+    "EN103": {
+      "records": 65,
+      "failures": {
+        "support": 52,
+        "without_best_two": 32,
+        "median_block_improvement": 58
+      },
+      "pass_all": 0,
+      "support_only_failure": 3
+    },
+    "EN104": {
+      "records": 90,
+      "failures": {
+        "support": 67,
+        "without_best_two": 36
+      },
+      "pass_all": 5,
+      "support_only_failure": 49
+    },
+    "EN106": {
+      "records": 115,
+      "failures": {
+        "without_best_two": 34,
+        "median_block_improvement": 86,
+        "wallet_positive": 1,
+        "support": 26
+      },
+      "pass_all": 16,
+      "support_only_failure": 6
+    },
+    "EN107": {
+      "records": 80,
+      "failures": {
+        "support": 73,
+        "without_best_two": 45,
+        "wallet_positive": 19,
+        "median_block_improvement": 52
+      },
+      "pass_all": 2,
+      "support_only_failure": 11
+    },
+    "EN108": {
+      "records": 90,
+      "failures": {
+        "wallet_positive": 33,
+        "without_best_two": 54,
+        "median_block_improvement": 57,
+        "support": 20,
+        "no_halt": 1
+      },
+      "pass_all": 12,
+      "support_only_failure": 8
+    },
+    "EN109": {
+      "records": 60,
+      "failures": {
+        "support": 24,
+        "without_best_two": 29,
+        "median_block_improvement": 23,
+        "wallet_positive": 6
+      },
+      "pass_all": 12,
+      "support_only_failure": 12
+    },
+    "EN110": {
+      "records": 90,
+      "failures": {
+        "support": 72,
+        "without_best_two": 46,
+        "median_block_improvement": 25,
+        "wallet_positive": 9
+      },
+      "pass_all": 0,
+      "support_only_failure": 32
+    }
+  },
+  "promising_cells": {
+    "EN96": {
+      "id": "EN96:gate:0009|NIFTY",
+      "settings": {
+        "lookback_minutes": 10,
+        "percentile": 60,
+        "prior_covered_expiries": 20
+      },
+      "ordinary": {
+        "net": 7982.7,
+        "without_best": 5483.66,
+        "without_top2": 3678.14,
+        "sessions": 197,
+        "trades": 30,
+        "traded_expiries": 27,
+        "worst": -1463.85,
+        "worst_marked": -1463.85,
+        "fees": 1686.05,
+        "minutes_in": 293,
+        "unresolved": 0,
+        "tail_days": 0,
+        "by_year": {
+          "2023": 445.24,
+          "2024": 2647.59,
+          "2025": 7152.65,
+          "2026": -2262.78
+        },
+        "per_expiry": 40.52,
+        "winners": 16,
+        "avg_win": 937.1,
+        "avg_loss": -500.78,
+        "by_side": {
+          "CALL": 3034.71,
+          "PUT": 4947.99
+        },
+        "by_first_exit": {
+          "STOP": {
+            "n": 7,
+            "net": -5780.89
+          },
+          "TARGET_BASE": {
+            "n": 5,
+            "net": 7569.74
+          },
+          "TIME": {
+            "n": 17,
+            "net": 6517.96
+          },
+          "TRAIL": {
+            "n": 1,
+            "net": -324.11
+          }
+        }
+      },
+      "adverse": {
+        "net": 7416.98,
+        "without_best": 5047.82,
+        "without_top2": 3336.46,
+        "sessions": 197,
+        "trades": 29,
+        "traded_expiries": 26,
+        "worst": -980.68,
+        "worst_marked": -1019.61,
+        "fees": 1634.27,
+        "minutes_in": 288,
+        "unresolved": 0,
+        "tail_days": 0,
+        "by_year": {
+          "2023": 217.92,
+          "2024": 2111.79,
+          "2025": 6619.94,
+          "2026": -1532.67
+        },
+        "per_expiry": 37.65
+      },
+      "wallet": {
+        "ordinary": {
+          "P": 7056.6,
+          "swept": 4613.27,
+          "wallet": 32443.33,
+          "liq_dd": 2377.55,
+          "halted": 0,
+          "first_halt": null
+        },
+        "adverse": {
+          "P": 6524.68,
+          "swept": 4028.68,
+          "wallet": 32496.0,
+          "liq_dd": 2057.55,
+          "halted": 0,
+          "first_halt": null
+        }
+      }
+    },
+    "EN100": {
+      "id": "EN100:chooser:0004|NIFTY",
+      "settings": {
+        "chooser": "NEAREST_ATM_AFFORDABLE",
+        "max_friction_ratio": 0.05
+      },
+      "ordinary": {
+        "net": 9498.21,
+        "without_best": 7046.49,
+        "without_top2": 4870.0,
+        "sessions": 197,
+        "trades": 24,
+        "traded_expiries": 22,
+        "worst": -1021.92,
+        "worst_marked": -1021.92,
+        "fees": 1252.79,
+        "minutes_in": 192,
+        "unresolved": 0,
+        "tail_days": 0,
+        "by_year": {
+          "2023": 571.39,
+          "2024": 1820.8,
+          "2025": 7643.4,
+          "2026": -537.38
+        },
+        "per_expiry": 48.21,
+        "winners": 14,
+        "avg_win": 999.43,
+        "avg_loss": -449.39,
+        "by_side": {
+          "CALL": 3911.25,
+          "PUT": 5586.96
+        },
+        "by_first_exit": {
+          "STOP": {
+            "n": 5,
+            "net": -3897.52
+          },
+          "TARGET": {
+            "n": 3,
+            "net": 6376.94
+          },
+          "TIME": {
+            "n": 15,
+            "net": 7209.48
+          },
+          "TRAIL": {
+            "n": 1,
+            "net": -190.69
+          }
+        }
+      },
+      "adverse": {
+        "net": 8103.28,
+        "without_best": 5732.72,
+        "without_top2": 3634.14,
+        "sessions": 197,
+        "trades": 23,
+        "traded_expiries": 21,
+        "worst": -1064.15,
+        "worst_marked": -1064.15,
+        "fees": 1198.22,
+        "minutes_in": 183,
+        "unresolved": 0,
+        "tail_days": 0,
+        "by_year": {
+          "2023": 448.0,
+          "2024": 1434.38,
+          "2025": 7188.82,
+          "2026": -967.92
+        },
+        "per_expiry": 41.13
+      },
+      "wallet": {
+        "ordinary": {
+          "P": 8501.2,
+          "swept": 4519.29,
+          "wallet": 33981.91,
+          "liq_dd": 2092.76,
+          "halted": 0,
+          "first_halt": null
+        },
+        "adverse": {
+          "P": 7236.15,
+          "swept": 4102.04,
+          "wallet": 33134.11,
+          "liq_dd": 2190.22,
+          "halted": 0,
+          "first_halt": null
+        }
+      }
+    },
+    "EN101": {
+      "id": "EN101:continuation:0002|NIFTY",
+      "settings": {
+        "absolute_hold_minutes": 12,
+        "permission": "INFORMATION",
+        "activation_net_over_reserve": 0.2
+      },
+      "ordinary": {
+        "net": 8249.99,
+        "without_best": 5878.93,
+        "without_top2": 3784.08,
+        "sessions": 197,
+        "trades": 25,
+        "traded_expiries": 23,
+        "worst": -1463.85,
+        "worst_marked": -1463.85,
+        "fees": 1477.26,
+        "minutes_in": 270,
+        "unresolved": 0,
+        "tail_days": 0,
+        "by_year": {
+          "2023": 848.84,
+          "2024": 2094.68,
+          "2025": 7757.76,
+          "2026": -2451.29
+        },
+        "per_expiry": 41.88,
+        "winners": 12,
+        "avg_win": 1249.44,
+        "avg_loss": -518.72,
+        "by_side": {
+          "CALL": 4031.2,
+          "PUT": 4218.79
+        },
+        "by_first_exit": {
+          "STOP": {
+            "n": 7,
+            "net": -5780.89
+          },
+          "TARGET_BASE": {
+            "n": 7,
+            "net": 11035.26
+          },
+          "TIME": {
+            "n": 8,
+            "net": 50.98
+          },
+          "TIME_CAP": {
+            "n": 2,
+            "net": 3268.75
+          },
+          "TRAIL": {
+            "n": 1,
+            "net": -324.11
+          }
+        }
+      },
+      "adverse": {
+        "net": 7944.09,
+        "without_best": 5650.94,
+        "without_top2": 3640.5,
+        "sessions": 197,
+        "trades": 24,
+        "traded_expiries": 22,
+        "worst": -980.68,
+        "worst_marked": -1019.61,
+        "fees": 1425.66,
+        "minutes_in": 265,
+        "unresolved": 0,
+        "tail_days": 0,
+        "by_year": {
+          "2023": 718.96,
+          "2024": 1617.32,
+          "2025": 7270.54,
+          "2026": -1662.73
+        },
+        "per_expiry": 40.33
+      },
+      "wallet": {
+        "ordinary": {
+          "P": 7441.74,
+          "swept": 4841.18,
+          "wallet": 32600.56,
+          "liq_dd": 2448.21,
+          "halted": 0,
+          "first_halt": null
+        },
+        "adverse": {
+          "P": 7051.79,
+          "swept": 4357.26,
+          "wallet": 32694.53,
+          "liq_dd": 2057.55,
+          "halted": 0,
+          "first_halt": null
+        }
+      }
+    },
+    "EN110": {
+      "id": "EN110:geometry:0018|NIFTY",
+      "settings": {
+        "stop": 0.5,
+        "target": 1.5,
+        "runner_keep": 0.7
+      },
+      "ordinary": {
+        "net": 11696.08,
+        "without_best": 8841.51,
+        "without_top2": 6020.69,
+        "sessions": 197,
+        "trades": 25,
+        "traded_expiries": 23,
+        "worst": -1463.85,
+        "worst_marked": -1463.85,
+        "fees": 1365.67,
+        "minutes_in": 208,
+        "unresolved": 0,
+        "tail_days": 3,
+        "by_year": {
+          "2023": 570.77,
+          "2024": 3938.92,
+          "2025": 8573.73,
+          "2026": -1387.34
+        },
+        "per_expiry": 59.37,
+        "winners": 13,
+        "avg_win": 1410.37,
+        "avg_loss": -553.23,
+        "by_side": {
+          "CALL": 5009.37,
+          "PUT": 6686.71
+        },
+        "by_first_exit": {
+          "STOP": {
+            "n": 4,
+            "net": -3945.13
+          },
+          "STRUCTURE": {
+            "n": 2,
+            "net": -1731.15
+          },
+          "TARGET_BASE": {
+            "n": 2,
+            "net": 4828.7
+          },
+          "TIME": {
+            "n": 16,
+            "net": 12867.77
+          },
+          "TRAIL": {
+            "n": 1,
+            "net": -324.11
+          }
+        }
+      },
+      "adverse": {
+        "net": 11215.02,
+        "without_best": 8444.85,
+        "without_top2": 5727.93,
+        "sessions": 197,
+        "trades": 24,
+        "traded_expiries": 22,
+        "worst": -1132.22,
+        "worst_marked": -1287.92,
+        "fees": 1313.73,
+        "minutes_in": 203,
+        "unresolved": 0,
+        "tail_days": 3,
+        "by_year": {
+          "2023": 453.87,
+          "2024": 3435.62,
+          "2025": 7930.8,
+          "2026": -605.27
+        },
+        "per_expiry": 56.93
+      },
+      "wallet": {
+        "ordinary": {
+          "P": 9116.25,
+          "swept": 5412.45,
+          "wallet": 33703.8,
+          "liq_dd": 2534.16,
+          "halted": 0,
+          "first_halt": null
+        },
+        "adverse": {
+          "P": 9128.57,
+          "swept": 4866.92,
+          "wallet": 34261.65,
+          "liq_dd": 2673.86,
+          "halted": 0,
+          "first_halt": null
+        }
+      }
+    }
+  },
+  "source_gate_defect": {
+    "case": "SOURCES/VOTE2",
+    "needs_oi_reported": false,
+    "expected_under_IMPl9_sensex_contract": true,
+    "note": "VOTE2 needs a typed dependency declaration; archived SENSEX cells have zero trades"
+  }
+}

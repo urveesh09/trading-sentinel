@@ -1,0 +1,134 @@
+{
+  "identity": {
+    "head": "99958d97dd23b4ff5c33cd2596b255d3bf88ebdf",
+    "freeze_sha256": "814a645ffb1041126403b32e3d01364ea5849c284dc5eabb4b3c2b9098fe9bcc",
+    "freeze_matches": true,
+    "started_head": "99958d97dd23b4ff5c33cd2596b255d3bf88ebdf",
+    "same_head": true
+  },
+  "archived_headlines": {
+    "REF:EN87|NIFTY": {
+      "expected": 6114.14,
+      "got": 6114.14
+    },
+    "REF:E03_env|NIFTY": {
+      "expected": 3006.43,
+      "got": 3006.43
+    },
+    "REF:E032_native|NIFTY": {
+      "expected": 14275.2,
+      "got": 14275.2
+    }
+  },
+  "ledger_identities": {
+    "configs": 304,
+    "passed": 304
+  },
+  "dedup_consistency": {
+    "groups": 37,
+    "inconsistent": 0
+  },
+  "null_cells": {
+    "sensex_oi_cells": 268,
+    "scored_by_mistake": [],
+    "unavailable_recorded": 268
+  },
+  "stageb_rederived": {
+    "selection_sets": 18,
+    "mismatches": [],
+    "inner_window_before_block": true
+  },
+  "fresh_process_rerun": {
+    "configs": 32,
+    "identical": 32,
+    "ids": [
+      "REF:E03_env",
+      "REF:EN87",
+      "REF:EN87_ONE_LOT",
+      "REF:E032_native",
+      "REF:EN55_native",
+      "REF:EN83",
+      "REF:EN94",
+      "REF:EN87_unrelated",
+      "EN110:geometry:0005",
+      "EN107:sources:0008",
+      "EN96:gate:0013",
+      "EN100:chooser:0008",
+      "EN97:basket:0014",
+      "EN102:damage:0015",
+      "EN109:grade:0008",
+      "EN108:timing:0003",
+      "EN106:bridge:0007",
+      "EN109:grade:0002",
+      "EN104:lagged_agreement:0003",
+      "EN100:chooser:0006",
+      "EN104:lagged_agreement:0017",
+      "EN101:continuation:0017",
+      "EN99:reclaim:0001",
+      "EN100:chooser:0009",
+      "EN102:ctl:damage_only_structure_1",
+      "EN104:lagged_agreement:0015",
+      "EN103:full:0001",
+      "EN102:damage:0013",
+      "EN110:geometry:0004",
+      "EN108:ctl:ungated_e0.5_p20",
+      "EN97:ctl:lag1_oi",
+      "EN97:basket:0017"
+    ]
+  },
+  "reference_wallets": {
+    "REF:EN87|ordinary": {
+      "rerun": 5305.89,
+      "scored": 5305.89
+    },
+    "REF:EN87|adverse": {
+      "rerun": 4948.38,
+      "scored": 4948.38
+    },
+    "REF:E03_env|ordinary": {
+      "rerun": -3445.43,
+      "scored": -3445.43
+    },
+    "REF:E03_env|adverse": {
+      "rerun": -4034.97,
+      "scored": -4034.97
+    },
+    "REF:E032_native|ordinary": {
+      "rerun": -4122.87,
+      "scored": -4122.87
+    },
+    "REF:E032_native|adverse": {
+      "rerun": -4035.53,
+      "scored": -4035.53
+    }
+  },
+  "en105_reference_parity": [
+    [
+      "100",
+      true
+    ],
+    [
+      "120",
+      true
+    ],
+    [
+      "140",
+      true
+    ],
+    [
+      "160",
+      true
+    ],
+    [
+      "180",
+      true
+    ],
+    [
+      "197",
+      true
+    ]
+  ],
+  "status": "PASS",
+  "failures": [],
+  "seconds": 80.9
+}

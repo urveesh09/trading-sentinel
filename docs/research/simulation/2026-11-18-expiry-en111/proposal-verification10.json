@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "policy_cells": 138,
+  "unique_ids": true,
+  "local_links": [
+    "docs\\research\\simulation\\2026-11-18-expiry-en111\\REVIEW10.md",
+    "docs\\research\\simulation\\2026-11-18-expiry-en111\\SOURCES10.md",
+    "docs\\EXPIRY_RESEARCH_EN111_EN120.md"
+  ],
+  "strategy_scored": false,
+  "historical_results_edited": false,
+  "production_edited": false
+}

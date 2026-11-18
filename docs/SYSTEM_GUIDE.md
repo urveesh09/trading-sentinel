@@ -1,3 +1,25 @@
+<!-- EN111_120_REVIEW_SECTION_BEGIN -->
+## November 18 - Round9 independently reviewed; EN111-120 proposed, not scored
+
+Dev-only independent review: docs/research/simulation/2026-11-18-expiry-en111/REVIEW10.md.
+Frozen70-file/source and2-data manifests match;17 mechanics tests,304 ledger
+identities and32 sampled configuration reruns pass. No headline P&L correction.
+Two research defects remain for the next version: VOTE2 source dependencies and
+fee-free missed-arm markout wording. Preserve all archived freezes/results.
+Sparse support is not the only failure: patient/scout policies also lose.
+EN87 remains an unproven conditional lead, not a qualified OI edge.
+
+Successor: docs/EXPIRY_RESEARCH_EN111_EN120.md. Ten FAMILY grids,138 policy
+cells (126 bar,12 packet-gated) before controls; joint contract/target/hold first,
+then causal adaptive management/state/action policies, under one fixed wallet.
+Developer must preflight activation, units, duplicates, sources and support
+before a new implementation freeze/score. Existing E03.2/EN55 unchanged.
+No runtime/source-atlas scope, config, migration, recorder, acquisition, normal
+F&O or Production changes. Production checkout55b5e942 read-only, not newly
+runtime verified. Local review/proposal commit only; not pushed or deployed.
+Verification commands/limits/status: PLAN10.md, STATUS10.md and JSON receipts.
+<!-- EN111_120_REVIEW_SECTION_END -->
+
 <!-- EN96_110_RESULTS_SECTION_BEGIN -->
 ## November 18 (night) - Round 9: EN96-EN110 families scored once; no strategy qualifies, no champion (research only, Dev; nothing deployed; Production stays 55b5e942)
 
