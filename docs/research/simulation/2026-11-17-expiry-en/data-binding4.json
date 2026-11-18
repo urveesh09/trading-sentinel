@@ -1,0 +1,1652 @@
+{
+ "source": "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\breeze-history.sqlite",
+ "source_read_only": true,
+ "requests_calls": 0,
+ "zip": "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\expiry-afternoons-1minute-20261118.zip",
+ "zip_sha256": "307f476461631a55f6dd23610b3f476e5032227cea845aaf3f5503f1ab95fd31",
+ "receipt_sha256": "ffaa8ae902f30fd0464a342f20743d5e3a79b392d47e2961ff93a3f0edca6779",
+ "days": [
+  {
+   "und": "NIFTY",
+   "day": "2026-01-06",
+   "front": "2026-01-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-01-13",
+   "front": "2026-01-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-01-20",
+   "front": "2026-01-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-01-27",
+   "front": "2026-01-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-02-03",
+   "front": "2026-02-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-02-10",
+   "front": "2026-02-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-02-17",
+   "front": "2026-02-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-02-24",
+   "front": "2026-02-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-03-02",
+   "front": "2026-03-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-03-10",
+   "front": "2026-03-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-03-17",
+   "front": "2026-03-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-03-24",
+   "front": "2026-03-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-03-30",
+   "front": "2026-03-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-04-07",
+   "front": "2026-04-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-04-13",
+   "front": "2026-04-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-04-21",
+   "front": "2026-04-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-04-28",
+   "front": "2026-04-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-05-05",
+   "front": "2026-05-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-05-12",
+   "front": "2026-05-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-05-19",
+   "front": "2026-05-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-05-26",
+   "front": "2026-05-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-06-02",
+   "front": "2026-06-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-06-09",
+   "front": "2026-06-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-06-16",
+   "front": "2026-06-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-06-23",
+   "front": "2026-06-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-06-30",
+   "front": "2026-06-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-07-07",
+   "front": "2026-07-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-07-14",
+   "front": "2026-07-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-07-21",
+   "front": "2026-07-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-07-28",
+   "front": "2026-07-28",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-08-04",
+   "front": "2026-08-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-08-11",
+   "front": "2026-08-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-08-18",
+   "front": "2026-08-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-08-25",
+   "front": "2026-08-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-09-01",
+   "front": "2026-09-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-09-08",
+   "front": "2026-09-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-09-15",
+   "front": "2026-09-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X2",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-09-22",
+   "front": "2026-09-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X2",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-09-29",
+   "front": "2026-09-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X2",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-10-06",
+   "front": "2026-10-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "N-X2",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-10-13",
+   "front": "2026-10-27",
+   "rows": {
+    "index": 370,
+    "future": 375,
+    "option": 8308
+   },
+   "zip_rows_matched": 8308,
+   "cohort": "N-X2",
+   "missing_option_minutes": 547
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-10-19",
+   "front": "2026-10-27",
+   "rows": {
+    "index": 371,
+    "future": 375,
+    "option": 8408
+   },
+   "zip_rows_matched": 8408,
+   "cohort": "N-X2",
+   "missing_option_minutes": 437
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-10-27",
+   "front": "2026-10-27",
+   "rows": {
+    "index": 370,
+    "future": 375,
+    "option": 8755
+   },
+   "zip_rows_matched": 8755,
+   "cohort": "N-X2",
+   "missing_option_minutes": 74
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-29",
+   "front": "2025-07-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8818
+   },
+   "zip_rows_matched": 8818,
+   "cohort": "S-X1",
+   "missing_option_minutes": 2
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-08-05",
+   "front": "2025-08-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-08-12",
+   "front": "2025-08-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-08-19",
+   "front": "2025-08-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-08-26",
+   "front": "2025-08-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-09-04",
+   "front": "2025-09-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-09-11",
+   "front": "2025-09-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-09-18",
+   "front": "2025-09-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-09-25",
+   "front": "2025-09-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-10-01",
+   "front": "2025-10-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-10-09",
+   "front": "2025-10-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-10-16",
+   "front": "2025-10-30",
+   "rows": {
+    "index": 351,
+    "future": 351,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-10-23",
+   "front": "2025-10-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-10-30",
+   "front": "2025-10-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-11-06",
+   "front": "2025-11-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-11-13",
+   "front": "2025-11-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-11-20",
+   "front": "2025-11-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-11-27",
+   "front": "2025-11-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-12-04",
+   "front": "2025-12-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-12-11",
+   "front": "2025-12-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-12-18",
+   "front": "2025-12-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-12-24",
+   "front": "2025-12-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-01-01",
+   "front": "2026-01-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-01-08",
+   "front": "2026-01-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-01-14",
+   "front": "2026-01-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-01-22",
+   "front": "2026-01-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-01-29",
+   "front": "2026-01-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-02-05",
+   "front": "2026-02-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-02-12",
+   "front": "2026-02-26",
+   "rows": {
+    "index": 375,
+    "future": 374,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-02-19",
+   "front": "2026-02-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-02-26",
+   "front": "2026-02-26",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-03-05",
+   "front": "2026-03-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-03-12",
+   "front": "2026-03-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-03-19",
+   "front": "2026-03-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8657
+   },
+   "zip_rows_matched": 8657,
+   "cohort": "S-X1",
+   "missing_option_minutes": 163
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-03-25",
+   "front": "2026-03-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-04-02",
+   "front": "2026-04-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-04-09",
+   "front": "2026-04-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-04-16",
+   "front": "2026-04-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-04-23",
+   "front": "2026-04-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-04-30",
+   "front": "2026-04-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-05-07",
+   "front": "2026-05-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-05-14",
+   "front": "2026-05-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-05-21",
+   "front": "2026-05-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-05-27",
+   "front": "2026-05-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-06-04",
+   "front": "2026-06-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-06-11",
+   "front": "2026-06-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-06-18",
+   "front": "2026-06-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-06-25",
+   "front": "2026-06-25",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-07-02",
+   "front": "2026-07-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-07-09",
+   "front": "2026-07-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-07-16",
+   "front": "2026-07-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-07-23",
+   "front": "2026-07-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-07-30",
+   "front": "2026-07-30",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-08-06",
+   "front": "2026-08-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-08-13",
+   "front": "2026-08-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-08-20",
+   "front": "2026-08-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-08-27",
+   "front": "2026-08-27",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-09-03",
+   "front": "2026-09-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X1",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-09-10",
+   "front": "2026-09-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8724
+   },
+   "zip_rows_matched": 8724,
+   "cohort": "S-X2",
+   "missing_option_minutes": 96
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-09-17",
+   "front": "2026-09-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X2",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-09-24",
+   "front": "2026-09-24",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X2",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-01",
+   "front": "2026-10-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X2",
+   "missing_option_minutes": 0
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-08",
+   "front": "2026-10-29",
+   "rows": {
+    "index": 375,
+    "future": 375,
+    "option": 8820
+   },
+   "zip_rows_matched": 8820,
+   "cohort": "S-X2",
+   "missing_option_minutes": 1
+  }
+ ],
+ "excluded": [
+  {
+   "und": "NIFTY",
+   "day": "2026-11-03",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-11-09",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-11-17",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-04",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-11",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-18",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-25",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-31",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-08",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-14",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-22",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-29",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-06",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-13",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-20",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-27",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-03",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-07",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-14",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-21",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-28",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-04",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-11",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-18",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-25",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-04",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-11",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-18",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-25",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-01",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-08",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-15",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-22",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-29",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-06",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-13",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-20",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-27",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-03",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-10",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-17",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-24",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-01",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-08",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-15",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-22",
+   "reason": "contracts resolved 9 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-15",
+   "reason": "index minutes 205, future minutes 187 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-22",
+   "reason": "index minutes 206, future minutes 132 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-29",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-11-05",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-11-12",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  }
+ ],
+ "export_sha256": "5ba416041cddec916392fc30a3ce2f592bfd8c5bc29a6c99844ae3e80b34cdc0",
+ "cohorts": {
+  "N-X1": 36,
+  "N-X2": 7,
+  "S-X1": 58,
+  "S-X2": 5
+ }
+}
