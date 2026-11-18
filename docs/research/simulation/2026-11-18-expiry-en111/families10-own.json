@@ -1,0 +1,1254 @@
+{
+ "status": "REGISTERED BEFORE ANY ROUND-10 MONEY (IMPL10 section 5)",
+ "families": [
+  {
+   "slot": "EN121",
+   "name": "Good-part transfer to the busier books and SENSEX",
+   "axes": {
+    "book": [
+     "E03_env",
+     "E032_native",
+     "EN55_native"
+    ],
+    "contract": [
+     "LEGACY",
+     "NEAREST_ONE_LOT",
+     "NEAREST_SAME_ROOM"
+    ],
+    "target": [
+     1.0,
+     1.5
+    ],
+    "hold": [
+     8,
+     12
+    ]
+   },
+   "count": 36,
+   "cells": [
+    {
+     "id": "EN121:0001",
+     "settings": {
+      "book": "E03_env",
+      "contract": "LEGACY",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0002",
+     "settings": {
+      "book": "E03_env",
+      "contract": "LEGACY",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0003",
+     "settings": {
+      "book": "E03_env",
+      "contract": "LEGACY",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0004",
+     "settings": {
+      "book": "E03_env",
+      "contract": "LEGACY",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0005",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0006",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0007",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0008",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0009",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0010",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0011",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0012",
+     "settings": {
+      "book": "E03_env",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0013",
+     "settings": {
+      "book": "E032_native",
+      "contract": "LEGACY",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0014",
+     "settings": {
+      "book": "E032_native",
+      "contract": "LEGACY",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0015",
+     "settings": {
+      "book": "E032_native",
+      "contract": "LEGACY",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0016",
+     "settings": {
+      "book": "E032_native",
+      "contract": "LEGACY",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0017",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0018",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0019",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0020",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0021",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0022",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0023",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0024",
+     "settings": {
+      "book": "E032_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0025",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "LEGACY",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0026",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "LEGACY",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0027",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "LEGACY",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0028",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "LEGACY",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0029",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0030",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0031",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0032",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_ONE_LOT",
+      "target": 1.5,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0033",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.0,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0034",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.0,
+      "hold": 12
+     }
+    },
+    {
+     "id": "EN121:0035",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.5,
+      "hold": 8
+     }
+    },
+    {
+     "id": "EN121:0036",
+     "settings": {
+      "book": "EN55_native",
+      "contract": "NEAREST_SAME_ROOM",
+      "target": 1.5,
+      "hold": 12
+     }
+    }
+   ],
+   "fidelity": "BAR_POLICY"
+  },
+  {
+   "slot": "EN122",
+   "name": "Native E03.2 structure decomposition without loss reactions",
+   "axes": {
+    "window_end": [
+     870,
+     900
+    ],
+    "put_mult": [
+     1,
+     2
+    ],
+    "money": [
+     "NATIVE",
+     "ENVELOPE"
+    ],
+    "geometry": [
+     "DEFAULT",
+     "JOINT"
+    ],
+    "gate": [
+     "NONE",
+     "CALLS_ONLY"
+    ]
+   },
+   "count": 32,
+   "cells": [
+    {
+     "id": "EN122:0001",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0002",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0003",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0004",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0005",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0006",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0007",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0008",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0009",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0010",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0011",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0012",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0013",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0014",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0015",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0016",
+     "settings": {
+      "window_end": 870,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0017",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0018",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0019",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0020",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0021",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0022",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0023",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0024",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 1,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0025",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0026",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0027",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0028",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "NATIVE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0029",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0030",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "DEFAULT",
+      "gate": "CALLS_ONLY"
+     }
+    },
+    {
+     "id": "EN122:0031",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "NONE"
+     }
+    },
+    {
+     "id": "EN122:0032",
+     "settings": {
+      "window_end": 900,
+      "put_mult": 2,
+      "money": "ENVELOPE",
+      "geometry": "JOINT",
+      "gate": "CALLS_ONLY"
+     }
+    }
+   ],
+   "fidelity": "BAR_POLICY"
+  },
+  {
+   "slot": "EN123",
+   "name": "One-lot nearer-contract protection shape",
+   "axes": {
+    "base": [
+     "EN87",
+     "E03_env"
+    ],
+    "target": [
+     1.0,
+     1.5
+    ],
+    "at_target": [
+     "SELL_ALL",
+     "RUNNER_KEEP_0.5",
+     "RUNNER_KEEP_0.7"
+    ],
+    "stop": [
+     0.35,
+     0.25
+    ]
+   },
+   "count": 24,
+   "cells": [
+    {
+     "id": "EN123:0001",
+     "settings": {
+      "base": "EN87",
+      "target": 1.0,
+      "at_target": "SELL_ALL",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0002",
+     "settings": {
+      "base": "EN87",
+      "target": 1.0,
+      "at_target": "SELL_ALL",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0003",
+     "settings": {
+      "base": "EN87",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0004",
+     "settings": {
+      "base": "EN87",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0005",
+     "settings": {
+      "base": "EN87",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0006",
+     "settings": {
+      "base": "EN87",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0007",
+     "settings": {
+      "base": "EN87",
+      "target": 1.5,
+      "at_target": "SELL_ALL",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0008",
+     "settings": {
+      "base": "EN87",
+      "target": 1.5,
+      "at_target": "SELL_ALL",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0009",
+     "settings": {
+      "base": "EN87",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0010",
+     "settings": {
+      "base": "EN87",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0011",
+     "settings": {
+      "base": "EN87",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0012",
+     "settings": {
+      "base": "EN87",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0013",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.0,
+      "at_target": "SELL_ALL",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0014",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.0,
+      "at_target": "SELL_ALL",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0015",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0016",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0017",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0018",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.0,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0019",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.5,
+      "at_target": "SELL_ALL",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0020",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.5,
+      "at_target": "SELL_ALL",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0021",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0022",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.5",
+      "stop": 0.25
+     }
+    },
+    {
+     "id": "EN123:0023",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.35
+     }
+    },
+    {
+     "id": "EN123:0024",
+     "settings": {
+      "base": "E03_env",
+      "target": 1.5,
+      "at_target": "RUNNER_KEEP_0.7",
+      "stop": 0.25
+     }
+    }
+   ],
+   "fidelity": "BAR_POLICY"
+  },
+  {
+   "slot": "EN124",
+   "name": "Execution stress of the leads",
+   "axes": {
+    "base": [
+     "EN87",
+     "EN87_JOINT",
+     "E03_env_JOINT",
+     "E032_JOINT"
+    ],
+    "stress": [
+     "ENTRY_PLUS1",
+     "SELL_PLUS1",
+     "FEE_PLUS1ORDER",
+     "ALL"
+    ]
+   },
+   "count": 16,
+   "cells": [
+    {
+     "id": "EN124:0001",
+     "settings": {
+      "base": "EN87",
+      "stress": "ENTRY_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0002",
+     "settings": {
+      "base": "EN87",
+      "stress": "SELL_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0003",
+     "settings": {
+      "base": "EN87",
+      "stress": "FEE_PLUS1ORDER"
+     }
+    },
+    {
+     "id": "EN124:0004",
+     "settings": {
+      "base": "EN87",
+      "stress": "ALL"
+     }
+    },
+    {
+     "id": "EN124:0005",
+     "settings": {
+      "base": "EN87_JOINT",
+      "stress": "ENTRY_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0006",
+     "settings": {
+      "base": "EN87_JOINT",
+      "stress": "SELL_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0007",
+     "settings": {
+      "base": "EN87_JOINT",
+      "stress": "FEE_PLUS1ORDER"
+     }
+    },
+    {
+     "id": "EN124:0008",
+     "settings": {
+      "base": "EN87_JOINT",
+      "stress": "ALL"
+     }
+    },
+    {
+     "id": "EN124:0009",
+     "settings": {
+      "base": "E03_env_JOINT",
+      "stress": "ENTRY_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0010",
+     "settings": {
+      "base": "E03_env_JOINT",
+      "stress": "SELL_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0011",
+     "settings": {
+      "base": "E03_env_JOINT",
+      "stress": "FEE_PLUS1ORDER"
+     }
+    },
+    {
+     "id": "EN124:0012",
+     "settings": {
+      "base": "E03_env_JOINT",
+      "stress": "ALL"
+     }
+    },
+    {
+     "id": "EN124:0013",
+     "settings": {
+      "base": "E032_JOINT",
+      "stress": "ENTRY_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0014",
+     "settings": {
+      "base": "E032_JOINT",
+      "stress": "SELL_PLUS1"
+     }
+    },
+    {
+     "id": "EN124:0015",
+     "settings": {
+      "base": "E032_JOINT",
+      "stress": "FEE_PLUS1ORDER"
+     }
+    },
+    {
+     "id": "EN124:0016",
+     "settings": {
+      "base": "E032_JOINT",
+      "stress": "ALL"
+     }
+    }
+   ],
+   "fidelity": "BAR_POLICY"
+  },
+  {
+   "slot": "EN125",
+   "name": "OI concentration wall as an exit level",
+   "axes": {
+    "contract": [
+     "LEGACY_UP_TO_3",
+     "NEAREST_ONE_LOT"
+    ],
+    "wall": [
+     "FROZEN_AT_ENTRY",
+     "CURRENT"
+    ],
+    "trigger": [
+     "AT_WALL",
+     "HALF_STEP_BEFORE"
+    ],
+    "action": [
+     "EXIT_ALL",
+     "TIGHTEN_TRAIL_0.8"
+    ]
+   },
+   "count": 16,
+   "cells": [
+    {
+     "id": "EN125:0001",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "AT_WALL",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0002",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "AT_WALL",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    },
+    {
+     "id": "EN125:0003",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0004",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    },
+    {
+     "id": "EN125:0005",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "CURRENT",
+      "trigger": "AT_WALL",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0006",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "CURRENT",
+      "trigger": "AT_WALL",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    },
+    {
+     "id": "EN125:0007",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "CURRENT",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0008",
+     "settings": {
+      "contract": "LEGACY_UP_TO_3",
+      "wall": "CURRENT",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    },
+    {
+     "id": "EN125:0009",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "AT_WALL",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0010",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "AT_WALL",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    },
+    {
+     "id": "EN125:0011",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0012",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "FROZEN_AT_ENTRY",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    },
+    {
+     "id": "EN125:0013",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "CURRENT",
+      "trigger": "AT_WALL",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0014",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "CURRENT",
+      "trigger": "AT_WALL",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    },
+    {
+     "id": "EN125:0015",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "CURRENT",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "EXIT_ALL"
+     }
+    },
+    {
+     "id": "EN125:0016",
+     "settings": {
+      "contract": "NEAREST_ONE_LOT",
+      "wall": "CURRENT",
+      "trigger": "HALF_STEP_BEFORE",
+      "action": "TIGHTEN_TRAIL_0.8"
+     }
+    }
+   ],
+   "fidelity": "BAR_POLICY"
+  }
+ ]
+}

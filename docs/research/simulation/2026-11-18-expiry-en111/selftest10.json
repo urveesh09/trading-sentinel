@@ -1,0 +1,43 @@
+{
+ "status": "PASS",
+ "configs": 73,
+ "unavailable": 51,
+ "selection": [
+  "EN111",
+  "EN112",
+  "EN113",
+  "EN114",
+  "EN115",
+  "EN116",
+  "EN117",
+  "EN118",
+  "EN120",
+  "EN121",
+  "EN122",
+  "EN123",
+  "EN124",
+  "EN125"
+ ],
+ "reconciled": true,
+ "dedup": {
+  "NIFTY": {
+   "configs": 60,
+   "distinct": 44
+  },
+  "SENSEX": {
+   "configs": 13,
+   "distinct": 12
+  }
+ },
+ "champions": 0,
+ "label_counts": {
+  "NIFTY": {
+   "events": 237,
+   "dates": 126
+  },
+  "SENSEX": {
+   "events": 40,
+   "dates": 25
+  }
+ }
+}

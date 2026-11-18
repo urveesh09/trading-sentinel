@@ -1,0 +1,8 @@
+{
+ "status": "PASS",
+ "sessions": 49,
+ "checked": 332,
+ "undeclared_oi_users": [],
+ "declared_but_unchanged": [],
+ "note": "learned EN118/EN120 policies: OI enters only through declared features and the EN87 fallback (needs OI / OI_OPTIONAL)"
+}

@@ -1,0 +1,12 @@
+{
+ "status": "PASS",
+ "session_prefix_features": true,
+ "restored": true,
+ "within_session_prefix": {
+  "checks": 768,
+  "mismatches": 0
+ },
+ "learned_fit_prefix": true,
+ "controller_restart_equality": true,
+ "hmm_prefix_and_determinism": true
+}

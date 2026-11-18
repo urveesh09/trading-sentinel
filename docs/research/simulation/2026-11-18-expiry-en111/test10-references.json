@@ -1,0 +1,89 @@
+{
+ "status": "PASS",
+ "checks": [
+  {
+   "cell": "EN121:0001",
+   "reference": "REF:E03_env",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN121:0001",
+   "reference": "REF:E03_env",
+   "index": "SENSEX",
+   "equal": true
+  },
+  {
+   "cell": "EN121:0013",
+   "reference": "REF:E032_native",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN121:0013",
+   "reference": "REF:E032_native",
+   "index": "SENSEX",
+   "equal": true
+  },
+  {
+   "cell": "EN121:0025",
+   "reference": "REF:EN55_native",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN121:0025",
+   "reference": "REF:EN55_native",
+   "index": "SENSEX",
+   "equal": true
+  },
+  {
+   "cell": "EN122:0005",
+   "reference": "REF:E03_env",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN122:0005",
+   "reference": "REF:E03_env",
+   "index": "SENSEX",
+   "equal": true
+  },
+  {
+   "cell": "EN122:0025",
+   "reference": "REF:E032_native",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN122:0025",
+   "reference": "REF:E032_native",
+   "index": "SENSEX",
+   "equal": true
+  },
+  {
+   "cell": "EN111:0001",
+   "reference": "REF:EN87",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN112:ctl:fixed_target_only",
+   "reference": "EN111:0007",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN113:ctl:fixed12",
+   "reference": "EN111:0003",
+   "index": "NIFTY",
+   "equal": true
+  },
+  {
+   "cell": "EN114:ctl:fixed_8_base_only",
+   "reference": "REF:EN87",
+   "index": "NIFTY",
+   "equal": true
+  }
+ ]
+}

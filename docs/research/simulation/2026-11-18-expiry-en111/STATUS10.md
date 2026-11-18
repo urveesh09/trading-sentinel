@@ -1,24 +1,23 @@
 # Round 10 status
 
-Review and ten-family developer proposal only. No new strategy scored, nominated,
-pushed or deployed. Research artifacts in Dev. Production checkout inspected
-read-only at55b5e9422d02, not a fresh live-container verification.
+**IMPLEMENTED AND FROZEN, NOT YET SCORED.** The freeze happened before any round-10 money existed. This line is updated after the one-shot score.
 
-Reviewed round9 c1e195fb / frozen99958d97. Integrity:70 source/procedure files,
-two sealed data files and replay array manifests match. Independent17 mechanics
-pass;304 identities and32 sampled full-calendar reruns pass. See REVIEW10 for
-scope limits and two research defects. No full engine suite run.
+| Step | Files |
+|---|---|
+| Auditor's review and proposal (EN111–EN120, 138 cells) | REVIEW10.md, SOURCES10.md, `families10-proposed.json` (commit `d0904ce1`) |
+| Implementation plan, including my five families EN121–EN125 (124 cells) | IMPL10.md, `families10-own.json` |
+| Phase zero: outcome-blind activation | PHASE0-10.md, `phase0-10.json` |
+| Pre-freeze receipts (all PASS) | `test10-unit.json` (26 tests), `test10-parity.json` (304/304 round-9 ledgers with hooks off), `test10-references.json` (14), `test10-causal.json` (768 within-session prefix checks plus session, learned-fit, restart and HMM checks), `test10-dependencies.json` (332 configurations, no undeclared OI user), `selftest10.json` |
+| Freeze | `freeze10.json` |
 
-Proposal EN111-120:138 policy cells (126 bar,12 source-gated packet), plus controls.
-No source-data download, recording change, configuration, scheduler, book, normal
-F&O, gateway or capital modification. Historical freezes/results stay unchanged.
-Source atlas unchanged: only docs and audit helpers outside its runtime scope.
+**Phase-zero decisions:**
+- EN112 uses the pre-registered rank_all revision; the literal cells are kept and are NOT IDENTIFIED.
+- EN113 L1 is NOT IDENTIFIED: 1-minute OI never moves.
+- EN115 is a duplicate of NEAREST.
+- EN116's admission mapping is NOT IDENTIFIED: the model is active at every EN87 admission.
+- EN119 is SOURCE-GATED.
 
-Next: developer phase-zero source/activation/support checks; new independent
-source-gate and markout reporting adapters; exact implementation amendment and
-freeze before scoring. EN111 is first priority. Existing EN55 registration and
-E03.2 main remain unchanged. Prospective nomination is a separate later step.
-
-Commit identity: resolve the commit adding this file with
-`git log -1 --format=%H -- docs/research/simulation/2026-11-18-expiry-en111/STATUS10.md`.
-No assumption that a local commit has been pushed or deployed.
+**State:**
+- Dev only. Production stays at `55b5e942`.
+- E03.2 paper main, EN55's registration, normal F&O, runtime configuration and capital are unchanged.
+- Round-9 corrections R3, R4 and R7 are recorded in `../2026-11-18-expiry-en96/ADDENDUM9.md`; no archived file was edited.
