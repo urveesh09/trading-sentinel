@@ -1,0 +1,29 @@
+{
+  "files": {
+    "PLAN5B.md": "9248bb9e5275cf12659a1723868c700f482986c59aecf20024b993009a9cadf9",
+    "tr01.py": "5333e398fa2385c3a6e90a6f8e4a7ae1d05e2e70de1fb5f679b5ca8310db676b",
+    "en5b.py": "6f4c8ea853ba9aa9b2cc6ff12fa6425b2d3d11bd4ea3c0c707b925b5cca343c2",
+    "en_lab5.py": "65d38714c0d82b9a9960b19431bec97093069d51ab8171b8e6ba25a6b4409dd5",
+    "en_lab4.py": "4b72bf3fc10c1168c56741d898847ca523c1819eb38ee8153ba253e839c65041",
+    "e02_lab.py": "6d4d29907fe950b954564ba22224a848dfff8fc23fabac199cf9ccc21ae14ba3",
+    "expiry_paper.py": "6c6b681082f3782b50fce0185b18173dea68a95ba4a8e3a22581d8ec088db9d9",
+    "cost_schedules.py": "7cc67993b9ec2673eb6944cb1635bb1e32479074c0276bcf02cb96b41387c9cd"
+  },
+  "export": {
+    "2026-11-16": {
+      "chunks": 401,
+      "records": 10222859,
+      "manifest_sha256": "a0c3acb076a33d5a1902d5146d6e188f0d6e061f4d1ad1ad4929ebff7a616325",
+      "instruments_sha256": "99eec8c95175e891dca3c96cd0b17bd59bb31685ddf67647facf48153e7803ab",
+      "events_sha256": "fa3acb50656bd74c8c1c71da85ba4bfacc71700acbaa9e04ce586da2d2f46184"
+    },
+    "2026-11-17": {
+      "chunks": 401,
+      "records": 10455753,
+      "manifest_sha256": "3ea0a7ad2dc5334f5ff9bfaedadb6df6aaaebc1c587597cc396f99cc3c055eec",
+      "instruments_sha256": "2c4fbf4729924967947e43a551d0eb870a3ba4449bed5382d4546a2b6e3e2f19",
+      "events_sha256": "25360c1798665d08e93c80d6cdf521a686ca2a568adef4d853311414edb96a76"
+    }
+  },
+  "head": "8b3477661fe086220e567b031134dd510290b7c0"
+}
