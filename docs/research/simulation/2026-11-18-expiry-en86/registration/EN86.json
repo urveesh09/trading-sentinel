@@ -1,0 +1,18 @@
+{
+  "slot": "EN86",
+  "arms": {},
+  "indices": [
+    "NIFTY",
+    "SENSEX"
+  ],
+  "plan_sha256": "0c074530e82234d5e2315d1ef5312576b116a85141ed7dcd1fbf41535d97e716",
+  "source_gate": "UNVALIDATED until >=20 synchronized covered packet expiries; no promotion",
+  "prospective_review": {
+    "first_mechanism": 20,
+    "financial": 40,
+    "max_eligible": 100,
+    "min_parents": 20,
+    "min_traded_expiries": 10
+  },
+  "forward_cohort": "after this committed freeze and verification, independent cohort; no backdating"
+}

@@ -1,0 +1,14 @@
+{
+  "docs/SYSTEM_GUIDE.md": {
+    "working_before_sha256": "619c0ca331a3a617d84de8a25b2799a9faf1970c4365432be48aba9f3717e722",
+    "head_before_sha256": "4a8a12df8e416edffb95746d0eb4b2f0d6155091b7bb395a609c3af0678c9e19"
+  },
+  "docs/NEXT_AGENT_PLAN.md": {
+    "working_before_sha256": "33155e2b4747bce65e37f0db59b62ccedf3ab9dd81b1e3ecbdd19df3e0a321af",
+    "head_before_sha256": "786576392660fd96cfd30199947942963112a9ef860951ec30648b3e6928b316"
+  },
+  "docs/HANDOVER_CHECKLIST.md": {
+    "working_before_sha256": "d13f4e2c0aa26172f6bc057e3e2c6c0f2352bab0c325ee2609074986ea80ea51",
+    "head_before_sha256": "8f2f1cd3231421bcc974fabc205c77d80316e23eaee4072493e7c36520bb0b94"
+  }
+}

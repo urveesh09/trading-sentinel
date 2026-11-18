@@ -1,0 +1,8 @@
+{
+  "status": "REJECTED BEFORE FINANCIAL SCORE",
+  "method": "centered circular moving-block bootstrap, block 4, 399 inner draws",
+  "paths_each": 1000,
+  "null_rejections_at_05": {"gaussian": 58, "skewed": 72, "heavy_tail": 49, "dependent_AR06": 115},
+  "interval_coverage": {"gaussian": 0.936, "skewed": 0.943, "heavy_tail": 0.949, "dependent_AR06": 0.836},
+  "reason": "Dependent null materially over-rejects; not used as primary inference. No candidate financial results were inspected."
+}

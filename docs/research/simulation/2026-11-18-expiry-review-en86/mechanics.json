@@ -1,0 +1,16 @@
+{
+  "oi_source": {
+    "future_tape_day": "2026-11-17",
+    "valid_oi_cells": 0,
+    "next_year_error": "'2027'"
+  },
+  "passive_lower_quote_witness": {
+    "order_units": 65,
+    "visible_units_at_or_below_limit": 1,
+    "fresh_quote_after_seconds": 2,
+    "volume_change": 0,
+    "last_trade_predates_order": true,
+    "model_filled_units": 65,
+    "finding": "LOWER is not a guaranteed whole-order lower bound from this quote evidence"
+  }
+}

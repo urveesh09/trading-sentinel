@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "eligible_model_dates": 51,
+  "target": "2026-10-27",
+  "forecast_checks": 6,
+  "chronological_models": 51,
+  "note": "actual later labels may change; forecasts, selection and parameters must not"
+}

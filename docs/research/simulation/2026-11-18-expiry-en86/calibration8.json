@@ -1,0 +1,59 @@
+{
+  "cases": {
+    "gaussian": {
+      "paths": 1000,
+      "rejections": 52,
+      "rejection_rate": 0.052,
+      "binomial_95": [
+        0.0390765349439805,
+        0.06763501405050731
+      ],
+      "interval_covers_zero": 0.948,
+      "positive_250_detection": 1.0,
+      "positive_25_per_expiry_detection": 0.144,
+      "positive_100_on_35pct_activity_detection": 0.217
+    },
+    "skewed": {
+      "paths": 1000,
+      "rejections": 57,
+      "rejection_rate": 0.057,
+      "binomial_95": [
+        0.0434535819369586,
+        0.07322272946066227
+      ],
+      "interval_covers_zero": 0.947,
+      "positive_250_detection": 1.0,
+      "positive_25_per_expiry_detection": 0.193,
+      "positive_100_on_35pct_activity_detection": 0.266
+    },
+    "heavy_tail": {
+      "paths": 1000,
+      "rejections": 40,
+      "rejection_rate": 0.04,
+      "binomial_95": [
+        0.028727625285890793,
+        0.05407269681936848
+      ],
+      "interval_covers_zero": 0.962,
+      "positive_250_detection": 0.996,
+      "positive_25_per_expiry_detection": 0.154,
+      "positive_100_on_35pct_activity_detection": 0.232
+    },
+    "dependent": {
+      "paths": 1000,
+      "rejections": 55,
+      "rejection_rate": 0.055,
+      "binomial_95": [
+        0.04169879507953599,
+        0.07099151554205749
+      ],
+      "interval_covers_zero": 0.939,
+      "positive_250_detection": 0.943,
+      "positive_25_per_expiry_detection": 0.106,
+      "positive_100_on_35pct_activity_detection": 0.131
+    }
+  },
+  "primary_method": "eight long chronological groups, t7 reference",
+  "inference_validated": true,
+  "note": "finite Monte Carlo diagnostic, not a guarantee for arbitrary market dependence"
+}

@@ -1,0 +1,21 @@
+{
+  "raw_verified": {
+    "2026-11-16": {
+      "chunks": 401,
+      "records": 10222859,
+      "manifest_sha256": "a0c3acb076a33d5a1902d5146d6e188f0d6e061f4d1ad1ad4929ebff7a616325",
+      "instruments_sha256": "99eec8c95175e891dca3c96cd0b17bd59bb31685ddf67647facf48153e7803ab",
+      "events_sha256": "fa3acb50656bd74c8c1c71da85ba4bfacc71700acbaa9e04ce586da2d2f46184"
+    },
+    "2026-11-17": {
+      "chunks": 401,
+      "records": 10455753,
+      "manifest_sha256": "3ea0a7ad2dc5334f5ff9bfaedadb6df6aaaebc1c587597cc396f99cc3c055eec",
+      "instruments_sha256": "2c4fbf4729924967947e43a551d0eb870a3ba4449bed5382d4546a2b6e3e2f19",
+      "events_sha256": "25360c1798665d08e93c80d6cdf521a686ca2a568adef4d853311414edb96a76"
+    }
+  },
+  "cache_path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-18-expiry-en56\\_local\\pk6-2026-11-17-4e0f6ab1d2-cf445b10.npz",
+  "cache_sha256": "4c46581c87c83d6adeb445faa7bc5abde824cac242329e64f0ea56f54d41720d",
+  "cache_fields": "existing pk6 decoder; no new raw-field reconstruction claimed"
+}

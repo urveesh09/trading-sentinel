@@ -1,0 +1,8 @@
+{
+  "checks": 2340,
+  "bindings": {
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-02-expiry-e02\\_local\\data.sqlite": "ded2fbbb116ad5353f0d95e437dc31668aeb56e052fe5a9d443e7235bde4cb7b",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-17-expiry-en\\_local\\exam2026.sqlite": "5ba416041cddec916392fc30a3ce2f592bfd8c5bc29a6c99844ae3e80b34cdc0"
+  },
+  "status": "PASS"
+}

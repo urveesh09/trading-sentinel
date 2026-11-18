@@ -1,3 +1,26 @@
+<!-- EN86_95_CODEX_SECTION_BEGIN -->
+## November 18 - EN86-EN95 implemented; frozen development score pending
+
+Owner authorized Codex to implement and test all ten slots. Research code lives in
+`docs/research/simulation/2026-11-18-expiry-en86/`; proposal
+`docs/EXPIRY_RESEARCH_EN86_EN95.md`; frozen rules `PLAN8.md`/`freeze8.json`.
+Explicit OI-source routing, quantity-correct labels, standalone transactional
+forward receipts and process-scoped offline guards are implemented. E03.2/EN55,
+normal F&O and Production are unchanged (Production checkout 55b5e942).
+
+Pre-score checks: 24 mechanics tests, 2,340 control arm-days with equal order
+ledgers, 216 causal signal prefixes, 51 chronological payoff models and6
+forecast-prefix checks, 18-cell serialization smoke; four 1,000-path null cases;
+802 recorder chunks re-hashed. Statistical calibration rejected the initial
+block4 bootstrap before candidate scores were inspected; the long-group t
+method and its limitations are registered. All history is already studied.
+
+Next: one full development score, independent reconciliation, forward rehearsal,
+and ANATOMY8.md with every slot's wins/losses. No result promoted. Runtime atlas
+scope excludes research helpers; no runtime source declarations changed. No data
+acquisition, remote push, PR, merge or deployment in this task.
+<!-- EN86_95_CODEX_SECTION_END -->
+
 ## November 18 (evening) - Round 7: EN71–EN85 scored once; no strategy passes; option-market flow shows side information that does not pay; fill-estimator v2 erratum (research only, Dev; nothing deployed; Production stays 55b5e942)
 
 **Owner (Nov 18):** run the auditor's EN71–EN80 handoff (`docs/EXPIRY_RESEARCH_EN71_EN80.md`; audit `docs/research/simulation/2026-11-18-expiry-review-en71/AUDIT.md`) plus five slots of mine, aiming to beat E03.2.

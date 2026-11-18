@@ -1,0 +1,50 @@
+{
+  "task": "EN71-85 focused audit and EN86-95 proposal",
+  "head": "2173546391116be8b8ac5ac449dce858a2542d0b",
+  "production_checkout_sha": "55b5e9422d0262091719042daf4a72dbe9c94d6c",
+  "host_utc": "2026-11-18T11:10:37.275487+00:00",
+  "slots": [
+    "86",
+    "87",
+    "88",
+    "89",
+    "90",
+    "91",
+    "92",
+    "93",
+    "94",
+    "95"
+  ],
+  "proposal_words": 4916,
+  "verification": {
+    "frozen_files_unchanged": 39,
+    "financial_checks": 467,
+    "stored_day_views": 67,
+    "main_replay_views": 10,
+    "additional_control_views": 2,
+    "audit_exit": 0,
+    "mechanics_exit": 0
+  },
+  "limits": [
+    "No full score, null, ML, packet, wallet or engine-suite rerun",
+    "No new strategy scored",
+    "Source and synthetic checks do not prove market fills"
+  ],
+  "actions": {
+    "runtime_changed": false,
+    "production_edited": false,
+    "downloaded": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  },
+  "files": {
+    "docs\\EXPIRY_RESEARCH_EN86_EN95.md": "309887d7e45682b7375f8a2d65b078117369c6cabdff336d0d7d034cdcb9151f",
+    "docs\\research\\simulation\\2026-11-18-expiry-review-en86\\AUDIT.md": "1a2deeaeab95c7edd866af5488e8468a248ea64a1d2f179d3c7b5f1387d765ea",
+    "docs\\research\\simulation\\2026-11-18-expiry-review-en86\\audit.py": "23e69ab387c43ce32a79586ab74f668228a3c9df41a8eef99d6638ec616afc74",
+    "docs\\research\\simulation\\2026-11-18-expiry-review-en86\\mechanics.json": "929251ee8ae9419c7836a1f1c2d7dbd8f38da670fc3c22e33ff9342ebf8e207e",
+    "docs\\research\\simulation\\2026-11-18-expiry-review-en86\\mechanics.py": "65d8c910d4e3e709506445520229128b62c0394e601dd6496cb72d9954b0a038",
+    "docs\\research\\simulation\\2026-11-18-expiry-review-en86\\PLAN.md": "4ee5bf3f1b2d47f4e66fddcd37f23a96664c3f42b8c4b234b8d31bc8fefba6f3",
+    "docs\\research\\simulation\\2026-11-18-expiry-review-en86\\verification.json": "960d4973beb44f0162141f2763bacddf5802e214b03e9870680752e15885a60c"
+  }
+}

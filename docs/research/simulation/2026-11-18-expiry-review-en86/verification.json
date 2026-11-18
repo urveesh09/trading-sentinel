@@ -1,0 +1,358 @@
+{
+  "source_hashes": {
+    "PLAN7.md": true,
+    "en_lab7.py": true,
+    "prep7.py": true,
+    "fut7.py": true,
+    "n11x.py": true,
+    "frontier7.py": true,
+    "alloc7.py": true,
+    "pk7.py": true,
+    "check7.py": true,
+    "score7.py": true,
+    "fwd7.py": true,
+    "n11-days.json": true,
+    "n11-signals.json": true,
+    "facts7.json": true,
+    "erratum-en58-v2.json": true,
+    "round6/PLAN6.md": true,
+    "round6/en_lab6.py": true,
+    "round6/en_ml6.py": true,
+    "round6/pk6.py": true,
+    "round6/en_score6.py": true,
+    "round6/en_lab4.py": true,
+    "round6/en4_data.py": true,
+    "round6/en_lab3.py": true,
+    "round6/en_lab2.py": true,
+    "round6/en_lab.py": true,
+    "round6/en_base.py": true,
+    "round6/exam2023.py": true,
+    "round6/exam2023b.py": true,
+    "round6/data-binding4.json": true,
+    "round6/en_lab5.py": true,
+    "round6/tr01.py": true,
+    "round6/r8b_lab.py": true,
+    "round6/e031_lab.py": true,
+    "round6/e03_lab.py": true,
+    "round6/e02_lab.py": true,
+    "round6/data.py": true,
+    "round6/expiry_paper.py": true,
+    "round6/cost_schedules.py": true,
+    "round6/data-binding.json": true
+  },
+  "financial_checks": 467,
+  "day_views": 67,
+  "results_sha256": "dcd9b27bebbd42a5175843a6e008ac514c82c8d4b26faf400ee11eae8516136b",
+  "anatomy_sha256": "60612100d8a52862e0c9caeb042de96081e3a30cce7be427e76b059fb4d4594a",
+  "synthetic_partial_exit": {
+    "calls": [
+      {
+        "side": "BUY",
+        "requested": 2,
+        "filled": 2,
+        "price": 10.0
+      },
+      {
+        "side": "SELL",
+        "requested": 2,
+        "filled": 1,
+        "price": 9.0
+      }
+    ],
+    "reported": {
+      "status": "FILLED",
+      "net": -180.04,
+      "gross": -130.0,
+      "fees": 50.04,
+      "nospread": -50.04,
+      "dF": 0.0,
+      "lots": 2
+    },
+    "unsold_lots": 1,
+    "finding": "frontier act prices all bought lots as sold after a partial exit"
+  },
+  "replays": {
+    "E03_env|NIFTY|ordinary": {
+      "net": 3006.43,
+      "without_best": 507.39,
+      "without_top2": -1298.13,
+      "worst": -1463.85,
+      "tickets": 55,
+      "sessions": 197,
+      "per_expiry": 15.26,
+      "fees": 2963.82,
+      "unresolved": 0,
+      "by_year": {
+        "2023": -3578.33,
+        "2024": 852.28,
+        "2025": 8670.19,
+        "2026": -2937.71
+      },
+      "worst_marked": -1463.85,
+      "minutes_in": 491,
+      "traded_expiries": 48
+    },
+    "E03_env|NIFTY|adverse": {
+      "net": 2245.82,
+      "without_best": -123.34,
+      "without_top2": -1834.7,
+      "worst": -980.68,
+      "tickets": 52,
+      "sessions": 197,
+      "per_expiry": 11.4,
+      "fees": 2807.93,
+      "unresolved": 0,
+      "by_year": {
+        "2023": -3279.5,
+        "2024": 85.8,
+        "2025": 7705.59,
+        "2026": -2266.07
+      },
+      "worst_marked": -1123.44,
+      "minutes_in": 464,
+      "traded_expiries": 45
+    },
+    "EN75|NIFTY|ordinary": {
+      "net": 5844.44,
+      "without_best": -5364.11,
+      "without_top2": -10171.81,
+      "worst": -1869.86,
+      "tickets": 177,
+      "sessions": 197,
+      "per_expiry": 29.67,
+      "fees": 9219.31,
+      "unresolved": 0,
+      "by_year": {
+        "2023": -2934.48,
+        "2024": 11068.34,
+        "2025": 3622.05,
+        "2026": -5911.47
+      },
+      "worst_marked": -1873.11,
+      "minutes_in": 1642,
+      "traded_expiries": 119
+    },
+    "EN75|NIFTY|adverse": {
+      "net": -1422.89,
+      "without_best": -12401.03,
+      "without_top2": -17114.61,
+      "worst": -1941.36,
+      "tickets": 172,
+      "sessions": 197,
+      "per_expiry": -7.22,
+      "fees": 8953.14,
+      "unresolved": 0,
+      "by_year": {
+        "2023": -3867.0,
+        "2024": 7838.06,
+        "2025": 1605.49,
+        "2026": -6999.44
+      },
+      "worst_marked": -1941.36,
+      "minutes_in": 1586,
+      "traded_expiries": 117
+    },
+    "EN83|NIFTY|ordinary": {
+      "net": 4722.49,
+      "without_best": -7336.49,
+      "without_top2": -11557.45,
+      "worst": -1543.06,
+      "tickets": 167,
+      "sessions": 197,
+      "per_expiry": 23.97,
+      "fees": 8846.26,
+      "unresolved": 0,
+      "by_year": {
+        "2023": -1537.47,
+        "2024": 11325.42,
+        "2025": -1895.92,
+        "2026": -3169.54
+      },
+      "worst_marked": -1669.24,
+      "minutes_in": 1557,
+      "traded_expiries": 117
+    },
+    "EN83|NIFTY|adverse": {
+      "net": -3886.23,
+      "without_best": -15731.04,
+      "without_top2": -19783.18,
+      "worst": -1630.79,
+      "tickets": 164,
+      "sessions": 197,
+      "per_expiry": -19.73,
+      "fees": 8657.23,
+      "unresolved": 0,
+      "by_year": {
+        "2023": -2935.91,
+        "2024": 8594.2,
+        "2025": -4980.02,
+        "2026": -4564.5
+      },
+      "worst_marked": -1730.99,
+      "minutes_in": 1510,
+      "traded_expiries": 116
+    },
+    "E03_env|SENSEX|ordinary": {
+      "net": 5166.67,
+      "without_best": -88.1,
+      "without_top2": -1371.61,
+      "worst": -1116.03,
+      "tickets": 7,
+      "sessions": 63,
+      "per_expiry": 82.01,
+      "fees": 396.33,
+      "unresolved": 0,
+      "by_year": {
+        "2025": 5778.53,
+        "2026": -611.86
+      },
+      "worst_marked": -1130.0,
+      "minutes_in": 83,
+      "traded_expiries": 7
+    },
+    "E03_env|SENSEX|adverse": {
+      "net": 4746.07,
+      "without_best": -372.9,
+      "without_top2": -1590.47,
+      "worst": -1156.01,
+      "tickets": 7,
+      "sessions": 63,
+      "per_expiry": 75.33,
+      "fees": 395.93,
+      "unresolved": 0,
+      "by_year": {
+        "2025": 5594.78,
+        "2026": -848.71
+      },
+      "worst_marked": -1156.01,
+      "minutes_in": 83,
+      "traded_expiries": 7
+    },
+    "EN75|SENSEX|ordinary": {
+      "net": -19200.14,
+      "without_best": -20930.79,
+      "without_top2": -22309.69,
+      "worst": -1391.27,
+      "tickets": 108,
+      "sessions": 63,
+      "per_expiry": -304.76,
+      "fees": 5555.14,
+      "unresolved": 0,
+      "by_year": {
+        "2025": -2850.14,
+        "2026": -16350.0
+      },
+      "worst_marked": -1497.07,
+      "minutes_in": 916,
+      "traded_expiries": 60
+    },
+    "EN75|SENSEX|adverse": {
+      "net": -22183.82,
+      "without_best": -23882.81,
+      "without_top2": -25505.57,
+      "worst": -1461.24,
+      "tickets": 106,
+      "sessions": 63,
+      "per_expiry": -352.12,
+      "fees": 5417.82,
+      "unresolved": 0,
+      "by_year": {
+        "2025": -4997.36,
+        "2026": -17186.46
+      },
+      "worst_marked": -1556.06,
+      "minutes_in": 889,
+      "traded_expiries": 60
+    }
+  },
+  "partial_exits": {
+    "NIFTY": {
+      "actions": 7246,
+      "filled": 5802,
+      "partial_exit_actions": 0,
+      "witnesses": []
+    },
+    "SENSEX": {
+      "actions": 2296,
+      "filled": 1995,
+      "partial_exit_actions": 0,
+      "witnesses": []
+    }
+  },
+  "signals": {
+    "NIFTY": {
+      "SYNF75": {
+        "events": 1156
+      },
+      "OI83": {
+        "events": 285
+      }
+    },
+    "SENSEX": {
+      "SYNF75": {
+        "events": 631
+      }
+    }
+  },
+  "filled_clock_controls": {
+    "EN75": {
+      "candidate": 177,
+      "control": 163,
+      "shared_clock": 148,
+      "candidate_only": 29,
+      "control_only": 15
+    },
+    "EN83": {
+      "candidate": 167,
+      "control": 163,
+      "shared_clock": 161,
+      "candidate_only": 6,
+      "control_only": 2
+    }
+  },
+  "calibration_1_of_20_interval_95": [
+    0.0012650894979498038,
+    0.24873276277202766
+  ],
+  "harness_published": {
+    "pairs": 20,
+    "null_rejections_at_05": 1,
+    "null_p": [
+      0.156,
+      0.557,
+      0.096,
+      0.032,
+      0.751,
+      0.553,
+      0.836,
+      0.682,
+      0.257,
+      0.813,
+      0.175,
+      0.656,
+      0.608,
+      0.912,
+      0.471,
+      0.063,
+      0.894,
+      0.488,
+      0.476,
+      0.668
+    ],
+    "known_effect_detected_at_05": 3,
+    "ci_covers_zero_under_null": 19
+  },
+  "forward_oi_source_check": {
+    "sealed_2026": {
+      "rows": 0,
+      "max_datetime": null,
+      "path": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\simulation\\2026-11-17-expiry-en\\_local\\exam2026.sqlite"
+    },
+    "forward_history": {
+      "rows": 97628,
+      "max_datetime": "2026-11-17 15:39:00",
+      "path": "C:\\Users\\Urveesh\\sentinel-operations\\breeze-history-20261029\\data\\breeze-history.sqlite"
+    }
+  },
+  "elapsed_seconds": 51.09
+}
