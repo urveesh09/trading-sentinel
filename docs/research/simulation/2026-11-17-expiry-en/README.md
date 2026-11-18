@@ -275,3 +275,76 @@ Fills for EN08–EN10 each year (ordinary / adverse):
   - EN25's resting-bid fill rate on recorded quotes.
 
 **Data held open (Nov 18):** the slots waiting for the owner's data (EN15-R, EN16-R, EN11-R, the NIFTY 2026 exam and the SENSEX test) are listed in [DATA_REQUESTS.md](DATA_REQUESTS.md).
+
+## EN26–EN40 and the first fresh exam of E03.2 (Nov 18): NIFTY 2026 + SENSEX
+
+**Owner (Nov 18):**
+- run the auditor's EN26–EN35 handoff (`docs/EXPIRY_RESEARCH_EN26_EN35.md`) plus five slots of mine;
+- use today's download: NIFTY 2026 expiry afternoons and SENSEX Jul 2025 – Nov 2026, the opening at-the-money strike ± 10, 12:00–close.
+
+**Record:**
+- **Plan:** `PLAN4.md`, frozen at `12f828d1` before any score. The hashes cover the plan, the new files, every transitive lab, loader and fee module, and both data bindings.
+- **Scorer:** `en_score4.py`, run once, writing `results4.json`, `anatomy4.json` and `results4-started.json`.
+- **Write-up:** `ANATOMY4.md`, with tables rendered by `render4.py` into `ANATOMY4-tables.md`.
+
+**Data (`en4_data.py`):**
+- Read-only copies go into `_local/exam2026.sqlite`, bound by `data-binding4.json`.
+- The zip equals the Breeze database row for row.
+
+| Cohort | Days | Status |
+|---|---:|---|
+| N-X1 NIFTY Jan 6 – Sep 8, 2026 | 36 | untouched |
+| S-X1 SENSEX Jul 29, 2025 – Sep 3, 2026 | 58 | untouched |
+| X2 NIFTY / SENSEX, Sep–Oct 2026 | 7 / 5 | partly seen |
+
+Excluded:
+- NIFTY Nov 3/9/17 and SENSEX Oct 29, Nov 5 and Nov 12: no Breeze index or futures.
+- SENSEX Oct 15/22: thin futures.
+- SENSEX before Jul 29, 2025: Jul 22 partial, earlier days not attempted.
+
+**Lab (`en_lab4.py`):** `run_day4` is `en_lab3.run_day` with the index's lot, fees, steps and band (SENSEX lot 20, BFO, 100-point strikes, Rs 16.25–65) plus the new hooks.
+
+**`check()`:**
+- run_day4 equals E03.2, E03.1 and 8 frozen round-3 arms day by day (2023–25 × 3 fill levels);
+- 528 `choose4` picks equal the native picks;
+- `synthetic()` proves the EN26, EN27, EN28, EN29 and EN31 mechanics.
+
+**Harness repair:** `rec2026b.py` fixes the auditor's recorded-quote faults, with regression cases. EN33 lives in `en33_lag.py`.
+
+**E03.2 on fresh data: test 7 FAILS on both books.**
+
+| Book | Ordinary | Adverse | Without best day | Tickets | Random entries, median |
+|---|---:|---:|---:|---:|---:|
+| NIFTY 2026 | −3,847 | −4,129 | −3,917 | 9 | −961 |
+| SENSEX | +2,082 | +1,637 | −3,173 | 11 | −105 |
+
+- **NIFTY 2026:** the losses were 5 stops (−3,514) and late entries.
+- **SENSEX:** all the profit is one put, Nov 13, 2025 (+5,255).
+- **The whole record:** over 248 afternoons, two tickets made the +16,107 total. The other 74 lost −918.
+- **Risk dial:** k = 1; no size passes.
+- **Brakes:** a continuous book from Jan 2023 halts on Jan 18, 2024 and never resets.
+
+| Slot | Status | Lesson |
+|---|---|---|
+| EN26 confirmed damage | INCONCLUSIVE (fired once) | The minute stop already catches lasting damage; the sub-minute question needs TR01 |
+| EN27 scout + add | FAIL | Half-size wrong tickets saved +3,793; slow winners cost −4,789; better than E03.2 on both fresh books |
+| EN28 patient + fallback | ONE-INDEX (SENSEX pass) | 75 of 76 filled passively, 0.49% cheaper, about neutral at ordinary fills; the severe gain is mostly the model |
+| EN29 runner stall | INCONCLUSIVE (6 tickets) | Kept the 2024 hero's tail (+901) and trimmed ordinary runners |
+| EN30 held base | FAIL | Beat EN14 by +5,332 on development; at the random null on fresh data |
+| EN31 accepted reversal | INCONCLUSIVE (once) | The flip diagnostic is a coin toss and crowds out E03.2's re-entries |
+| EN32 ATM/ITM range contract | FAIL | Range losses cut by 20–99%; still negative; rarely affordable in 2026 |
+| EN33 NIFTY→SENSEX lag | FAIL | Real lead (partial correlation 0.23), but events lose like random minutes (−74.5 against −76.6) |
+| EN34 later expiry | NOT FEASIBLE | One lot costs Rs 8,909–11,910 against a Rs 1,250/2,500 reserve; 0 of 4,276 fit |
+| EN35 combination | NOT READY | The diagnostic was the best E03.2 variant on NIFTY 2026 (−2,355), and the pieces don't fight |
+| EN36 cheap gamma | FAIL | Cuts bad years 73–93% but removes the hero (heroes are bought expensive) |
+| EN37 chain flow | INCONCLUSIVE (2 tickets) | Flow moves with price; no information |
+| EN38 futures basis | ONE-INDEX (SENSEX pass) | The steadiest profile (worst year −2,442) but gives up the hero |
+| EN39 14:00–14:30 only | ONE-INDEX | SENSEX +3,358 on 3 tickets, NIFTY −705 on 2; too rare |
+| EN40 no put double | FAIL | The put double is a bet on the put hero: it paid on SENSEX and cost on NIFTY |
+| Held EN21 / EN25 / EN14 / EN12 | FAIL / FAIL / FAIL / INCONCLUSIVE | None holds on fresh data |
+| R1 EN16-R1 / EN18-R1 | FAIL / FAIL | Repairs confirm both verdicts |
+
+**Outcome:**
+- Nothing is promoted or deployed. E03.2 is unchanged; no source, `.env` or Production change was made.
+- **Data now seen:** NIFTY expiry afternoons Jan–Oct 2026 and SENSEX Jul 2025 – Oct 2026.
+- **Still held:** EN15-R, EN16-R, EN11-R and NIFTY 2020–22 (`DATA_REQUESTS.md`).

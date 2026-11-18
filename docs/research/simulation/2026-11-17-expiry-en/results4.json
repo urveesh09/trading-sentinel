@@ -1,0 +1,8245 @@
+{
+ "freeze_head": "06c5e5f57d74719efd04b8d27afdc770954fb4ea",
+ "theta": 0.6924,
+ "cohorts": {
+  "2023": 49,
+  "2024": 52,
+  "2025": 53,
+  "N-X1": 36,
+  "S-X1": 58,
+  "N-X2": 7,
+  "S-X2": 5,
+  "N-ALL": 43,
+  "S-ALL": 63
+ },
+ "excluded": [
+  {
+   "und": "NIFTY",
+   "day": "2026-11-03",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-11-09",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "NIFTY",
+   "day": "2026-11-17",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-04",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-11",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-18",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-25",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-10-31",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-08",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-14",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-22",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-11-29",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-06",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-13",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-20",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2024-12-27",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-03",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-07",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-14",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-21",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-01-28",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-04",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-11",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-18",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-02-25",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-04",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-11",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-18",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-03-25",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-01",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-08",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-15",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-22",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-04-29",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-06",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-13",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-20",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-05-27",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-03",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-10",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-17",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-06-24",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-01",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-08",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-15",
+   "reason": "contracts resolved 0 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2025-07-22",
+   "reason": "contracts resolved 9 of 42"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-15",
+   "reason": "index minutes 205, future minutes 187 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-22",
+   "reason": "index minutes 206, future minutes 132 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-10-29",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-11-05",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  },
+  {
+   "und": "SENSEX",
+   "day": "2026-11-12",
+   "reason": "index minutes 0, future minutes 0 (12:00-15:29)"
+  }
+ ],
+ "E032": {
+  "2023|ordinary": {
+   "net": -3645.12,
+   "without_best": -4625.79,
+   "worst": -1161.74,
+   "drawdown": 3645.12,
+   "trades": 17,
+   "fees": 850.12,
+   "unresolved": 0
+  },
+  "2023|adverse": {
+   "net": -4035.53,
+   "without_best": -4113.64,
+   "worst": -1220.22,
+   "drawdown": 4035.53,
+   "trades": 14,
+   "fees": 691.28,
+   "unresolved": 0
+  },
+  "2023|catastrophe": {
+   "net": -4172.68,
+   "without_best": -4172.68,
+   "worst": -1278.8,
+   "drawdown": 4172.68,
+   "trades": 7,
+   "fees": 347.43,
+   "unresolved": 0
+  },
+  "2024|ordinary": {
+   "net": 15580.74,
+   "without_best": 3810.02,
+   "worst": -646.98,
+   "drawdown": 691.65,
+   "trades": 19,
+   "fees": 1085.26,
+   "unresolved": 0
+  },
+  "2024|adverse": {
+   "net": 14629.39,
+   "without_best": 3046.86,
+   "worst": -669.72,
+   "drawdown": 730.65,
+   "trades": 19,
+   "fees": 1084.36,
+   "unresolved": 0
+  },
+  "2024|catastrophe": {
+   "net": -2582.43,
+   "without_best": -2582.43,
+   "worst": -632.82,
+   "drawdown": 2582.43,
+   "trades": 7,
+   "fees": 343.18,
+   "unresolved": 0
+  },
+  "2025|ordinary": {
+   "net": 5936.81,
+   "without_best": 4084.55,
+   "worst": -478.01,
+   "drawdown": 606.19,
+   "trades": 20,
+   "fees": 1047.44,
+   "unresolved": 0
+  },
+  "2025|adverse": {
+   "net": 5371.36,
+   "without_best": 3616.52,
+   "worst": -537.55,
+   "drawdown": 557.7,
+   "trades": 20,
+   "fees": 1047.39,
+   "unresolved": 0
+  },
+  "2025|catastrophe": {
+   "net": 144.73,
+   "without_best": -640.16,
+   "worst": -823.99,
+   "drawdown": 1019.51,
+   "trades": 8,
+   "fees": 404.52,
+   "unresolved": 0
+  },
+  "N-X1|ordinary": {
+   "net": -3846.76,
+   "without_best": -3917.42,
+   "worst": -1281.39,
+   "drawdown": 3846.76,
+   "trades": 9,
+   "fees": 444.01,
+   "unresolved": 0
+  },
+  "N-X1|adverse": {
+   "net": -4129.38,
+   "without_best": -4170.81,
+   "worst": -1339.86,
+   "drawdown": 4129.38,
+   "trades": 9,
+   "fees": 443.88,
+   "unresolved": 0
+  },
+  "N-X1|catastrophe": {
+   "net": -3819.12,
+   "without_best": -3819.12,
+   "worst": -1039.04,
+   "drawdown": 3819.12,
+   "trades": 6,
+   "fees": 299.37,
+   "unresolved": 0
+  },
+  "S-X1|ordinary": {
+   "net": 2081.6,
+   "without_best": -3173.17,
+   "worst": -1124.54,
+   "drawdown": 3380.86,
+   "trades": 11,
+   "fees": 585.4,
+   "unresolved": 0
+  },
+  "S-X1|adverse": {
+   "net": 1636.97,
+   "without_best": -3482.0,
+   "worst": -1169.52,
+   "drawdown": 3547.8,
+   "trades": 11,
+   "fees": 585.03,
+   "unresolved": 0
+  },
+  "S-X1|catastrophe": {
+   "net": -4151.39,
+   "without_best": -4151.39,
+   "worst": -1382.1,
+   "drawdown": 4151.39,
+   "trades": 6,
+   "fees": 296.39,
+   "unresolved": 0
+  },
+  "N-X2|ordinary": {
+   "net": -32.57,
+   "without_best": -32.57,
+   "worst": -32.57,
+   "drawdown": 32.57,
+   "trades": 1,
+   "fees": 48.82,
+   "unresolved": 0
+  },
+  "N-X2|adverse": {
+   "net": -194.89,
+   "without_best": -194.89,
+   "worst": -194.89,
+   "drawdown": 194.89,
+   "trades": 1,
+   "fees": 48.64,
+   "unresolved": 0
+  },
+  "N-X2|catastrophe": {
+   "net": -126.65,
+   "without_best": -126.65,
+   "worst": -126.65,
+   "drawdown": 126.65,
+   "trades": 1,
+   "fees": 48.65,
+   "unresolved": 0
+  },
+  "S-X2|ordinary": {
+   "net": -94.6,
+   "without_best": -94.6,
+   "worst": -94.6,
+   "drawdown": 94.6,
+   "trades": 1,
+   "fees": 49.6,
+   "unresolved": 0
+  },
+  "S-X2|adverse": {
+   "net": -120.57,
+   "without_best": -120.57,
+   "worst": -120.57,
+   "drawdown": 120.57,
+   "trades": 1,
+   "fees": 49.57,
+   "unresolved": 0
+  },
+  "S-X2|catastrophe": {
+   "net": 0,
+   "without_best": 0,
+   "worst": 0,
+   "drawdown": 0.0,
+   "trades": 0,
+   "fees": 0,
+   "unresolved": 0
+  },
+  "N-ALL|ordinary": {
+   "net": -3879.33,
+   "without_best": -3949.99,
+   "worst": -1281.39,
+   "drawdown": 3879.33,
+   "trades": 10,
+   "fees": 492.83,
+   "unresolved": 0
+  },
+  "N-ALL|adverse": {
+   "net": -4129.38,
+   "without_best": -4170.81,
+   "worst": -1339.86,
+   "drawdown": 4129.38,
+   "trades": 9,
+   "fees": 443.88,
+   "unresolved": 0
+  },
+  "N-ALL|catastrophe": {
+   "net": -3945.77,
+   "without_best": -3945.77,
+   "worst": -1039.04,
+   "drawdown": 3945.77,
+   "trades": 7,
+   "fees": 348.02,
+   "unresolved": 0
+  },
+  "S-ALL|ordinary": {
+   "net": 1987.0,
+   "without_best": -3267.77,
+   "worst": -1124.54,
+   "drawdown": 3380.86,
+   "trades": 12,
+   "fees": 635.0,
+   "unresolved": 0
+  },
+  "S-ALL|adverse": {
+   "net": 1516.4,
+   "without_best": -3602.57,
+   "worst": -1169.52,
+   "drawdown": 3547.8,
+   "trades": 12,
+   "fees": 634.6,
+   "unresolved": 0
+  },
+  "S-ALL|catastrophe": {
+   "net": -4151.39,
+   "without_best": -4151.39,
+   "worst": -1382.1,
+   "drawdown": 4151.39,
+   "trades": 6,
+   "fees": 296.39,
+   "unresolved": 0
+  }
+ },
+ "E031": {
+  "2023|ordinary": {
+   "net": -3131.51,
+   "without_best": -3248.59,
+   "worst": -604.47,
+   "drawdown": 3131.51,
+   "trades": 17,
+   "fees": 830.51,
+   "unresolved": 0
+  },
+  "2023|adverse": {
+   "net": -3076.03,
+   "without_best": -3154.14,
+   "worst": -633.71,
+   "drawdown": 3076.03,
+   "trades": 16,
+   "fees": 781.53,
+   "unresolved": 0
+  },
+  "2023|catastrophe": {
+   "net": -3418.23,
+   "without_best": -3418.23,
+   "worst": -663.0,
+   "drawdown": 3418.23,
+   "trades": 9,
+   "fees": 437.98,
+   "unresolved": 0
+  },
+  "2024|ordinary": {
+   "net": 8897.97,
+   "without_best": 3048.01,
+   "worst": -477.75,
+   "drawdown": 691.65,
+   "trades": 20,
+   "fees": 1053.53,
+   "unresolved": 0
+  },
+  "2024|adverse": {
+   "net": 8271.27,
+   "without_best": 2515.41,
+   "worst": -497.25,
+   "drawdown": 730.65,
+   "trades": 20,
+   "fees": 1052.98,
+   "unresolved": 0
+  },
+  "2024|catastrophe": {
+   "net": -2583.27,
+   "without_best": -2583.27,
+   "worst": -632.82,
+   "drawdown": 2583.27,
+   "trades": 8,
+   "fees": 389.52,
+   "unresolved": 0
+  },
+  "2025|ordinary": {
+   "net": 3528.74,
+   "without_best": 2326.42,
+   "worst": -478.01,
+   "drawdown": 830.54,
+   "trades": 21,
+   "fees": 1047.26,
+   "unresolved": 0
+  },
+  "2025|adverse": {
+   "net": 3226.33,
+   "without_best": 2088.95,
+   "worst": -537.55,
+   "drawdown": 746.33,
+   "trades": 21,
+   "fees": 1047.42,
+   "unresolved": 0
+  },
+  "2025|catastrophe": {
+   "net": -673.37,
+   "without_best": -1252.93,
+   "worst": -646.89,
+   "drawdown": 1151.6,
+   "trades": 9,
+   "fees": 445.87,
+   "unresolved": 0
+  },
+  "N-X1|ordinary": {
+   "net": -2649.65,
+   "without_best": -2720.31,
+   "worst": -792.52,
+   "drawdown": 2649.65,
+   "trades": 9,
+   "fees": 439.65,
+   "unresolved": 0
+  },
+  "N-X1|adverse": {
+   "net": -2864.05,
+   "without_best": -2905.48,
+   "worst": -831.5,
+   "drawdown": 2864.05,
+   "trades": 9,
+   "fees": 439.55,
+   "unresolved": 0
+  },
+  "N-X1|catastrophe": {
+   "net": -1800.27,
+   "without_best": -1800.27,
+   "worst": -574.6,
+   "drawdown": 1800.27,
+   "trades": 5,
+   "fees": 243.52,
+   "unresolved": 0
+  },
+  "S-X1|ordinary": {
+   "net": -664.37,
+   "without_best": -2362.09,
+   "worst": -599.66,
+   "drawdown": 2907.37,
+   "trades": 10,
+   "fees": 494.37,
+   "unresolved": 0
+  },
+  "S-X1|adverse": {
+   "net": -1356.73,
+   "without_best": -3009.51,
+   "worst": -619.66,
+   "drawdown": 3026.33,
+   "trades": 10,
+   "fees": 491.73,
+   "unresolved": 0
+  },
+  "S-X1|catastrophe": {
+   "net": -2853.56,
+   "without_best": -2853.56,
+   "worst": -728.43,
+   "drawdown": 2853.56,
+   "trades": 6,
+   "fees": 292.56,
+   "unresolved": 0
+  },
+  "N-X2|ordinary": {
+   "net": -32.57,
+   "without_best": -32.57,
+   "worst": -32.57,
+   "drawdown": 32.57,
+   "trades": 1,
+   "fees": 48.82,
+   "unresolved": 0
+  },
+  "N-X2|adverse": {
+   "net": -58.56,
+   "without_best": -58.56,
+   "worst": -58.56,
+   "drawdown": 58.56,
+   "trades": 1,
+   "fees": 48.81,
+   "unresolved": 0
+  },
+  "N-X2|catastrophe": {
+   "net": -126.65,
+   "without_best": -126.65,
+   "worst": -126.65,
+   "drawdown": 126.65,
+   "trades": 1,
+   "fees": 48.65,
+   "unresolved": 0
+  },
+  "S-X2|ordinary": {
+   "net": -94.6,
+   "without_best": -94.6,
+   "worst": -94.6,
+   "drawdown": 94.6,
+   "trades": 1,
+   "fees": 49.6,
+   "unresolved": 0
+  },
+  "S-X2|adverse": {
+   "net": -120.57,
+   "without_best": -120.57,
+   "worst": -120.57,
+   "drawdown": 120.57,
+   "trades": 1,
+   "fees": 49.57,
+   "unresolved": 0
+  },
+  "S-X2|catastrophe": {
+   "net": 0,
+   "without_best": 0,
+   "worst": 0,
+   "drawdown": 0.0,
+   "trades": 0,
+   "fees": 0,
+   "unresolved": 0
+  },
+  "N-ALL|ordinary": {
+   "net": -2682.22,
+   "without_best": -2752.88,
+   "worst": -792.52,
+   "drawdown": 2682.22,
+   "trades": 10,
+   "fees": 488.47,
+   "unresolved": 0
+  },
+  "N-ALL|adverse": {
+   "net": -2922.61,
+   "without_best": -2964.04,
+   "worst": -831.5,
+   "drawdown": 2922.61,
+   "trades": 10,
+   "fees": 488.36,
+   "unresolved": 0
+  },
+  "N-ALL|catastrophe": {
+   "net": -1926.92,
+   "without_best": -1926.92,
+   "worst": -574.6,
+   "drawdown": 1926.92,
+   "trades": 6,
+   "fees": 292.17,
+   "unresolved": 0
+  },
+  "S-ALL|ordinary": {
+   "net": -758.97,
+   "without_best": -2456.69,
+   "worst": -599.66,
+   "drawdown": 2907.37,
+   "trades": 11,
+   "fees": 543.97,
+   "unresolved": 0
+  },
+  "S-ALL|adverse": {
+   "net": -1477.3,
+   "without_best": -3130.08,
+   "worst": -619.66,
+   "drawdown": 3026.33,
+   "trades": 11,
+   "fees": 541.3,
+   "unresolved": 0
+  },
+  "S-ALL|catastrophe": {
+   "net": -2853.56,
+   "without_best": -2853.56,
+   "worst": -728.43,
+   "drawdown": 2853.56,
+   "trades": 6,
+   "fees": 292.56,
+   "unresolved": 0
+  }
+ },
+ "E032_unavailable": {
+  "2023": 2,
+  "2024": 0,
+  "2025": 0,
+  "N-X1": 0,
+  "S-X1": 1,
+  "N-X2": 1,
+  "S-X2": 0,
+  "N-ALL": 1,
+  "S-ALL": 1
+ },
+ "nulls": {
+  "EN30": {
+   "2023": -2796.14,
+   "2024": -1834.4,
+   "2025": -1779.22,
+   "N-X1": -2733.4,
+   "S-X1": -2003.74
+  },
+  "EN32": {
+   "2023": -1625.87,
+   "2024": -3314.47,
+   "2025": -2565.41,
+   "N-X1": -34.4,
+   "S-X1": -889.38
+  },
+  "EN14": {
+   "2023": -1097.3,
+   "2024": -1949.99,
+   "2025": -1671.9,
+   "N-X1": -2720.61,
+   "S-X1": -2251.82
+  },
+  "E032": {
+   "N-X1": -961.47,
+   "S-X1": -104.97
+  },
+  "E031": {
+   "N-X1": -540.51,
+   "S-X1": -259.24
+  }
+ },
+ "EN11": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -4006.16,
+    "without_best": -4148.17,
+    "worst": -830.88,
+    "drawdown": 4006.16,
+    "trades": 17,
+    "fees": 847.16,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4120.46,
+    "without_best": -4184.53,
+    "worst": -869.9,
+    "drawdown": 4120.46,
+    "trades": 15,
+    "fees": 746.96,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4029.95,
+    "without_best": -4029.95,
+    "worst": -1512.35,
+    "drawdown": 4029.95,
+    "trades": 7,
+    "fees": 347.7,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 13747.99,
+    "without_best": 1977.27,
+    "worst": -662.36,
+    "drawdown": 867.74,
+    "trades": 19,
+    "fees": 1081.76,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 13610.83,
+    "without_best": 2028.3,
+    "worst": -714.32,
+    "drawdown": 894.35,
+    "trades": 19,
+    "fees": 1082.42,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2361.86,
+    "without_best": -2361.86,
+    "worst": -532.27,
+    "drawdown": 2361.86,
+    "trades": 7,
+    "fees": 343.61,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 4963.68,
+    "without_best": 3111.42,
+    "worst": -713.38,
+    "drawdown": 1205.92,
+    "trades": 20,
+    "fees": 1045.57,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 4310.66,
+    "without_best": 2555.82,
+    "worst": -739.39,
+    "drawdown": 1291.32,
+    "trades": 20,
+    "fees": 1045.34,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -101.8,
+    "without_best": -886.69,
+    "worst": -1122.42,
+    "drawdown": 1317.94,
+    "trades": 8,
+    "fees": 404.05,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3339.17,
+    "without_best": -3527.68,
+    "worst": -1025.13,
+    "drawdown": 3339.17,
+    "trades": 9,
+    "fees": 449.92,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -3644.55,
+    "without_best": -3774.61,
+    "worst": -1093.34,
+    "drawdown": 3644.55,
+    "trades": 9,
+    "fees": 449.8,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3306.6,
+    "without_best": -3306.6,
+    "worst": -1032.55,
+    "drawdown": 3306.6,
+    "trades": 6,
+    "fees": 300.35,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 3401.16,
+    "without_best": -1853.61,
+    "worst": -867.03,
+    "drawdown": 2984.17,
+    "trades": 11,
+    "fees": 592.84,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 2318.1,
+    "without_best": -2800.87,
+    "worst": -900.02,
+    "drawdown": 3136.17,
+    "trades": 11,
+    "fees": 588.9,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -3611.41,
+    "without_best": -3611.41,
+    "worst": -932.87,
+    "drawdown": 3611.41,
+    "trades": 6,
+    "fees": 297.41,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3371.74,
+    "without_best": -3560.25,
+    "worst": -1025.13,
+    "drawdown": 3371.74,
+    "trades": 10,
+    "fees": 498.74,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3839.44,
+    "without_best": -3969.5,
+    "worst": -1093.34,
+    "drawdown": 3839.44,
+    "trades": 10,
+    "fees": 498.44,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3433.25,
+    "without_best": -3433.25,
+    "worst": -1032.55,
+    "drawdown": 3433.25,
+    "trades": 7,
+    "fees": 349.0,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 3306.56,
+    "without_best": -1948.21,
+    "worst": -867.03,
+    "drawdown": 2984.17,
+    "trades": 12,
+    "fees": 642.44,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 2197.53,
+    "without_best": -2921.44,
+    "worst": -900.02,
+    "drawdown": 3136.17,
+    "trades": 12,
+    "fees": 638.47,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -3611.41,
+    "without_best": -3611.41,
+    "worst": -932.87,
+    "drawdown": 3611.41,
+    "trades": 6,
+    "fees": 297.41,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "EN12": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3645.12,
+    "without_best": -4625.79,
+    "worst": -1161.74,
+    "drawdown": 3645.12,
+    "trades": 17,
+    "fees": 850.12,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4035.53,
+    "without_best": -4113.64,
+    "worst": -1220.22,
+    "drawdown": 4035.53,
+    "trades": 14,
+    "fees": 691.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4172.68,
+    "without_best": -4172.68,
+    "worst": -1278.8,
+    "drawdown": 4172.68,
+    "trades": 7,
+    "fees": 347.43,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15580.74,
+    "without_best": 3810.02,
+    "worst": -646.98,
+    "drawdown": 691.65,
+    "trades": 19,
+    "fees": 1085.26,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 16102.95,
+    "without_best": 4520.42,
+    "worst": -669.72,
+    "drawdown": 730.65,
+    "trades": 19,
+    "fees": 1063.55,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2582.43,
+    "without_best": -2582.43,
+    "worst": -632.82,
+    "drawdown": 2582.43,
+    "trades": 7,
+    "fees": 343.18,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 6881.63,
+    "without_best": 4889.9,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 20,
+    "fees": 1025.62,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5371.36,
+    "without_best": 3616.52,
+    "worst": -537.55,
+    "drawdown": 557.7,
+    "trades": 20,
+    "fees": 1047.39,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 144.73,
+    "without_best": -640.16,
+    "worst": -823.99,
+    "drawdown": 1019.51,
+    "trades": 8,
+    "fees": 404.52,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3846.76,
+    "without_best": -3917.42,
+    "worst": -1281.39,
+    "drawdown": 3846.76,
+    "trades": 9,
+    "fees": 444.01,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3819.12,
+    "without_best": -3819.12,
+    "worst": -1039.04,
+    "drawdown": 3819.12,
+    "trades": 6,
+    "fees": 299.37,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2172.43,
+    "without_best": -3173.17,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 11,
+    "fees": 585.57,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1726.8,
+    "without_best": -3482.0,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 11,
+    "fees": 585.2,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3879.33,
+    "without_best": -3949.99,
+    "worst": -1281.39,
+    "drawdown": 3879.33,
+    "trades": 10,
+    "fees": 492.83,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3945.77,
+    "without_best": -3945.77,
+    "worst": -1039.04,
+    "drawdown": 3945.77,
+    "trades": 7,
+    "fees": 348.02,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 2077.83,
+    "without_best": -3267.77,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 12,
+    "fees": 635.17,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1606.23,
+    "without_best": -3602.57,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 12,
+    "fees": 634.77,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": true,
+    "2024_adverse": true,
+    "2024_without_best": true,
+    "2025_ordinary": true,
+    "2025_adverse": true,
+    "2025_without_best": true,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 1,
+   "verdict": "INCONCLUSIVE"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 0,
+    "verdict": "INCONCLUSIVE"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 1,
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "evidence": {
+   "affected": 2,
+   "expiries": 2,
+   "met": false
+  }
+ },
+ "EN12_full_sale_diag": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3645.12,
+    "without_best": -4625.79,
+    "worst": -1161.74,
+    "drawdown": 3645.12,
+    "trades": 17,
+    "fees": 850.12,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4035.53,
+    "without_best": -4113.64,
+    "worst": -1220.22,
+    "drawdown": 4035.53,
+    "trades": 14,
+    "fees": 691.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4172.68,
+    "without_best": -4172.68,
+    "worst": -1278.8,
+    "drawdown": 4172.68,
+    "trades": 7,
+    "fees": 347.43,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 9586.0,
+    "without_best": 6718.5,
+    "worst": -646.98,
+    "drawdown": 691.65,
+    "trades": 20,
+    "fees": 1028.5,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 8673.53,
+    "without_best": 5896.92,
+    "worst": -669.72,
+    "drawdown": 730.65,
+    "trades": 20,
+    "fees": 1027.72,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2582.43,
+    "without_best": -2582.43,
+    "worst": -632.82,
+    "drawdown": 2582.43,
+    "trades": 7,
+    "fees": 343.18,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 6881.63,
+    "without_best": 4889.9,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 20,
+    "fees": 1025.62,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 6468.65,
+    "without_best": 4230.45,
+    "worst": -537.55,
+    "drawdown": 557.7,
+    "trades": 20,
+    "fees": 1025.85,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 144.73,
+    "without_best": -640.16,
+    "worst": -823.99,
+    "drawdown": 1019.51,
+    "trades": 8,
+    "fees": 404.52,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3846.76,
+    "without_best": -3917.42,
+    "worst": -1281.39,
+    "drawdown": 3846.76,
+    "trades": 9,
+    "fees": 444.01,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3819.12,
+    "without_best": -3819.12,
+    "worst": -1039.04,
+    "drawdown": 3819.12,
+    "trades": 6,
+    "fees": 299.37,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2014.37,
+    "without_best": -3173.17,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 11,
+    "fees": 561.63,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1570.74,
+    "without_best": -3482.0,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 11,
+    "fees": 561.26,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3879.33,
+    "without_best": -3949.99,
+    "worst": -1281.39,
+    "drawdown": 3879.33,
+    "trades": 10,
+    "fees": 492.83,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3945.77,
+    "without_best": -3945.77,
+    "worst": -1039.04,
+    "drawdown": 3945.77,
+    "trades": 7,
+    "fees": 348.02,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1919.77,
+    "without_best": -3267.77,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 12,
+    "fees": 611.23,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1450.17,
+    "without_best": -3602.57,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 12,
+    "fees": 610.83,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "EN13": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -2608.09,
+    "without_best": -3012.29,
+    "worst": -861.7,
+    "drawdown": 2825.31,
+    "trades": 32,
+    "fees": 1574.59,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -3205.53,
+    "without_best": -3574.02,
+    "worst": -910.43,
+    "drawdown": 3205.53,
+    "trades": 29,
+    "fees": 1427.78,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -3383.01,
+    "without_best": -3544.42,
+    "worst": -1004.59,
+    "drawdown": 3383.01,
+    "trades": 17,
+    "fees": 835.01,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": -2923.85,
+    "without_best": -3785.56,
+    "worst": -567.42,
+    "drawdown": 3573.92,
+    "trades": 41,
+    "fees": 2010.6,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": -3687.16,
+    "without_best": -4483.94,
+    "worst": -596.66,
+    "drawdown": 3993.45,
+    "trades": 36,
+    "fees": 1756.66,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -4071.44,
+    "without_best": -4137.33,
+    "worst": -575.51,
+    "drawdown": 4071.44,
+    "trades": 21,
+    "fees": 1022.94,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": -4032.97,
+    "without_best": -4314.8,
+    "worst": -624.32,
+    "drawdown": 4032.97,
+    "trades": 29,
+    "fees": 1413.47,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": -4045.7,
+    "without_best": -4301.55,
+    "worst": -673.05,
+    "drawdown": 4045.7,
+    "trades": 23,
+    "fees": 1123.95,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -4029.93,
+    "without_best": -4168.33,
+    "worst": -533.03,
+    "drawdown": 4029.93,
+    "trades": 20,
+    "fees": 978.18,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2311.25,
+    "without_best": -2654.08,
+    "worst": -452.17,
+    "drawdown": 2311.25,
+    "trades": 24,
+    "fees": 1180.25,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2912.04,
+    "without_best": -3219.16,
+    "worst": -478.15,
+    "drawdown": 2912.04,
+    "trades": 24,
+    "fees": 1179.79,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3026.89,
+    "without_best": -3156.9,
+    "worst": -529.7,
+    "drawdown": 3169.01,
+    "trades": 15,
+    "fees": 732.39,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": -2168.71,
+    "without_best": -2852.61,
+    "worst": -488.32,
+    "drawdown": 2374.0,
+    "trades": 30,
+    "fees": 1475.71,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": -2367.18,
+    "without_best": -3027.1,
+    "worst": -480.03,
+    "drawdown": 2791.7,
+    "trades": 29,
+    "fees": 1426.18,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -3455.78,
+    "without_best": -3873.7,
+    "worst": -554.95,
+    "drawdown": 3455.78,
+    "trades": 23,
+    "fees": 1125.78,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -410.63,
+    "without_best": -496.94,
+    "worst": -400.36,
+    "drawdown": 496.94,
+    "trades": 5,
+    "fees": 248.13,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -553.55,
+    "without_best": -607.38,
+    "worst": -445.84,
+    "drawdown": 607.38,
+    "trades": 5,
+    "fees": 248.05,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -802.11,
+    "without_best": -802.11,
+    "worst": -546.46,
+    "drawdown": 802.11,
+    "trades": 4,
+    "fees": 197.61,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -202.14,
+    "without_best": -202.14,
+    "worst": -202.14,
+    "drawdown": 202.14,
+    "trades": 1,
+    "fees": 49.14,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -223.13,
+    "without_best": -223.13,
+    "worst": -223.13,
+    "drawdown": 223.13,
+    "trades": 1,
+    "fees": 49.13,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": -306.95,
+    "without_best": -306.95,
+    "worst": -306.95,
+    "drawdown": 306.95,
+    "trades": 1,
+    "fees": 48.95,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2455.34,
+    "without_best": -2798.17,
+    "worst": -452.17,
+    "drawdown": 2541.65,
+    "trades": 28,
+    "fees": 1379.59,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3299.27,
+    "without_best": -3606.39,
+    "worst": -478.15,
+    "drawdown": 3299.27,
+    "trades": 26,
+    "fees": 1277.77,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3273.26,
+    "without_best": -3403.27,
+    "worst": -529.7,
+    "drawdown": 3285.37,
+    "trades": 16,
+    "fees": 780.51,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": -2370.85,
+    "without_best": -3054.75,
+    "worst": -488.32,
+    "drawdown": 2374.0,
+    "trades": 31,
+    "fees": 1524.85,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": -2590.31,
+    "without_best": -3250.23,
+    "worst": -480.03,
+    "drawdown": 2791.7,
+    "trades": 30,
+    "fees": 1475.31,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -3455.78,
+    "without_best": -3873.7,
+    "worst": -554.95,
+    "drawdown": 3455.78,
+    "trades": 23,
+    "fees": 1125.78,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "EN14": {
+  "summary": {
+   "2023|ordinary": {
+    "net": 1768.38,
+    "without_best": 565.84,
+    "worst": -1221.37,
+    "drawdown": 1221.37,
+    "trades": 28,
+    "fees": 1436.12,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": 1162.27,
+    "without_best": 1.93,
+    "worst": -1124.13,
+    "drawdown": 1130.83,
+    "trades": 27,
+    "fees": 1385.73,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": 668.52,
+    "without_best": -169.13,
+    "worst": -815.27,
+    "drawdown": 869.07,
+    "trades": 13,
+    "fees": 693.23,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": -3203.09,
+    "without_best": -3299.48,
+    "worst": -513.0,
+    "drawdown": 3270.12,
+    "trades": 14,
+    "fees": 684.34,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": -3514.94,
+    "without_best": -3579.8,
+    "worst": -532.49,
+    "drawdown": 3549.49,
+    "trades": 14,
+    "fees": 684.19,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2059.47,
+    "without_best": -2059.47,
+    "worst": -691.53,
+    "drawdown": 2059.47,
+    "trades": 4,
+    "fees": 193.97,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": -1064.3,
+    "without_best": -2175.58,
+    "worst": -594.67,
+    "drawdown": 1561.04,
+    "trades": 22,
+    "fees": 1083.8,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": -1714.36,
+    "without_best": -2994.28,
+    "worst": -637.34,
+    "drawdown": 2454.25,
+    "trades": 20,
+    "fees": 983.11,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -3228.07,
+    "without_best": -3386.75,
+    "worst": -669.29,
+    "drawdown": 3228.07,
+    "trades": 12,
+    "fees": 585.82,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2378.44,
+    "without_best": -3197.21,
+    "worst": -910.11,
+    "drawdown": 3197.21,
+    "trades": 11,
+    "fees": 564.94,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2341.67,
+    "without_best": -3118.24,
+    "worst": -958.83,
+    "drawdown": 3138.16,
+    "trades": 11,
+    "fees": 563.92,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -2677.93,
+    "without_best": -3259.85,
+    "worst": -1068.4,
+    "drawdown": 3259.85,
+    "trades": 9,
+    "fees": 464.68,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": -375.21,
+    "without_best": -1382.58,
+    "worst": -614.96,
+    "drawdown": 1743.04,
+    "trades": 18,
+    "fees": 886.21,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": -1299.85,
+    "without_best": -1851.74,
+    "worst": -656.93,
+    "drawdown": 1942.87,
+    "trades": 18,
+    "fees": 884.85,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -3112.63,
+    "without_best": -3112.63,
+    "worst": -728.43,
+    "drawdown": 3112.63,
+    "trades": 9,
+    "fees": 438.63,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -109.17,
+    "without_best": -209.2,
+    "worst": -288.92,
+    "drawdown": 288.92,
+    "trades": 3,
+    "fees": 148.17,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -237.6,
+    "without_best": -308.41,
+    "worst": -308.41,
+    "drawdown": 308.41,
+    "trades": 2,
+    "fees": 97.85,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -257.15,
+    "without_best": -314.94,
+    "worst": -314.94,
+    "drawdown": 314.94,
+    "trades": 2,
+    "fees": 97.9,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -96.29,
+    "without_best": -96.29,
+    "worst": -96.29,
+    "drawdown": 96.29,
+    "trades": 1,
+    "fees": 49.29,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -118.28,
+    "without_best": -118.28,
+    "worst": -118.28,
+    "drawdown": 118.28,
+    "trades": 1,
+    "fees": 49.28,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": -155.29,
+    "without_best": -155.29,
+    "worst": -155.29,
+    "drawdown": 155.29,
+    "trades": 1,
+    "fees": 49.29,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2378.44,
+    "without_best": -3197.21,
+    "worst": -910.11,
+    "drawdown": 3197.21,
+    "trades": 11,
+    "fees": 564.94,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -2341.67,
+    "without_best": -3118.24,
+    "worst": -958.83,
+    "drawdown": 3138.16,
+    "trades": 11,
+    "fees": 563.92,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -2677.93,
+    "without_best": -3259.85,
+    "worst": -1068.4,
+    "drawdown": 3259.85,
+    "trades": 9,
+    "fees": 464.68,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": -471.5,
+    "without_best": -1478.87,
+    "worst": -614.96,
+    "drawdown": 1743.04,
+    "trades": 19,
+    "fees": 935.5,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": -1418.13,
+    "without_best": -1970.02,
+    "worst": -656.93,
+    "drawdown": 1942.87,
+    "trades": 19,
+    "fees": 934.13,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -3112.63,
+    "without_best": -3112.63,
+    "worst": -728.43,
+    "drawdown": 3112.63,
+    "trades": 9,
+    "fees": 438.63,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_positive": true,
+    "2023_without_best_ge_0": true,
+    "2023_above_null": true,
+    "2024_positive": false,
+    "2024_without_best_ge_0": false,
+    "2024_above_null": false,
+    "2025_positive": false,
+    "2025_without_best_ge_0": false,
+    "2025_above_null": true,
+    "adverse_sum_positive": false,
+    "worst_day": true,
+    "beats_immediate": true
+   },
+   "tickets": 64,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_best_ge_0": false,
+     "above_null": true,
+     "worst_day": true
+    },
+    "tickets": 11,
+    "null_median": -2720.61,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_best_ge_0": false,
+     "above_null": true,
+     "worst_day": true
+    },
+    "tickets": 18,
+    "null_median": -2251.82,
+    "verdict": "FAIL"
+   }
+  },
+  "evidence": {
+   "tickets": 93,
+   "expiries": 76,
+   "met": true
+  }
+ },
+ "EN14_immediate_diag": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3306.59,
+    "without_best": -4128.74,
+    "worst": -787.59,
+    "drawdown": 4108.31,
+    "trades": 39,
+    "fees": 1918.84,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -3855.32,
+    "without_best": -4612.53,
+    "worst": -846.05,
+    "drawdown": 4024.91,
+    "trades": 40,
+    "fees": 1963.82,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -3861.17,
+    "without_best": -3970.12,
+    "worst": -937.84,
+    "drawdown": 3861.17,
+    "trades": 22,
+    "fees": 1072.67,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": -3802.87,
+    "without_best": -4392.59,
+    "worst": -597.53,
+    "drawdown": 4033.0,
+    "trades": 38,
+    "fees": 1859.37,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": -4059.42,
+    "without_best": -4593.93,
+    "worst": -630.0,
+    "drawdown": 4059.42,
+    "trades": 35,
+    "fees": 1712.92,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -4157.53,
+    "without_best": -4157.53,
+    "worst": -678.86,
+    "drawdown": 4157.53,
+    "trades": 14,
+    "fees": 680.03,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": -3096.65,
+    "without_best": -4571.76,
+    "worst": -868.05,
+    "drawdown": 3776.42,
+    "trades": 35,
+    "fees": 1712.15,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": -3190.51,
+    "without_best": -4623.43,
+    "worst": -920.03,
+    "drawdown": 3745.54,
+    "trades": 34,
+    "fees": 1663.01,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -4104.23,
+    "without_best": -4104.23,
+    "worst": -1176.4,
+    "drawdown": 4104.23,
+    "trades": 11,
+    "fees": 532.48,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3926.99,
+    "without_best": -5758.96,
+    "worst": -831.08,
+    "drawdown": 3926.99,
+    "trades": 34,
+    "fees": 1668.24,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -3932.53,
+    "without_best": -5719.05,
+    "worst": -870.08,
+    "drawdown": 3932.53,
+    "trades": 31,
+    "fees": 1521.03,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -4126.64,
+    "without_best": -4126.64,
+    "worst": -753.72,
+    "drawdown": 4126.64,
+    "trades": 13,
+    "fees": 632.89,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": -2392.67,
+    "without_best": -3602.52,
+    "worst": -569.31,
+    "drawdown": 3237.33,
+    "trades": 47,
+    "fees": 2313.67,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": -2634.67,
+    "without_best": -3796.58,
+    "worst": -603.29,
+    "drawdown": 3385.85,
+    "trades": 43,
+    "fees": 2117.67,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4275.77,
+    "without_best": -4625.3,
+    "worst": -933.59,
+    "drawdown": 4275.77,
+    "trades": 16,
+    "fees": 776.77,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": 756.67,
+    "without_best": -633.62,
+    "worst": -575.65,
+    "drawdown": 954.1,
+    "trades": 7,
+    "fees": 348.33,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": 545.59,
+    "without_best": -796.0,
+    "worst": -630.86,
+    "drawdown": 1087.25,
+    "trades": 7,
+    "fees": 348.16,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -470.5,
+    "without_best": -774.75,
+    "worst": -400.0,
+    "drawdown": 774.75,
+    "trades": 4,
+    "fees": 197.5,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -461.56,
+    "without_best": -461.56,
+    "worst": -245.23,
+    "drawdown": 461.56,
+    "trades": 3,
+    "fees": 148.56,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -538.51,
+    "without_best": -538.51,
+    "worst": -270.29,
+    "drawdown": 538.51,
+    "trades": 3,
+    "fees": 148.51,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": -352.14,
+    "without_best": -352.14,
+    "worst": -352.14,
+    "drawdown": 352.14,
+    "trades": 1,
+    "fees": 49.14,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3926.99,
+    "without_best": -5758.96,
+    "worst": -831.08,
+    "drawdown": 3926.99,
+    "trades": 34,
+    "fees": 1668.24,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3932.53,
+    "without_best": -5719.05,
+    "worst": -870.08,
+    "drawdown": 3932.53,
+    "trades": 31,
+    "fees": 1521.03,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -4126.64,
+    "without_best": -4126.64,
+    "worst": -753.72,
+    "drawdown": 4126.64,
+    "trades": 13,
+    "fees": 632.89,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": -2623.65,
+    "without_best": -3833.5,
+    "worst": -569.31,
+    "drawdown": 3237.33,
+    "trades": 49,
+    "fees": 2412.65,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": -2915.61,
+    "without_best": -4077.52,
+    "worst": -603.29,
+    "drawdown": 3385.85,
+    "trades": 45,
+    "fees": 2216.61,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4275.77,
+    "without_best": -4625.3,
+    "worst": -933.59,
+    "drawdown": 4275.77,
+    "trades": 16,
+    "fees": 776.77,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "EN21": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3041.56,
+    "without_best": -3120.5,
+    "worst": -604.47,
+    "drawdown": 3041.56,
+    "trades": 17,
+    "fees": 857.56,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -3473.28,
+    "without_best": -3500.26,
+    "worst": -633.71,
+    "drawdown": 3473.28,
+    "trades": 16,
+    "fees": 808.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -3725.05,
+    "without_best": -3725.05,
+    "worst": -663.0,
+    "drawdown": 3725.05,
+    "trades": 10,
+    "fees": 488.05,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 21293.03,
+    "without_best": 2864.49,
+    "worst": -728.71,
+    "drawdown": 728.71,
+    "trades": 20,
+    "fees": 1131.97,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 20380.79,
+    "without_best": 2263.72,
+    "worst": -754.7,
+    "drawdown": 754.7,
+    "trades": 20,
+    "fees": 1130.96,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2509.43,
+    "without_best": -2509.43,
+    "worst": -632.82,
+    "drawdown": 2509.43,
+    "trades": 7,
+    "fees": 341.68,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 3921.61,
+    "without_best": 2719.29,
+    "worst": -475.83,
+    "drawdown": 869.59,
+    "trades": 20,
+    "fees": 1151.65,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 3053.89,
+    "without_best": 1916.51,
+    "worst": -537.55,
+    "drawdown": 986.47,
+    "trades": 20,
+    "fees": 1073.61,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -277.19,
+    "without_best": -856.75,
+    "worst": -646.89,
+    "drawdown": 755.42,
+    "trades": 8,
+    "fees": 423.44,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3240.15,
+    "without_best": -3310.81,
+    "worst": -1383.02,
+    "drawdown": 3240.15,
+    "trades": 9,
+    "fees": 464.65,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -3483.79,
+    "without_best": -3525.22,
+    "worst": -1451.24,
+    "drawdown": 3483.79,
+    "trades": 9,
+    "fees": 464.54,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -2343.38,
+    "without_best": -2343.38,
+    "worst": -574.6,
+    "drawdown": 2343.38,
+    "trades": 6,
+    "fees": 292.63,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 605.52,
+    "without_best": -2904.35,
+    "worst": -783.45,
+    "drawdown": 3091.16,
+    "trades": 11,
+    "fees": 599.48,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 253.81,
+    "without_best": -3165.19,
+    "worst": -832.43,
+    "drawdown": 3239.1,
+    "trades": 11,
+    "fees": 599.19,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -3298.52,
+    "without_best": -3298.52,
+    "worst": -937.13,
+    "drawdown": 3298.52,
+    "trades": 6,
+    "fees": 293.52,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3272.72,
+    "without_best": -3343.38,
+    "worst": -1383.02,
+    "drawdown": 3272.72,
+    "trades": 10,
+    "fees": 513.47,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3678.68,
+    "without_best": -3720.11,
+    "worst": -1451.24,
+    "drawdown": 3678.68,
+    "trades": 10,
+    "fees": 513.18,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -2470.03,
+    "without_best": -2470.03,
+    "worst": -574.6,
+    "drawdown": 2470.03,
+    "trades": 7,
+    "fees": 341.28,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 510.92,
+    "without_best": -2998.95,
+    "worst": -783.45,
+    "drawdown": 3091.16,
+    "trades": 12,
+    "fees": 649.08,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 133.24,
+    "without_best": -3285.76,
+    "worst": -832.43,
+    "drawdown": 3239.1,
+    "trades": 12,
+    "fees": 648.76,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -3298.52,
+    "without_best": -3298.52,
+    "worst": -937.13,
+    "drawdown": 3298.52,
+    "trades": 6,
+    "fees": 293.52,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": true,
+    "2024_adverse": true,
+    "2024_without_best": false,
+    "2025_ordinary": false,
+    "2025_adverse": false,
+    "2025_without_best": false,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 33,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 3,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 4,
+    "verdict": "FAIL"
+   }
+  },
+  "evidence": {
+   "affected": 40,
+   "expiries": 38,
+   "met": true
+  }
+ },
+ "EN25": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3359.07,
+    "without_best": -4102.14,
+    "worst": -1142.23,
+    "drawdown": 3359.07,
+    "trades": 16,
+    "fees": 824.07,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -3660.76,
+    "without_best": -4351.92,
+    "worst": -1161.69,
+    "drawdown": 3660.76,
+    "trades": 16,
+    "fees": 823.51,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4126.95,
+    "without_best": -4130.53,
+    "worst": -1382.74,
+    "drawdown": 4126.95,
+    "trades": 12,
+    "fees": 590.95,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15009.37,
+    "without_best": 3251.66,
+    "worst": -922.06,
+    "drawdown": 1373.93,
+    "trades": 20,
+    "fees": 1136.63,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 13443.19,
+    "without_best": 1847.66,
+    "worst": -948.01,
+    "drawdown": 1419.33,
+    "trades": 19,
+    "fees": 1081.06,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": 10530.26,
+    "without_best": -903.07,
+    "worst": -1259.41,
+    "drawdown": 2239.14,
+    "trades": 19,
+    "fees": 1075.49,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 6124.36,
+    "without_best": 4584.33,
+    "worst": -458.5,
+    "drawdown": 458.5,
+    "trades": 20,
+    "fees": 1071.14,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5631.32,
+    "without_best": 4149.67,
+    "worst": -471.48,
+    "drawdown": 471.48,
+    "trades": 20,
+    "fees": 1070.18,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 2585.42,
+    "without_best": 1366.52,
+    "worst": -986.16,
+    "drawdown": 1305.95,
+    "trades": 20,
+    "fees": 1064.33,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3580.68,
+    "without_best": -3676.75,
+    "worst": -1210.39,
+    "drawdown": 3763.67,
+    "trades": 10,
+    "fees": 493.18,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -3707.18,
+    "without_best": -3787.04,
+    "worst": -1236.35,
+    "drawdown": 3857.74,
+    "trades": 10,
+    "fees": 492.93,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -4082.35,
+    "without_best": -4082.35,
+    "worst": -1755.34,
+    "drawdown": 4082.35,
+    "trades": 8,
+    "fees": 390.35,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 1975.26,
+    "without_best": -3285.52,
+    "worst": -1031.5,
+    "drawdown": 3505.21,
+    "trades": 11,
+    "fees": 584.74,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1727.73,
+    "without_best": -3424.26,
+    "worst": -1049.47,
+    "drawdown": 3570.09,
+    "trades": 11,
+    "fees": 584.27,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -1231.93,
+    "without_best": -5111.32,
+    "worst": -1441.72,
+    "drawdown": 4012.4,
+    "trades": 9,
+    "fees": 478.93,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": 19.45,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.8,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": 6.47,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.78,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -71.38,
+    "without_best": -71.38,
+    "worst": -71.38,
+    "drawdown": 71.38,
+    "trades": 1,
+    "fees": 48.63,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -174.4,
+    "without_best": -174.4,
+    "worst": -174.4,
+    "drawdown": 174.4,
+    "trades": 1,
+    "fees": 49.4,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -185.38,
+    "without_best": -185.38,
+    "worst": -185.38,
+    "drawdown": 185.38,
+    "trades": 1,
+    "fees": 49.38,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": -309.14,
+    "without_best": -309.14,
+    "worst": -309.14,
+    "drawdown": 309.14,
+    "trades": 1,
+    "fees": 49.14,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3561.23,
+    "without_best": -3657.3,
+    "worst": -1210.39,
+    "drawdown": 3763.67,
+    "trades": 11,
+    "fees": 541.98,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3700.71,
+    "without_best": -3780.57,
+    "worst": -1236.35,
+    "drawdown": 3857.74,
+    "trades": 11,
+    "fees": 541.71,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -4082.35,
+    "without_best": -4082.35,
+    "worst": -1755.34,
+    "drawdown": 4082.35,
+    "trades": 8,
+    "fees": 390.35,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1800.86,
+    "without_best": -3459.92,
+    "worst": -1031.5,
+    "drawdown": 3505.21,
+    "trades": 12,
+    "fees": 634.14,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1542.35,
+    "without_best": -3609.64,
+    "worst": -1049.47,
+    "drawdown": 3570.09,
+    "trades": 12,
+    "fees": 633.65,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -1231.93,
+    "without_best": -5111.32,
+    "worst": -1441.72,
+    "drawdown": 4012.4,
+    "trades": 9,
+    "fees": 478.93,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": false,
+    "2024_adverse": false,
+    "2024_without_best": false,
+    "2025_ordinary": true,
+    "2025_adverse": true,
+    "2025_without_best": true,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 53,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 10,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": false,
+     "adverse": true,
+     "without_best": false,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 11,
+    "verdict": "FAIL"
+   }
+  },
+  "evidence": {
+   "affected": 74,
+   "expiries": 65,
+   "met": true
+  }
+ },
+ "EN26": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3528.35,
+    "without_best": -4509.02,
+    "worst": -1161.74,
+    "drawdown": 3528.35,
+    "trades": 17,
+    "fees": 850.35,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4383.48,
+    "without_best": -4461.59,
+    "worst": -1220.22,
+    "drawdown": 4383.48,
+    "trades": 15,
+    "fees": 740.23,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4276.48,
+    "without_best": -4276.48,
+    "worst": -1278.8,
+    "drawdown": 4276.48,
+    "trades": 7,
+    "fees": 347.23,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15580.74,
+    "without_best": 3810.02,
+    "worst": -646.98,
+    "drawdown": 691.65,
+    "trades": 19,
+    "fees": 1085.26,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 14629.39,
+    "without_best": 3046.86,
+    "worst": -669.72,
+    "drawdown": 730.65,
+    "trades": 19,
+    "fees": 1084.36,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2582.43,
+    "without_best": -2582.43,
+    "worst": -632.82,
+    "drawdown": 2582.43,
+    "trades": 7,
+    "fees": 343.18,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 5936.81,
+    "without_best": 4084.55,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 20,
+    "fees": 1047.44,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5371.36,
+    "without_best": 3616.52,
+    "worst": -537.55,
+    "drawdown": 557.7,
+    "trades": 20,
+    "fees": 1047.39,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 144.73,
+    "without_best": -640.16,
+    "worst": -823.99,
+    "drawdown": 1019.51,
+    "trades": 8,
+    "fees": 404.52,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3846.76,
+    "without_best": -3917.42,
+    "worst": -1281.39,
+    "drawdown": 3846.76,
+    "trades": 9,
+    "fees": 444.01,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3819.12,
+    "without_best": -3819.12,
+    "worst": -1039.04,
+    "drawdown": 3819.12,
+    "trades": 6,
+    "fees": 299.37,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2081.6,
+    "without_best": -3173.17,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 11,
+    "fees": 585.4,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1636.97,
+    "without_best": -3482.0,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 11,
+    "fees": 585.03,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3879.33,
+    "without_best": -3949.99,
+    "worst": -1281.39,
+    "drawdown": 3879.33,
+    "trades": 10,
+    "fees": 492.83,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3945.77,
+    "without_best": -3945.77,
+    "worst": -1039.04,
+    "drawdown": 3945.77,
+    "trades": 7,
+    "fees": 348.02,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1987.0,
+    "without_best": -3267.77,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 12,
+    "fees": 635.0,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1516.4,
+    "without_best": -3602.57,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 12,
+    "fees": 634.6,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": false,
+    "2023_without_best": true,
+    "2024_ordinary": true,
+    "2024_adverse": true,
+    "2024_without_best": true,
+    "2025_ordinary": true,
+    "2025_adverse": true,
+    "2025_without_best": true,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 1,
+   "verdict": "INCONCLUSIVE"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 0,
+    "verdict": "INCONCLUSIVE"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 0,
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "evidence": {
+   "affected": 1,
+   "expiries": 1,
+   "met": false
+  }
+ },
+ "EN26_cat_diag": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3645.12,
+    "without_best": -4625.79,
+    "worst": -1161.74,
+    "drawdown": 3645.12,
+    "trades": 17,
+    "fees": 850.12,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4035.53,
+    "without_best": -4113.64,
+    "worst": -1220.22,
+    "drawdown": 4035.53,
+    "trades": 14,
+    "fees": 691.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4172.68,
+    "without_best": -4172.68,
+    "worst": -1278.8,
+    "drawdown": 4172.68,
+    "trades": 7,
+    "fees": 347.43,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15580.74,
+    "without_best": 3810.02,
+    "worst": -646.98,
+    "drawdown": 691.65,
+    "trades": 19,
+    "fees": 1085.26,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 14629.39,
+    "without_best": 3046.86,
+    "worst": -669.72,
+    "drawdown": 730.65,
+    "trades": 19,
+    "fees": 1084.36,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2582.43,
+    "without_best": -2582.43,
+    "worst": -632.82,
+    "drawdown": 2582.43,
+    "trades": 7,
+    "fees": 343.18,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 5936.81,
+    "without_best": 4084.55,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 20,
+    "fees": 1047.44,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5371.36,
+    "without_best": 3616.52,
+    "worst": -537.55,
+    "drawdown": 557.7,
+    "trades": 20,
+    "fees": 1047.39,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 144.73,
+    "without_best": -640.16,
+    "worst": -823.99,
+    "drawdown": 1019.51,
+    "trades": 8,
+    "fees": 404.52,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3846.76,
+    "without_best": -3917.42,
+    "worst": -1281.39,
+    "drawdown": 3846.76,
+    "trades": 9,
+    "fees": 444.01,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3819.12,
+    "without_best": -3819.12,
+    "worst": -1039.04,
+    "drawdown": 3819.12,
+    "trades": 6,
+    "fees": 299.37,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2081.6,
+    "without_best": -3173.17,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 11,
+    "fees": 585.4,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1636.97,
+    "without_best": -3482.0,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 11,
+    "fees": 585.03,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3879.33,
+    "without_best": -3949.99,
+    "worst": -1281.39,
+    "drawdown": 3879.33,
+    "trades": 10,
+    "fees": 492.83,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3945.77,
+    "without_best": -3945.77,
+    "worst": -1039.04,
+    "drawdown": 3945.77,
+    "trades": 7,
+    "fees": 348.02,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1987.0,
+    "without_best": -3267.77,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 12,
+    "fees": 635.0,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1516.4,
+    "without_best": -3602.57,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 12,
+    "fees": 634.6,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "EN27": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3076.76,
+    "without_best": -3155.7,
+    "worst": -604.47,
+    "drawdown": 3076.76,
+    "trades": 17,
+    "fees": 883.01,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -3534.46,
+    "without_best": -3561.44,
+    "worst": -633.71,
+    "drawdown": 3534.46,
+    "trades": 16,
+    "fees": 833.71,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -3725.05,
+    "without_best": -3725.05,
+    "worst": -663.0,
+    "drawdown": 3725.05,
+    "trades": 10,
+    "fees": 488.05,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 13243.61,
+    "without_best": 2913.5,
+    "worst": -728.71,
+    "drawdown": 728.71,
+    "trades": 20,
+    "fees": 1140.89,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 12425.41,
+    "without_best": 2286.74,
+    "worst": -754.7,
+    "drawdown": 754.7,
+    "trades": 20,
+    "fees": 1140.09,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2509.43,
+    "without_best": -2509.43,
+    "worst": -632.82,
+    "drawdown": 2509.43,
+    "trades": 7,
+    "fees": 341.68,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 5049.16,
+    "without_best": 3262.77,
+    "worst": -475.83,
+    "drawdown": 640.61,
+    "trades": 20,
+    "fees": 1181.1,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 4466.3,
+    "without_best": 2777.33,
+    "worst": -537.55,
+    "drawdown": 822.49,
+    "trades": 20,
+    "fees": 1130.2,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -79.83,
+    "without_best": -659.39,
+    "worst": -646.89,
+    "drawdown": 755.42,
+    "trades": 8,
+    "fees": 450.33,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2649.65,
+    "without_best": -2720.31,
+    "worst": -792.52,
+    "drawdown": 2649.65,
+    "trades": 9,
+    "fees": 439.65,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2864.05,
+    "without_best": -2905.48,
+    "worst": -831.5,
+    "drawdown": 2864.05,
+    "trades": 9,
+    "fees": 439.55,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -2343.38,
+    "without_best": -2343.38,
+    "worst": -574.6,
+    "drawdown": 2343.38,
+    "trades": 6,
+    "fees": 292.63,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2293.82,
+    "without_best": -2934.36,
+    "worst": -783.45,
+    "drawdown": 3091.16,
+    "trades": 11,
+    "fees": 628.18,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 223.8,
+    "without_best": -3195.2,
+    "worst": -832.43,
+    "drawdown": 3239.1,
+    "trades": 11,
+    "fees": 599.2,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -3298.52,
+    "without_best": -3298.52,
+    "worst": -937.13,
+    "drawdown": 3298.52,
+    "trades": 6,
+    "fees": 293.52,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2682.22,
+    "without_best": -2752.88,
+    "worst": -792.52,
+    "drawdown": 2682.22,
+    "trades": 10,
+    "fees": 488.47,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3058.94,
+    "without_best": -3100.37,
+    "worst": -831.5,
+    "drawdown": 3058.94,
+    "trades": 10,
+    "fees": 488.19,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -2470.03,
+    "without_best": -2470.03,
+    "worst": -574.6,
+    "drawdown": 2470.03,
+    "trades": 7,
+    "fees": 341.28,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 2199.22,
+    "without_best": -3028.96,
+    "worst": -783.45,
+    "drawdown": 3091.16,
+    "trades": 12,
+    "fees": 677.78,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 103.23,
+    "without_best": -3315.77,
+    "worst": -832.43,
+    "drawdown": 3239.1,
+    "trades": 12,
+    "fees": 648.77,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -3298.52,
+    "without_best": -3298.52,
+    "worst": -937.13,
+    "drawdown": 3298.52,
+    "trades": 6,
+    "fees": 293.52,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": false,
+    "2024_adverse": false,
+    "2024_without_best": false,
+    "2025_ordinary": false,
+    "2025_adverse": false,
+    "2025_without_best": false,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 33,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 3,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": false,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 4,
+    "verdict": "FAIL"
+   }
+  },
+  "evidence": {
+   "affected": 40,
+   "expiries": 38,
+   "met": true
+  }
+ },
+ "EN28": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3759.09,
+    "without_best": -4502.16,
+    "worst": -1142.23,
+    "drawdown": 3759.09,
+    "trades": 17,
+    "fees": 873.09,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4066.24,
+    "without_best": -4238.49,
+    "worst": -1161.69,
+    "drawdown": 4066.24,
+    "trades": 17,
+    "fees": 842.24,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4126.95,
+    "without_best": -4130.53,
+    "worst": -1382.74,
+    "drawdown": 4126.95,
+    "trades": 12,
+    "fees": 590.95,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15009.37,
+    "without_best": 3251.66,
+    "worst": -922.06,
+    "drawdown": 1373.93,
+    "trades": 20,
+    "fees": 1136.63,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 13443.19,
+    "without_best": 1847.66,
+    "worst": -948.01,
+    "drawdown": 1419.33,
+    "trades": 19,
+    "fees": 1081.06,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": 10530.26,
+    "without_best": -903.07,
+    "worst": -1259.41,
+    "drawdown": 2239.14,
+    "trades": 19,
+    "fees": 1075.49,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 6073.36,
+    "without_best": 4533.33,
+    "worst": -478.07,
+    "drawdown": 478.07,
+    "trades": 19,
+    "fees": 1021.39,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5596.54,
+    "without_best": 4114.89,
+    "worst": -491.05,
+    "drawdown": 491.05,
+    "trades": 19,
+    "fees": 1020.46,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 2583.08,
+    "without_best": 1364.18,
+    "worst": -986.16,
+    "drawdown": 1308.29,
+    "trades": 19,
+    "fees": 1014.67,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3580.68,
+    "without_best": -3676.75,
+    "worst": -1210.39,
+    "drawdown": 3763.67,
+    "trades": 10,
+    "fees": 493.18,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -3707.18,
+    "without_best": -3787.04,
+    "worst": -1236.35,
+    "drawdown": 3857.74,
+    "trades": 10,
+    "fees": 492.93,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -4082.35,
+    "without_best": -4082.35,
+    "worst": -1755.34,
+    "drawdown": 4082.35,
+    "trades": 8,
+    "fees": 390.35,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2259.72,
+    "without_best": -3001.06,
+    "worst": -1031.5,
+    "drawdown": 3220.75,
+    "trades": 10,
+    "fees": 538.28,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 2008.2,
+    "without_best": -3143.79,
+    "worst": -1049.47,
+    "drawdown": 3289.62,
+    "trades": 10,
+    "fees": 537.8,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -954.62,
+    "without_best": -4834.01,
+    "worst": -1441.72,
+    "drawdown": 3735.09,
+    "trades": 10,
+    "fees": 529.62,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": 19.45,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.8,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": 6.47,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.78,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -71.38,
+    "without_best": -71.38,
+    "worst": -71.38,
+    "drawdown": 71.38,
+    "trades": 1,
+    "fees": 48.63,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3561.23,
+    "without_best": -3657.3,
+    "worst": -1210.39,
+    "drawdown": 3763.67,
+    "trades": 11,
+    "fees": 541.98,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3700.71,
+    "without_best": -3780.57,
+    "worst": -1236.35,
+    "drawdown": 3857.74,
+    "trades": 11,
+    "fees": 541.71,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -4082.35,
+    "without_best": -4082.35,
+    "worst": -1755.34,
+    "drawdown": 4082.35,
+    "trades": 8,
+    "fees": 390.35,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 2259.72,
+    "without_best": -3001.06,
+    "worst": -1031.5,
+    "drawdown": 3220.75,
+    "trades": 10,
+    "fees": 538.28,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 2008.2,
+    "without_best": -3143.79,
+    "worst": -1049.47,
+    "drawdown": 3289.62,
+    "trades": 10,
+    "fees": 537.8,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -954.62,
+    "without_best": -4834.01,
+    "worst": -1441.72,
+    "drawdown": 3735.09,
+    "trades": 10,
+    "fees": 529.62,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": false,
+    "2023_adverse": false,
+    "2023_without_best": true,
+    "2024_ordinary": false,
+    "2024_adverse": false,
+    "2024_without_best": false,
+    "2025_ordinary": true,
+    "2025_adverse": true,
+    "2025_without_best": true,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 53,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 10,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 11,
+    "verdict": "PASS"
+   }
+  },
+  "evidence": {
+   "affected": 74,
+   "expiries": 65,
+   "met": true
+  }
+ },
+ "EN28_opt_diag": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3759.09,
+    "without_best": -4502.16,
+    "worst": -1142.23,
+    "drawdown": 3759.09,
+    "trades": 17,
+    "fees": 873.09,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4066.24,
+    "without_best": -4238.49,
+    "worst": -1161.69,
+    "drawdown": 4066.24,
+    "trades": 17,
+    "fees": 842.24,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4126.95,
+    "without_best": -4130.53,
+    "worst": -1382.74,
+    "drawdown": 4126.95,
+    "trades": 12,
+    "fees": 590.95,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15009.37,
+    "without_best": 3251.66,
+    "worst": -922.06,
+    "drawdown": 1373.93,
+    "trades": 20,
+    "fees": 1136.63,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 14396.31,
+    "without_best": 2800.78,
+    "worst": -948.01,
+    "drawdown": 1419.33,
+    "trades": 20,
+    "fees": 1135.44,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": 10461.6,
+    "without_best": -971.73,
+    "worst": -1259.41,
+    "drawdown": 2239.14,
+    "trades": 20,
+    "fees": 1127.9,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 6073.36,
+    "without_best": 4533.33,
+    "worst": -478.07,
+    "drawdown": 478.07,
+    "trades": 19,
+    "fees": 1021.39,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5596.54,
+    "without_best": 4114.89,
+    "worst": -491.05,
+    "drawdown": 491.05,
+    "trades": 19,
+    "fees": 1020.46,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 2583.08,
+    "without_best": 1364.18,
+    "worst": -986.16,
+    "drawdown": 1308.29,
+    "trades": 19,
+    "fees": 1014.67,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3580.68,
+    "without_best": -3676.75,
+    "worst": -1210.39,
+    "drawdown": 3763.67,
+    "trades": 10,
+    "fees": 493.18,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -3707.18,
+    "without_best": -3787.04,
+    "worst": -1236.35,
+    "drawdown": 3857.74,
+    "trades": 10,
+    "fees": 492.93,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -4082.35,
+    "without_best": -4082.35,
+    "worst": -1755.34,
+    "drawdown": 4082.35,
+    "trades": 8,
+    "fees": 390.35,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2259.72,
+    "without_best": -3001.06,
+    "worst": -1031.5,
+    "drawdown": 3220.75,
+    "trades": 10,
+    "fees": 538.28,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 2008.2,
+    "without_best": -3143.79,
+    "worst": -1049.47,
+    "drawdown": 3289.62,
+    "trades": 10,
+    "fees": 537.8,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -954.62,
+    "without_best": -4834.01,
+    "worst": -1441.72,
+    "drawdown": 3735.09,
+    "trades": 10,
+    "fees": 529.62,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": 19.45,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.8,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": 6.47,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.78,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -71.38,
+    "without_best": -71.38,
+    "worst": -71.38,
+    "drawdown": 71.38,
+    "trades": 1,
+    "fees": 48.63,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3561.23,
+    "without_best": -3657.3,
+    "worst": -1210.39,
+    "drawdown": 3763.67,
+    "trades": 11,
+    "fees": 541.98,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3700.71,
+    "without_best": -3780.57,
+    "worst": -1236.35,
+    "drawdown": 3857.74,
+    "trades": 11,
+    "fees": 541.71,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -4082.35,
+    "without_best": -4082.35,
+    "worst": -1755.34,
+    "drawdown": 4082.35,
+    "trades": 8,
+    "fees": 390.35,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 2259.72,
+    "without_best": -3001.06,
+    "worst": -1031.5,
+    "drawdown": 3220.75,
+    "trades": 10,
+    "fees": 538.28,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 2008.2,
+    "without_best": -3143.79,
+    "worst": -1049.47,
+    "drawdown": 3289.62,
+    "trades": 10,
+    "fees": 537.8,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -954.62,
+    "without_best": -4834.01,
+    "worst": -1441.72,
+    "drawdown": 3735.09,
+    "trades": 10,
+    "fees": 529.62,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "EN29": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3645.12,
+    "without_best": -4625.79,
+    "worst": -1161.74,
+    "drawdown": 3645.12,
+    "trades": 17,
+    "fees": 850.12,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4035.53,
+    "without_best": -4113.64,
+    "worst": -1220.22,
+    "drawdown": 4035.53,
+    "trades": 14,
+    "fees": 691.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4172.68,
+    "without_best": -4172.68,
+    "worst": -1278.8,
+    "drawdown": 4172.68,
+    "trades": 7,
+    "fees": 347.43,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 16481.89,
+    "without_best": 4711.17,
+    "worst": -646.98,
+    "drawdown": 691.65,
+    "trades": 20,
+    "fees": 1136.36,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 15491.58,
+    "without_best": 3909.05,
+    "worst": -669.72,
+    "drawdown": 730.65,
+    "trades": 20,
+    "fees": 1135.42,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2582.43,
+    "without_best": -2582.43,
+    "worst": -632.82,
+    "drawdown": 2582.43,
+    "trades": 7,
+    "fees": 343.18,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 6712.07,
+    "without_best": 4859.81,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 20,
+    "fees": 1048.93,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5371.36,
+    "without_best": 3616.52,
+    "worst": -537.55,
+    "drawdown": 557.7,
+    "trades": 20,
+    "fees": 1047.39,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 144.73,
+    "without_best": -640.16,
+    "worst": -823.99,
+    "drawdown": 1019.51,
+    "trades": 8,
+    "fees": 404.52,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3846.76,
+    "without_best": -3917.42,
+    "worst": -1281.39,
+    "drawdown": 3846.76,
+    "trades": 9,
+    "fees": 444.01,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3819.12,
+    "without_best": -3819.12,
+    "worst": -1039.04,
+    "drawdown": 3819.12,
+    "trades": 6,
+    "fees": 299.37,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 1799.13,
+    "without_best": -3173.17,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 11,
+    "fees": 584.87,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1357.49,
+    "without_best": -3482.0,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 11,
+    "fees": 584.51,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3879.33,
+    "without_best": -3949.99,
+    "worst": -1281.39,
+    "drawdown": 3879.33,
+    "trades": 10,
+    "fees": 492.83,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3945.77,
+    "without_best": -3945.77,
+    "worst": -1039.04,
+    "drawdown": 3945.77,
+    "trades": 7,
+    "fees": 348.02,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1704.53,
+    "without_best": -3267.77,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 12,
+    "fees": 634.47,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1236.92,
+    "without_best": -3602.57,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 12,
+    "fees": 634.08,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": true,
+    "2024_adverse": true,
+    "2024_without_best": true,
+    "2025_ordinary": true,
+    "2025_adverse": true,
+    "2025_without_best": true,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 5,
+   "verdict": "INCONCLUSIVE"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 0,
+    "verdict": "INCONCLUSIVE"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 1,
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "evidence": {
+   "affected": 6,
+   "expiries": 5,
+   "met": false
+  }
+ },
+ "EN30": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -1887.53,
+    "without_best": -2824.75,
+    "worst": -601.02,
+    "drawdown": 3350.05,
+    "trades": 26,
+    "fees": 1283.03,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -2483.21,
+    "without_best": -3384.73,
+    "worst": -620.52,
+    "drawdown": 3661.32,
+    "trades": 23,
+    "fees": 1131.21,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -1988.34,
+    "without_best": -2425.64,
+    "worst": -574.86,
+    "drawdown": 2425.64,
+    "trades": 8,
+    "fees": 392.59,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": -266.31,
+    "without_best": -850.21,
+    "worst": -536.39,
+    "drawdown": 1754.28,
+    "trades": 15,
+    "fees": 740.81,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": -1580.52,
+    "without_best": -2141.69,
+    "worst": -559.14,
+    "drawdown": 2176.24,
+    "trades": 15,
+    "fees": 738.77,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -3337.86,
+    "without_best": -3337.86,
+    "worst": -597.28,
+    "drawdown": 3337.86,
+    "trades": 8,
+    "fees": 390.11,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 4987.17,
+    "without_best": -369.98,
+    "worst": -881.21,
+    "drawdown": 1826.67,
+    "trades": 29,
+    "fees": 1493.33,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 4893.4,
+    "without_best": -376.15,
+    "worst": -933.2,
+    "drawdown": 2103.17,
+    "trades": 27,
+    "fees": 1395.35,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -3313.05,
+    "without_best": -3410.56,
+    "worst": -669.29,
+    "drawdown": 3313.05,
+    "trades": 15,
+    "fees": 735.8,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2815.54,
+    "without_best": -3796.88,
+    "worst": -695.79,
+    "drawdown": 3623.16,
+    "trades": 18,
+    "fees": 907.79,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2935.96,
+    "without_best": -3875.1,
+    "worst": -744.52,
+    "drawdown": 3639.67,
+    "trades": 17,
+    "fees": 859.21,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3680.94,
+    "without_best": -3680.94,
+    "worst": -748.31,
+    "drawdown": 3680.94,
+    "trades": 10,
+    "fees": 486.19,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": -1756.99,
+    "without_best": -2764.36,
+    "worst": -916.34,
+    "drawdown": 3045.59,
+    "trades": 20,
+    "fees": 985.99,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": -2655.48,
+    "without_best": -3156.69,
+    "worst": -953.31,
+    "drawdown": 3248.23,
+    "trades": 17,
+    "fees": 835.48,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -3020.85,
+    "without_best": -3164.89,
+    "worst": -672.36,
+    "drawdown": 3020.85,
+    "trades": 8,
+    "fees": 389.85,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": 210.64,
+    "without_best": -378.87,
+    "worst": -458.59,
+    "drawdown": 458.59,
+    "trades": 3,
+    "fees": 150.11,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -125.66,
+    "without_best": -682.71,
+    "worst": -487.82,
+    "drawdown": 487.82,
+    "trades": 3,
+    "fees": 148.41,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": 469.49,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 50.51,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2815.54,
+    "without_best": -3796.88,
+    "worst": -695.79,
+    "drawdown": 3623.16,
+    "trades": 18,
+    "fees": 907.79,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -2935.96,
+    "without_best": -3875.1,
+    "worst": -744.52,
+    "drawdown": 3639.67,
+    "trades": 17,
+    "fees": 859.21,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3680.94,
+    "without_best": -3680.94,
+    "worst": -748.31,
+    "drawdown": 3680.94,
+    "trades": 10,
+    "fees": 486.19,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": -1756.99,
+    "without_best": -2764.36,
+    "worst": -916.34,
+    "drawdown": 3045.59,
+    "trades": 20,
+    "fees": 985.99,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": -2655.48,
+    "without_best": -3156.69,
+    "worst": -953.31,
+    "drawdown": 3248.23,
+    "trades": 17,
+    "fees": 835.48,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -3020.85,
+    "without_best": -3164.89,
+    "worst": -672.36,
+    "drawdown": 3020.85,
+    "trades": 8,
+    "fees": 389.85,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_positive": false,
+    "2023_without_best_ge_0": false,
+    "2023_above_null": true,
+    "2024_positive": false,
+    "2024_without_best_ge_0": false,
+    "2024_above_null": true,
+    "2025_positive": true,
+    "2025_without_best_ge_0": false,
+    "2025_above_null": true,
+    "adverse_sum_positive": true,
+    "worst_day": true,
+    "beats_EN14": true
+   },
+   "tickets": 70,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_best_ge_0": false,
+     "above_null": false,
+     "worst_day": true
+    },
+    "tickets": 18,
+    "null_median": -2733.4,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_best_ge_0": false,
+     "above_null": true,
+     "worst_day": true
+    },
+    "tickets": 20,
+    "null_median": -2003.74,
+    "verdict": "FAIL"
+   }
+  },
+  "evidence": {
+   "tickets": 108,
+   "expiries": 91,
+   "met": true
+  }
+ },
+ "EN31": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3645.12,
+    "without_best": -4625.79,
+    "worst": -1161.74,
+    "drawdown": 3645.12,
+    "trades": 17,
+    "fees": 850.12,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4035.53,
+    "without_best": -4113.64,
+    "worst": -1220.22,
+    "drawdown": 4035.53,
+    "trades": 14,
+    "fees": 691.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4172.68,
+    "without_best": -4172.68,
+    "worst": -1278.8,
+    "drawdown": 4172.68,
+    "trades": 7,
+    "fees": 347.43,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15580.74,
+    "without_best": 3810.02,
+    "worst": -646.98,
+    "drawdown": 691.65,
+    "trades": 19,
+    "fees": 1085.26,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 14629.39,
+    "without_best": 3046.86,
+    "worst": -669.72,
+    "drawdown": 730.65,
+    "trades": 19,
+    "fees": 1084.36,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2582.43,
+    "without_best": -2582.43,
+    "worst": -632.82,
+    "drawdown": 2582.43,
+    "trades": 7,
+    "fees": 343.18,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 5936.81,
+    "without_best": 4084.55,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 20,
+    "fees": 1047.44,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5371.36,
+    "without_best": 3616.52,
+    "worst": -537.55,
+    "drawdown": 557.7,
+    "trades": 20,
+    "fees": 1047.39,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 144.73,
+    "without_best": -640.16,
+    "worst": -823.99,
+    "drawdown": 1019.51,
+    "trades": 8,
+    "fees": 404.52,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3961.6,
+    "without_best": -4032.26,
+    "worst": -960.17,
+    "drawdown": 3961.6,
+    "trades": 10,
+    "fees": 493.85,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -4270.2,
+    "without_best": -4311.63,
+    "worst": -1015.4,
+    "drawdown": 4270.2,
+    "trades": 10,
+    "fees": 493.7,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3371.05,
+    "without_best": -3371.05,
+    "worst": -1239.24,
+    "drawdown": 3371.05,
+    "trades": 6,
+    "fees": 296.55,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2081.6,
+    "without_best": -3173.17,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 11,
+    "fees": 585.4,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1636.97,
+    "without_best": -3482.0,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 11,
+    "fees": 585.03,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3994.17,
+    "without_best": -4064.83,
+    "worst": -960.17,
+    "drawdown": 3994.17,
+    "trades": 11,
+    "fees": 542.67,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -4270.2,
+    "without_best": -4311.63,
+    "worst": -1015.4,
+    "drawdown": 4270.2,
+    "trades": 10,
+    "fees": 493.7,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3497.7,
+    "without_best": -3497.7,
+    "worst": -1239.24,
+    "drawdown": 3497.7,
+    "trades": 7,
+    "fees": 345.2,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1987.0,
+    "without_best": -3267.77,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 12,
+    "fees": 635.0,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1516.4,
+    "without_best": -3602.57,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 12,
+    "fees": 634.6,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": true,
+    "2024_adverse": true,
+    "2024_without_best": true,
+    "2025_ordinary": true,
+    "2025_adverse": true,
+    "2025_without_best": true,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 0,
+   "verdict": "INCONCLUSIVE"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": false,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 2,
+    "verdict": "INCONCLUSIVE"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 0,
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "evidence": {
+   "affected": 2,
+   "expiries": 2,
+   "met": false
+  }
+ },
+ "EN31_flip_diag": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -4014.09,
+    "without_best": -4131.17,
+    "worst": -1161.74,
+    "drawdown": 4014.09,
+    "trades": 16,
+    "fees": 790.09,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4027.43,
+    "without_best": -4050.0,
+    "worst": -1220.22,
+    "drawdown": 4027.43,
+    "trades": 8,
+    "fees": 397.18,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4043.94,
+    "without_best": -4043.94,
+    "worst": -1467.97,
+    "drawdown": 4043.94,
+    "trades": 7,
+    "fees": 345.44,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 12620.61,
+    "without_best": 849.89,
+    "worst": -1297.69,
+    "drawdown": 1463.85,
+    "trades": 24,
+    "fees": 1341.39,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 11445.22,
+    "without_best": -137.31,
+    "worst": -1362.68,
+    "drawdown": 1653.23,
+    "trades": 24,
+    "fees": 1340.28,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -3916.45,
+    "without_best": -3916.45,
+    "worst": -1450.31,
+    "drawdown": 3916.45,
+    "trades": 10,
+    "fees": 490.95,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 5936.81,
+    "without_best": 4084.55,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 20,
+    "fees": 1047.44,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 5240.99,
+    "without_best": 3486.15,
+    "worst": -537.55,
+    "drawdown": 688.07,
+    "trades": 21,
+    "fees": 1099.76,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 33.78,
+    "without_best": -751.11,
+    "worst": -823.99,
+    "drawdown": 1019.51,
+    "trades": 9,
+    "fees": 456.97,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2063.12,
+    "without_best": -2585.18,
+    "worst": -1558.44,
+    "drawdown": 2585.18,
+    "trades": 12,
+    "fees": 603.87,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2550.27,
+    "without_best": -2987.89,
+    "worst": -1639.67,
+    "drawdown": 2987.89,
+    "trades": 12,
+    "fees": 603.52,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3819.12,
+    "without_best": -3819.12,
+    "worst": -1039.04,
+    "drawdown": 3819.12,
+    "trades": 6,
+    "fees": 299.37,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 1911.73,
+    "without_best": -3343.04,
+    "worst": -1506.32,
+    "drawdown": 3550.73,
+    "trades": 14,
+    "fees": 736.27,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1509.89,
+    "without_best": -3609.08,
+    "worst": -1413.59,
+    "drawdown": 3674.88,
+    "trades": 14,
+    "fees": 736.11,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4210.32,
+    "without_best": -4210.32,
+    "worst": -1463.72,
+    "drawdown": 4210.32,
+    "trades": 5,
+    "fees": 246.32,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2095.69,
+    "without_best": -2617.75,
+    "worst": -1558.44,
+    "drawdown": 2617.75,
+    "trades": 13,
+    "fees": 652.69,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -2745.16,
+    "without_best": -3182.78,
+    "worst": -1639.67,
+    "drawdown": 3182.78,
+    "trades": 13,
+    "fees": 652.16,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3945.77,
+    "without_best": -3945.77,
+    "worst": -1039.04,
+    "drawdown": 3945.77,
+    "trades": 7,
+    "fees": 348.02,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1817.13,
+    "without_best": -3437.64,
+    "worst": -1506.32,
+    "drawdown": 3550.73,
+    "trades": 15,
+    "fees": 785.87,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1389.32,
+    "without_best": -3729.65,
+    "worst": -1413.59,
+    "drawdown": 3674.88,
+    "trades": 15,
+    "fees": 785.68,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4210.32,
+    "without_best": -4210.32,
+    "worst": -1463.72,
+    "drawdown": 4210.32,
+    "trades": 5,
+    "fees": 246.32,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  }
+ },
+ "EN32": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -885.1,
+    "without_best": -1289.3,
+    "worst": -354.12,
+    "drawdown": 1774.37,
+    "trades": 19,
+    "fees": 933.85,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -1333.23,
+    "without_best": -1701.72,
+    "worst": -373.61,
+    "drawdown": 2053.32,
+    "trades": 19,
+    "fees": 933.48,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -2608.58,
+    "without_best": -2832.26,
+    "worst": -585.73,
+    "drawdown": 2840.14,
+    "trades": 16,
+    "fees": 782.08,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": -2045.85,
+    "without_best": -2443.59,
+    "worst": -539.41,
+    "drawdown": 2364.62,
+    "trades": 15,
+    "fees": 736.1,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": -2419.36,
+    "without_best": -2781.38,
+    "worst": -562.15,
+    "drawdown": 2669.93,
+    "trades": 15,
+    "fees": 735.86,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -3018.99,
+    "without_best": -3134.69,
+    "worst": -659.6,
+    "drawdown": 3018.99,
+    "trades": 13,
+    "fees": 636.74,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": -3237.8,
+    "without_best": -3580.29,
+    "worst": -448.98,
+    "drawdown": 3237.8,
+    "trades": 27,
+    "fees": 1323.55,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": -3246.34,
+    "without_best": -3553.11,
+    "worst": -478.22,
+    "drawdown": 3246.34,
+    "trades": 23,
+    "fees": 1124.09,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -3480.74,
+    "without_best": -3480.74,
+    "worst": -456.25,
+    "drawdown": 3480.74,
+    "trades": 19,
+    "fees": 926.24,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -13.24,
+    "without_best": -521.14,
+    "worst": -484.55,
+    "drawdown": 586.45,
+    "trades": 6,
+    "fees": 295.99,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -638.07,
+    "without_best": -870.38,
+    "worst": -513.79,
+    "drawdown": 670.91,
+    "trades": 5,
+    "fees": 244.82,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -275.47,
+    "without_best": -275.47,
+    "worst": -275.47,
+    "drawdown": 275.47,
+    "trades": 1,
+    "fees": 47.97,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": -763.92,
+    "without_best": -1447.82,
+    "worst": -497.67,
+    "drawdown": 1309.51,
+    "trades": 6,
+    "fees": 295.92,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": -901.84,
+    "without_best": -1561.76,
+    "worst": -517.66,
+    "drawdown": 1401.46,
+    "trades": 6,
+    "fees": 295.84,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -798.01,
+    "without_best": -798.01,
+    "worst": -554.95,
+    "drawdown": 798.01,
+    "trades": 3,
+    "fees": 148.01,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -13.24,
+    "without_best": -521.14,
+    "worst": -484.55,
+    "drawdown": 586.45,
+    "trades": 6,
+    "fees": 295.99,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -638.07,
+    "without_best": -870.38,
+    "worst": -513.79,
+    "drawdown": 670.91,
+    "trades": 5,
+    "fees": 244.82,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -275.47,
+    "without_best": -275.47,
+    "worst": -275.47,
+    "drawdown": 275.47,
+    "trades": 1,
+    "fees": 47.97,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": -763.92,
+    "without_best": -1447.82,
+    "worst": -497.67,
+    "drawdown": 1309.51,
+    "trades": 6,
+    "fees": 295.92,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": -901.84,
+    "without_best": -1561.76,
+    "worst": -517.66,
+    "drawdown": 1401.46,
+    "trades": 6,
+    "fees": 295.84,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -798.01,
+    "without_best": -798.01,
+    "worst": -554.95,
+    "drawdown": 798.01,
+    "trades": 3,
+    "fees": 148.01,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_positive": false,
+    "2023_without_best_ge_0": false,
+    "2023_above_null": true,
+    "2024_positive": false,
+    "2024_without_best_ge_0": false,
+    "2024_above_null": true,
+    "2025_positive": false,
+    "2025_without_best_ge_0": false,
+    "2025_above_null": false,
+    "adverse_sum_positive": false,
+    "worst_day": true
+   },
+   "tickets": 61,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_best_ge_0": false,
+     "above_null": true,
+     "worst_day": true
+    },
+    "tickets": 6,
+    "null_median": -34.4,
+    "verdict": "INCONCLUSIVE"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary_positive": false,
+     "adverse_positive": false,
+     "without_best_ge_0": false,
+     "above_null": true,
+     "worst_day": true
+    },
+    "tickets": 6,
+    "null_median": -889.38,
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "evidence": {
+   "tickets": 73,
+   "expiries": 59,
+   "met": true
+  }
+ },
+ "EN35_diag": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -2946.65,
+    "without_best": -3017.96,
+    "worst": -594.72,
+    "drawdown": 2946.65,
+    "trades": 17,
+    "fees": 882.9,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -3196.49,
+    "without_best": -3254.82,
+    "worst": -604.45,
+    "drawdown": 3196.49,
+    "trades": 17,
+    "fees": 882.49,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -3883.53,
+    "without_best": -3883.53,
+    "worst": -825.72,
+    "drawdown": 3883.53,
+    "trades": 16,
+    "fees": 805.78,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 13205.32,
+    "without_best": 2881.71,
+    "worst": -735.21,
+    "drawdown": 936.5,
+    "trades": 21,
+    "fees": 1240.92,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 11992.69,
+    "without_best": 1847.52,
+    "worst": -754.7,
+    "drawdown": 968.93,
+    "trades": 20,
+    "fees": 1163.31,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": 5638.41,
+    "without_best": -42.86,
+    "worst": -721.64,
+    "drawdown": 1389.45,
+    "trades": 20,
+    "fees": 1050.09,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 5334.4,
+    "without_best": 3538.26,
+    "worst": -478.07,
+    "drawdown": 646.09,
+    "trades": 19,
+    "fees": 1081.1,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 4854.12,
+    "without_best": 3129.38,
+    "worst": -491.05,
+    "drawdown": 749.98,
+    "trades": 19,
+    "fees": 1080.38,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 2272.87,
+    "without_best": 1047.7,
+    "worst": -588.36,
+    "drawdown": 1223.32,
+    "trades": 19,
+    "fees": 1022.63,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2354.91,
+    "without_best": -2515.38,
+    "worst": -854.3,
+    "drawdown": 2602.3,
+    "trades": 10,
+    "fees": 515.41,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2487.93,
+    "without_best": -2599.71,
+    "worst": -870.52,
+    "drawdown": 2670.41,
+    "trades": 10,
+    "fees": 515.18,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -2960.17,
+    "without_best": -2960.17,
+    "worst": -924.87,
+    "drawdown": 2960.17,
+    "trades": 10,
+    "fees": 486.92,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2470.34,
+    "without_best": -2479.37,
+    "worst": -784.45,
+    "drawdown": 2613.16,
+    "trades": 10,
+    "fees": 578.66,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 2236.74,
+    "without_best": -2598.16,
+    "worst": -805.41,
+    "drawdown": 2664.07,
+    "trades": 10,
+    "fees": 578.26,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -1605.55,
+    "without_best": -4193.16,
+    "worst": -976.88,
+    "drawdown": 3224.89,
+    "trades": 10,
+    "fees": 545.55,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": 19.45,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.8,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": 6.47,
+    "without_best": 0.0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 1,
+    "fees": 48.78,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -71.38,
+    "without_best": -71.38,
+    "worst": -71.38,
+    "drawdown": 71.38,
+    "trades": 1,
+    "fees": 48.63,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2335.46,
+    "without_best": -2495.93,
+    "worst": -854.3,
+    "drawdown": 2602.3,
+    "trades": 11,
+    "fees": 564.21,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -2481.46,
+    "without_best": -2593.24,
+    "worst": -870.52,
+    "drawdown": 2670.41,
+    "trades": 11,
+    "fees": 563.96,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3031.55,
+    "without_best": -3031.55,
+    "worst": -924.87,
+    "drawdown": 3031.55,
+    "trades": 11,
+    "fees": 535.55,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 2470.34,
+    "without_best": -2479.37,
+    "worst": -784.45,
+    "drawdown": 2613.16,
+    "trades": 10,
+    "fees": 578.66,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 2236.74,
+    "without_best": -2598.16,
+    "worst": -805.41,
+    "drawdown": 2664.07,
+    "trades": 10,
+    "fees": 578.26,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -1605.55,
+    "without_best": -4193.16,
+    "worst": -976.88,
+    "drawdown": 3224.89,
+    "trades": 10,
+    "fees": 545.55,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "DIAGNOSTIC"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 10
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 11
+   }
+  }
+ },
+ "EN36": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -239.77,
+    "without_best": -1919.74,
+    "worst": -888.83,
+    "drawdown": 1291.48,
+    "trades": 6,
+    "fees": 301.52,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -467.15,
+    "without_best": -2069.18,
+    "worst": -934.33,
+    "drawdown": 1356.47,
+    "trades": 6,
+    "fees": 301.4,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -2189.01,
+    "without_best": -2189.01,
+    "worst": -1090.26,
+    "drawdown": 2189.01,
+    "trades": 4,
+    "fees": 196.76,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 2024.51,
+    "without_best": 647.61,
+    "worst": -646.98,
+    "drawdown": 1591.7,
+    "trades": 14,
+    "fees": 731.49,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 1488.66,
+    "without_best": 189.69,
+    "worst": -669.72,
+    "drawdown": 1672.96,
+    "trades": 14,
+    "fees": 731.09,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -1683.42,
+    "without_best": -1683.42,
+    "worst": -477.6,
+    "drawdown": 1683.42,
+    "trades": 5,
+    "fees": 243.67,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 2426.35,
+    "without_best": 1379.44,
+    "worst": -478.01,
+    "drawdown": 478.01,
+    "trades": 10,
+    "fees": 537.65,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 2081.98,
+    "without_best": 941.07,
+    "worst": -504.0,
+    "drawdown": 547.58,
+    "trades": 10,
+    "fees": 537.52,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -172.19,
+    "without_best": -751.75,
+    "worst": -823.99,
+    "drawdown": 823.99,
+    "trades": 5,
+    "fees": 250.19,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -1036.12,
+    "without_best": -1074.7,
+    "worst": -889.04,
+    "drawdown": 1036.12,
+    "trades": 3,
+    "fees": 148.87,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -1146.56,
+    "without_best": -1159.16,
+    "worst": -947.52,
+    "drawdown": 1146.56,
+    "trades": 3,
+    "fees": 148.81,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -993.29,
+    "without_best": -993.29,
+    "worst": -889.04,
+    "drawdown": 993.29,
+    "trades": 2,
+    "fees": 99.54,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 539.46,
+    "without_best": -821.04,
+    "worst": -626.61,
+    "drawdown": 2818.63,
+    "trades": 8,
+    "fees": 434.54,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 191.7,
+    "without_best": -1093.88,
+    "worst": -664.59,
+    "drawdown": 2961.59,
+    "trades": 8,
+    "fees": 434.3,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -2488.25,
+    "without_best": -2488.25,
+    "worst": -863.0,
+    "drawdown": 2488.25,
+    "trades": 4,
+    "fees": 202.25,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -1068.69,
+    "without_best": -1107.27,
+    "worst": -889.04,
+    "drawdown": 1068.69,
+    "trades": 4,
+    "fees": 197.69,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -1341.45,
+    "without_best": -1354.05,
+    "worst": -947.52,
+    "drawdown": 1341.45,
+    "trades": 4,
+    "fees": 197.45,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -1119.94,
+    "without_best": -1119.94,
+    "worst": -889.04,
+    "drawdown": 1119.94,
+    "trades": 3,
+    "fees": 148.19,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 539.46,
+    "without_best": -821.04,
+    "worst": -626.61,
+    "drawdown": 2818.63,
+    "trades": 8,
+    "fees": 434.54,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 191.7,
+    "without_best": -1093.88,
+    "worst": -664.59,
+    "drawdown": 2961.59,
+    "trades": 8,
+    "fees": 434.3,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -2488.25,
+    "without_best": -2488.25,
+    "worst": -863.0,
+    "drawdown": 2488.25,
+    "trades": 4,
+    "fees": 202.25,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": false,
+    "2024_adverse": false,
+    "2024_without_best": false,
+    "2025_ordinary": false,
+    "2025_adverse": false,
+    "2025_without_best": false,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 29,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 6,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 7,
+    "verdict": "FAIL"
+   }
+  },
+  "evidence": {
+   "affected": 42,
+   "expiries": 37,
+   "met": true
+  }
+ },
+ "EN37": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3645.12,
+    "without_best": -4625.79,
+    "worst": -1161.74,
+    "drawdown": 3645.12,
+    "trades": 17,
+    "fees": 850.12,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -4035.53,
+    "without_best": -4113.64,
+    "worst": -1220.22,
+    "drawdown": 4035.53,
+    "trades": 14,
+    "fees": 691.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -4172.68,
+    "without_best": -4172.68,
+    "worst": -1278.8,
+    "drawdown": 4172.68,
+    "trades": 7,
+    "fees": 347.43,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 15580.74,
+    "without_best": 3810.02,
+    "worst": -646.98,
+    "drawdown": 691.65,
+    "trades": 19,
+    "fees": 1085.26,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 14629.39,
+    "without_best": 3046.86,
+    "worst": -669.72,
+    "drawdown": 730.65,
+    "trades": 19,
+    "fees": 1084.36,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2582.43,
+    "without_best": -2582.43,
+    "worst": -632.82,
+    "drawdown": 2582.43,
+    "trades": 7,
+    "fees": 343.18,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 5178.7,
+    "without_best": 3326.44,
+    "worst": -478.01,
+    "drawdown": 606.19,
+    "trades": 18,
+    "fees": 944.3,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 4720.42,
+    "without_best": 2965.58,
+    "worst": -537.55,
+    "drawdown": 557.7,
+    "trades": 18,
+    "fees": 944.33,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -444.64,
+    "without_best": -1024.2,
+    "worst": -823.99,
+    "drawdown": 900.53,
+    "trades": 6,
+    "fees": 301.64,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -3846.76,
+    "without_best": -3917.42,
+    "worst": -1281.39,
+    "drawdown": 3846.76,
+    "trades": 9,
+    "fees": 444.01,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -3819.12,
+    "without_best": -3819.12,
+    "worst": -1039.04,
+    "drawdown": 3819.12,
+    "trades": 6,
+    "fees": 299.37,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2081.6,
+    "without_best": -3173.17,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 11,
+    "fees": 585.4,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1636.97,
+    "without_best": -3482.0,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 11,
+    "fees": 585.03,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -3879.33,
+    "without_best": -3949.99,
+    "worst": -1281.39,
+    "drawdown": 3879.33,
+    "trades": 10,
+    "fees": 492.83,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -4129.38,
+    "without_best": -4170.81,
+    "worst": -1339.86,
+    "drawdown": 4129.38,
+    "trades": 9,
+    "fees": 443.88,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -3945.77,
+    "without_best": -3945.77,
+    "worst": -1039.04,
+    "drawdown": 3945.77,
+    "trades": 7,
+    "fees": 348.02,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 1987.0,
+    "without_best": -3267.77,
+    "worst": -1124.54,
+    "drawdown": 3380.86,
+    "trades": 12,
+    "fees": 635.0,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1516.4,
+    "without_best": -3602.57,
+    "worst": -1169.52,
+    "drawdown": 3547.8,
+    "trades": 12,
+    "fees": 634.6,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": true,
+    "2024_adverse": true,
+    "2024_without_best": true,
+    "2025_ordinary": false,
+    "2025_adverse": false,
+    "2025_without_best": false,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 2,
+   "verdict": "INCONCLUSIVE"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 0,
+    "verdict": "INCONCLUSIVE"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 0,
+    "verdict": "INCONCLUSIVE"
+   }
+  },
+  "evidence": {
+   "affected": 2,
+   "expiries": 2,
+   "met": false
+  }
+ },
+ "EN38": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -393.28,
+    "without_best": -2073.25,
+    "worst": -850.27,
+    "drawdown": 1395.85,
+    "trades": 10,
+    "fees": 500.53,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -750.28,
+    "without_best": -2352.31,
+    "worst": -908.73,
+    "drawdown": 1571.22,
+    "trades": 9,
+    "fees": 451.28,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -2249.31,
+    "without_best": -2249.31,
+    "worst": -863.25,
+    "drawdown": 2249.31,
+    "trades": 4,
+    "fees": 198.56,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 3551.21,
+    "without_best": 2174.31,
+    "worst": -646.98,
+    "drawdown": 776.04,
+    "trades": 10,
+    "fees": 586.04,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 3099.82,
+    "without_best": 1800.85,
+    "worst": -669.72,
+    "drawdown": 815.04,
+    "trades": 10,
+    "fees": 585.68,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -808.61,
+    "without_best": -808.61,
+    "worst": -425.16,
+    "drawdown": 808.61,
+    "trades": 2,
+    "fees": 96.86,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 2763.77,
+    "without_best": 911.51,
+    "worst": -475.83,
+    "drawdown": 475.83,
+    "trades": 10,
+    "fees": 508.98,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 2555.67,
+    "without_best": 800.83,
+    "worst": -537.55,
+    "drawdown": 537.55,
+    "trades": 10,
+    "fees": 509.08,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 209.2,
+    "without_best": -361.15,
+    "worst": -646.89,
+    "drawdown": 646.89,
+    "trades": 3,
+    "fees": 151.55,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2442.07,
+    "without_best": -2535.03,
+    "worst": -889.04,
+    "drawdown": 2442.07,
+    "trades": 5,
+    "fees": 248.32,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2627.23,
+    "without_best": -2687.72,
+    "worst": -947.52,
+    "drawdown": 2627.23,
+    "trades": 5,
+    "fees": 248.23,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -2502.68,
+    "without_best": -2502.68,
+    "worst": -1039.04,
+    "drawdown": 2502.68,
+    "trades": 3,
+    "fees": 149.68,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 2818.66,
+    "without_best": -2427.11,
+    "worst": -726.24,
+    "drawdown": 2984.38,
+    "trades": 9,
+    "fees": 489.34,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 1764.63,
+    "without_best": -3345.34,
+    "worst": -774.21,
+    "drawdown": 3156.31,
+    "trades": 9,
+    "fees": 485.37,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2474.64,
+    "without_best": -2567.6,
+    "worst": -889.04,
+    "drawdown": 2474.64,
+    "trades": 6,
+    "fees": 297.14,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -2822.12,
+    "without_best": -2882.61,
+    "worst": -947.52,
+    "drawdown": 2822.12,
+    "trades": 6,
+    "fees": 296.87,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -2629.33,
+    "without_best": -2629.33,
+    "worst": -1039.04,
+    "drawdown": 2629.33,
+    "trades": 4,
+    "fees": 198.33,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 2818.66,
+    "without_best": -2427.11,
+    "worst": -726.24,
+    "drawdown": 2984.38,
+    "trades": 9,
+    "fees": 489.34,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 1764.63,
+    "without_best": -3345.34,
+    "worst": -774.21,
+    "drawdown": 3156.31,
+    "trades": 9,
+    "fees": 485.37,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -4151.39,
+    "without_best": -4151.39,
+    "worst": -1382.1,
+    "drawdown": 4151.39,
+    "trades": 6,
+    "fees": 296.39,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "checks": {
+    "2023_ordinary": true,
+    "2023_adverse": true,
+    "2023_without_best": true,
+    "2024_ordinary": false,
+    "2024_adverse": false,
+    "2024_without_best": false,
+    "2025_ordinary": false,
+    "2025_adverse": false,
+    "2025_without_best": false,
+    "severe_sum": true,
+    "worst_day": true,
+    "adverse_sum_positive": true
+   },
+   "moved": 29,
+   "verdict": "FAIL"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 7,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 8,
+    "verdict": "PASS"
+   }
+  },
+  "evidence": {
+   "affected": 44,
+   "expiries": 37,
+   "met": true
+  }
+ },
+ "EN39": {
+  "summary": {
+   "2023|ordinary": {
+    "net": 1315.32,
+    "without_best": -364.65,
+    "worst": -402.65,
+    "drawdown": 402.65,
+    "trades": 3,
+    "fees": 153.68,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": 1185.41,
+    "without_best": -416.62,
+    "worst": -422.14,
+    "drawdown": 422.14,
+    "trades": 3,
+    "fees": 153.59,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -529.17,
+    "without_best": -529.17,
+    "worst": -529.17,
+    "drawdown": 529.17,
+    "trades": 1,
+    "fees": 48.17,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 1740.59,
+    "without_best": 591.03,
+    "worst": -646.98,
+    "drawdown": 952.02,
+    "trades": 5,
+    "fees": 280.91,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 1477.55,
+    "without_best": 373.44,
+    "worst": -669.72,
+    "drawdown": 994.26,
+    "trades": 5,
+    "fees": 280.7,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -425.16,
+    "without_best": -425.16,
+    "worst": -425.16,
+    "drawdown": 425.16,
+    "trades": 1,
+    "fees": 48.16,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 2847.19,
+    "without_best": 1800.28,
+    "worst": -278.72,
+    "drawdown": 278.72,
+    "trades": 5,
+    "fees": 285.81,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 2720.36,
+    "without_best": 1579.45,
+    "worst": -330.68,
+    "drawdown": 330.68,
+    "trades": 5,
+    "fees": 285.89,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": 816.99,
+    "without_best": 32.1,
+    "worst": -823.99,
+    "drawdown": 823.99,
+    "trades": 4,
+    "fees": 206.76,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -705.08,
+    "without_best": -705.08,
+    "worst": -519.42,
+    "drawdown": 705.08,
+    "trades": 2,
+    "fees": 97.33,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -747.31,
+    "without_best": -747.31,
+    "worst": -535.67,
+    "drawdown": 747.31,
+    "trades": 2,
+    "fees": 97.31,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -574.6,
+    "without_best": -574.6,
+    "worst": -574.6,
+    "drawdown": 574.6,
+    "trades": 1,
+    "fees": 48.1,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": 3358.09,
+    "without_best": 1997.59,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 3,
+    "fees": 186.91,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": 3153.29,
+    "without_best": 1867.71,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 3,
+    "fees": 186.71,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -2614.9,
+    "without_best": -2614.9,
+    "worst": -1382.1,
+    "drawdown": 2614.9,
+    "trades": 3,
+    "fees": 152.9,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -737.65,
+    "without_best": -737.65,
+    "worst": -519.42,
+    "drawdown": 737.65,
+    "trades": 3,
+    "fees": 146.15,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -942.2,
+    "without_best": -942.2,
+    "worst": -535.67,
+    "drawdown": 942.2,
+    "trades": 3,
+    "fees": 145.95,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -701.25,
+    "without_best": -701.25,
+    "worst": -574.6,
+    "drawdown": 701.25,
+    "trades": 2,
+    "fees": 96.75,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": 3263.49,
+    "without_best": 1902.99,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 4,
+    "fees": 236.51,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": 3032.72,
+    "without_best": 1747.14,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 4,
+    "fees": 236.28,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -2614.9,
+    "without_best": -2614.9,
+    "worst": -1382.1,
+    "drawdown": 2614.9,
+    "trades": 3,
+    "fees": 152.9,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "SELECTED_ON_DEV"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 7,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": true
+    },
+    "moved": 11,
+    "verdict": "PASS"
+   }
+  },
+  "evidence": {
+   "affected": 62,
+   "expiries": 56,
+   "met": true
+  }
+ },
+ "EN40": {
+  "summary": {
+   "2023|ordinary": {
+    "net": -3131.51,
+    "without_best": -3248.59,
+    "worst": -604.47,
+    "drawdown": 3131.51,
+    "trades": 17,
+    "fees": 830.51,
+    "unresolved": 0
+   },
+   "2023|adverse": {
+    "net": -3508.05,
+    "without_best": -3586.16,
+    "worst": -633.71,
+    "drawdown": 3508.05,
+    "trades": 16,
+    "fees": 781.3,
+    "unresolved": 0
+   },
+   "2023|catastrophe": {
+    "net": -3326.83,
+    "without_best": -3326.83,
+    "worst": -663.0,
+    "drawdown": 3326.83,
+    "trades": 9,
+    "fees": 437.58,
+    "unresolved": 0
+   },
+   "2024|ordinary": {
+    "net": 8897.97,
+    "without_best": 3048.01,
+    "worst": -477.75,
+    "drawdown": 691.65,
+    "trades": 20,
+    "fees": 1053.53,
+    "unresolved": 0
+   },
+   "2024|adverse": {
+    "net": 8271.27,
+    "without_best": 2515.41,
+    "worst": -497.25,
+    "drawdown": 730.65,
+    "trades": 20,
+    "fees": 1052.98,
+    "unresolved": 0
+   },
+   "2024|catastrophe": {
+    "net": -2436.44,
+    "without_best": -2436.44,
+    "worst": -632.82,
+    "drawdown": 2436.44,
+    "trades": 7,
+    "fees": 340.19,
+    "unresolved": 0
+   },
+   "2025|ordinary": {
+    "net": 3528.74,
+    "without_best": 2326.42,
+    "worst": -478.01,
+    "drawdown": 830.54,
+    "trades": 21,
+    "fees": 1047.26,
+    "unresolved": 0
+   },
+   "2025|adverse": {
+    "net": 3226.33,
+    "without_best": 2088.95,
+    "worst": -537.55,
+    "drawdown": 746.33,
+    "trades": 21,
+    "fees": 1047.42,
+    "unresolved": 0
+   },
+   "2025|catastrophe": {
+    "net": -49.39,
+    "without_best": -628.95,
+    "worst": -646.89,
+    "drawdown": 646.89,
+    "trades": 8,
+    "fees": 397.14,
+    "unresolved": 0
+   },
+   "N-X1|ordinary": {
+    "net": -2649.65,
+    "without_best": -2720.31,
+    "worst": -792.52,
+    "drawdown": 2649.65,
+    "trades": 9,
+    "fees": 439.65,
+    "unresolved": 0
+   },
+   "N-X1|adverse": {
+    "net": -2864.05,
+    "without_best": -2905.48,
+    "worst": -831.5,
+    "drawdown": 2864.05,
+    "trades": 9,
+    "fees": 439.55,
+    "unresolved": 0
+   },
+   "N-X1|catastrophe": {
+    "net": -1800.27,
+    "without_best": -1800.27,
+    "worst": -574.6,
+    "drawdown": 1800.27,
+    "trades": 5,
+    "fees": 243.52,
+    "unresolved": 0
+   },
+   "S-X1|ordinary": {
+    "net": -664.37,
+    "without_best": -2362.09,
+    "worst": -599.66,
+    "drawdown": 2907.37,
+    "trades": 10,
+    "fees": 494.37,
+    "unresolved": 0
+   },
+   "S-X1|adverse": {
+    "net": -1356.73,
+    "without_best": -3009.51,
+    "worst": -619.66,
+    "drawdown": 3026.33,
+    "trades": 10,
+    "fees": 491.73,
+    "unresolved": 0
+   },
+   "S-X1|catastrophe": {
+    "net": -2853.56,
+    "without_best": -2853.56,
+    "worst": -728.43,
+    "drawdown": 2853.56,
+    "trades": 6,
+    "fees": 292.56,
+    "unresolved": 0
+   },
+   "N-X2|ordinary": {
+    "net": -32.57,
+    "without_best": -32.57,
+    "worst": -32.57,
+    "drawdown": 32.57,
+    "trades": 1,
+    "fees": 48.82,
+    "unresolved": 0
+   },
+   "N-X2|adverse": {
+    "net": -194.89,
+    "without_best": -194.89,
+    "worst": -194.89,
+    "drawdown": 194.89,
+    "trades": 1,
+    "fees": 48.64,
+    "unresolved": 0
+   },
+   "N-X2|catastrophe": {
+    "net": -126.65,
+    "without_best": -126.65,
+    "worst": -126.65,
+    "drawdown": 126.65,
+    "trades": 1,
+    "fees": 48.65,
+    "unresolved": 0
+   },
+   "S-X2|ordinary": {
+    "net": -94.6,
+    "without_best": -94.6,
+    "worst": -94.6,
+    "drawdown": 94.6,
+    "trades": 1,
+    "fees": 49.6,
+    "unresolved": 0
+   },
+   "S-X2|adverse": {
+    "net": -120.57,
+    "without_best": -120.57,
+    "worst": -120.57,
+    "drawdown": 120.57,
+    "trades": 1,
+    "fees": 49.57,
+    "unresolved": 0
+   },
+   "S-X2|catastrophe": {
+    "net": 0,
+    "without_best": 0,
+    "worst": 0,
+    "drawdown": 0.0,
+    "trades": 0,
+    "fees": 0,
+    "unresolved": 0
+   },
+   "N-ALL|ordinary": {
+    "net": -2682.22,
+    "without_best": -2752.88,
+    "worst": -792.52,
+    "drawdown": 2682.22,
+    "trades": 10,
+    "fees": 488.47,
+    "unresolved": 0
+   },
+   "N-ALL|adverse": {
+    "net": -3058.94,
+    "without_best": -3100.37,
+    "worst": -831.5,
+    "drawdown": 3058.94,
+    "trades": 10,
+    "fees": 488.19,
+    "unresolved": 0
+   },
+   "N-ALL|catastrophe": {
+    "net": -1926.92,
+    "without_best": -1926.92,
+    "worst": -574.6,
+    "drawdown": 1926.92,
+    "trades": 6,
+    "fees": 292.17,
+    "unresolved": 0
+   },
+   "S-ALL|ordinary": {
+    "net": -758.97,
+    "without_best": -2456.69,
+    "worst": -599.66,
+    "drawdown": 2907.37,
+    "trades": 11,
+    "fees": 543.97,
+    "unresolved": 0
+   },
+   "S-ALL|adverse": {
+    "net": -1477.3,
+    "without_best": -3130.08,
+    "worst": -619.66,
+    "drawdown": 3026.33,
+    "trades": 11,
+    "fees": 541.3,
+    "unresolved": 0
+   },
+   "S-ALL|catastrophe": {
+    "net": -2853.56,
+    "without_best": -2853.56,
+    "worst": -728.43,
+    "drawdown": 2853.56,
+    "trades": 6,
+    "fees": 292.56,
+    "unresolved": 0
+   }
+  },
+  "dev": {
+   "verdict": "SELECTED_ON_DEV"
+  },
+  "exam": {
+   "N-X1": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 3,
+    "verdict": "FAIL"
+   },
+   "S-X1": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": true,
+     "severe": true,
+     "worst_day": true,
+     "adverse_positive": false
+    },
+    "moved": 5,
+    "verdict": "FAIL"
+   }
+  },
+  "evidence": {
+   "affected": 35,
+   "expiries": 34,
+   "met": true
+  }
+ },
+ "status": {
+  "EN26": "INCONCLUSIVE",
+  "EN27": "FAIL",
+  "EN28": "ONE-INDEX",
+  "EN29": "INCONCLUSIVE",
+  "EN31": "INCONCLUSIVE",
+  "EN36": "FAIL",
+  "EN37": "INCONCLUSIVE",
+  "EN38": "ONE-INDEX",
+  "EN21": "FAIL",
+  "EN25": "FAIL",
+  "EN12": "INCONCLUSIVE",
+  "EN39": "ONE-INDEX",
+  "EN40": "FAIL",
+  "EN30": "FAIL",
+  "EN32": "FAIL",
+  "EN14": "FAIL",
+  "EN35": "NOT READY",
+  "EN33": "FAIL",
+  "EN34": "NOT FEASIBLE"
+ },
+ "family_exam": {
+  "N-X1": {
+   "test7_E032_stands": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": false,
+     "worst_day": true
+    },
+    "passed": false,
+    "random_median": -961.47
+   },
+   "test1_E031_stands": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": false,
+     "worst_day": true,
+     "above_random": false
+    },
+    "passed": false
+   },
+   "test5_E032_over_E031": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": false,
+     "worst": true
+    },
+    "passed": false
+   },
+   "test6_put_asymmetry": {
+    "put_per_ticket": -345.34,
+    "call_per_ticket": -230.73,
+    "holds": false
+   }
+  },
+  "S-X1": {
+   "test7_E032_stands": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": false,
+     "worst_day": true
+    },
+    "passed": false,
+    "random_median": -104.97
+   },
+   "test1_E031_stands": {
+    "checks": {
+     "ordinary": false,
+     "adverse": false,
+     "without_best": false,
+     "worst_day": true,
+     "above_random": false
+    },
+    "passed": false
+   },
+   "test5_E032_over_E031": {
+    "checks": {
+     "ordinary": true,
+     "adverse": true,
+     "without_best": false,
+     "worst": true
+    },
+    "passed": false
+   },
+   "test6_put_asymmetry": {
+    "put_per_ticket": 275.95,
+    "call_per_ticket": -580.02,
+    "holds": true
+   }
+  }
+ },
+ "diagnostics": {
+  "EN26": {
+   "saved": 1,
+   "saved_rs": 116.77,
+   "cut": 0,
+   "cut_rs": 0.0,
+   "winners_turned_losers": 0,
+   "by_new_exit": {
+    "DAMAGE": 1
+   }
+  },
+  "EN26_cat_diag": {
+   "saved": 0,
+   "saved_rs": 0.0,
+   "cut": 0,
+   "cut_rs": 0.0,
+   "winners_turned_losers": 0,
+   "by_new_exit": {}
+  },
+  "EN11": {
+   "saved": 29,
+   "saved_rs": 4712.17,
+   "cut": 13,
+   "cut_rs": -6051.94,
+   "winners_turned_losers": 2,
+   "by_new_exit": {
+    "STOP_FAST": 31,
+    "TRAIL_FAST": 6,
+    "STRUCTURE_FAST": 2,
+    "TIME": 2,
+    "STRUCTURE": 1
+   }
+  },
+  "EN29": {
+   "saved": 3,
+   "saved_rs": 2079.25,
+   "cut": 2,
+   "cut_rs": -434.93,
+   "winners_turned_losers": 0,
+   "by_new_exit": {
+    "TARGET_BASE": 5
+   }
+  },
+  "EN12_full_sale_diag": {
+   "saved": 4,
+   "saved_rs": 4103.68,
+   "cut": 2,
+   "cut_rs": -8970.45,
+   "winners_turned_losers": 0,
+   "by_new_exit": {
+    "TARGET": 6
+   }
+  },
+  "EN27_adds": {
+   "added": 14,
+   "added_winners": 10,
+   "added_net": 19633.79,
+   "added_control_net": 24423.26,
+   "half_only": 25,
+   "half_only_net": -2131.86,
+   "half_only_control_net": -5924.62
+  },
+  "EN21_adds": {
+   "added": 11,
+   "added_winners": 7,
+   "added_net": 19004.46,
+   "added_control_net": 15705.48,
+   "half_only": 28,
+   "half_only_net": 3175.74,
+   "half_only_control_net": 2793.16
+  },
+  "EN35_diag_adds": {
+   "added": 15,
+   "added_winners": 11,
+   "added_net": 20045.52,
+   "added_control_net": 23966.88,
+   "half_only": 25,
+   "half_only_net": -2272.07,
+   "half_only_control_net": -5926.9
+  },
+  "EN28_entry": {
+   "missed": 0,
+   "missed_control_winners": 0,
+   "missed_control_net": 0,
+   "fallback_tickets": 0,
+   "mean_entry_vs_control_pct": -0.486,
+   "same_tickets": 74
+  },
+  "EN28_opt_diag_entry": {
+   "missed": 0,
+   "missed_control_winners": 0,
+   "missed_control_net": 0,
+   "fallback_tickets": 0,
+   "mean_entry_vs_control_pct": -0.486,
+   "same_tickets": 74
+  },
+  "EN25_entry": {
+   "missed": 3,
+   "missed_control_winners": 0,
+   "missed_control_net": -361.07,
+   "fallback_tickets": 0,
+   "mean_entry_vs_control_pct": -0.6,
+   "same_tickets": 75
+  },
+  "EN31_reversals": {
+   "reversals": 1,
+   "winners": 0,
+   "net": -440.75,
+   "by_book": {
+    "2023": 0,
+    "2024": 0,
+    "2025": 0,
+    "N-X1": 1,
+    "S-X1": 0
+   }
+  },
+  "EN31_flip_diag_reversals": {
+   "reversals": 16,
+   "winners": 8,
+   "net": -726.62,
+   "by_book": {
+    "2023": 2,
+    "2024": 7,
+    "2025": 0,
+    "N-X1": 4,
+    "S-X1": 3
+   }
+  },
+  "EN30_book": {
+   "2023": {
+    "tickets": 26,
+    "net": -1887.53
+   },
+   "2024": {
+    "tickets": 15,
+    "net": -266.31
+   },
+   "2025": {
+    "tickets": 29,
+    "net": 4987.17
+   },
+   "N-X1": {
+    "tickets": 18,
+    "net": -2815.54
+   },
+   "S-X1": {
+    "tickets": 20,
+    "net": -1756.99
+   }
+  },
+  "EN14_book": {
+   "2023": {
+    "tickets": 28,
+    "net": 1768.38
+   },
+   "2024": {
+    "tickets": 14,
+    "net": -3203.09
+   },
+   "2025": {
+    "tickets": 22,
+    "net": -1064.3
+   },
+   "N-X1": {
+    "tickets": 11,
+    "net": -2378.44
+   },
+   "S-X1": {
+    "tickets": 18,
+    "net": -375.21
+   }
+  },
+  "EN14_immediate_diag_book": {
+   "2023": {
+    "tickets": 39,
+    "net": -3306.59
+   },
+   "2024": {
+    "tickets": 38,
+    "net": -3802.87
+   },
+   "2025": {
+    "tickets": 35,
+    "net": -3096.65
+   },
+   "N-X1": {
+    "tickets": 34,
+    "net": -3926.99
+   },
+   "S-X1": {
+    "tickets": 47,
+    "net": -2392.67
+   }
+  },
+  "EN32_book": {
+   "2023": {
+    "tickets": 19,
+    "net": -885.1
+   },
+   "2024": {
+    "tickets": 15,
+    "net": -2045.85
+   },
+   "2025": {
+    "tickets": 27,
+    "net": -3237.8
+   },
+   "N-X1": {
+    "tickets": 6,
+    "net": -13.24
+   },
+   "S-X1": {
+    "tickets": 6,
+    "net": -763.92
+   }
+  },
+  "EN13_book": {
+   "2023": {
+    "tickets": 32,
+    "net": -2608.09
+   },
+   "2024": {
+    "tickets": 41,
+    "net": -2923.85
+   },
+   "2025": {
+    "tickets": 29,
+    "net": -4032.97
+   },
+   "N-X1": {
+    "tickets": 24,
+    "net": -2311.25
+   },
+   "S-X1": {
+    "tickets": 30,
+    "net": -2168.71
+   }
+  },
+  "EN32_feasibility": {
+   "2023": {
+    "signals": 105,
+    "affordable": 47
+   },
+   "2024": {
+    "signals": 201,
+    "affordable": 42
+   },
+   "2025": {
+    "signals": 206,
+    "affordable": 108
+   },
+   "N-X1": {
+    "signals": 109,
+    "affordable": 8
+   },
+   "S-X1": {
+    "signals": 85,
+    "affordable": 6
+   }
+  },
+  "EN36_removed": {
+   "removed": 37,
+   "removed_winners": 16,
+   "removed_net": 14757.7
+  },
+  "EN37_removed": {
+   "removed": 2,
+   "removed_winners": 1,
+   "removed_net": 758.11
+  },
+  "EN38_removed": {
+   "removed": 36,
+   "removed_winners": 14,
+   "removed_net": 14197.63
+  },
+  "EN39_removed": {
+   "removed": 59,
+   "removed_winners": 19,
+   "removed_net": 10152.74
+  },
+  "EN40_removed": {
+   "removed": 1,
+   "removed_winners": 0,
+   "removed_net": -183.79
+  }
+ },
+ "risk_dial": {
+  "records": {
+   "NIFTY 2023-25 + N-X1": {
+    "1.0": {
+     "ordinary": -4122.87,
+     "adverse": -4035.53,
+     "severe": -4172.68,
+     "worst": -1161.74,
+     "drawdown": 4122.87,
+     "loss_year_chance": 0.6331,
+     "year_p5": -2329.9,
+     "year_median": -444.81,
+     "drawdown_p95": 2569.85,
+     "median_log_growth": -0.01795,
+     "passes": {
+      "loss_year": false,
+      "drawdown": true,
+      "severe": true
+     }
+    },
+    "1.5": {
+     "ordinary": 12324.43,
+     "adverse": -6358.77,
+     "severe": -6521.85,
+     "worst": -1979.51,
+     "drawdown": 5926.87,
+     "loss_year_chance": 0.6437,
+     "year_p5": -3587.47,
+     "year_median": -578.37,
+     "drawdown_p95": 3942.98,
+     "median_log_growth": -0.02341,
+     "passes": {
+      "loss_year": false,
+      "drawdown": true,
+      "severe": false
+     }
+    },
+    "2.0": {
+     "ordinary": 18961.15,
+     "adverse": -8414.79,
+     "severe": -8527.8,
+     "worst": -1904.77,
+     "drawdown": 7798.88,
+     "loss_year_chance": 0.7313,
+     "year_p5": -4978.5,
+     "year_median": -1146.25,
+     "drawdown_p95": 5464.62,
+     "median_log_growth": -0.04693,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": false
+     }
+    },
+    "2.5": {
+     "ordinary": -10846.06,
+     "adverse": 15855.52,
+     "severe": -12362.98,
+     "worst": -2396.49,
+     "drawdown": 10846.06,
+     "loss_year_chance": 0.4564,
+     "year_p5": -8890.39,
+     "year_median": 621.82,
+     "drawdown_p95": 10957.27,
+     "median_log_growth": 0.02457,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": false
+     }
+    },
+    "3.0": {
+     "ordinary": 24548.97,
+     "adverse": -12057.29,
+     "severe": -13882.54,
+     "worst": -2788.03,
+     "drawdown": 11872.05,
+     "loss_year_chance": 0.711,
+     "year_p5": -7296.37,
+     "year_median": -1252.78,
+     "drawdown_p95": 8073.34,
+     "median_log_growth": -0.05141,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": false
+     }
+    }
+   },
+   "S-X1": {
+    "1.0": {
+     "ordinary": 2081.6,
+     "adverse": 1636.97,
+     "severe": -4151.39,
+     "worst": -1124.54,
+     "drawdown": 3380.86,
+     "loss_year_chance": 0.7991,
+     "year_p5": -5273.61,
+     "year_median": -1743.34,
+     "drawdown_p95": 5717.56,
+     "median_log_growth": -0.07228,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": true
+     }
+    },
+    "1.5": {
+     "ordinary": 4197.28,
+     "adverse": 2223.15,
+     "severe": -4940.36,
+     "worst": -1483.65,
+     "drawdown": 4453.16,
+     "loss_year_chance": 0.7974,
+     "year_p5": -7044.97,
+     "year_median": -2359.17,
+     "drawdown_p95": 7661.74,
+     "median_log_growth": -0.09912,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": true
+     }
+    },
+    "2.0": {
+     "ordinary": 7099.93,
+     "adverse": 6147.79,
+     "severe": -7366.81,
+     "worst": -2201.87,
+     "drawdown": 5458.97,
+     "loss_year_chance": 0.6828,
+     "year_p5": -9508.76,
+     "year_median": -2229.22,
+     "drawdown_p95": 10440.51,
+     "median_log_growth": -0.0934,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": false
+     }
+    },
+    "2.5": {
+     "ordinary": 10217.1,
+     "adverse": 7196.97,
+     "severe": -8505.81,
+     "worst": -1785.42,
+     "drawdown": 7334.56,
+     "loss_year_chance": 0.6945,
+     "year_p5": -10305.15,
+     "year_median": -2221.08,
+     "drawdown_p95": 11514.47,
+     "median_log_growth": -0.09304,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": false
+     }
+    },
+    "3.0": {
+     "ordinary": 6547.4,
+     "adverse": 5166.61,
+     "severe": -10932.26,
+     "worst": -3279.21,
+     "drawdown": 9975.0,
+     "loss_year_chance": 0.8011,
+     "year_p5": -15618.42,
+     "year_median": -5243.42,
+     "drawdown_p95": 16937.8,
+     "median_log_growth": -0.23539,
+     "passes": {
+      "loss_year": false,
+      "drawdown": false,
+      "severe": false
+     }
+    }
+   }
+  },
+  "recommended_k": 1.0,
+  "passing": []
+ },
+ "EN33": {
+  "minutes": 6960,
+  "lag_corr": 0.0772,
+  "partial_lag_corr": 0.2264,
+  "same_minute_corr": 0.6526,
+  "events": 29,
+  "event_mean_markout": -74.52,
+  "event_winners": 6,
+  "random_median_markout": -76.55,
+  "days": 58,
+  "leader_minutes": 12180,
+  "verdict": "FAIL",
+  "note": "minute adaptation; 30-second and BANKNIFTY versions DATA_UNAVAILABLE",
+  "sample": [
+   {
+    "day": "2025-08-05",
+    "i": 259,
+    "side": 1,
+    "markout": -209.06
+   },
+   {
+    "day": "2025-08-26",
+    "i": 258,
+    "side": -1,
+    "markout": -80.87
+   },
+   {
+    "day": "2025-09-04",
+    "i": 278,
+    "side": 1,
+    "markout": -112.52
+   },
+   {
+    "day": "2025-09-25",
+    "i": 282,
+    "side": -1,
+    "markout": -51.78
+   },
+   {
+    "day": "2025-10-01",
+    "i": 234,
+    "side": 1,
+    "markout": 119.32
+   }
+  ]
+ },
+ "EN16_R1": {
+  "groups": {
+   "confirmed": {
+    "n": 155,
+    "hit": 0.471,
+    "trades": 80,
+    "mean_pnl": -17.5,
+    "sum_pnl": -1399.84,
+    "statuses": {
+     "NO_STRIKE": 13,
+     "REFUSED_RESERVE": 27,
+     "REFUSED_NO_QUOTE": 10,
+     "OK": 80,
+     "REFUSED_LIMIT": 25
+    }
+   },
+   "unconfirmed": {
+    "n": 7,
+    "hit": 0.2857,
+    "trades": 5,
+    "mean_pnl": 87.38,
+    "sum_pnl": 436.91,
+    "statuses": {
+     "OK": 5,
+     "REFUSED_LIMIT": 2
+    }
+   },
+   "unavailable": {
+    "n": 0,
+    "hit": null,
+    "trades": 0,
+    "mean_pnl": null,
+    "sum_pnl": 0.0,
+    "statuses": {}
+   }
+  },
+  "verdict": "FAIL"
+ },
+ "EN18_R1": {
+  "by_index": {
+   "NIFTY": {
+    "n": 1305,
+    "rows": 1937,
+    "alt_chosen": 0,
+    "fund_rule": -68.3,
+    "fund_base": -68.3,
+    "cost_rule": 0.06318,
+    "cost_base": 0.06318
+   },
+   "SENSEX": {
+    "n": 1053,
+    "rows": 1800,
+    "alt_chosen": 0,
+    "fund_rule": -87.42,
+    "fund_base": -87.42,
+    "cost_rule": 0.05157,
+    "cost_base": 0.05157
+   }
+  },
+  "sessions": 19,
+  "sessions_rule_ge_base": 19,
+  "verdict": "FAIL",
+  "base_statuses": {
+   "REFUSED_RESERVE": 678,
+   "OK": 2352,
+   "REFUSED_NO_QUOTE": 138,
+   "REFUSED_LIMIT": 563,
+   "UNRESOLVED": 6
+  },
+  "n_rows": 3737
+ },
+ "EN34": {
+  "by_index_side": {
+   "NIFTY|PE": {
+    "minutes": 1032,
+    "feasible": "0",
+    "share": 0.0,
+    "median_cost": 8909.06,
+    "reserve": 2500.0
+   },
+   "NIFTY|CE": {
+    "minutes": 1032,
+    "feasible": "0",
+    "share": 0.0,
+    "median_cost": 10793.29,
+    "reserve": 1250.0
+   },
+   "SENSEX|PE": {
+    "minutes": 1084,
+    "feasible": "0",
+    "share": 0.0,
+    "median_cost": 10421.5,
+    "reserve": 2500.0
+   },
+   "SENSEX|CE": {
+    "minutes": 1128,
+    "feasible": "0",
+    "share": 0.0,
+    "median_cost": 11909.62,
+    "reserve": 1250.0
+   }
+  },
+  "share": 0.0,
+  "verdict": "NOT FEASIBLE"
+ }
+}

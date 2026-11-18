@@ -1,3 +1,54 @@
+## November 18 - EN26–EN40 + the first fresh exam of E03.2 (NIFTY 2026, SENSEX): none passes, E03.2 unchanged (research only, Dev; nothing deployed; Production stays 55b5e942)
+
+**Owner (Nov 18):** run the auditor's EN26–EN35 handoff (`docs/EXPIRY_RESEARCH_EN26_EN35.md`) plus five slots of mine, on today's Breeze download (NIFTY 2026 and SENSEX Jul 2025 – Nov 2026 expiry afternoons).
+- Plan `docs/research/simulation/2026-11-17-expiry-en/PLAN4.md`, frozen `12f828d1` before any score. The hashes cover the transitive labs, loaders, fees and both data bindings.
+- Scored once by `en_score4.py` into `results4.json`, `anatomy4.json` and `results4-started.json`.
+- Write-up: `ANATOMY4.md`. Plain report: `docs/EXPIRY_RESEARCH_EN.md`.
+
+**Data:**
+- `en4_data.py` copies read-only into the sealed `_local/exam2026.sqlite`; the zip equals the database row for row.
+- Untouched: NIFTY Jan 6 – Sep 8 2026 (36 days) and SENSEX Jul 29 2025 – Sep 3 2026 (58 days).
+- Partly seen, reported apart: 7 NIFTY and 5 SENSEX days.
+- Excluded: 6 days without Breeze index or futures, 2 days with thin SENSEX futures, and SENSEX before Jul 29 2025.
+
+**Lab:** `en_lab4.py` adds the SENSEX spec (lot 20, BFO, 100-point steps, Rs 16.25–65).
+- It reproduces E03.2, E03.1 and 8 frozen round-3 arms day by day.
+- 528 contract picks equal the native picks.
+- Synthetic checks cover EN26–EN29 and EN31.
+- `rec2026b.py` repairs the auditor's quote-harness faults, with regression cases.
+
+**E03.2 fails the family exam's test 7 on both fresh books.**
+- **NIFTY 2026:** −3,847 on 9 tickets; random entries −961.
+- **SENSEX:** +2,082, but −3,173 without its one +5,255 put.
+- **Whole record:** across 248 expiry afternoons, two tickets made the +16,107 total; the other 74 lost −918.
+- **Risk dial:** k = 1, no size passes.
+- **Brakes:** a continuous book from Jan 2023 halts on Jan 18 2024; the brakes never reset.
+
+**Slots:**
+- **FAIL:** EN27, EN30, EN32, EN33, EN36, EN40, and the held EN21, EN25, EN14.
+- **INCONCLUSIVE:** EN26, EN29, EN31, EN37, and the held EN12.
+- **ONE-INDEX (pass on SENSEX only):** EN28, EN38, EN39.
+- **NOT FEASIBLE:** EN34 (a next-week lot costs Rs 8,900–11,900 against a Rs 1,250/2,500 reserve).
+- **NOT READY:** EN35.
+- **Repairs:** EN16-R1 and EN18-R1 keep their FAIL verdicts.
+- **Learned:**
+  - Filters that remove losers also remove the rare hero (EN36, EN38, EN39).
+  - Probing with half shrinks losers.
+  - The stall runner keeps the hero's tail.
+  - A resting bid saves about the spread.
+  - At-the-money cuts range-trade losses by 20–99%.
+  - NIFTY futures lead SENSEX by a minute (partial correlation 0.23), but the lead cannot be traded through options.
+
+**Verification:** en4_data.py check OK (builder == exam2023 on 2024; export hash = binding); en_lab4.py check OK (run_day4 == E03.2, E03.1, 8 frozen round-3 arms day by day, 2023-25 x 3 fills; 528 choose4 == native; SYNTHETIC_OK EN26 EN27 EN28 EN29 EN31); rec2026b.py check OK; en_score4.py selftest OK; score run once, exit 0 (start receipt results4-started.json). No python-engine source changed, so the engine suite was not rerun and the atlas was not regenerated.
+
+**State:**
+- Dev only, research files and docs; pushed to `codex/production-correction-hedge-p0`.
+- No engine, configuration, `.env` or Production change; no migration.
+- Nothing promoted or deployed. Tests are not profitable strategies, and the paper book is not partner qualification.
+- **Seen from now on:** NIFTY expiry afternoons Jan–Oct 2026 and SENSEX Jul 2025 – Oct 2026.
+- **Still held:** EN15-R, EN16-R, EN11-R, NIFTY 2020–22, and TR01 depth for EN28 and EN26.
+- **Owner's call:** whether E03.2 stays the paper main on NIFTY after failing this exam.
+
 ## November 18 - expiry data reminder: slots held open until the owner's data arrives (Dev docs only; nothing deployed)
 
 The owner will arrange the missing data. The list, with priority, is `docs/research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md`:

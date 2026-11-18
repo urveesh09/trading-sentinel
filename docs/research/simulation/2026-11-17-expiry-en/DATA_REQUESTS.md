@@ -25,4 +25,19 @@ The full day is needed, because EN13, EN17 and EN23 read the morning.
   - I export sealed copies before TR01's 35-day rotation.
   - Each new expiry adds to them.
 
-**Status:** waiting for the owner. Held open: **EN15-R**, **EN16-R**, **EN11-R**, the **NIFTY 2026 exam** and the **SENSEX test**.
+**Status (Nov 18, after the download):**
+- **Requests 1 and 2 arrived** (opening at-the-money ± 10 strikes, 12:00–close) and were **scored once** in round 4 (`PLAN4.md`, `ANATOMY4.md`).
+  - Used: NIFTY Jan 6 – Oct 27, 2026 (43 days) and SENSEX Jul 29, 2025 – Oct 8, 2026 (63 days).
+  - The NIFTY 2026 exam and the SENSEX test are **done**. E03.2 failed test 7 on both.
+- **Still missing from requests 1 and 2:**
+  - Breeze index and futures for NIFTY Nov 3, 9 and 17, and for SENSEX Oct 29, Nov 5 and Nov 12 (the options are there);
+  - SENSEX futures for Oct 15 and 22 (thin);
+  - SENSEX expiry afternoons before Jul 29, 2025 (Jul 22 partial).
+
+  These days are also seen through live paper or forward quotes, so they would add history but not an untouched exam.
+- **Still held open:**
+  - **EN16-R** (request 3);
+  - **EN15-R** (request 4, Kite);
+  - **EN11-R** (request 5), which round 4's EN26 also needs, sub-minute;
+  - NIFTY 2020–22 (request 6).
+- **Round 4 needs these forward only, from TR01's depth recorder:** EN28's real fill rate and EN26's sub-minute confirmation.

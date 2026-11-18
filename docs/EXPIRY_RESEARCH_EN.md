@@ -129,19 +129,58 @@ None beat E03.2, so it stays exactly as it is. Every slot's anatomy, where it wo
 - E03.2 loses on wrong entries. None of these fifteen fixes that.
 - Only fresh data can move this forward: SENSEX, NIFTY 2026, and forward paper tickets.
 
-## Data that would help next (you are arranging it; these slots stay open until it arrives)
+## The fresh test you arranged (Nov 18): NIFTY 2026 and SENSEX, plus EN26–EN40
 
-The full specification is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md).
+The new data is NIFTY's expiry afternoons from Jan to Sep 2026 and SENSEX's from Jul 2025 to Sep 2026. No study had touched them before. Everything was frozen before scoring and scored once. Every slot's wins and losses are in [ANATOMY4.md](research/simulation/2026-11-17-expiry-en/ANATOMY4.md).
 
-1. **NIFTY 2026 expiry afternoons.** The only NIFTY year nothing has seen. It is a real test of E03.2 and of the parts worth keeping (EN21, EN25, EN14, EN12).
-2. **SENSEX expiry afternoons, Oct 2024 – Nov 2026.** E03.2 trades SENSEX live but has never been tested on its history.
-3. **Next week's options on each NIFTY expiry day, 2023–2026** (near the money). This re-runs EN16 properly.
-4. **1-minute bars for the 50 NIFTY stocks on expiry days** (from Kite, not ICICI). This re-runs EN15 properly.
-5. **1-second data for the cheap strikes E03.2 actually buys, 2026.** This re-runs EN11's speed check.
-6. **NIFTY 2020–2022 expiry afternoons.**
+**E03.2 failed its first fresh test:**
 
-Items 1–3, 5 and 6 come through the ICICI download skill.
+| | Result | Tickets | Without its best day |
+|---|---:|---:|---:|
+| NIFTY 2026 (36 expiries) | **−3,847** (random entries lost less: −961) | 9 (2 winners) | −3,917 |
+| SENSEX (58 expiries) | **+2,082**, all from one put on Nov 13, 2025 (+5,255) | 11 (3 winners) | −3,173 |
 
-Real bid/ask depth can't be bought. It comes only from our own recorders, which I keep.
+- **Over all 248 expiry afternoons we hold** (NIFTY 2023–26 and SENSEX), E03.2 made +16,107. **Two tickets made all of it.** The other 74 lost −918 together.
+- **It is a lottery on rare put days, not a steady earner.** Its losses are stop-outs and entries after 14:30.
+- **Size:** the risk check says do not increase it. Even at today's size, the chance of a losing year is above 60%.
+
+**The fifteen new slots: none passes, so nothing changes.**
+
+| Slot | Idea | What happened |
+|---|---|---|
+| EN26 | Sell early only when the damage is confirmed | Happened once in 248 days. The normal stop already does this job. |
+| EN27 | Buy half first; add only when it proves itself | Wrong trades lost half as much (+3,793 saved), but slow winners earned less (−4,789). Better than E03.2 on both fresh books, worse in 2024–25. |
+| EN28 | Wait at the bid, with one capped retry | Same trades, 0.5% cheaper, about the same money. Passed on SENSEX, not on NIFTY. Real fill rates need our depth recorder. |
+| EN29 | Sell the leftover "runner" when the move stalls | Kept the 2024 big day and trimmed giveback. Only 6 cases, too few to judge. |
+| EN30 | Second wave: enter on a held pullback, not a breakout | Better than chasing in 2023–25, but no better than random on fresh data. |
+| EN31 | After a stop, flip only if the market proves the other side | Happened once. Flipping blindly is a coin toss. |
+| EN32 | Range trades with at-the-money options | Losses cut by 20–99%, still losing, and rarely affordable. |
+| EN33 | NIFTY futures lead SENSEX | True by about a minute, but too small to pay option costs. |
+| EN34 | Buy next week's option instead | Not possible: one lot costs Rs 8,900–11,900 against a Rs 1,250–2,500 ticket. |
+| EN35 | Combine the best pieces | Not eligible. As a check it was the best version on NIFTY 2026 (−2,355). |
+| **EN36** (mine) | Buy only when options are cheap | Bad years far smaller, but the big days are skipped: they happen when options are already expensive. |
+| **EN37** (mine) | The option flow must agree | Agrees almost always, so it removes nothing. |
+| **EN38** (mine) | Futures must lead the cash | The steadiest version (worst year −2,442 against −3,847). Passed on SENSEX, lost on NIFTY 2026, skips the big days. |
+| **EN39** (mine) | Trade only 14:00–14:30 | SENSEX +3,358 on 3 trades, NIFTY −705 on 2. Far too rare. |
+| **EN40** (mine) | No double size on puts | The double is a bet on the big put day: it paid on SENSEX and cost on NIFTY. |
+
+The four parts held over from the last round (EN21, EN25, EN14, EN12) did not hold on fresh data. The auditor's repairs to the quote harness left both old verdicts unchanged.
+
+**Bottom line:**
+- No rule found here earns steadily without big losses.
+- Anything that cuts the losing trades also cuts the rare big winners, and nothing we measured can tell the big days in advance.
+- E03.2 stays on paper exactly as it is, and nothing is deployed.
+- Whether it remains the paper main on NIFTY after failing this test is your call.
+
+## Data still open
+
+The full list is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md).
+
+1. **Next week's options on each NIFTY expiry day, 2023–2026** (near the money). This re-runs EN16 properly.
+2. **1-minute bars for the 50 NIFTY stocks on expiry days** (from Kite, not ICICI).
+3. **1-second data for the cheap strikes E03.2 buys, 2026.** EN11's speed check and EN26's confirmation need it.
+4. **NIFTY 2020–2022 and SENSEX before July 2025.** More history for anything that survives.
+
+Real bid/ask depth can't be bought. It comes only from our own recorders, which I keep. EN28's fill rate and EN26 can only be settled there.
 
 Technical record: [research/simulation/2026-11-17-expiry-en/README.md](research/simulation/2026-11-17-expiry-en/README.md).
