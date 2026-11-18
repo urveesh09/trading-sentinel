@@ -1,0 +1,50 @@
+{
+ "status": "PASS",
+ "ledger_identities": {
+  "configs": 525,
+  "failures": []
+ },
+ "fresh_reruns": {
+  "n": 69,
+  "mismatches": []
+ },
+ "selection_rederived": {
+  "families": 14,
+  "mismatches": []
+ },
+ "reference_wallets": {
+  "n": 8,
+  "mismatches": []
+ },
+ "duplicates": {
+  "groups": 66,
+  "mismatches": []
+ },
+ "nominations": {
+  "recorded": [
+   "EN115:0001",
+   "EN115:0002"
+  ],
+  "fixed_passing": [
+   "EN115:0001",
+   "EN115:0002",
+   "EN115:0003",
+   "EN115:0004",
+   "EN115:0005",
+   "EN115:0006",
+   "EN115:0007",
+   "EN115:0009",
+   "EN115:0010",
+   "EN115:0011",
+   "EN115:0008",
+   "EN115:0012",
+   "EN111:0012",
+   "EN123:0002",
+   "EN123:0008",
+   "EN123:0010",
+   "EN123:0012"
+  ],
+  "procedures_passing": []
+ },
+ "seconds": 213
+}

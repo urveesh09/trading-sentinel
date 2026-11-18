@@ -1,6 +1,6 @@
 # Round 10 status
 
-**IMPLEMENTED AND FROZEN, NOT YET SCORED.** The freeze happened before any round-10 money existed. This line is updated after the one-shot score.
+**SCORED ONCE** (freeze `b9aff5ef`; `verification10.json` PASS). Development screen on studied sessions. The frozen rule nominated EN115:0001/0002, which duplicate EN111:0010 (see ANATOMY10.md); nothing is promoted or deployed.
 
 | Step | Files |
 |---|---|
