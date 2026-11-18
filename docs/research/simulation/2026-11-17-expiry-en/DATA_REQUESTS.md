@@ -41,3 +41,8 @@ The full day is needed, because EN13, EN17 and EN23 read the morning.
   - **EN11-R** (request 5), which round 4's EN26 also needs, sub-minute;
   - NIFTY 2020–22 (request 6).
 - **Round 4 needs these forward only, from TR01's depth recorder:** EN28's real fill rate and EN26's sub-minute confirmation.
+
+- **New, from round 6 (Nov 18): request 7, needed by EN55's forward test (`ERRATA-20261118.md` A2).**
+  - **What:** Breeze 1-minute **index** and **front-future** candles for every NIFTY and SENSEX expiry session from Nov 19, 2026, alongside the expiring chain (12:00–15:29).
+  - **Why:** the Breeze database holds no NIFTY futures after Oct 28, 2026. Recorder-built bars did not establish parity (EN70: option closes agree within Rs 0.10 on 83% of bars, with no independent futures or index source).
+  - **What happens without it:** a forward session without index and future minutes is UNAVAILABLE.

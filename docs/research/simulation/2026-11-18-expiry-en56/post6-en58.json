@@ -1,0 +1,422 @@
+{
+ "EN55|P0|adversarial": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.031,
+   1
+  ],
+  "fill180": [
+   0.0588,
+   1
+  ],
+  "cost_vs_mid": [
+   -0.0031,
+   1
+  ],
+  "net_8min_sum": 391.47,
+  "net_8min_filled_mean": [
+   391.47,
+   1
+  ]
+ },
+ "EN55|P0|through": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.031,
+   1
+  ],
+  "fill180": [
+   0.0588,
+   1
+  ],
+  "cost_vs_mid": [
+   -0.0031,
+   1
+  ],
+  "net_8min_sum": 391.47,
+  "net_8min_filled_mean": [
+   391.47,
+   1
+  ]
+ },
+ "EN55|P0|volume": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.031,
+   1
+  ],
+  "fill180": [
+   0.0588,
+   1
+  ],
+  "cost_vs_mid": [
+   -0.0031,
+   1
+  ],
+  "net_8min_sum": 391.47,
+  "net_8min_filled_mean": [
+   391.47,
+   1
+  ]
+ },
+ "EN55|P1|through": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.0595,
+   1
+  ],
+  "fill180": [
+   -0.0357,
+   1
+  ],
+  "cost_vs_mid": [
+   0.037,
+   1
+  ],
+  "net_8min_sum": 349.2,
+  "net_8min_filled_mean": [
+   349.2,
+   1
+  ]
+ },
+ "EN55|P2|adversarial": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.0712,
+   1
+  ],
+  "fill180": [
+   0.0089,
+   1
+  ],
+  "cost_vs_mid": [
+   0.0401,
+   1
+  ],
+  "net_8min_sum": 345.95,
+  "net_8min_filled_mean": [
+   345.95,
+   1
+  ]
+ },
+ "EN55|P2|through": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.0712,
+   1
+  ],
+  "fill180": [
+   0.0089,
+   1
+  ],
+  "cost_vs_mid": [
+   0.0401,
+   1
+  ],
+  "net_8min_sum": 345.95,
+  "net_8min_filled_mean": [
+   345.95,
+   1
+  ]
+ },
+ "EN55|P2|volume": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.0712,
+   1
+  ],
+  "fill180": [
+   0.0089,
+   1
+  ],
+  "cost_vs_mid": [
+   0.0401,
+   1
+  ],
+  "net_8min_sum": 345.95,
+  "net_8min_filled_mean": [
+   345.95,
+   1
+  ]
+ },
+ "EN55|P3|adversarial": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.0712,
+   1
+  ],
+  "fill180": [
+   0.0089,
+   1
+  ],
+  "cost_vs_mid": [
+   0.0401,
+   1
+  ],
+  "net_8min_sum": 345.95,
+  "net_8min_filled_mean": [
+   345.95,
+   1
+  ]
+ },
+ "EN55|P3|through": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.0712,
+   1
+  ],
+  "fill180": [
+   0.0089,
+   1
+  ],
+  "cost_vs_mid": [
+   0.0401,
+   1
+  ],
+  "net_8min_sum": 345.95,
+  "net_8min_filled_mean": [
+   345.95,
+   1
+  ]
+ },
+ "EN55|P3|volume": {
+  "n": 1,
+  "filled": 1,
+  "fill60": [
+   -0.0712,
+   1
+  ],
+  "fill180": [
+   0.0089,
+   1
+  ],
+  "cost_vs_mid": [
+   0.0401,
+   1
+  ],
+  "net_8min_sum": 345.95,
+  "net_8min_filled_mean": [
+   345.95,
+   1
+  ]
+ },
+ "GRID|P0|adversarial": {
+  "n": 50,
+  "filled": 43,
+  "fill60": [
+   -0.0258,
+   41
+  ],
+  "fill180": [
+   -0.056,
+   40
+  ],
+  "cost_vs_mid": [
+   -0.0024,
+   43
+  ],
+  "net_8min_sum": -2212.35,
+  "net_8min_filled_mean": [
+   -51.45,
+   43
+  ]
+ },
+ "GRID|P0|through": {
+  "n": 50,
+  "filled": 44,
+  "fill60": [
+   -0.0216,
+   42
+  ],
+  "fill180": [
+   -0.0383,
+   41
+  ],
+  "cost_vs_mid": [
+   -0.0024,
+   44
+  ],
+  "net_8min_sum": -1657.77,
+  "net_8min_filled_mean": [
+   -37.6766,
+   44
+  ]
+ },
+ "GRID|P0|volume": {
+  "n": 50,
+  "filled": 42,
+  "fill60": [
+   -0.0246,
+   40
+  ],
+  "fill180": [
+   -0.0434,
+   40
+  ],
+  "cost_vs_mid": [
+   -0.0024,
+   42
+  ],
+  "net_8min_sum": -2156.15,
+  "net_8min_filled_mean": [
+   -51.3369,
+   42
+  ]
+ },
+ "GRID|P1|through": {
+  "n": 50,
+  "filled": 48,
+  "fill60": [
+   0.001,
+   47
+  ],
+  "fill180": [
+   -0.0061,
+   46
+  ],
+  "cost_vs_mid": [
+   -0.0009,
+   48
+  ],
+  "net_8min_sum": -80.78,
+  "net_8min_filled_mean": [
+   -1.6829,
+   48
+  ]
+ },
+ "GRID|P2|adversarial": {
+  "n": 50,
+  "filled": 40,
+  "fill60": [
+   -0.0351,
+   38
+  ],
+  "fill180": [
+   -0.0791,
+   37
+  ],
+  "cost_vs_mid": [
+   0.003,
+   40
+  ],
+  "net_8min_sum": -3134.18,
+  "net_8min_filled_mean": [
+   -78.3545,
+   40
+  ]
+ },
+ "GRID|P2|through": {
+  "n": 50,
+  "filled": 41,
+  "fill60": [
+   -0.0287,
+   39
+  ],
+  "fill180": [
+   -0.0602,
+   38
+  ],
+  "cost_vs_mid": [
+   0.0028,
+   41
+  ],
+  "net_8min_sum": -2579.6,
+  "net_8min_filled_mean": [
+   -62.9171,
+   41
+  ]
+ },
+ "GRID|P2|volume": {
+  "n": 50,
+  "filled": 38,
+  "fill60": [
+   -0.0328,
+   35
+  ],
+  "fill180": [
+   -0.0708,
+   35
+  ],
+  "cost_vs_mid": [
+   0.0045,
+   38
+  ],
+  "net_8min_sum": -3088.36,
+  "net_8min_filled_mean": [
+   -81.2726,
+   38
+  ]
+ },
+ "GRID|P3|adversarial": {
+  "n": 50,
+  "filled": 41,
+  "fill60": [
+   -0.0269,
+   40
+  ],
+  "fill180": [
+   -0.0712,
+   38
+  ],
+  "cost_vs_mid": [
+   0.0031,
+   41
+  ],
+  "net_8min_sum": -3351.56,
+  "net_8min_filled_mean": [
+   -81.7454,
+   41
+  ]
+ },
+ "GRID|P3|through": {
+  "n": 50,
+  "filled": 42,
+  "fill60": [
+   -0.021,
+   41
+  ],
+  "fill180": [
+   -0.053,
+   39
+  ],
+  "cost_vs_mid": [
+   0.003,
+   42
+  ],
+  "net_8min_sum": -2796.98,
+  "net_8min_filled_mean": [
+   -66.5948,
+   42
+  ]
+ },
+ "GRID|P3|volume": {
+  "n": 50,
+  "filled": 40,
+  "fill60": [
+   -0.028,
+   39
+  ],
+  "fill180": [
+   -0.0718,
+   37
+  ],
+  "cost_vs_mid": [
+   0.0044,
+   40
+  ],
+  "net_8min_sum": -3234.26,
+  "net_8min_filled_mean": [
+   -80.8565,
+   40
+  ]
+ }
+}

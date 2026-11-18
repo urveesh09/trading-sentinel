@@ -244,6 +244,40 @@ I copied the tick recorder's two finished days out of Production, read-only, and
 
 Details are in [ANATOMY5.md](research/simulation/2026-11-18-expiry-en41/ANATOMY5.md), round 5b.
 
+## Round 6: the auditor's EN56–EN65 plus my five (Nov 18)
+
+Frozen before scoring (`7c58df23`), scored once. Details are in [ANATOMY6.md](research/simulation/2026-11-18-expiry-en56/ANATOMY6.md).
+
+**No new strategy passed, and E03.2 and EN55 stay as they are.** What we learned:
+
+- **You're right that every expiry has a big opportunity, but only in hindsight.**
+  - On 181 of 197 NIFTY expiries there was a trade inside ₹2,500 that made at least ₹1,250 after all charges.
+  - But an average entry loses ₹60–190, direction over 5–30 minutes is right only 49.5% of the time, and the option still loses 40% of the time when the direction is right.
+  - Picking the moment is the whole game.
+- **More trades means more losses.**
+  - A more active learned E03.2 (signals from 12:30, looser filter) took 3× the trades and turned +13,165 into −7,120: each extra trade lost about ₹149.
+  - Stricter is better: the strictest version made almost the same profit with a third of the trades.
+- **What really protects the learned E03.2 is buying half first.** That keeps the wallet alive.
+  - Its patient entry only looks good because minute bars assume resting orders fill.
+  - On real depth (Nov 17), patient orders filled on options that then fell about 4% in 3 minutes, and market orders did better.
+  - If resting orders never filled, the learned E03.2 would lose −3,036.
+- **Puts don't earn for a structural reason.** Their profit is the index falling on a few big days (+22,421), not volatility (−71).
+- **One wallet for both indices is bigger, not steadier.** It stops at the ₹4,000 brake in May 2026, when both indices lost together.
+- **The chance a fresh ₹30,000 book stops within a year** (replaying our history in random order):
+
+  | Book | NIFTY | Both indices together |
+  |---|---:|---:|
+  | Learned E03.2 | 1.4% | 24% |
+  | E03.2 | 6% | 49% |
+
+  About one year in three ends at a loss.
+- **The new entry ideas all lost**, mostly against a random side at the same times: sequential trend detection, option mispricing, price impact, a 15-minute payoff model. So did straddle packages and profit-funded extra trades.
+
+**For the forward test that starts tomorrow:**
+- It needs ICICI index and futures minutes for each expiry, because Breeze has no futures after Oct 28.
+- The recorder's own bars aren't accurate enough yet to stand in (83% of option closes match, against the 95% required).
+- Testing the patient entry honestly needs real resting orders: the live-paper choice you deferred.
+
 ## Data still open
 
 The full list is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/DATA_REQUESTS.md).
@@ -252,6 +286,7 @@ The full list is in [DATA_REQUESTS.md](research/simulation/2026-11-17-expiry-en/
 2. **1-minute bars for the 50 NIFTY stocks on expiry days** (from Kite, not ICICI).
 3. **1-second data for the cheap strikes E03.2 buys, 2026.** EN11's speed check and EN26's confirmation need it.
 4. **NIFTY 2020–2022 and SENSEX before July 2025.** More history for anything that survives.
+5. **Index and futures minutes for every expiry from Nov 19** (ICICI). EN55's forward test needs them (new, round 6).
 
 Real bid/ask depth can't be bought. It comes only from our own recorders, which I keep. EN28's fill rate and EN26 can only be settled there.
 

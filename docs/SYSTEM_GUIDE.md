@@ -1,3 +1,38 @@
+## November 18 (night) - Round 6: EN56–EN70 scored once; no strategy passes; forward-test errata published before the first session (research only, Dev; nothing deployed; Production stays 55b5e942)
+
+**Owner (Nov 18):** run the auditor's EN56–EN65 handoff (`docs/EXPIRY_RESEARCH_EN56_EN65.md`), enriched where useful, plus five slots of mine. "I am in no rush, but I need comprehensive thorough testing, which is correct in its nature."
+
+**1. Errata before EN55's first forward session** (`e16bee2f`, `2026-11-18-expiry-en41/ERRATA-20261118.md`). The audit's findings were verified and agreed with.
+- **Calendar:** the first sessions are SENSEX Nov 19 and NIFTY Nov 23 (Nov 24 is an NSE F&O holiday; dated recorder catalogue), not Nov 20/24.
+- **Labels:** the 20-session result is relabelled COMPARISON.
+- **New qualification layer:** first 40 expiries per index, ≥ 20 funded EN55 parents combined, fixed-cap net > 0 at ordinary and adverse, net without the best ≥ 0, no wallet halt. Power facts: 0.345 / 0.159 parents per expiry; about 1,000+ expiries to prove Rs 50 a session absolute.
+- **Q28:** its proxies are relabelled (non-nested). The −2.1% / +17.6% is a same-clock markout from the initial bid.
+- **EN49:** its candidate list read the next bar's fill and forced one lot. It abstained, so no trade changed.
+
+**2. Round 6** (`docs/research/simulation/2026-11-18-expiry-en56/`): `PLAN6.md` frozen `7c58df23`; `en_score6.py` scored once; `ANATOMY6.md`.
+- **Harness:** `run_day6` is a hooked copy of `run_day4`, proven equal on 15,600 arm-days, plus wallet and straddle parity. 627 causal checks.
+- **Verdicts:** no strategy passes; all 18 Holm p = 1.0.
+  - FAIL: EN60 CUSUM, EN61 HGB payoff model, EN62 option residual, EN63 liquid contract, EN64 price impact, EN67 EN55_ACTIVE (NIFTY; EN60 and EN67 on both indices).
+  - INCONCLUSIVE: EN58 (one packet session), EN59 (the pair fits Rs 2,500 on 21/197 NIFTY, 0 SENSEX), EN65, and SENSEX for EN61–EN64.
+- **Diagnostics:**
+  - **EN56:** ≥ Rs 1,250 hindsight opportunity on 181/197 NIFTY afternoons, but every library cell loses on average (−60 to −190 a trade at Rs 2,500); direction right 49.5%.
+  - **EN57:** EN55's wallet survival comes from the scout. EN55 is −3,036 with no resting fills and −9,590 with adversarial fills, so it is execution-unidentified. The wallet is path-dependent (+1 tick → +12,631; +1 bar → +23,957). Both books lose from Q4 2025.
+  - **EN66:** a two-index wallet halts in May 2026.
+  - **EN68:** P(halt within a year) EN55 1.4% NIFTY, 24% combined.
+  - **EN69:** the put edge is the index move (+22,421), not volatility (−71).
+  - **EN70:** recorder bars PARITY NOT ESTABLISHED (option closes 83.2% within Rs 0.10; Breeze has no NIFTY futures after Oct 28).
+- **EN58 on real depth (Nov 17, 50 one-lot grid orders):** market orders −81 against resting bids −1,658. Passive fills fell 3.8% in 3 minutes (`post6-en58.json`, a post-score reporting fix, same frozen code).
+
+**Data request 7** (`2026-11-17-expiry-en/DATA_REQUESTS.md`): Breeze index and front-future minutes for every expiry from Nov 19, which EN55's forward test needs.
+
+**Verification:** en_lab6 checks PARITY_OK (15,600 arm-days), CAUSAL_OK (627), MECH_OK; en_score6.py selftest OK; score run once, exit 0 (start receipt results6-started.json); tr01.verify(): 802 chunks match. No python-engine source changed, so the engine suite was not rerun and the atlas not regenerated.
+
+**State:**
+- Dev research files and docs only, pushed to `codex/production-correction-hedge-p0`.
+- No engine, configuration, `.env`, scheduler or Production change; Production checkout read at `55b5e942`.
+- EN55's registration is unchanged.
+- The EN55 forward-test mode (replay or live paper) is still deferred by the owner; round 6 shows only real resting orders can test its patient entry.
+
 ## November 18 (evening) - Round 5b: TR01 depth exported read-only; EN41/EN42 tested on real order-book packets; resting-bid fills measured (research only, Dev; nothing deployed; Production stays 55b5e942)
 
 **Owner (Nov 18):** "If only data extraction is what you're doing, then sure go ahead. You can export the depth data from production and test it out."
